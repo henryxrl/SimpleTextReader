@@ -1,0 +1,165 @@
+@charset "UTF-8";
+/* @font-face {
+	font-family:"方正清刻本悦宋简体";
+	src:local("方正清刻本悦宋简体"),
+	url(res:///opt/sony/ebook/FONT/方正清刻本悦宋简体.ttf),
+	url(res:///Data/FONT/方正清刻本悦宋简体.ttf),
+	url(res:///opt/sony/ebook/FONT/方正清刻本悦宋简体.ttf),
+	url(res:///fonts/ttf/方正清刻本悦宋简体.ttf),
+	url(res:///fonts/方正清刻本悦宋简体.ttf),
+	url(res:///../../media/mmcblk0p1/fonts/方正清刻本悦宋简体.ttf),
+	url(res:///DK_System/system/font/方正清刻本悦宋简体.ttf),
+	url(res:///abook/fonts/方正清刻本悦宋简体.ttf),
+	url(res:///system/fonts/方正清刻本悦宋简体.ttf),
+	url(res:///system/media/sdcard/fonts/方正清刻本悦宋简体.ttf),
+	url(res:///media/fonts/方正清刻本悦宋简体.ttf),
+	url(res:///sdcard/fonts/方正清刻本悦宋简体.ttf),
+	url(res:///system/fonts/方正清刻本悦宋简体.ttf),
+	url(res:///mnt/MOVIFAT/font/方正清刻本悦宋简体.ttf),
+	url(../fonts/title.ttf);
+}
+@font-face {
+	font-family:"方正书宋_GBK";
+	src:local("方正书宋_GBK"),
+	url(res:///opt/sony/ebook/FONT/方正书宋_GBK.ttf),
+	url(res:///Data/FONT/方正书宋_GBK.ttf),
+	url(res:///opt/sony/ebook/FONT/方正书宋_GBK.ttf),
+	url(res:///fonts/ttf/方正书宋_GBK.ttf),
+	url(res:///fonts/方正书宋_GBK.ttf),
+	url(res:///../../media/mmcblk0p1/fonts/方正书宋_GBK.ttf),
+	url(res:///DK_System/system/font/方正书宋_GBK.ttf),
+	url(res:///abook/fonts/方正书宋_GBK.ttf),
+	url(res:///system/fonts/方正书宋_GBK.ttf),
+	url(res:///system/media/sdcard/fonts/方正书宋_GBK.ttf),
+	url(res:///media/fonts/方正书宋_GBK.ttf),
+	url(res:///sdcard/fonts/方正书宋_GBK.ttf),
+	url(res:///system/fonts/方正书宋_GBK.ttf),
+	url(res:///mnt/MOVIFAT/font/方正书宋_GBK.ttf),
+	url(../fonts/body.ttf);
+} */
+body {
+	margin-top:0%;
+	margin-bottom:4.5em;
+	margin-left:0%;
+	margin-right:0%;
+}
+img {
+	max-width:100%;
+	max-height:100%;
+	margin:auto;
+	overflow:auto;
+}
+p {
+	font-family:方正书宋_GBK;
+	font-size:1.2em;
+	color:Black;
+	text-align:justify;
+	text-indent:2em;
+	line-height:1.5em;
+	margin:1em;
+}
+p.first {
+	text-indent:0em!important;
+}
+.cover {
+	width:100%;
+}
+.center {
+	text-align:center;
+	margin-left:0%;
+	margin-right:0%;
+}
+.left {
+	text-align:left;
+	margin-left:0%;
+	margin-right:0%;
+}
+.right {
+	text-align:right;
+	margin-left:0%;
+	margin-right:0%;
+}
+.quote {
+	margin-top:0%;
+	margin-bottom:0%;
+	margin-left:1em;
+	margin-right:1em;
+	text-align:justify;
+	font-family:方正书宋_GBK;
+	color:Black;
+}
+.stickupCap {
+	font-size:4em;
+	font-weight:bold;
+	margin: 7px 6px 6px -1px;
+	padding:3px;
+	text-indent:0em !important;
+}
+.dropCap {
+	font-size:4em;
+	font-weight:bold;
+	float:left !important;
+	margin: 7px 6px 6px -1px;
+	padding:3px;
+	text-indent:0em !important;
+}
+h1 {
+	line-height:1.6em;
+	text-align:center;
+	font-weight:bold;
+	font-size:xxx-large;
+	font-family:方正清刻本悦宋简体;
+	color:#274c77;
+	margin-top:1.6em;
+	margin-bottom:1.6em;
+}
+h2 {
+	line-height:1.6em;
+	text-align:center;
+	font-weight:bold;
+	font-size:xx-large;
+	font-family:方正清刻本悦宋简体;
+	color:#274c77;
+	margin-top:1.6em;
+	margin-bottom:1.6em;
+}
+h3 {
+	line-height:1.6em;
+	text-align:center;
+	font-weight:bold;
+	font-size:x-large;
+	font-family:方正清刻本悦宋简体;
+	color:#274c77;
+	margin-top:1.6em;
+	margin-bottom:1.6em;
+}
+h4 {
+	line-height:1.6em;
+	text-align:center;
+	font-weight:bold;
+	font-size:large;
+	font-family:方正清刻本悦宋简体;
+	color:#274c77;
+	margin-top:1.6em;
+	margin-bottom:1.6em;
+}
+h5 {
+	line-height:1.6em;
+	text-align:center;
+	font-weight:bold;
+	font-size:medium;
+	font-family:方正清刻本悦宋简体;
+	color:#274c77;
+	margin-top:1.6em;
+	margin-bottom:1.6em;
+}
+h6 {
+	line-height:1.6em;
+	text-align:center;
+	font-weight:bold;
+	font-size:small;
+	font-family:方正清刻本悦宋简体;
+	color:#274c77;
+	margin-top:1.6em;
+	margin-bottom:1.6em;
+}

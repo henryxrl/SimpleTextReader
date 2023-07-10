@@ -1,0 +1,197 @@
+/* General UI */
+div {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+    overflow-y: scroll;
+}
+div::-webkit-scrollbar {
+    display: none;
+}
+#content {
+    width: 75%;
+    margin: 0 0 0 22%;
+    display: block;
+    overflow-x: hidden;
+}
+.active {
+    font-weight: normal;
+}
+.center {
+    text-align: center;
+}
+.uifont {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 5em;
+    color: #6096ba;
+}
+.prevent-select {
+    -webkit-touch-callout : none;     /* iOS Safari */
+    -webkit-user-select   : none;     /* Chrome/Safari/Opera */
+    -khtml-user-select    : none;     /* Konqueror */
+    -moz-user-select      : none;     /* Firefox */
+    -ms-user-select       : none;     /* Internet Explorer/Edge */
+    user-select: none; /* Standard syntax */
+}
+/* 
+Credit: https://stackoverflow.com/questions/64997928/how-to-offset-a-anchor-link-to-clear-fixed-header
+To Offset the anchor link to clear fixed header
+ */
+:target:before {
+    content: "";
+    display: block;
+    height: 1.6em;
+    margin: -1.6em 0 0;
+}
+
+
+/* Drop Zone */
+#dropZone {
+    background: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
+    visibility: show;
+    border: 0.5em dashed #6096ba;
+    border-radius: 16px;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+}
+#dropZoneText {
+    visibility: show;
+    z-index: 1000;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
+    margin: auto;
+}
+
+
+/* Pagination */
+#pagination {
+    position: fixed;
+    bottom: 20px;
+    background-color: white;
+    border: 1px dashed lightgrey;
+    border-radius: 8px;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.12), 
+              0 2px 2px rgba(0,0,0,0.12), 
+              0 4px 4px rgba(0,0,0,0.12), 
+              0 8px 8px rgba(0,0,0,0.12),
+              0 16px 16px rgba(0,0,0,0.12);
+    /* display: none; */
+    left: 61%;
+    transform: translate(-55.5%);   /* (61 + 50) / 2 */
+    -webkit-transform: translate(-55.5%);
+}
+.pagination {
+    list-style-type: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* display: none; */
+}
+.pagination li {
+    margin: 0 5px;
+}
+.pagination a {
+    color: black;
+    float: left;
+    padding: 8px 16px;
+    text-decoration: none;
+}
+.pagination a.active {
+    background-color: #274c77;
+    color: white;
+    border-radius: 5px;
+}
+.pagination a:hover:not(.active) {
+    background-color: #6096ba;
+    color: white;
+    border-radius: 5px;
+}
+#jumpInput {
+    border:0;
+    /* outline:0; */
+}
+.disabledbutton {
+    pointer-events: none;
+    opacity: 0.4;
+}
+
+
+/* TOC */
+#tocContent {
+    /* border: #274c77 solid 1px; */
+    width: 16%;
+    height: 50%;
+    margin: 0 0 0 3%;
+    position: fixed;
+    top: 50%;
+    transform: translate(0%, -50%);
+    -webkit-transform: translate(0%, -50%);
+    line-height: 1em;
+    font-size: 1em;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+/* Credit: https://stackoverflow.com/questions/3874602/elements-to-look-like-a-bullet-point-list-inside-an-anchor-link */
+.toc-bullet {
+    background-color: gray;
+    border-radius: 1em;
+    content: " ";
+    display: inline-block;
+    /* margin-right: 6px; */
+    width: 0.9em;
+    height: 0.3em;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin-bottom: 1.6em;
+}
+.toc-text {
+    display: inline-block;
+    width: 88%;
+    transition: visibility 5s, opacity 1s;
+    visibility: hidden;
+    opacity: 0;
+    text-decoration: none;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+/* Credit: https://www.taccgl.org/blog/css-transition-visibility.html */
+#tocContent:hover > .toc-text {
+    visibility: visible;
+    opacity: 1;
+}
+a.toc-text, a.toc-text:link, a.toc-text:visited {
+    text-decoration: none;
+    color: gray;
+    margin: 0.3em 0 1.3em 1em;
+}
+a.toc-text:hover:not(.active) {
+    text-decoration: none;
+    color: #274c77;
+}
+a.toc-text:active {
+    text-decoration: none;
+    color: #274c77;
+}
+a.toc-active {
+    font-weight: bold;
+    color: #274c77 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+.toc-bullet.toc-active {
+    background-color: #274c77 !important;
+}
+a.toc-active::before {
+    background-color: #274c77 !important;
+}
