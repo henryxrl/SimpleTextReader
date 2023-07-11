@@ -22,7 +22,7 @@ div::-webkit-scrollbar {
 }
 .uifont {
     font-family: Arial, Helvetica, sans-serif;
-    color: #6096ba;
+    color: #6096bb;
 }
 .prevent-select {
     -webkit-touch-callout : none;     /* iOS Safari */
@@ -54,7 +54,7 @@ To Offset the anchor link to clear fixed header
     height: 100%;
     z-index: 999;
     visibility: show;
-    border: 0.5em dashed #6096ba;
+    border: 0.5em dashed #6096bb;
     border-radius: 16px;
     box-sizing: border-box;
     -moz-box-sizing: border-box;
@@ -66,10 +66,26 @@ To Offset the anchor link to clear fixed header
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -25%);
+    -webkit-transform: translate(-50%, -25%);
     margin: auto;
     font-size: 5em;
+}
+#dropZoneImg {
+    visibility: show;
+    z-index: 1000;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -100%);
+    -webkit-transform: translate(-50%, -100%);
+    margin: auto;
+    width: 15em;
+    height: 15em;
+    /* convert to #274c77 */
+    /* filter: invert(22%) sepia(47%) saturate(1327%) hue-rotate(180deg) brightness(91%) contrast(80%); */
+    /* convert to #6096bb */
+    filter: invert(52%) sepia(93%) saturate(187%) hue-rotate(166deg) brightness(92%) contrast(82%);;
 }
 
 
@@ -144,7 +160,7 @@ To Offset the anchor link to clear fixed header
     border-radius: 5px;
 }
 .pagination a:hover:not(.active) {
-    background-color: #6096ba;
+    background-color: #6096bb;
     color: white;
     border-radius: 5px;
 }

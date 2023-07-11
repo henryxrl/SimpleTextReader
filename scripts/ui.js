@@ -18,10 +18,12 @@ dropZone.addEventListener("dragover", handleDragOver, false);
 dropZone.addEventListener('dragover', allowDrag);
 dropZone.addEventListener("drop", handleDrop, false);
 dropZone.addEventListener("dragleave", handleDragLeave, false);
+dropZone.addEventListener("dblclick", openFileSelector, false);
 const loadingScreen = document.getElementById('loading');
 // loadingScreen.style.visibility = "visible"; // For debugging
 
 const dropZoneText = document.getElementById("dropZoneText");
+const dropZoneImg = document.getElementById("dropZoneImg");
 const contentContainer = document.getElementById("content");
 const tocContainer = document.getElementById("tocContent");
 const paginationContainer = document.getElementById("pagination");
@@ -58,6 +60,8 @@ window.addEventListener('dragenter', function(e) {
     dropZone.style.zIndex = "999";
     dropZoneText.style.visibility = "visible";
     dropZoneText.style.zIndex = "1000";
+    dropZoneImg.style.visibility = "visible";
+    dropZoneImg.style.zIndex = "1001";
 });
 
 window.onscroll = function() {
@@ -78,7 +82,20 @@ document.onkeydown = function(event) {
             resetUI();
         break;
     }
- };
+};
+
+function openFileSelector(event) {
+    event.preventDefault();
+    var fileSelector = document.createElement("input");
+    fileSelector.setAttribute("type", "file");
+    fileSelector.setAttribute("accept", ".txt");
+    fileSelector.click();
+    // get the selected filepath
+    fileSelector.onchange = function() {
+        handleSelectedFile(this.files);
+    };
+    fileSelector.remove();
+}
 
 function allowDrag(event) {
     if (true) {  // Test that the item being dragged is a valid one
@@ -95,18 +112,22 @@ function handleDragOver(event) {
     dropZoneText.style.visibility = "visible";
     dropZoneText.style.zIndex = "1000";
     dropZoneText.style.color = "#274c77";
-    // console.log("dropZone.style.zIndex: " + dropZone.style.zIndex);
-    // console.log("dropZoneText.style.zIndex: " + dropZoneText.style.zIndex);
+    dropZoneImg.style.visibility = "visible";
+    dropZoneImg.style.zIndex = "1001";
+    dropZoneImg.style.setProperty("filter", "invert(22%) sepia(47%) saturate(1327%) hue-rotate(180deg) brightness(91%) contrast(80%)")
 }
 
 function handleDragLeave(event) {
     event.preventDefault();
     dropZone.style.visibility = "visible";
     dropZone.style.zIndex = "999";
-    dropZone.style.borderColor = "#6096ba";
+    dropZone.style.borderColor = "#6096bb";
     dropZoneText.style.visibility = "visible";
     dropZoneText.style.zIndex = "1000";
-    dropZoneText.style.color = "#6096ba";
+    dropZoneText.style.color = "#6096bb";
+    dropZoneImg.style.visibility = "visible";
+    dropZoneImg.style.zIndex = "1001";
+    dropZoneImg.style.setProperty("filter", "invert(52%) sepia(93%) saturate(187%) hue-rotate(166deg) brightness(92%) contrast(82%)")
 }
 
 function handleDrop(event) {
@@ -115,11 +136,16 @@ function handleDrop(event) {
     dropZone.style.zIndex = "1";
     dropZoneText.style.visibility = "hidden";
     dropZoneText.style.zIndex = "2";
+    dropZoneImg.style.visibility = "hidden";
+    dropZoneImg.style.zIndex = "3";
     resetVars();
 
     var fileList = event.dataTransfer.files;
-    filename = fileList[0].name;
 
+    handleSelectedFile(fileList);
+}
+
+function handleSelectedFile(fileList) {
     if (fileList.length > 0 && fileList[0].type === "text/plain") {
         var fileReader = new FileReader();
 
@@ -157,6 +183,7 @@ function handleDrop(event) {
             tocContainer.innerHTML = processTOC();
 
             // Get book name and author
+            filename = fileList[0].name;
             bookAndAuthor = getBookNameAndAuthor(filename.replace(/(.txt)$/i, ''));
             console.log("BookName: " + bookAndAuthor.bookName);
             console.log("Author: " + bookAndAuthor.author);
@@ -181,6 +208,7 @@ function handleDrop(event) {
         fileReader.onloadstart = function (event) {
             dropZone.style.visibility = "hidden";
             dropZoneText.style.visibility = "hidden";
+            dropZoneImg.style.visibility = "hidden";
 
             loadingScreen.style.visibility = "visible";
 
@@ -214,10 +242,13 @@ function resetUI() {
 
     dropZone.style.visibility = "visible";
     dropZone.style.zIndex = "999";
-    dropZone.style.borderColor = "#6096ba";
+    dropZone.style.borderColor = "#6096bb";
     dropZoneText.style.visibility = "visible";
     dropZoneText.style.zIndex = "1000";
-    dropZoneText.style.color = "#6096ba";
+    dropZoneText.style.color = "#6096bb";
+    dropZoneImg.style.visibility = "visible";
+    dropZoneImg.style.zIndex = "1001";
+    dropZoneImg.style.setProperty("filter", "invert(52%) sepia(93%) saturate(187%) hue-rotate(166deg) brightness(92%) contrast(82%)")
 
     loadingScreen.style.visibility = "hidden";
     contentContainer.style.visibility = "hidden";
