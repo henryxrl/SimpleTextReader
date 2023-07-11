@@ -4,13 +4,14 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title></title>
     <link rel="icon" type="image/png" href="./images/icon.png">
+    <link rel="stylesheet" type="text/css" href="css/ui_variables.css">
     <link rel="stylesheet" type="text/css" href="css/ui.css">
     <link rel="stylesheet" type="text/css" href="css/reader.css">
     <link rel="stylesheet" type="text/css" href="css/footnotes.css">
 </head>
 <body>
     <div id="dropZone" class="uifont prevent-select">
-        <h3 id="dropZoneText" class="uifont prevent-select">txt</h3>
+        <h3 id="dropZoneText" class="uifont prevent-select"></h3>
         <img id="dropZoneImg" src="./images/drop.png" alt="">
     </div>
 
@@ -19,18 +20,19 @@
     <div id="tocContent"></div>
     <div id="progress" class="uifont prevent-select"></div>
     <div id="content"></div>
-
     <div id="pagination" class="uifont prevent-select"></div>
 
     <ol id="footnote-content"></ol>
 
     <!-- <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script> -->
     <script type="text/javascript" src="scripts/jquery.min.js"></script>
-    <script type="text/javascript" src="scripts/footnotes.js" aysnc></script>
     <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jschardet/1.4.1/jschardet.min.js" async></script> -->
     <script type="text/javascript" src="scripts/jschardet.min.js"></script>
-    <script type="text/javascript" src="scripts/ui.js"></script>
+    <script type="text/javascript" src="scripts/css-global-variables.js"></script>
+    <script type="text/javascript" src="scripts/ui_helpers.js"></script>
+    <script type="text/javascript" src="scripts/utilities.js"></script>
     <script type="text/javascript" src="scripts/processText.js"></script>
-    <script type="text/javascript" src="scripts/helpers.js"></script>
+    <script type="text/javascript" src="scripts/footnotes.js"></script>
+    <script type="text/javascript" src="scripts/ui.js"></script>
 </body>
 </html>

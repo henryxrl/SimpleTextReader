@@ -6,16 +6,15 @@
 }
 
 #footnotediv {
-	/* background-color: #fcf4dd; */
-	background-color: white;
+	background-color: var(--bgColor);
 	font-size: 1.0em;
-	color: #274c77;
+	color: var(--mainColor_focused);
 	padding: 5px 12px;
-	border: 1px solid lightgrey;
+	border: 1px solid var(--borderColor);
 	border-radius: 8px;
-	box-shadow: 0 0 5px  #6096ba;
-	-webkit-box-shadow: #6096ba 0 0 5px;
-	-moz-box-shadow: 0 0 5px #6096ba;
+	box-shadow: 0 0 5px  var(--mainColor);
+	-webkit-box-shadow: var(--mainColor) 0 0 5px;
+	-moz-box-shadow: 0 0 5px var(--mainColor);
 }
 
 #footnotediv p {
@@ -34,7 +33,7 @@ a.footnotebacklink img {
 }
 
 #footnotecloselink {
-	color: #888;
+	color: var(--fontInfoColor);
 	text-decoration: none;
 	text-align: right;
 	margin: 0;
@@ -44,7 +43,7 @@ a.footnotebacklink img {
 	float: right;
 	top: 0;
 	right: 0;
-	font-family: Arial, sans-serif;
+	font-family: var(--fontFamily_ui);
 	font-weight: bold;
 }
 

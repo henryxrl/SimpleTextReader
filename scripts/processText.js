@@ -122,7 +122,7 @@ function getBookNameAndAuthor(str) {
             // Treat file name as book name and application name as author
             return {
                 "bookName": current,
-                "author": "易笺"
+                "author": style.ui_title_CN
             };
         }
     } else {
@@ -137,7 +137,7 @@ function getBookNameAndAuthor(str) {
             // Treat file name as book name and application name as author
             return {
                 "bookName": current,
-                "author": "SimpleTextReader"
+                "author": style.ui_title_EN
             };
         }
     }

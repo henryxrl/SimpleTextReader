@@ -1,3 +1,22 @@
+function setHistory(filename, lineNumber) {
+    // console.log("History set to line: " + lineNumber);
+    localStorage.setItem(filename, lineNumber);
+}
+
+function getHistory(filename) {
+    if (localStorage.getItem(filename)) {
+        let tempLine = localStorage.getItem(filename);
+        console.log("History found! Go to line: " + tempLine);
+        gotoLine(tempLine, false);
+        return tempLine;
+    }
+    return 0;
+}
+
+function removeAllHistory() {
+    localStorage.clear();
+}
+
 // Credit: https://stackoverflow.com/questions/46382109/limit-the-number-of-visible-pages-in-pagination
 // Returns an array of maxLength (or less) page numbers
 // where a 0 in the returned array denotes a gap in the series.

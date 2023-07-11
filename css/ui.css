@@ -21,8 +21,8 @@ div::-webkit-scrollbar {
     text-align: center;
 }
 .uifont {
-    font-family: Arial, Helvetica, sans-serif;
-    color: #6096bb;
+    font-family: var(--fontFamily_ui);
+    color: var(--mainColor);
 }
 .prevent-select {
     -webkit-touch-callout : none;     /* iOS Safari */
@@ -39,14 +39,14 @@ To Offset the anchor link to clear fixed header
 :target:before {
     content: "";
     display: block;
-    height: 1.55em;     /* a bit smaller than margin */
-    margin: -1.55em 0 0;
+    height: 1.6em;
+    margin: -1.6em 0 0;
 }
 
 
 /* Drop Zone */
 #dropZone {
-    background: white;
+    background: var(--bgColor);
     position: fixed;
     top: 0;
     left: 0;
@@ -54,7 +54,7 @@ To Offset the anchor link to clear fixed header
     height: 100%;
     z-index: 999;
     visibility: show;
-    border: 0.5em dashed #6096bb;
+    border: 0.5em dashed var(--mainColor);
     border-radius: 16px;
     box-sizing: border-box;
     -moz-box-sizing: border-box;
@@ -82,16 +82,16 @@ To Offset the anchor link to clear fixed header
     margin: auto;
     width: 15em;
     height: 15em;
-    /* convert to #274c77 */
-    /* filter: invert(22%) sepia(47%) saturate(1327%) hue-rotate(180deg) brightness(91%) contrast(80%); */
-    /* convert to #6096bb */
-    filter: invert(52%) sepia(93%) saturate(187%) hue-rotate(166deg) brightness(92%) contrast(82%);;
+    /* convert to var(--mainColor_focused) */
+    /* filter: var(--mainColor_focused_filter); */
+    /* convert to var(--mainColor) */
+    filter: var(--mainColor_filter);
 }
 
 
 /* Loading screen */
 #loading {
-    background: white;
+    background: var(--bgColor);
     position: fixed;
     top: 0;
     left: 0;
@@ -99,7 +99,6 @@ To Offset the anchor link to clear fixed header
     height: 100%;
     z-index: 999;
     visibility: hidden;
-    color: white;
 }
 #loading img {
     position: absolute;
@@ -114,8 +113,8 @@ To Offset the anchor link to clear fixed header
 #pagination {
     position: fixed;
     bottom: 20px;
-    background-color: white;
-    border: 1px dashed lightgrey;
+    background-color: var(--bgColor);
+    border: 1px dashed var(--borderColor);
     border-radius: 8px;
     box-shadow: 0 1px 1px rgba(0,0,0,0.12), 
               0 2px 2px rgba(0,0,0,0.12), 
@@ -155,19 +154,19 @@ To Offset the anchor link to clear fixed header
     text-decoration: none;
 }
 .pagination a.active {
-    background-color: #274c77;
-    color: white;
+    background-color: var(--mainColor_focused);
+    color: var(--bgColor);
     border-radius: 5px;
 }
 .pagination a:hover:not(.active) {
-    background-color: #6096bb;
-    color: white;
+    background-color: var(--mainColor);
+    color: var(--bgColor);
     border-radius: 5px;
 }
 #jumpInput {
     border:0;
     /* outline:0; */
-    /* background-color: white; */
+    /* background-color: var(--bgColor); */
 }
 .disabledbutton {
     pointer-events: none;
@@ -177,7 +176,7 @@ To Offset the anchor link to clear fixed header
 
 /* TOC */
 #tocContent {
-    /* border: #274c77 solid 1px; */
+    /* border: var(--mainColor_focused) solid 1px; */
     /* width: 16%; */
     height: 50%;
     /* margin: 0 0 0 3%; */
@@ -192,7 +191,7 @@ To Offset the anchor link to clear fixed header
 }
 /* Credit: https://stackoverflow.com/questions/3874602/elements-to-look-like-a-bullet-point-list-inside-an-anchor-link */
 .toc-bullet {
-    background-color: gray;
+    background-color: var(--fontInfoColor);
     border-radius: 1em;
     content: " ";
     display: inline-block;
@@ -224,29 +223,29 @@ a, a:link, a:visited, a:hover, a:active {
     text-decoration: none;
 }
 a.title, a.title:link, a.title:visited {
-    color: #274c77;
+    color: var(--mainColor_focused);
 }
 a.toc-text, a.toc-text:link, a.toc-text:visited {
-    color: gray;
+    color: var(--fontInfoColor);
     margin: 0.3em 0 1.3em 1em;
 }
 a.toc-text:hover:not(.active) {
-    color: #274c77;
+    color: var(--mainColor_focused);
 }
 a.toc-text:active {
-    color: #274c77;
+    color: var(--mainColor_focused);
 }
 a.toc-active {
     font-weight: bold;
-    color: #274c77 !important;
+    color: var(--mainColor_focused) !important;
     visibility: visible !important;
     opacity: 1 !important;
 }
 .toc-bullet.toc-active {
-    background-color: #274c77 !important;
+    background-color: var(--mainColor_focused) !important;
 }
 a.toc-active::before {
-    background-color: #274c77 !important;
+    background-color: var(--mainColor_focused) !important;
 }
 
 
@@ -254,9 +253,9 @@ a.toc-active::before {
 #progress {
     position: fixed;
     /* width: 16%; */
-    height: 1.2em;
+    height: 1.5em;
     /* margin: 0 0 0 3%; */
-    color: gray;
+    color: var(--fontInfoColor);
     top: 75%;
     font-size: 0.8em;
 }

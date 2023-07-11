@@ -1,3 +1,5 @@
+// Define variables
+var style = new CSSGlobalVariables();
 var init = true;
 var filename = "";
 var fileContentChunks = []; // Declare the variable outside the handleDrop function
@@ -10,12 +12,16 @@ var gotoTitle_Clicked = false;
 var bookAndAuthor = {};
 var footnotes = [];
 var footnote_proccessed_counter = 0;
+// Credit https://stackoverflow.com/questions/7110353/html5-dragleave-fired-when-hovering-a-child-element
+var dragCounter = 0;
+var historyLineNumber = 0;
 
-document.title = "易笺";
+document.title = eval("style.ui_title_" + style.ui_LANG);
 var dropZone = document.getElementById('dropZone');
 dropZone.addEventListener('dragenter', allowDrag);
-dropZone.addEventListener("dragover", handleDragOver, false);
+dropZone.addEventListener('dragenter', handleDragEnter, false);
 dropZone.addEventListener('dragover', allowDrag);
+dropZone.addEventListener("dragover", handleDragOver, false);
 dropZone.addEventListener("drop", handleDrop, false);
 dropZone.addEventListener("dragleave", handleDragLeave, false);
 dropZone.addEventListener("dblclick", openFileSelector, false);
@@ -30,41 +36,25 @@ const paginationContainer = document.getElementById("pagination");
 const progressContainer = document.getElementById("progress");
 const footNoteContainer = document.getElementById("footnote-content");
 
-// Set sizes
-// windowWith = windowLeftRightMargin + tocWidth + gapWidth + contentWidth + windowLeftRightMargin;
-let contentWidth = 72;
-let windowLeftRightMargin = 6;
-let gapWidth = 3;
-let contentMarginLeft = 100 - contentWidth - windowLeftRightMargin;
-let tocWidth = 100 - contentWidth - windowLeftRightMargin * 2 - gapWidth;
-let paginationCenter = contentWidth / 2 + contentMarginLeft;
-contentContainer.style.width = contentWidth + '%';
-contentContainer.style.marginTop = '0px';
-contentContainer.style.marginRight = '0px';
-contentContainer.style.marginBottom = '0px';
-contentContainer.style.marginLeft = contentMarginLeft + '%';
-tocContainer.style.width = tocWidth + '%';
-tocContainer.style.marginTop = '0px';
-tocContainer.style.marginRight = '0px';
-tocContainer.style.marginBottom = '0px';
-tocContainer.style.marginLeft = windowLeftRightMargin + '%';
-paginationContainer.style.left = paginationCenter + '%';
-progressContainer.style.width = tocWidth + '%';
-progressContainer.style.marginTop = '3em';
-progressContainer.style.marginRight = '0';
-progressContainer.style.marginBottom = '0';
-progressContainer.style.marginLeft = windowLeftRightMargin + '%';
 
-window.addEventListener('dragenter', function(e) {
-    dropZone.style.visibility = "visible";
-    dropZone.style.zIndex = "999";
-    dropZoneText.style.visibility = "visible";
-    dropZoneText.style.zIndex = "1000";
-    dropZoneImg.style.visibility = "visible";
-    dropZoneImg.style.zIndex = "1001";
+
+// Set up the UI
+setMainContentUI();
+let emInPx = getSizePrecise('1em', parent=contentContainer);
+
+
+
+// Event listeners
+window.addEventListener('dragenter', function(event) {
+    historyLineNumber = getHistory(filename);
+    init = true;
+    event.preventDefault();
+    showDropZone(focused=true);
+    contentContainer.style.display = "none";
 });
 
-window.onscroll = function() {
+window.onscroll = function(event) {
+    event.preventDefault();
     if (!init) {
         GetScrollPositions();
     }
@@ -103,53 +93,59 @@ function allowDrag(event) {
         event.preventDefault();
     }
 }
+function handleDragEnter(event) {
+    // console.log("Drag enter");
+    dragCounter++;
+    event.preventDefault();
+    showDropZone(focused=true);
+    contentContainer.style.display = "none";
+}
 
 function handleDragOver(event) {
+    // console.log("Drag over");
     event.preventDefault();
-    dropZone.style.visibility = "visible";
-    dropZone.style.zIndex = "999";
-    dropZone.style.borderColor = "#274c77";
-    dropZoneText.style.visibility = "visible";
-    dropZoneText.style.zIndex = "1000";
-    dropZoneText.style.color = "#274c77";
-    dropZoneImg.style.visibility = "visible";
-    dropZoneImg.style.zIndex = "1001";
-    dropZoneImg.style.setProperty("filter", "invert(22%) sepia(47%) saturate(1327%) hue-rotate(180deg) brightness(91%) contrast(80%)")
+    showDropZone(focused=true);
+    contentContainer.style.display = "none";
 }
 
 function handleDragLeave(event) {
+    // console.log("Drag leave");
+    dragCounter--;
     event.preventDefault();
-    dropZone.style.visibility = "visible";
-    dropZone.style.zIndex = "999";
-    dropZone.style.borderColor = "#6096bb";
-    dropZoneText.style.visibility = "visible";
-    dropZoneText.style.zIndex = "1000";
-    dropZoneText.style.color = "#6096bb";
-    dropZoneImg.style.visibility = "visible";
-    dropZoneImg.style.zIndex = "1001";
-    dropZoneImg.style.setProperty("filter", "invert(52%) sepia(93%) saturate(187%) hue-rotate(166deg) brightness(92%) contrast(82%)")
+    if (dragCounter === 0) {
+        if (contentContainer.innerHTML === "") {
+            // no file loaded, show dropZone
+            showDropZone();
+            contentContainer.style.display = "none";
+        } else {
+            // file loaded, revert back to normal
+            hideDropZone();
+            contentContainer.style.display = "block";
+            gotoLine(historyLineNumber, isTitle=false);
+            init = false;
+        }
+    }
 }
 
 function handleDrop(event) {
     event.preventDefault();
-    dropZone.style.visibility = "hidden";
-    dropZone.style.zIndex = "1";
-    dropZoneText.style.visibility = "hidden";
-    dropZoneText.style.zIndex = "2";
-    dropZoneImg.style.visibility = "hidden";
-    dropZoneImg.style.zIndex = "3";
+    hideDropZone();
+    contentContainer.style.display = "block";
     resetVars();
 
     var fileList = event.dataTransfer.files;
-
     handleSelectedFile(fileList);
 }
 
+
+
+// Main functions
 function handleSelectedFile(fileList) {
     if (fileList.length > 0 && fileList[0].type === "text/plain") {
         var fileReader = new FileReader();
 
         fileReader.onload = function (event) {
+            event.preventDefault();
             // Detect encoding
             const text = String.fromCharCode.apply(null, new Uint8Array(fileReader.result.slice(0, 100)));
             const detectedEncoding = jschardet.detect(text).encoding;
@@ -165,6 +161,12 @@ function handleSelectedFile(fileList) {
             // Detect language
             isEasternLan = getLanguage(fileContentChunks.slice(0, 50).join("\n"));
             console.log("isEasternLan: " + isEasternLan);
+            // Change UI language based on detected language
+            if (isEasternLan) {
+                style.ui_LANG = "CN";
+            } else {
+                style.ui_LANG = "EN";
+            }
 
             // Get all titles and process all footnotes
             for (var i in fileContentChunks) {
@@ -197,84 +199,36 @@ function handleSelectedFile(fileList) {
             window.scrollBy(0, 1);  // scroll 1 pixel so that if the first line is a header, it will show up in TOC
             generatePagination();
 
-            // Retrieve history if exists
-            // localStorage.clear();    // Clear all history; for debugging
-            if (localStorage.getItem(filename)) {
-                console.log("History found! Go to line: " + localStorage.getItem(filename));
-                gotoLine(localStorage.getItem(filename), false);
-            }
+            // Retrieve reading history if exists
+            // removeAllHistory();    // for debugging
+            getHistory(filename);
         };
 
         fileReader.onloadstart = function (event) {
-            dropZone.style.visibility = "hidden";
-            dropZoneText.style.visibility = "hidden";
-            dropZoneImg.style.visibility = "hidden";
-
-            loadingScreen.style.visibility = "visible";
-
-            contentContainer.style.visibility = "hidden";
-            tocContainer.style.visibility = "hidden";
-            paginationContainer.style.visibility = "hidden";
-            progressContainer.style.visibility = "hidden";
+            event.preventDefault();
+            hideDropZone();
+            showLoadingScreen();
+            hideContent();
         };
 
         fileReader.onprogress = function (event) {
-            loadingScreen.style.visibility = "visible";
+            event.preventDefault();
+            hideDropZone();
+            showLoadingScreen();
+            hideContent();
         };
 
         fileReader.onloadend = function (event) {
-            loadingScreen.style.visibility = "hidden";
-
-            contentContainer.style.visibility = "visible";
-            tocContainer.style.visibility = "visible";
-            paginationContainer.style.visibility = "visible";
-            progressContainer.style.visibility = "visible";
+            event.preventDefault();
+            hideDropZone();
+            hideLoadingScreen();
+            showContent();
         };
 
         fileReader.readAsArrayBuffer(fileList[0]);
     } else {
         resetUI();
     }
-}
-
-function resetUI() {
-    resetVars();
-
-    dropZone.style.visibility = "visible";
-    dropZone.style.zIndex = "999";
-    dropZone.style.borderColor = "#6096bb";
-    dropZoneText.style.visibility = "visible";
-    dropZoneText.style.zIndex = "1000";
-    dropZoneText.style.color = "#6096bb";
-    dropZoneImg.style.visibility = "visible";
-    dropZoneImg.style.zIndex = "1001";
-    dropZoneImg.style.setProperty("filter", "invert(52%) sepia(93%) saturate(187%) hue-rotate(166deg) brightness(92%) contrast(82%)")
-
-    loadingScreen.style.visibility = "hidden";
-    contentContainer.style.visibility = "hidden";
-    tocContainer.style.visibility = "hidden";
-    paginationContainer.style.visibility = "hidden";
-    progressContainer.style.visibility = "hidden";
-}
-
-function resetVars() {
-    init = true;
-    filename = "";
-    fileContentChunks = []; // Clear content chunks when a new file is dropped
-    allTitles = []; // Clear titles when a new file is dropped
-    currentPage = 1; // Reset current page to 1 when a new file is dropped
-    totalPages = 0; // Reset total pages to 0 when a new file is dropped
-    isEasternLan = true;
-    gotoTitle_Clicked = false;
-    bookAndAuthor = {};
-    footnotes = [];
-    footnote_proccessed_counter = 0;
-
-    document.title = "易笺";
-    contentContainer.innerHTML = "";
-    tocContainer.innerHTML = "";
-    progressContainer.innerHTML = "";
-    footNoteContainer.innerHTML = "";
 }
 
 function showCurrentPageContent() {
@@ -316,7 +270,7 @@ function generatePagination() {
     const paginationList = document.createElement("div");
     paginationList.classList.add("pagination");
 
-    const showPages = getPageList(totalPages, currentPage, 9);
+    const showPages = getPageList(totalPages, currentPage, style.ui_numPaginationItems);
     // console.log("showPages: " + showPages + "; currentPage: " + currentPage);
     for (var i = 1; i <= showPages.length; i++) {
         // Add a prev page button
@@ -358,6 +312,19 @@ function generatePagination() {
     paginationContainer.appendChild(paginationList);
 }
 
+function processTOC() {
+    // for each title in allTitles, create a link
+    var toc = "";
+    for (var i in allTitles) {
+        // toc += "<a href='#" + allTitles[i][1] + "'>" + allTitles[i][0] + "</a><br>";
+        toc += "<a id='a" + allTitles[i][1] + "_bull' href='#line" + allTitles[i][1] + "' onclick='gotoLine(" + allTitles[i][1] + ")' class='prevent-select toc-bullet'></a><a id='a" + allTitles[i][1] + "' href='#line" + allTitles[i][1] + "' onclick='gotoLine(" + allTitles[i][1] + ")' class='prevent-select toc-text'>" + allTitles[i][0] + "</a><br/>";
+    }
+    return toc;
+}
+
+
+
+// Helper functions
 function jumpToPage(pageNumber, scrolltoTop=true) {
     if (!isNaN(pageNumber)) {
         currentPage = pageNumber > totalPages ? totalPages : (pageNumber < 1 ? 1 : pageNumber);
@@ -408,16 +375,6 @@ function gotoPage(page, scrolltoTop=true) {
     GetScrollPositions();
 }
 
-function processTOC() {
-    // for each title in allTitles, create a link
-    var toc = "";
-    for (var i in allTitles) {
-        // toc += "<a href='#" + allTitles[i][1] + "'>" + allTitles[i][0] + "</a><br>";
-        toc += "<a id='a" + allTitles[i][1] + "_bull' href='#line" + allTitles[i][1] + "' onclick='gotoLine(" + allTitles[i][1] + ")' class='prevent-select toc-bullet'></a><a id='a" + allTitles[i][1] + "' href='#line" + allTitles[i][1] + "' onclick='gotoLine(" + allTitles[i][1] + ")' class='prevent-select toc-text'>" + allTitles[i][0] + "</a><br/>";
-    }
-    return toc;
-}
-
 function gotoLine(lineNumber, isTitle=true) {
     // Find the page number to jump to
     // console.log("lineNumber: " + lineNumber + ", isTitle: " + isTitle);
@@ -440,8 +397,7 @@ function gotoLine(lineNumber, isTitle=true) {
                 // scroll back 3.2em to show the title and margin
                 // line-height:1.6em;
                 // margin-top:1.6em;
-                line.scrollIntoView(true, {behavior: 'instant'});
-                let scrollBackPx = getSizePrecise('3em', parent=line.parentElement);
+                let scrollBackPx = emInPx * 3;
                 // console.log("scrollBackPx: " + scrollBackPx);
                 window.scrollBy(0, -scrollBackPx);
                 setTitleActive(lineNumber);
@@ -454,7 +410,7 @@ function gotoLine(lineNumber, isTitle=true) {
     }
 
     // Remember the line number in history
-    localStorage.setItem(filename, lineNumber);
+    setHistory(filename, lineNumber);
 }
 
 function GetScrollPositions() {
@@ -465,18 +421,12 @@ function GetScrollPositions() {
     // console.log("Top: " + scrollTop + "px");
 
     // Get the line number on top of the viewport
-    let curLineNumber = 0;
-    for (i in contentContainer.children) {
-        if (isInViewport(contentContainer.children[i])) {
-            curLineNumber = parseInt(contentContainer.children[i].id.replace('line', ''));
-            break;
-        }
-    }
+    let curLineNumber = getTopLineNumber();
     // console.log("Current line: " + curLineNumber);
 
     if (!gotoTitle_Clicked) {
         // Remember the line number in history
-        localStorage.setItem(filename, curLineNumber);
+        setHistory(filename, curLineNumber);
 
         // Get the title the detectected line belongs to
         let curTitleID = 0;
@@ -501,7 +451,9 @@ function GetScrollPositions() {
         setTitleActive(curTitleID);
     }
 
-    progressContainer.innerHTML = "阅读进度：" + (curLineNumber / fileContentChunks.length * 100).toFixed(1) + "%";
+    let readingProgressText = eval("style.ui_readingProgress_" + style.ui_LANG);
+    readingProgressText = style.ui_LANG === "CN" ? readingProgressText : readingProgressText.replace("：", ":");
+    progressContainer.innerHTML = readingProgressText + " " + (curLineNumber / fileContentChunks.length * 100).toFixed(1) + "%";
 
     gotoTitle_Clicked = false;
 }
@@ -535,4 +487,15 @@ function setTitleActive(titleID) {
     } catch (error) {
         console.log("Error: No title with ID " + titleID + " found.");
     }
+}
+
+function getTopLineNumber() {
+    let curLineNumber = 0;
+    for (i in contentContainer.children) {
+        if (isInViewport(contentContainer.children[i])) {
+            curLineNumber = parseInt(contentContainer.children[i].id.replace('line', ''));
+            break;
+        }
+    }
+    return curLineNumber;
 }
