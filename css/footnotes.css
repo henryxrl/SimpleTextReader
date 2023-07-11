@@ -1,0 +1,58 @@
+
+#footnotediv {
+	position: absolute;
+	width: 400px;
+	overflow: visible;
+}
+
+#footnotediv {
+	/* background-color: #fcf4dd; */
+	background-color: white;
+	font-size: 1.0em;
+	color: #274c77;
+	padding: 5px 12px;
+	border: 1px solid lightgrey;
+	border-radius: 8px;
+	box-shadow: 0 0 5px  #6096ba;
+	-webkit-box-shadow: #6096ba 0 0 5px;
+	-moz-box-shadow: 0 0 5px #6096ba;
+}
+
+#footnotediv p {
+	margin: 0;
+	padding: 5px 0;
+}
+
+a.footnotebacklink {
+	border-bottom: none;
+}
+
+a.footnotebacklink img {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+#footnotecloselink {
+	color: #888;
+	text-decoration: none;
+	text-align: right;
+	margin: 0;
+	padding: 0 5px;
+	font-size: 1.0em;
+	position: absolute;
+	float: right;
+	top: 0;
+	right: 0;
+	font-family: Arial, sans-serif;
+	font-weight: bold;
+}
+
+sup a {
+	margin: 0;
+	padding: 0 4px 5px 4px;
+}
+
+sup {
+	padding: 0;
+}

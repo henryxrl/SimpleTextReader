@@ -8,8 +8,9 @@ div::-webkit-scrollbar {
     display: none;
 }
 #content {
-    width: 75%;
-    margin: 0 0 0 22%;
+    /* width: 75%; */
+    height: 100%;
+    /* margin: 0 0 0 22%; */
     display: block;
     overflow-x: hidden;
 }
@@ -21,7 +22,6 @@ div::-webkit-scrollbar {
 }
 .uifont {
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 5em;
     color: #6096ba;
 }
 .prevent-select {
@@ -39,8 +39,8 @@ To Offset the anchor link to clear fixed header
 :target:before {
     content: "";
     display: block;
-    height: 1.6em;
-    margin: -1.6em 0 0;
+    height: 1.55em;     /* a bit smaller than margin */
+    margin: -1.55em 0 0;
 }
 
 
@@ -69,6 +69,28 @@ To Offset the anchor link to clear fixed header
     transform: translate(-50%, -50%);
     -webkit-transform: translate(-50%, -50%);
     margin: auto;
+    font-size: 5em;
+}
+
+
+/* Loading screen */
+#loading {
+    background: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
+    visibility: hidden;
+    color: white;
+}
+#loading img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
 }
 
 
@@ -84,10 +106,21 @@ To Offset the anchor link to clear fixed header
               0 4px 4px rgba(0,0,0,0.12), 
               0 8px 8px rgba(0,0,0,0.12),
               0 16px 16px rgba(0,0,0,0.12);
+    -webkit-box-shadow: rgba(0,0,0,0.12) 0 1px 1px, 
+    rgba(0,0,0,0.12) 0 2px 2px, 
+    rgba(0,0,0,0.12) 0 4px 4px, 
+    rgba(0,0,0,0.12) 0 8px 8px,
+    rgba(0,0,0,0.12) 0 16px 16px;
+    -moz-box-shadow: 0 1px 1px rgba(0,0,0,0.12), 
+    0 2px 2px rgba(0,0,0,0.12), 
+    0 4px 4px rgba(0,0,0,0.12), 
+    0 8px 8px rgba(0,0,0,0.12),
+    0 16px 16px rgba(0,0,0,0.12);
     /* display: none; */
-    left: 61%;
-    transform: translate(-55.5%);   /* (61 + 50) / 2 */
-    -webkit-transform: translate(-55.5%);
+    /* left: 61%; */
+    transform: translate(-50%);
+    -webkit-transform: translate(-50%);
+    font-size: 0.9em;
 }
 .pagination {
     list-style-type: none;
@@ -118,6 +151,7 @@ To Offset the anchor link to clear fixed header
 #jumpInput {
     border:0;
     /* outline:0; */
+    /* background-color: white; */
 }
 .disabledbutton {
     pointer-events: none;
@@ -128,9 +162,9 @@ To Offset the anchor link to clear fixed header
 /* TOC */
 #tocContent {
     /* border: #274c77 solid 1px; */
-    width: 16%;
+    /* width: 16%; */
     height: 50%;
-    margin: 0 0 0 3%;
+    /* margin: 0 0 0 3%; */
     position: fixed;
     top: 50%;
     transform: translate(0%, -50%);
@@ -155,7 +189,7 @@ To Offset the anchor link to clear fixed header
 }
 .toc-text {
     display: inline-block;
-    width: 88%;
+    width: calc(100% - 0.9em - 1em);      /* 100% - width of .toc-bullet - margin-left of <a>*/
     transition: visibility 5s, opacity 1s;
     visibility: hidden;
     opacity: 0;
@@ -170,17 +204,20 @@ To Offset the anchor link to clear fixed header
     visibility: visible;
     opacity: 1;
 }
-a.toc-text, a.toc-text:link, a.toc-text:visited {
+a, a:link, a:visited, a:hover, a:active {
     text-decoration: none;
+}
+a.title, a.title:link, a.title:visited {
+    color: #274c77;
+}
+a.toc-text, a.toc-text:link, a.toc-text:visited {
     color: gray;
     margin: 0.3em 0 1.3em 1em;
 }
 a.toc-text:hover:not(.active) {
-    text-decoration: none;
     color: #274c77;
 }
 a.toc-text:active {
-    text-decoration: none;
     color: #274c77;
 }
 a.toc-active {
@@ -194,4 +231,27 @@ a.toc-active {
 }
 a.toc-active::before {
     background-color: #274c77 !important;
+}
+
+
+/* Progress */
+#progress {
+    position: fixed;
+    /* width: 16%; */
+    height: 1.2em;
+    /* margin: 0 0 0 3%; */
+    color: gray;
+    top: 75%;
+    font-size: 0.8em;
+}
+
+
+/* Footnote */
+img.footnote_img {
+    width: 12px;
+    height: 12px;
+}
+ol#footnote-content {
+    visibility: hidden;
+    display: none;
 }

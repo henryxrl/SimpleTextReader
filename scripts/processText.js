@@ -14,7 +14,7 @@ const regex_titles_chinese_2 = regex_titles_chinese_pre_2 + regex_number + regex
 const regex_4 = "^(\\s*([【])?(正文\\s*)?" + regex_titles_chinese_2 + "\\s*$)";
 const regex_5 = "^(\\s*([【])?(正文\\s*)?" + regex_titles_chinese_2 + "\\s+.{1,50}$)";
 
-const regex_other_titles = "内容简介|內容簡介|内容介绍|內容介紹|内容梗概|内容大意|小说简介|小說簡介|小说介绍|小說介紹|小说大意|小說大意|书籍简介|書籍簡介|书籍介绍|書籍介紹|书籍大意|書籍大意|作品简介|作品簡介|作品介绍|作品介紹|作品大意|作品相关|作者简介|作者簡介|作者介绍|作者介紹|作品相關|简介|簡介|介绍|介紹|大意|梗概|序|代序|自序|序言|序章|序幕|前言|楔子|引言|引子|终章|終章|大结局|结局|结尾|尾声|尾聲|后记|後記|完本|完本感言|完结|完结感言|出版后记|出版後記|谢辞|謝辭|番外|番外篇|编辑推荐|編輯推薦|书籍相关|書籍相關|作者声明|作者聲明|译者序|譯者序|外篇|附錄|附录|短篇";
+const regex_other_titles = "内容简介|內容簡介|内容介绍|內容介紹|内容梗概|内容大意|小说简介|小說簡介|小说介绍|小說介紹|小说大意|小說大意|书籍简介|書籍簡介|书籍介绍|書籍介紹|书籍大意|書籍大意|作品简介|作品簡介|作品介绍|作品介紹|作品大意|作品相关|作者简介|作者簡介|作者介绍|作者介紹|作品相關|简介|簡介|介绍|介紹|大意|梗概|序|代序|自序|序言|序章|序幕|前言|楔子|引言|引子|终章|終章|大结局|结局|结尾|尾声|尾聲|后记|後記|完本|完本感言|完结|完结感言|出版后记|出版後記|谢辞|謝辭|番外|番外篇|编辑推荐|編輯推薦|书籍相关|書籍相關|作者声明|作者聲明|译者序|譯者序|外篇|附錄|附录|短篇|创作背景|創作背景|作品原文|白话译文|白話譯文";
 const regex_6 = "^(\\s*([【])?(" + regex_other_titles + ")([】])?[:：]?\\s*$)";
 const regex_7 = "^(\\s*([【])?(" + regex_other_titles + ")\\s+.{0,50}?([】])?\\s*$)";
 
@@ -27,6 +27,9 @@ const regex = new RegExp(regex_0 + "|" + regex_1 + "|" + regex_2 + "|" + regex_3
 const regex_isEastern = new RegExp(/[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f\u3131-\uD79D]+/);
 
 const regex_isPunctuation = /\p{P}/u;
+
+// ① - ㊿: FootNote content
+const regex_isFootNote = new RegExp(/[\u24EA\u2460-\u2473\u3251-\u325F\u32B1-\u32BF]/gu);
 
 // function to process strings as a batch
 function process_batch(str) {
@@ -66,7 +69,7 @@ function process(str, lineNumber, to_drop_cap) {
     let current = optimization(str.trim());
     if (current !== '') {
         if (regex.test(current)) {
-            current = `<h2 id="line${lineNumber}">${current.replace(":", "").replace("：", "")}</h2>`;
+            current = `<h2 id="line${lineNumber}"><a href='#line${lineNumber}' onclick='gotoLine(${lineNumber})' class='prevent-select title'>${current.replace(":", "").replace("：", "")}</a></h2>`;
             return [current, 'h'];
         } else {
             if (to_drop_cap && !isEasternLan) {
@@ -155,15 +158,15 @@ function optimization(str) {
     // Remove 塞班 specific elements
     current = current.replace("☆★版权归原作者所有，请勿用于商业用途★☆", "").replace("★☆版权归原作者所有，本人购买文本并精心制作，转载请注明出处。☆★", "").replace("☆★请勿用于商业用途，如有违反，发生问题，后果自负，与本人无关★☆", "").replace("☆塞班智能手机论坛真诚欢迎新老会员☆", "").replace("☆请勿用于商业行为，一切后果自负☆", "").replace("本电子书由塞班智能手机论坛·船说整理制作，仅供试阅。", "").replace("仅供试阅，转载请注明，同时请支持正版，版权属于原作者，", "").replace("请勿用于商业传播，谢谢~☆", "");
     let reg_sb_bookname_author = new RegExp("^(\\s*(\\[)?" + bookAndAuthor.bookName + "\\s*(\\/)?\\s*" + bookAndAuthor.author + "\\s*(著)?\\s*(\\])?\\s*$)", 'i');
-    let reg_sb_dash1 = new RegExp("^(\\s*[-]+\\s*$)", 'i');
-    let reg_sb_dash2 = new RegExp("^(\\s*[※]+\\s*$)", 'i');
-    let reg_sb_made = new RegExp("^(\\s*(★☆本电子书由)\\s*(.{0,50}?)\\s*(整理制作☆★)$)", 'i');
+    let reg_sb_dash = new RegExp("^(\\s*[-※★☆]+\\s*$)", 'i');
+    let reg_sb_made1 = new RegExp("^(\\s*(★☆本电子书由)\\s*(.{0,50}?)\\s*(整理制作☆★)$)", 'i');
+    let reg_sb_made2 = new RegExp("^(\\s*(本书由)\\s*(.{0,50}?)\\s*(整理制作)$)", 'i');
     let reg_sb_forum = new RegExp("^(\\s*(☆★塞班智能手机论坛)\\s*([:：]?)\\s*(http://bbs.dospy.com★☆)$)", 'i');
     let reg_sb_forum_made1 = new RegExp("^(\\s*(☆★塞班智能手机论坛)\\s*([:：]?)\\s*(http://bbs.dospy.com)\\s*(.{0,50}?)\\s*(整理制作★☆)$)", 'i');
     let reg_sb_forum_made2 = new RegExp("^(\\s*(☆本文由塞班电子书组)\\s*(.{0,50}?)\\s*(整理，版权归原作者所有☆)$)", 'i');
     let reg_sb_forum_made3 = new RegExp("^(\\s*(☆该文本由塞班电子书讨论区“)\\s*(.{0,50}?)\\s*(”连载精校整理。)$)", 'i');
     let reg_sb_url = new RegExp("^(\\s*(☆http://bbs.dospy.com☆)\\s*)$", 'i');
-    current = current.replace(reg_sb_bookname_author, "").replace(reg_sb_dash1, "").replace(reg_sb_dash2, "").replace(reg_sb_made, "").replace(reg_sb_forum, "").replace(reg_sb_forum_made1, "").replace(reg_sb_forum_made2, "").replace(reg_sb_forum_made3, "").replace(reg_sb_url, "");
+    current = current.replace(reg_sb_bookname_author, "").replace(reg_sb_dash, "").replace(reg_sb_made1, "").replace(reg_sb_made2, "").replace(reg_sb_forum, "").replace(reg_sb_forum_made1, "").replace(reg_sb_forum_made2, "").replace(reg_sb_forum_made3, "").replace(reg_sb_url, "");
 
     // Remove 99 specific elements
     current = current.replace("久久电子书提醒您", "").replace("爱护眼睛休息会吧", "").replace("多格式免费下载", "");
@@ -173,6 +176,33 @@ function optimization(str) {
     let reg_99_ad3 = new RegExp("^(\\s*(TXT.CHM.UMD.JAR)\\s*$)", 'i');
     let reg_99_ad4 = new RegExp("^(\\s*(WWW.99121.COM)\\s*$)", 'i');
     current = current.replace(reg_99_dash, "").replace(reg_99_ad1, "").replace(reg_99_ad2, "").replace(reg_99_ad3, "").replace(reg_99_ad4, "");
+
+    return current;
+}
+
+function makeFootNote(str) {
+    let current = str.trim();
+
+    // Find if footnote characters exist
+    if (regex_isFootNote.test(current)) {        
+        let allMatches = current.match(regex_isFootNote);
+
+        if (allMatches.length == 1 && current.indexOf(allMatches[0]) == 0) {
+            // this is the actual footnote itself
+            footNoteContainer.innerHTML += "<li id='fn" + footnote_proccessed_counter + "'>" + current.slice(1) + "</li>";
+            footnote_proccessed_counter++;
+            return "";
+        } else {
+            // main text
+            for (i in allMatches) {
+                // console.log("footnote.length: " + footnotes.length);
+                // console.log("Found footnote: " + allMatches[i]);
+                let curIndex = current.indexOf(allMatches[i]);
+                current = current.slice(0, curIndex) + '<a rel="footnote" href="#fn' + footnotes.length + '"><img class="footnote_img" src="images/note.png"/></a>' + current.slice(curIndex + 1);
+                footnotes.push(allMatches[i]);
+            }
+        }
+    }
 
     return current;
 }
