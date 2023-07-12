@@ -15,6 +15,7 @@
 	box-shadow: 0 0 5px  var(--mainColor);
 	-webkit-box-shadow: var(--mainColor) 0 0 5px;
 	-moz-box-shadow: 0 0 5px var(--mainColor);
+	font-family:var(--fontFamily_ui) !important;
 }
 
 #footnotediv p {
