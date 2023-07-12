@@ -1,42 +1,19 @@
 @charset "UTF-8";
-/* @font-face {
+@font-face {
 	font-family:"方正清刻本悦宋简体";
 	src:local("方正清刻本悦宋简体"),
-	url(res:///opt/sony/ebook/FONT/方正清刻本悦宋简体.ttf),
-	url(res:///Data/FONT/方正清刻本悦宋简体.ttf),
-	url(res:///opt/sony/ebook/FONT/方正清刻本悦宋简体.ttf),
-	url(res:///fonts/ttf/方正清刻本悦宋简体.ttf),
-	url(res:///fonts/方正清刻本悦宋简体.ttf),
-	url(res:///../../media/mmcblk0p1/fonts/方正清刻本悦宋简体.ttf),
-	url(res:///DK_System/system/font/方正清刻本悦宋简体.ttf),
-	url(res:///abook/fonts/方正清刻本悦宋简体.ttf),
-	url(res:///system/fonts/方正清刻本悦宋简体.ttf),
-	url(res:///system/media/sdcard/fonts/方正清刻本悦宋简体.ttf),
-	url(res:///media/fonts/方正清刻本悦宋简体.ttf),
-	url(res:///sdcard/fonts/方正清刻本悦宋简体.ttf),
-	url(res:///system/fonts/方正清刻本悦宋简体.ttf),
-	url(res:///mnt/MOVIFAT/font/方正清刻本悦宋简体.ttf),
 	url(../fonts/title.ttf);
 }
 @font-face {
 	font-family:"方正书宋_GBK";
 	src:local("方正书宋_GBK"),
-	url(res:///opt/sony/ebook/FONT/方正书宋_GBK.ttf),
-	url(res:///Data/FONT/方正书宋_GBK.ttf),
-	url(res:///opt/sony/ebook/FONT/方正书宋_GBK.ttf),
-	url(res:///fonts/ttf/方正书宋_GBK.ttf),
-	url(res:///fonts/方正书宋_GBK.ttf),
-	url(res:///../../media/mmcblk0p1/fonts/方正书宋_GBK.ttf),
-	url(res:///DK_System/system/font/方正书宋_GBK.ttf),
-	url(res:///abook/fonts/方正书宋_GBK.ttf),
-	url(res:///system/fonts/方正书宋_GBK.ttf),
-	url(res:///system/media/sdcard/fonts/方正书宋_GBK.ttf),
-	url(res:///media/fonts/方正书宋_GBK.ttf),
-	url(res:///sdcard/fonts/方正书宋_GBK.ttf),
-	url(res:///system/fonts/方正书宋_GBK.ttf),
-	url(res:///mnt/MOVIFAT/font/方正书宋_GBK.ttf),
 	url(../fonts/body.ttf);
-} */
+}
+@font-face {
+	font-family:"ui";
+	src:local("ui"),
+	url(../fonts/ui.ttf);
+}
 
 
 
@@ -61,15 +38,20 @@
     --mainColor_filter: invert(52%) sepia(93%) saturate(187%) hue-rotate(166deg) brightness(92%) contrast(82%);
     --mainColor_focused_filter: invert(22%) sepia(47%) saturate(1327%) hue-rotate(180deg) brightness(91%) contrast(80%);
 
-    /* --bgColor: #fcf4dd */
-    --bgColor: white;
+    --bgColor: #fefcf4;
+    /* --bgColor: white; */
     --borderColor: lightgray;
 
     --fontInfoColor: gray;
     --fontColor: black;
 
     /* Font variables */
-    --fontFamily_title: 方正清刻本悦宋简体;
-    --fontFamily_body: 方正书宋_GBK;
-    --fontFamily_ui: Arial, Helvetica, sans-serif;
+	--fontFamily_title: var(--fontFamily_title_CN);
+	--fontFamily_body: var(--fontFamily_body_CN);
+
+    --fontFamily_title_CN: 方正清刻本悦宋简体, ui;
+    --fontFamily_body_CN: 方正书宋_GBK, ui;
+	--fontFamily_title_EN: ui;
+    --fontFamily_body_EN: ui;
+	--fontFamily_ui: ui, Arial, Helvetica, sans-serif;
 }

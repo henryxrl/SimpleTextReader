@@ -1,4 +1,7 @@
 /* General UI */
+body {
+    background-color: var(--bgColor) !important;
+}
 div {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
@@ -166,7 +169,7 @@ To Offset the anchor link to clear fixed header
 #jumpInput {
     border:0;
     /* outline:0; */
-    /* background-color: var(--bgColor); */
+    background-color: var(--bgColor) !important;
 }
 .disabledbutton {
     pointer-events: none;
@@ -188,6 +191,7 @@ To Offset the anchor link to clear fixed header
     font-size: 1em;
     overflow-x: hidden;
     overflow-y: auto;
+    font-family:var(--fontFamily_title);
 }
 /* Credit: https://stackoverflow.com/questions/3874602/elements-to-look-like-a-bullet-point-list-inside-an-anchor-link */
 .toc-bullet {

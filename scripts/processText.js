@@ -151,9 +151,10 @@ function optimization(str) {
     let reg_zscs_dash = new RegExp("^(\\s*[=]+\\s*$)", 'i');
     let reg_zscs_bookname = new RegExp("^(\\s*((书名)?\\s*[：:]?\\s*[《「『﹁﹃]?" + bookAndAuthor.bookName + "[》」』﹂﹄]?)\\s*$)", 'i');
     let reg_zscs_author = new RegExp("^(\\s*((作者)?\\s*[：:]?\\s*" + bookAndAuthor.author + ")\\s*$)", 'i');
-    let reg_zscs_bookname_author = new RegExp("^(\\s*((书名)?\\s*[：:]?\\s*[《「『﹁﹃]?" + bookAndAuthor.bookName + "[》」』﹂﹄]?)\\s*((作者)?\\s*[：:]?\\s*" + bookAndAuthor.author + ")\\s*$)", 'i');
+    let reg_zscs_bookname_author1 = new RegExp("^(\\s*((书名)?\\s*[：:]?\\s*[《「『﹁﹃]?" + bookAndAuthor.bookName + "[》」』﹂﹄]?)\\s*((作者)?\\s*[：:]?\\s*" + bookAndAuthor.author + ")\\s*$)", 'i');
+    let reg_zscs_bookname_author2 = new RegExp("^(\\s*((书名)?\\s*[：:]?\\s*[《「『﹁﹃]?" + bookAndAuthor.bookName + "[》」』﹂﹄]?)\\s*([\\(（)]?)(文字精校版)([)）]?)\\s*((作者)?\\s*[：:]?\\s*" + bookAndAuthor.author + ")\\s*$)", 'i');
     let reg_zscs_author_bookname = new RegExp("^(\\s*((作者)?\\s*[：:]?\\s*" + bookAndAuthor.author + ")\\s*((书名)?\\s*[：:]?\\s*[《「『﹁﹃]?" + bookAndAuthor.bookName + "[》」』﹂﹄]?)\\s*$)", 'i');
-    current = current.replace(reg_zscs_dash, "").replace(reg_zscs_bookname, "").replace(reg_zscs_author, "").replace(reg_zscs_bookname_author, "").replace(reg_zscs_author_bookname, "");
+    current = current.replace(reg_zscs_dash, "").replace(reg_zscs_bookname, "").replace(reg_zscs_author, "").replace(reg_zscs_bookname_author1, "").replace(reg_zscs_bookname_author2, "").replace(reg_zscs_author_bookname, "");
 
     // Remove 塞班 specific elements
     current = current.replace("☆★版权归原作者所有，请勿用于商业用途★☆", "").replace("★☆版权归原作者所有，本人购买文本并精心制作，转载请注明出处。☆★", "").replace("☆★请勿用于商业用途，如有违反，发生问题，后果自负，与本人无关★☆", "").replace("☆塞班智能手机论坛真诚欢迎新老会员☆", "").replace("☆请勿用于商业行为，一切后果自负☆", "").replace("本电子书由塞班智能手机论坛·船说整理制作，仅供试阅。", "").replace("仅供试阅，转载请注明，同时请支持正版，版权属于原作者，", "").replace("请勿用于商业传播，谢谢~☆", "");

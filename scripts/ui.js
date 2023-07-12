@@ -167,6 +167,9 @@ function handleSelectedFile(fileList) {
             } else {
                 style.ui_LANG = "EN";
             }
+            // Set fonts based on detected language
+            style.fontFamily_title = eval("style.fontFamily_title_" + style.ui_LANG);
+            style.fontFamily_body = eval("style.fontFamily_body_" + style.ui_LANG);
 
             // Get all titles and process all footnotes
             for (var i in fileContentChunks) {
