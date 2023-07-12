@@ -1,18 +1,18 @@
 @charset "UTF-8";
 @font-face {
-	font-family:"方正清刻本悦宋简体";
-	src:local("方正清刻本悦宋简体"),
-	url(../fonts/title.ttf);
+	font-family:"方正时光刻宋_GBK";
+	src:local("方正时光刻宋_GBK"),
+	url(../fonts/FZShiGKSK.TTF);
 }
 @font-face {
-	font-family:"方正书宋_GBK";
-	src:local("方正书宋_GBK"),
-	url(../fonts/body.ttf);
+	font-family:"方正宋刻本秀楷_GBK";
+	src:local("方正宋刻本秀楷_GBK"),
+	url(../fonts/FZSKBXKK.TTF);
 }
 @font-face {
-	font-family:"ui";
-	src:local("ui"),
-	url(../fonts/ui.ttf);
+	font-family:"LXGW WenKai";
+	src:local("LXGW WenKai"),
+	url(../fonts/LXGWWenKai-Regular.ttf);
 }
 
 
@@ -49,9 +49,9 @@
 	--fontFamily_title: var(--fontFamily_title_CN);
 	--fontFamily_body: var(--fontFamily_body_CN);
 
-    --fontFamily_title_CN: 方正清刻本悦宋简体, ui;
-    --fontFamily_body_CN: 方正书宋_GBK, ui;
-	--fontFamily_title_EN: ui;
-    --fontFamily_body_EN: ui;
-	--fontFamily_ui: ui, Arial, Helvetica, sans-serif;
+    --fontFamily_title_CN: 方正时光刻宋_GBK, LXGW WenKai;
+    --fontFamily_body_CN: 方正宋刻本秀楷_GBK, LXGW WenKai;
+	--fontFamily_title_EN: LXGW WenKai;
+    --fontFamily_body_EN: LXGW WenKai;
+	--fontFamily_ui: LXGW WenKai, Arial, Helvetica, sans-serif;
 }

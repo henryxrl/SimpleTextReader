@@ -13,7 +13,7 @@ img {
 }
 p {
 	font-family:var(--fontFamily_body);
-	font-size:1.2em;
+	font-size:1.4em;
 	color:var(--fontColor);
 	text-align:justify;
 	text-indent:2em;
