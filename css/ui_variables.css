@@ -30,6 +30,10 @@
     --ui_windowLeftRightMargin: 6;
     --ui_gapWidth: 3;
     --ui_numPaginationItems: 9;
+    --ui_contentMarginLeft: 0;
+    --ui_tocWidth: 0;
+    --ui_tocHeight: 50;
+    --ui_paginationCenter: 0;
 
     /* Color variables */
     --mainColor: #6096bb;
@@ -41,6 +45,7 @@
     --bgColor: #fefcf4;
     /* --bgColor: white; */
     --borderColor: lightgray;
+    --shadowColor: rgba(0, 0, 0, 0.12);
 
     --fontInfoColor: gray;
     --fontColor: black;

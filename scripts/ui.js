@@ -40,11 +40,21 @@ const footNoteContainer = document.getElementById("footnote-content");
 
 // Set up the UI
 setMainContentUI();
+// setMainContentUI_onRatio();
+// setTOC_onRatio(initial=true);
 let emInPx = getSizePrecise('1em', parent=contentContainer);
 
 
 
 // Event listeners
+// window.addEventListener('resize', function(event) {
+//     setMainContentUI_onRatio();
+// });
+
+// window.addEventListener('dblclick', function(event) {
+//     setTOC_onRatio();
+// });
+
 window.addEventListener('dragenter', function(event) {
     historyLineNumber = getHistory(filename);
     init = true;
@@ -132,6 +142,7 @@ function handleDrop(event) {
     hideDropZone();
     contentContainer.style.display = "block";
     resetVars();
+    // setTOC_onRatio(initial=true);
 
     var fileList = event.dataTransfer.files;
     handleSelectedFile(fileList);

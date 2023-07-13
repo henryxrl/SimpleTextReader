@@ -115,25 +115,25 @@ To Offset the anchor link to clear fixed header
 /* Pagination */
 #pagination {
     position: fixed;
-    bottom: 20px;
+    bottom: 30px;
     background-color: var(--bgColor);
     border: 1px dashed var(--borderColor);
     border-radius: 8px;
-    box-shadow: 0 1px 1px rgba(0,0,0,0.12), 
-              0 2px 2px rgba(0,0,0,0.12), 
-              0 4px 4px rgba(0,0,0,0.12), 
-              0 8px 8px rgba(0,0,0,0.12),
-              0 16px 16px rgba(0,0,0,0.12);
-    -webkit-box-shadow: rgba(0,0,0,0.12) 0 1px 1px, 
-    rgba(0,0,0,0.12) 0 2px 2px, 
-    rgba(0,0,0,0.12) 0 4px 4px, 
-    rgba(0,0,0,0.12) 0 8px 8px,
-    rgba(0,0,0,0.12) 0 16px 16px;
-    -moz-box-shadow: 0 1px 1px rgba(0,0,0,0.12), 
-    0 2px 2px rgba(0,0,0,0.12), 
-    0 4px 4px rgba(0,0,0,0.12), 
-    0 8px 8px rgba(0,0,0,0.12),
-    0 16px 16px rgba(0,0,0,0.12);
+    box-shadow: 0 1px 1px var(--shadowColor), 
+              0 2px 2px var(--shadowColor), 
+              0 4px 4px var(--shadowColor), 
+              0 8px 8px var(--shadowColor),
+              0 16px 16px var(--shadowColor);
+    -webkit-box-shadow: var(--shadowColor) 0 1px 1px, 
+    var(--shadowColor) 0 2px 2px, 
+    var(--shadowColor) 0 4px 4px, 
+    var(--shadowColor) 0 8px 8px,
+    var(--shadowColor) 0 16px 16px;
+    -moz-box-shadow: 0 1px 1px var(--shadowColor), 
+    0 2px 2px var(--shadowColor), 
+    0 4px 4px var(--shadowColor), 
+    0 8px 8px var(--shadowColor),
+    0 16px 16px var(--shadowColor);
     /* display: none; */
     /* left: 61%; */
     transform: translate(-50%);
@@ -181,7 +181,7 @@ To Offset the anchor link to clear fixed header
 #tocContent {
     /* border: var(--mainColor_focused) solid 1px; */
     /* width: 16%; */
-    height: 50%;
+    /* height: 50%; */
     /* margin: 0 0 0 3%; */
     position: fixed;
     top: 50%;
@@ -192,6 +192,7 @@ To Offset the anchor link to clear fixed header
     overflow-x: hidden;
     overflow-y: auto;
     font-family:var(--fontFamily_title);
+    z-index: 100;
 }
 /* Credit: https://stackoverflow.com/questions/3874602/elements-to-look-like-a-bullet-point-list-inside-an-anchor-link */
 .toc-bullet {
@@ -256,12 +257,15 @@ a.toc-active::before {
 /* Progress */
 #progress {
     position: fixed;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     /* width: 16%; */
     height: 1.5em;
     /* margin: 0 0 0 3%; */
     color: var(--fontInfoColor);
-    top: 75%;
+    /* top: 75%; */
     font-size: 0.8em;
+    z-index: 101;
 }
 
 
