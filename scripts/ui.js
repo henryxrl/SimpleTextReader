@@ -15,6 +15,7 @@ var footnote_proccessed_counter = 0;
 // Credit https://stackoverflow.com/questions/7110353/html5-dragleave-fired-when-hovering-a-child-element
 var dragCounter = 0;
 var historyLineNumber = 0;
+var storePrevWindowWidth = window.innerWidth;
 
 document.title = eval("style.ui_title_" + style.ui_LANG);
 var dropZone = document.getElementById('dropZone');
@@ -31,6 +32,7 @@ const loadingScreen = document.getElementById('loading');
 const dropZoneText = document.getElementById("dropZoneText");
 const dropZoneImg = document.getElementById("dropZoneImg");
 const contentContainer = document.getElementById("content");
+const tocWrapper = document.getElementById("tocWrapper");
 const tocContainer = document.getElementById("tocContent");
 const paginationContainer = document.getElementById("pagination");
 const progressContainer = document.getElementById("progress");
@@ -47,9 +49,13 @@ let emInPx = getSizePrecise('1em', parent=contentContainer);
 
 
 // Event listeners
-// window.addEventListener('resize', function(event) {
-//     setMainContentUI_onRatio();
-// });
+window.addEventListener('resize', function(event) {
+    // setMainContentUI_onRatio();
+
+    let isIncreasing = (window.innerWidth < storePrevWindowWidth) ? false : true;
+    storePrevWindowWidth = window.innerWidth;
+    updateTOCUI(isIncreasing);
+});
 
 // window.addEventListener('dblclick', function(event) {
 //     setTOC_onRatio();
@@ -197,6 +203,7 @@ function handleSelectedFile(fileList) {
             }
             // console.log(allTitles);
             tocContainer.innerHTML = processTOC();
+            // setMainContentUI();
 
             // Get book name and author
             filename = fileList[0].name;
@@ -212,6 +219,7 @@ function handleSelectedFile(fileList) {
             showCurrentPageContent();
             window.scrollBy(0, 1);  // scroll 1 pixel so that if the first line is a header, it will show up in TOC
             generatePagination();
+            updateTOCUI(false);
 
             // Retrieve reading history if exists
             // removeAllHistory();    // for debugging
@@ -284,7 +292,7 @@ function generatePagination() {
     const paginationList = document.createElement("div");
     paginationList.classList.add("pagination");
 
-    const showPages = getPageList(totalPages, currentPage, style.ui_numPaginationItems);
+    const showPages = getPageList(totalPages, currentPage, parseInt(style.ui_numPaginationItems));
     // console.log("showPages: " + showPages + "; currentPage: " + currentPage);
     for (var i = 1; i <= showPages.length; i++) {
         // Add a prev page button
@@ -330,7 +338,6 @@ function processTOC() {
     // for each title in allTitles, create a link
     var toc = "";
     for (var i in allTitles) {
-        // toc += "<a href='#" + allTitles[i][1] + "'>" + allTitles[i][0] + "</a><br>";
         toc += "<a id='a" + allTitles[i][1] + "_bull' href='#line" + allTitles[i][1] + "' onclick='gotoLine(" + allTitles[i][1] + ")' class='prevent-select toc-bullet'></a><a id='a" + allTitles[i][1] + "' href='#line" + allTitles[i][1] + "' onclick='gotoLine(" + allTitles[i][1] + ")' class='prevent-select toc-text'>" + allTitles[i][0] + "</a><br/>";
     }
     return toc;
@@ -467,7 +474,7 @@ function GetScrollPositions() {
 
     let readingProgressText = eval("style.ui_readingProgress_" + style.ui_LANG);
     readingProgressText = style.ui_LANG === "CN" ? readingProgressText : readingProgressText.replace("：", ":");
-    progressContainer.innerHTML = readingProgressText + " " + (curLineNumber / fileContentChunks.length * 100).toFixed(1) + "%";
+    progressContainer.innerHTML = "<span style='text-decoration:underline'>" + bookAndAuthor.bookName + "</span><br/>" + readingProgressText + " " + (curLineNumber / fileContentChunks.length * 100).toFixed(1) + "%";
 
     gotoTitle_Clicked = false;
 }

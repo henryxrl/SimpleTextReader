@@ -69,8 +69,8 @@ To Offset the anchor link to clear fixed header
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -25%);
-    -webkit-transform: translate(-50%, -25%);
+    transform: translate(-50%, 20%);
+    -webkit-transform: translate(-50%, 20%);
     margin: auto;
     font-size: 5em;
 }
@@ -80,11 +80,11 @@ To Offset the anchor link to clear fixed header
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -100%);
-    -webkit-transform: translate(-50%, -100%);
+    transform: translate(-50%, -70%);
+    -webkit-transform: translate(-50%, -70%);
     margin: auto;
-    width: 15em;
-    height: 15em;
+    width: 13em;
+    height: 13em;
     /* convert to var(--mainColor_focused) */
     /* filter: var(--mainColor_focused_filter); */
     /* convert to var(--mainColor) */
@@ -178,6 +178,11 @@ To Offset the anchor link to clear fixed header
 
 
 /* TOC */
+#tocWrapper {
+    position: relative;
+    /* width: 16%; */
+    /* height: 50%; */
+}
 #tocContent {
     /* border: var(--mainColor_focused) solid 1px; */
     /* width: 16%; */
@@ -260,7 +265,8 @@ a.toc-active::before {
     white-space: nowrap;
     text-overflow: ellipsis;
     /* width: 16%; */
-    height: 1.5em;
+    height: 3.6em;
+    line-height: 2em;
     /* margin: 0 0 0 3%; */
     color: var(--fontInfoColor);
     /* top: 75%; */

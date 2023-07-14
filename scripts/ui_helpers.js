@@ -9,19 +9,49 @@ function setMainContentUI() {
     contentContainer.style.marginRight = '0px';
     contentContainer.style.marginBottom = '0px';
     contentContainer.style.marginLeft = style.ui_contentMarginLeft + '%';
+    tocWrapper.style.width = style.ui_tocWidth + '%';
+    tocWrapper.style.height = style.ui_tocHeight + '%';
+    tocWrapper.style.marginTop = '0px';
+    tocWrapper.style.marginRight = '0px';
+    tocWrapper.style.marginBottom = '0px';
+    tocWrapper.style.marginLeft = style.ui_windowLeftRightMargin + '%';
     tocContainer.style.width = style.ui_tocWidth + '%';
-    tocContainer.style.height = style.ui_tocHeight + '%';
-    tocContainer.style.marginTop = '0px';
-    tocContainer.style.marginRight = '0px';
-    tocContainer.style.marginBottom = '0px';
-    tocContainer.style.marginLeft = style.ui_windowLeftRightMargin + '%';
+    tocContainer.style.height = 'auto';
     paginationContainer.style.left = style.ui_paginationCenter + '%';
     progressContainer.style.width = style.ui_tocWidth + '%';
-    progressContainer.style.marginTop = '3em';
+    progressContainer.style.marginTop = '2.5em';
     progressContainer.style.marginRight = '0';
-    progressContainer.style.marginBottom = '3em';
+    progressContainer.style.marginBottom = '2.5em';
     progressContainer.style.marginLeft = style.ui_windowLeftRightMargin + '%';
     progressContainer.style.top = '75%';
+}
+
+function updateTOCUI(isIncreasing) {
+    tocWrapper.style.height = style.ui_tocHeight + '%';
+    tocContainer.style.height = 'auto';
+    if (tocContainer.scrollHeight > (window.innerHeight * 0.5)) {
+        tocContainer.style.height = '50%';
+    }
+
+    // console.log("width: ", paginationContainer.offsetWidth, "contentContainer.innerWidth * 0.6: ", (contentContainer.offsetWidth * 0.6), "contentContainer.innerWidth * 0.4: ", (contentContainer.offsetWidth * 0.4));
+    if (!isIncreasing) {
+        console.log(1);
+        console.log(((paginationContainer.offsetWidth), (contentContainer.offsetWidth * 0.5)), (parseInt(style.ui_numPaginationItems)));
+        if (((paginationContainer.offsetWidth) > (contentContainer.offsetWidth * 0.5)) && (parseInt(style.ui_numPaginationItems) > 5)) {
+            console.log(2);
+            style.ui_numPaginationItems = (parseInt(style.ui_numPaginationItems) - 2).toString();
+            style.ui_numPaginationItems = (Math.max(parseInt(style.ui_numPaginationItems), 5)).toString();
+            generatePagination();
+        }
+    } else {
+        console.log(3);
+        if (((paginationContainer.offsetWidth + 2*(paginationContainer.offsetWidth / (parseInt(style.ui_numPaginationItems) + 2))) < (contentContainer.offsetWidth * 0.5)) && (parseInt(style.ui_numPaginationItems) < 9)) {
+            console.log(4);
+            style.ui_numPaginationItems = (parseInt(style.ui_numPaginationItems) + 2).toString();
+            style.ui_numPaginationItems = (Math.min(parseInt(style.ui_numPaginationItems), 9)).toString();
+            generatePagination();
+        }
+    }
 }
 
 function setMainContentUI_onRatio() {
@@ -170,6 +200,7 @@ function resetVars() {
     footnote_proccessed_counter = 0;
     dragCounter = 0;
     historyLineNumber = 0;
+    storePrevWindowWidth = window.innerWidth;
 
     document.title = eval("style.ui_title_" + style.ui_LANG);
     contentContainer.innerHTML = "";
