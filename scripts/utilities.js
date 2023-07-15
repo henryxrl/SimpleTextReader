@@ -91,7 +91,7 @@ function getSize(size='1em', parent=document.body) {
     parent.appendChild(l)
     size = l.clientHeight
     l.remove()
-    return size
+    return size;
 }
 
 function getSizePrecise(size='1em', parent=document.body) {
@@ -112,5 +112,20 @@ function getSizePrecise(size='1em', parent=document.body) {
         t = l.clientHeight
     } while(t !== s * 10)
     l.remove()
-    return t / i
+    return t / i;
+}
+
+function randomIntFromInterval(min, max) {
+    return (Math.random() * (max - min) + min).toFixed(2);
+}
+
+function getStampWidth() {
+    // image has been preloaded
+    let img = new Image();
+    img.src = document.getElementById(("stamp_" + style.ui_LANG)).href;
+    return img.naturalWidth;
+}
+
+function getStampScaledWidth() {
+    return (getStampWidth() * parseFloat(eval("style.stamp_width_" + style.ui_LANG)) / 100).toFixed(2);
 }

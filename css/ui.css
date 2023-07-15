@@ -42,8 +42,8 @@ To Offset the anchor link to clear fixed header
 :target:before {
     content: "";
     display: block;
-    height: 1.6em;
-    margin: -1.6em 0 0;
+    height: var(--ui_anchorTargetBefore);
+    margin: calc(-1*var(--ui_anchorTargetBefore)) 0 0;
 }
 
 
@@ -279,8 +279,27 @@ a.toc-active::before {
 img.footnote_img {
     width: 12px;
     height: 12px;
+    vertical-align: super;
 }
 ol#footnote-content {
     visibility: hidden;
     display: none;
+}
+
+
+/* Stamp */
+div.stamp {
+    /* text-align: center; */
+    margin: 6em 0 6em 0;
+    overflow: hidden;
+}
+img#stamp_EN {
+    /* float: right; */
+    width: var(--stamp_width_EN);
+    position: relative;
+}
+img#stamp_CN {
+    /* float: center; */
+    width: var(--stamp_width_CN);
+    position: relative;
 }

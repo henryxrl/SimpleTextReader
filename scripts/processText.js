@@ -18,7 +18,7 @@ const regex_other_titles = "内容简介|內容簡介|内容介绍|內容介紹|
 const regex_6 = "^(\\s*([【])?(" + regex_other_titles + ")([】])?[:：]?\\s*$)";
 const regex_7 = "^(\\s*([【])?(" + regex_other_titles + ")\\s+.{0,50}?([】])?\\s*$)";
 
-const regex_titles_english = "chapter|appendix|appendices|preface|Foreword|Introduction|Prologue|Epigraph|Table of contents|Epilogue|Afterword|Conclusion|Glossary|Acknowledgments|Bibliography|Index|Errata|Colophon|Copyright";
+const regex_titles_english = "chapter|part|appendix|appendices|preface|Foreword|Introduction|Prologue|Epigraph|Table of contents|Epilogue|Afterword|Conclusion|Glossary|Acknowledgments|Bibliography|Index|Errata|Colophon|Copyright";
 const regex_8 = "^(\\s*(" + regex_titles_english + ")\\s*$)";
 const regex_9 = "^(\\s*(" + regex_titles_english + ")\\s+.{0,50}?$)";
 
@@ -66,30 +66,46 @@ function process_batch(str) {
 }
 
 function process(str, lineNumber, to_drop_cap) {
-    let current = optimization(str.trim());
-    if (current !== '') {
-        if (regex.test(current)) {
-            current = `<h2 id="line${lineNumber}"><a href='#line${lineNumber}' onclick='gotoLine(${lineNumber})' class='prevent-select title'>${current.replace(":", "").replace("：", "")}</a></h2>`;
-            return [current, 'h'];
+    if (lineNumber < titlePageLineNumberOffset) {
+        current = str.trim();
+        if (current.slice(1, 3) === "h1") {
+            let wrapper= document.createElement('div');
+            wrapper.innerHTML= current;
+            let tempElement = wrapper.firstChild;
+            tempElement.innerHTML = `<a href='#line${lineNumber}' onclick='gotoLine(${lineNumber})' class='prevent-select title'>${tempElement.innerHTML}</a>`;
+            current = tempElement.outerHTML;
+            return [current, 't'];
         } else {
-            if (to_drop_cap && !isEasternLan) {
-                isPunctuation = regex_isPunctuation.test(current[0]);
-                if (isPunctuation) {
-                    index = 0
-                    while (regex_isPunctuation.test(current[index])) {
-                        index++;
-                    }
-                    current = `<p id="line${lineNumber}" class="first"><span class="dropCap">${current.slice(0, index+1)}</span>${current.slice(index+1)}</p>`;
-                } else {
-                    current = `<p id="line${lineNumber}" class="first"><span class="dropCap">${current[0]}</span>${current.slice(1)}</p>`;
-                }
-            } else {
-                current = `<p id="line${lineNumber}">${current}</p>`;
-            }
-            return [current, 'p'];
+            // do nothing
+            return [current, 't'];
         }
+        return [current, 't'];
     } else {
-        return [current, 'e'];
+        let current = optimization(str.trim());
+        if (current !== '') {
+            if (regex.test(current)) {
+                current = `<h2 id="line${lineNumber}"><a href='#line${lineNumber}' onclick='gotoLine(${lineNumber})' class='prevent-select title'>${current.replace(":", "").replace("：", "")}</a></h2>`;
+                return [current, 'h'];
+            } else {
+                if (to_drop_cap && !isEasternLan) {
+                    isPunctuation = regex_isPunctuation.test(current[0]);
+                    if (isPunctuation) {
+                        index = 0
+                        while (regex_isPunctuation.test(current[index])) {
+                            index++;
+                        }
+                        current = `<p id="line${lineNumber}" class="first"><span class="dropCap">${current.slice(0, index+1)}</span>${current.slice(index+1)}</p>`;
+                    } else {
+                        current = `<p id="line${lineNumber}" class="first"><span class="dropCap">${current[0]}</span>${current.slice(1)}</p>`;
+                    }
+                } else {
+                    current = `<p id="line${lineNumber}">${current}</p>`;
+                }
+                return [current, 'p'];
+            }
+        } else {
+            return [current, 'e'];
+        }
     }
 }
 
@@ -122,7 +138,8 @@ function getBookNameAndAuthor(str) {
             // Treat file name as book name and application name as author
             return {
                 "bookName": current,
-                "author": style.ui_title_CN
+                // "author": style.ui_title_CN
+                "author": ""
             };
         }
     } else {
@@ -137,7 +154,8 @@ function getBookNameAndAuthor(str) {
             // Treat file name as book name and application name as author
             return {
                 "bookName": current,
-                "author": style.ui_title_EN
+                // "author": style.ui_title_EN
+                "author": ""
             };
         }
     }
@@ -199,7 +217,7 @@ function makeFootNote(str) {
                 // console.log("footnote.length: " + footnotes.length);
                 // console.log("Found footnote: " + allMatches[i]);
                 let curIndex = current.indexOf(allMatches[i]);
-                current = current.slice(0, curIndex) + '<a rel="footnote" href="#fn' + footnotes.length + '"><img class="footnote_img" src="images/note.png"/></a>' + current.slice(curIndex + 1);
+                current = current.slice(0, curIndex) + '<a rel="footnote" href="#fn' + footnotes.length + '"><img class="footnote_img" src="images/note_' + style.ui_LANG + '.png"/></a>' + current.slice(curIndex + 1);
                 footnotes.push(allMatches[i]);
             }
         }

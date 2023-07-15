@@ -16,6 +16,7 @@ var footnote_proccessed_counter = 0;
 var dragCounter = 0;
 var historyLineNumber = 0;
 var storePrevWindowWidth = window.innerWidth;
+var titlePageLineNumberOffset = 0;
 
 document.title = eval("style.ui_title_" + style.ui_LANG);
 var dropZone = document.getElementById('dropZone');
@@ -188,13 +189,21 @@ function handleSelectedFile(fileList) {
             style.fontFamily_title = eval("style.fontFamily_title_" + style.ui_LANG);
             style.fontFamily_body = eval("style.fontFamily_body_" + style.ui_LANG);
 
+            // Get book name and author
+            filename = fileList[0].name;
+            bookAndAuthor = getBookNameAndAuthor(filename.replace(/(.txt)$/i, ''));
+            console.log("BookName: " + bookAndAuthor.bookName);
+            console.log("Author: " + bookAndAuthor.author);
+
             // Get all titles and process all footnotes
+            allTitles.push([((style.ui_LANG === "EN") ? "TITLE PAGE" : "扉页"), 0]);
+            titlePageLineNumberOffset = (bookAndAuthor.author !== "") ? 3 : 2;
             for (var i in fileContentChunks) {
                 if (fileContentChunks[i].trim() !== '') {
                     // get all titles
                     tempTitle = getTitle(fileContentChunks[i]);
                     if (tempTitle !== "") {
-                        allTitles.push([tempTitle, parseInt(i)]);
+                        allTitles.push([tempTitle, (parseInt(i) + titlePageLineNumberOffset)]);
                     }
 
                     // process all footnotes
@@ -205,11 +214,15 @@ function handleSelectedFile(fileList) {
             tocContainer.innerHTML = processTOC();
             // setMainContentUI();
 
-            // Get book name and author
-            filename = fileList[0].name;
-            bookAndAuthor = getBookNameAndAuthor(filename.replace(/(.txt)$/i, ''));
-            console.log("BookName: " + bookAndAuthor.bookName);
-            console.log("Author: " + bookAndAuthor.author);
+            // Add title page
+            let stampRotation = (style.ui_LANG === "EN") ? "transform:rotate(" + randomIntFromInterval(-50, 80) + "deg)" : "";
+            fileContentChunks.unshift("<div id=line" + (titlePageLineNumberOffset - 1) + " class='prevent-select stamp'><img id='stamp_" + style.ui_LANG + "' src='images/stamp_" + style.ui_LANG + ".png' style='left:max(calc(" + randomIntFromInterval(0, 100) + "% - " + (getStampScaledWidth()*2) + "px), 0%);" + stampRotation + "'/></div>");
+            if (bookAndAuthor.author !== "") {
+                fileContentChunks.unshift("<h1 id=line1 style='margin-top:0; margin-bottom:" + (parseFloat(style.h1_lineHeight)/2) + "em'>" + bookAndAuthor.author + "</h1>");
+                fileContentChunks.unshift("<h1 id=line0 style='margin-bottom:0'>" + bookAndAuthor.bookName + "</h1>");
+            } else {
+                fileContentChunks.unshift("<h1 id=line0 style='margin-bottom:" + (parseFloat(style.h1_lineHeight)/2) + "em'>" + bookAndAuthor.bookName + "</h1>");
+            }
 
             // Update the title of webpage
             document.title = bookAndAuthor.bookName;
@@ -402,7 +415,9 @@ function gotoLine(lineNumber, isTitle=true) {
     let needToGoPage = lineNumber % itemsPerPage === 0 ? (lineNumber / itemsPerPage + 1) : (Math.ceil(lineNumber / itemsPerPage));
     needToGoPage = needToGoPage > totalPages ? totalPages : (needToGoPage < 1 ? 1 : needToGoPage);
     // console.log("needToGoPage: " + needToGoPage);
-    gotoPage(needToGoPage, false);
+    if (needToGoPage !== currentPage) {
+        gotoPage(needToGoPage, false);
+    }
 
     if (isTitle) {
         // Set the current title in the TOC as active
@@ -504,6 +519,11 @@ function setTitleActive(titleID) {
         // Move the selected title to the center of the TOC
         if (!isInContainerViewport(tocContainer, selectedTitle, tocContainer.clientHeight / 10)) {
             tocContainer.scrollTo(0, selectedTitle.offsetTop - tocContainer.clientHeight / 2, {behavior: 'smooth'});
+        }
+        // Set the selected title's :target:before css style
+        let selectedLine = document.getElementById("line" + titleID);
+        if (selectedLine && (selectedLine.tagName[0] === "H")) {
+            style.ui_anchorTargetBefore = eval("style.h" + selectedLine.tagName[1] + "_margin");
         }
     } catch (error) {
         console.log("Error: No title with ID " + titleID + " found.");

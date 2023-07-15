@@ -2,17 +2,20 @@
 @font-face {
 	font-family:"方正时光刻宋_GBK";
 	src:local("方正时光刻宋_GBK"),
-	url(../fonts/FZShiGKSK.TTF);
+    url(../fonts/FZShiGKSK.woff) format('woff');
+    font-display: swap;
 }
 @font-face {
 	font-family:"方正宋刻本秀楷_GBK";
 	src:local("方正宋刻本秀楷_GBK"),
-	url(../fonts/FZSKBXKK.TTF);
+	url(../fonts/FZSKBXKK.woff2) format('woff2');
+    font-display: swap;
 }
 @font-face {
 	font-family:"LXGW WenKai";
 	src:local("LXGW WenKai"),
-	url(../fonts/LXGWWenKai-Regular.ttf);
+	url(../fonts/LXGWWenKai-Regular.woff2) format('woff2');
+    font-display: swap;
 }
 
 
@@ -34,6 +37,25 @@
     --ui_tocWidth: 0;
     --ui_tocHeight: 50;
     --ui_paginationCenter: 0;
+    --ui_anchorTargetBefore: 1.6em;
+
+    /* Passage variables */
+    --p_lineHeight: 1.5em;
+    --p_fontSize: 1.4em;
+    --h1_lineHeight: 1.6em;
+    --h1_margin: 2.5em;
+    --h2_lineHeight: 1.6em;
+    --h2_margin: 1.6em;
+    --h3_lineHeight: 1.6em;
+    --h3_margin: 1.6em;
+    --h4_lineHeight: 1.6em;
+    --h4_margin: 1.6em;
+    --h5_lineHeight: 1.6em;
+    --h5_margin: 1.6em;
+    --h6_lineHeight: 1.6em;
+    --h6_margin: 1.6em;
+    --stamp_width_CN: 25%;
+    --stamp_width_EN: 25%;
 
     /* Color variables */
     --mainColor: #6096bb;

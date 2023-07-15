@@ -33,20 +33,14 @@ function updateTOCUI(isIncreasing) {
         tocContainer.style.height = '50%';
     }
 
-    // console.log("width: ", paginationContainer.offsetWidth, "contentContainer.innerWidth * 0.6: ", (contentContainer.offsetWidth * 0.6), "contentContainer.innerWidth * 0.4: ", (contentContainer.offsetWidth * 0.4));
     if (!isIncreasing) {
-        console.log(1);
-        console.log(((paginationContainer.offsetWidth), (contentContainer.offsetWidth * 0.5)), (parseInt(style.ui_numPaginationItems)));
         if (((paginationContainer.offsetWidth) > (contentContainer.offsetWidth * 0.5)) && (parseInt(style.ui_numPaginationItems) > 5)) {
-            console.log(2);
             style.ui_numPaginationItems = (parseInt(style.ui_numPaginationItems) - 2).toString();
             style.ui_numPaginationItems = (Math.max(parseInt(style.ui_numPaginationItems), 5)).toString();
             generatePagination();
         }
     } else {
-        console.log(3);
         if (((paginationContainer.offsetWidth + 2*(paginationContainer.offsetWidth / (parseInt(style.ui_numPaginationItems) + 2))) < (contentContainer.offsetWidth * 0.5)) && (parseInt(style.ui_numPaginationItems) < 9)) {
-            console.log(4);
             style.ui_numPaginationItems = (parseInt(style.ui_numPaginationItems) + 2).toString();
             style.ui_numPaginationItems = (Math.min(parseInt(style.ui_numPaginationItems), 9)).toString();
             generatePagination();
@@ -201,6 +195,7 @@ function resetVars() {
     dragCounter = 0;
     historyLineNumber = 0;
     storePrevWindowWidth = window.innerWidth;
+    titlePageLineNumberOffset = 0;
 
     document.title = eval("style.ui_title_" + style.ui_LANG);
     contentContainer.innerHTML = "";
