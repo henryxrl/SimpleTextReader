@@ -19,7 +19,7 @@
 @font-face {
     font-family:"body";
     src:local("方正宋刻本秀楷_GBK"), local("FZSongKeBenXiuKai-R-GBK"),
-    url(../fonts/qiji-combo.woff) format('woff');
+    url(../fonts/FZSKBXKK.woff2) format('woff2');
     font-display: swap;
 }
 /* @font-face {
