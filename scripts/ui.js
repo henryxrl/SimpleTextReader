@@ -215,8 +215,8 @@ function handleSelectedFile(fileList) {
             // setMainContentUI();
 
             // Add title page
-            let stampRotation = (style.ui_LANG === "EN") ? "transform:rotate(" + randomIntFromInterval(-50, 80) + "deg)" : "";
-            fileContentChunks.unshift("<div id=line" + (titlePageLineNumberOffset - 1) + " class='prevent-select stamp'><img id='stamp_" + style.ui_LANG + "' src='images/stamp_" + style.ui_LANG + ".png' style='left:max(calc(" + randomIntFromInterval(0, 100) + "% - " + (getStampScaledWidth()*2) + "px), 0%);" + stampRotation + "'/></div>");
+            let stampRotation = (style.ui_LANG === "EN") ? "transform:rotate(" + randomFloatStringFromInterval(-50, 80) + "deg)" : "";
+            fileContentChunks.unshift("<div id=line" + (titlePageLineNumberOffset - 1) + " class='prevent-select stamp'><img id='stamp_" + style.ui_LANG + "' src='images/stamp_" + style.ui_LANG + ".png' style='left:max(calc(" + randomFloatStringFromInterval(0, 100) + "% - " + (getStampScaledWidthString() * 2) + "px), 0%);" + stampRotation + "'/></div>");
             if (bookAndAuthor.author !== "") {
                 fileContentChunks.unshift("<h1 id=line1 style='margin-top:0; margin-bottom:" + (parseFloat(style.h1_lineHeight)/2) + "em'>" + bookAndAuthor.author + "</h1>");
                 fileContentChunks.unshift("<h1 id=line0 style='margin-bottom:0'>" + bookAndAuthor.bookName + "</h1>");

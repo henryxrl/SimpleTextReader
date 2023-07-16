@@ -115,7 +115,7 @@ function getSizePrecise(size='1em', parent=document.body) {
     return t / i;
 }
 
-function randomIntFromInterval(min, max) {
+function randomFloatStringFromInterval(min, max) {
     return (Math.random() * (max - min) + min).toFixed(2);
 }
 
@@ -126,6 +126,6 @@ function getStampWidth() {
     return img.naturalWidth;
 }
 
-function getStampScaledWidth() {
+function getStampScaledWidthString() {
     return (getStampWidth() * parseFloat(eval("style.stamp_width_" + style.ui_LANG)) / 100).toFixed(2);
 }
