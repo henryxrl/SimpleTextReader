@@ -1,8 +1,8 @@
 @charset "UTF-8";
 @font-face {
-	font-family:"方正时光刻宋_GBK";
-	src:local("方正时光刻宋_GBK"),
-    url(../fonts/FZShiGKSK.woff) format('woff');
+	font-family:"康熙字典體傳承版";
+	src:local("康熙字典體傳承版"),
+    url(../fonts/KX_47043_14.woff) format('woff');
     font-display: swap;
 }
 @font-face {
@@ -76,7 +76,7 @@
 	--fontFamily_title: var(--fontFamily_title_CN);
 	--fontFamily_body: var(--fontFamily_body_CN);
 
-    --fontFamily_title_CN: 方正时光刻宋_GBK, LXGW WenKai;
+    --fontFamily_title_CN: 康熙字典體傳承版, LXGW WenKai;
     --fontFamily_body_CN: 方正宋刻本秀楷_GBK, LXGW WenKai;
 	--fontFamily_title_EN: LXGW WenKai;
     --fontFamily_body_EN: LXGW WenKai;
