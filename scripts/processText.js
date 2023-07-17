@@ -1,7 +1,7 @@
 // const regex_number = "——\\-——一二两三四五六七八九十○零百千壹贰叁肆伍陆柒捌玖拾佰仟0-9０-９";
 const regex_number = "一二两三四五六七八九十○零百千壹贰叁肆伍陆柒捌玖拾佰仟0-9０-９";
 const regex_titles_chinese_pre_1 = "[第序终終卷【]\\s*([";
-const regex_titles_chinese_post_1 = "\\s/\\、、]*)\\s*[章节節回集卷部篇】]";
+const regex_titles_chinese_post_1 = "\\s/\\、、]*)\\s*[章节節回集卷部篇季】]";
 const regex_titles_chinese_1 = regex_titles_chinese_pre_1 + regex_number + regex_titles_chinese_post_1;
 const regex_0 = "^(\\s*([【])(正文\\s*)?[" + regex_number.slice(0, -6) + "]*([】])\\s*$)";
 const regex_1 = "^(\\s*(正文\\s*)?[" + regex_number.slice(0, -6) + "]*\\s*$)";
@@ -79,7 +79,6 @@ function process(str, lineNumber, to_drop_cap) {
             // do nothing
             return [current, 't'];
         }
-        return [current, 't'];
     } else {
         let current = optimization(str.trim());
         if (current !== '') {
@@ -163,40 +162,52 @@ function getBookNameAndAuthor(str) {
 
 function optimization(str) {
     let current = str.trim();
+    const reg_symbols = new RegExp("[※★☆◎━┏┓┗┛]+", "g");
+    current = current.replace(reg_symbols, "").trim();
 
     // Remove 知轩藏书 specific elements
-    current = current.replace("更多精校小说尽在知轩藏书下载：http://www.zxcs.me/", "").replace("更多精校小说尽在知轩藏书下载：http://www.zxcs.info/", "");;
-    let reg_zscs_dash = new RegExp("^(\\s*[=]+\\s*$)", 'i');
-    let reg_zscs_bookname = new RegExp("^(\\s*((书名)?\\s*[：:]?\\s*[《「『﹁﹃]?" + bookAndAuthor.bookName + "[》」』﹂﹄]?)\\s*$)", 'i');
-    let reg_zscs_author = new RegExp("^(\\s*((作者)?\\s*[：:]?\\s*" + bookAndAuthor.author + ")\\s*$)", 'i');
-    let reg_zscs_bookname_author1 = new RegExp("^(\\s*((书名)?\\s*[：:]?\\s*[《「『﹁﹃]?" + bookAndAuthor.bookName + "[》」』﹂﹄]?)\\s*((作者)?\\s*[：:]?\\s*" + bookAndAuthor.author + ")\\s*$)", 'i');
-    let reg_zscs_bookname_author2 = new RegExp("^(\\s*((书名)?\\s*[：:]?\\s*[《「『﹁﹃]?" + bookAndAuthor.bookName + "[》」』﹂﹄]?)\\s*([\\(（)]?)(文字精校版)([)）]?)\\s*((作者)?\\s*[：:]?\\s*" + bookAndAuthor.author + ")\\s*$)", 'i');
-    let reg_zscs_author_bookname = new RegExp("^(\\s*((作者)?\\s*[：:]?\\s*" + bookAndAuthor.author + ")\\s*((书名)?\\s*[：:]?\\s*[《「『﹁﹃]?" + bookAndAuthor.bookName + "[》」』﹂﹄]?)\\s*$)", 'i');
-    current = current.replace(reg_zscs_dash, "").replace(reg_zscs_bookname, "").replace(reg_zscs_author, "").replace(reg_zscs_bookname_author1, "").replace(reg_zscs_bookname_author2, "").replace(reg_zscs_author_bookname, "");
+    const reg_zscs_dash = "^(\\s*[=]+\\s*$)";
+    const reg_zscs_download = "^(\\s*(更多精校小说尽在知轩藏书下载)\\s*[：:]?\\s*((http([:：])//)?www.zxcs.(me|info)([/]?))$)";
+    const reg_zscs_bookname = "^(\\s*((书名)?\\s*[：:]?\\s*[《「『﹁﹃]?" + bookAndAuthor.bookName + "[》」』﹂﹄]?)\\s*$)";
+    const reg_zscs_author = "^(\\s*((作者)?\\s*[：:]?\\s*" + bookAndAuthor.author + ")\\s*$)";
+    const reg_zscs_bookname_author1 = "^(\\s*((书名)?\\s*[：:]?\\s*[《「『﹁﹃]?" + bookAndAuthor.bookName + "[》」』﹂﹄]?)\\s*((作者)?\\s*[：:]?\\s*" + bookAndAuthor.author + ")\\s*$)";
+    const reg_zscs_bookname_author2 = "^(\\s*((书名)?\\s*[：:]?\\s*[《「『﹁﹃]?" + bookAndAuthor.bookName + "[》」』﹂﹄]?)\\s*([\\(（)]?)(文字精校版)([)）]?)\\s*((作者)?\\s*[：:]?\\s*" + bookAndAuthor.author + ")\\s*$)";
+    const reg_zscs_author_bookname = "^(\\s*((作者)?\\s*[：:]?\\s*" + bookAndAuthor.author + ")\\s*((书名)?\\s*[：:]?\\s*[《「『﹁﹃]?" + bookAndAuthor.bookName + "[》」』﹂﹄]?)\\s*$)";
+    const reg_zscs = new RegExp(reg_zscs_dash + "|" + reg_zscs_download + "|" + reg_zscs_bookname + "|" + reg_zscs_author + "|" + reg_zscs_bookname_author1 + "|" + reg_zscs_bookname_author2 + "|" + reg_zscs_author_bookname, "i");
+    current = current.replace(reg_zscs, "").trim();
 
     // Remove 塞班 specific elements
-    current = current.replace("☆★版权归原作者所有，请勿用于商业用途★☆", "").replace("★☆版权归原作者所有，本人购买文本并精心制作，转载请注明出处。☆★", "").replace("☆★请勿用于商业用途，如有违反，发生问题，后果自负，与本人无关★☆", "").replace("☆塞班智能手机论坛真诚欢迎新老会员☆", "").replace("☆请勿用于商业行为，一切后果自负☆", "").replace("本电子书由塞班智能手机论坛·船说整理制作，仅供试阅。", "").replace("仅供试阅，转载请注明，同时请支持正版，版权属于原作者，", "").replace("请勿用于商业传播，谢谢~☆", "");
-    let reg_sb_bookname_author = new RegExp("^(\\s*(\\[)?" + bookAndAuthor.bookName + "\\s*(\\/)?\\s*" + bookAndAuthor.author + "\\s*(著)?\\s*(\\])?\\s*$)", 'i');
-    let reg_sb_dash = new RegExp("^(\\s*[-※★☆]+\\s*$)", 'i');
-    let reg_sb_made1 = new RegExp("^(\\s*(★☆本电子书由)\\s*(.{0,50}?)\\s*(整理制作☆★)$)", 'i');
-    let reg_sb_made2 = new RegExp("^(\\s*(本书由)\\s*(.{0,50}?)\\s*(整理制作)$)", 'i');
-    let reg_sb_forum = new RegExp("^(\\s*(☆★塞班智能手机论坛)\\s*([:：]?)\\s*(http://bbs.dospy.com★☆)$)", 'i');
-    let reg_sb_forum_made1 = new RegExp("^(\\s*(☆★塞班智能手机论坛)\\s*([:：]?)\\s*(http://bbs.dospy.com)\\s*(.{0,50}?)\\s*(整理制作★☆)$)", 'i');
-    let reg_sb_forum_made2 = new RegExp("^(\\s*(☆本文由塞班电子书组)\\s*(.{0,50}?)\\s*(整理，版权归原作者所有☆)$)", 'i');
-    let reg_sb_forum_made3 = new RegExp("^(\\s*(☆该文本由塞班电子书讨论区“)\\s*(.{0,50}?)\\s*(”连载精校整理。)$)", 'i');
-    let reg_sb_url = new RegExp("^(\\s*(☆http://bbs.dospy.com☆)\\s*)$", 'i');
-    current = current.replace(reg_sb_bookname_author, "").replace(reg_sb_dash, "").replace(reg_sb_made1, "").replace(reg_sb_made2, "").replace(reg_sb_forum, "").replace(reg_sb_forum_made1, "").replace(reg_sb_forum_made2, "").replace(reg_sb_forum_made3, "").replace(reg_sb_url, "");
+    current = current.replace("版权归原作者所有，请勿用于商业用途", "").replace("版权归原作者所有，本人购买文本并精心制作，转载请注明出处。", "").replace("请勿用于商业用途，如有违反，发生问题，后果自负，与本人无关", "").replace("塞班智能手机论坛真诚欢迎新老会员", "").replace("请勿用于商业行为，一切后果自负", "").replace("仅供试阅，转载请注明，同时请支持正版，版权属于原作者，", "").replace("请勿用于商业传播，谢谢~", "").replace("请勿用于商业用途，请勿上传至百度文库。如用后果自负。", "").replace("版权归原作者所有，请勿用于一切商业用途", "").replace("版权归原作者所有，文本仅供试读，请勿用于一切商业用途！", "");
+    const reg_sb_bookname_author = "^(\\s*(\\[)?" + bookAndAuthor.bookName + "\\s*(\\/)?\\s*" + bookAndAuthor.author + "\\s*(著)?\\s*(\\])?\\s*$)";
+    const reg_sb_dash = "^(\\s*[-※★☆◎…━┏┓┗┛]+\\s*$)";
+    const reg_sb_made1 = "^(\\s*(本电子书由)\\s*(.{0,50}?)\\s*(整理制作([.。!！]?))$)";
+    const reg_sb_made2 = "^(\\s*(本书由)\\s*(.{0,50}?)\\s*(整理制作([.。!！]?))$)";
+    const reg_sb_made3 = "^(\\s*(文本由)\\s*(.{0,50}?)\\s*(整理制作([.。!！]?))$)";
+    const reg_sb_made4 = "^(\\s*(本电子书由)\\s*(.{0,50}?)\\s*(精校排版整理制作。转载请注明([.。!！]?))$)";
+    const reg_sb_forum = "^(\\s*(塞班智能手机论坛)\\s*([:：]?)\\s*((http([:：])//)?bbs.dospy.com([.。!！]?))$)";
+    const reg_sb_forum_made1 = "^(\\s*(塞班智能手机论坛)\\s*([:：]?)\\s*((http([:：])//)?bbs.dospy.com)\\s*(.{0,50}?)\\s*(整理制作([.。!！]?))$)";
+    const reg_sb_forum_made2 = "^(\\s*(本文由塞班电子书组)\\s*(.{0,50}?)\\s*(整理，版权归原作者所有([.。!！]?))$)";
+    const reg_sb_forum_made3 = "^(\\s*(本文由塞班电子书组)\\s*(.{0,50}?)\\s*(整理制作，版权归原作者所有([.。!！]?))$)";
+    const reg_sb_forum_made4 = "^(\\s*(该文本由塞班电子书讨论区“)\\s*(.{0,50}?)\\s*(”连载精校整理([.。!！]?))$)";
+    const reg_sb_forum_made5 = "^(\\s*(.{0,50}?)\\s*(搜集整理，版权归原作者。请勿用于商业用途，如用后果自负([.。!！]?))$)";
+    const reg_sb_forum_made6 = "^(本书由塞班论坛(http([:：])//)?bbs.dospy.com(/)?$)";
+    const reg_sb_forum_made7 = "^(\\s*(电子书组)\\s*(.{0,50}?)\\s*(搜集、整理、制作，版权归原作者所有([.。!！]?))$)";
+    const reg_sb_forum_made8 = "^(\\s*(本电子书由塞班智能手机论坛)\\s*(.{0,50}?)\\s*(整理制作，仅供试阅([.。!！]?))$)";
+    const reg_sb_url = "^(\\s*(http://bbs.dospy.com)\\s*)$";
+    const reg_sb = new RegExp(reg_sb_bookname_author + "|" + reg_sb_dash + "|" + reg_sb_made1 + "|" + reg_sb_made2 + "|" + reg_sb_made3 + "|" + reg_sb_made4 + "|" + reg_sb_forum + "|" + reg_sb_forum_made1 + "|" + reg_sb_forum_made2 + "|" + reg_sb_forum_made3 + "|" + reg_sb_forum_made4 + "|" + reg_sb_forum_made5 + "|" + reg_sb_forum_made6 + "|" + reg_sb_forum_made7 + "|" + reg_sb_forum_made8 + "|" + reg_sb_url, "i");
+    current = current.replace(reg_sb, "").trim();
 
     // Remove 99 specific elements
     current = current.replace("久久电子书提醒您", "").replace("爱护眼睛休息会吧", "").replace("多格式免费下载", "");
-    let reg_99_dash = new RegExp("^(\\s*[\\+]+\\s*$)", 'i');
-    let reg_99_ad1 = new RegExp("^(\\s*(\\+)?\\s*(久久电子书提醒您)?\\s*([:：\\s]*)\\s*(爱护眼睛合理休息)?\\s*(\\+)?$)", 'i');
-    let reg_99_ad2 = new RegExp("^(\\s*(\\+)?\\s*(多格式免费电子书)?\\s*([:：\\s]*)\\s*(WwW.99121.CoM)?\\s*(\\+)?$)", 'i');
-    let reg_99_ad3 = new RegExp("^(\\s*(TXT.CHM.UMD.JAR)\\s*$)", 'i');
-    let reg_99_ad4 = new RegExp("^(\\s*(WWW.99121.COM)\\s*$)", 'i');
-    current = current.replace(reg_99_dash, "").replace(reg_99_ad1, "").replace(reg_99_ad2, "").replace(reg_99_ad3, "").replace(reg_99_ad4, "");
+    const reg_99_dash = "^(\\s*[\\+]+\\s*$)";
+    const reg_99_ad1 = "^(\\s*(\\+)?\\s*(久久电子书提醒您)?\\s*([:：\\s]*)\\s*(爱护眼睛合理休息)?\\s*(\\+)?$)";
+    const reg_99_ad2 = "^(\\s*(\\+)?\\s*(多格式免费电子书)?\\s*([:：\\s]*)\\s*(WwW.99121.CoM)?\\s*(\\+)?$)";
+    const reg_99_ad3 = "^(\\s*(TXT.CHM.UMD.JAR)\\s*$)";
+    const reg_99_ad4 = "^(\\s*(WWW.99121.COM)\\s*$)";
+    const reg_99 = new RegExp(reg_99_dash + "|" + reg_99_ad1 + "|" + reg_99_ad2 + "|" + reg_99_ad3 + "|" + reg_99_ad4, "i");
+    current = current.replace(reg_99, "").trim();
 
-    return current;
+    return current.trim();
 }
 
 function makeFootNote(str) {

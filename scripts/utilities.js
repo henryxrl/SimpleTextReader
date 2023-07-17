@@ -115,17 +115,6 @@ function getSizePrecise(size='1em', parent=document.body) {
     return t / i;
 }
 
-function randomFloatStringFromInterval(min, max) {
-    return (Math.random() * (max - min) + min).toFixed(2);
-}
-
-function getStampWidth() {
-    // image has been preloaded
-    let img = new Image();
-    img.src = document.getElementById(("stamp_" + style.ui_LANG)).href;
-    return img.naturalWidth;
-}
-
-function getStampScaledWidthString() {
-    return (getStampWidth() * parseFloat(eval("style.stamp_width_" + style.ui_LANG)) / 100).toFixed(2);
+function randomFloatFromInterval(min, max) {
+    return (Math.random() * (max - min) + min);
 }

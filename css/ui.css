@@ -109,6 +109,7 @@ To Offset the anchor link to clear fixed header
     left: 50%;
     transform: translate(-50%, -50%);
     -webkit-transform: translate(-50%, -50%);
+    filter: var(--mainColor_filter);
 }
 
 
@@ -296,10 +297,12 @@ div.stamp {
 img#stamp_EN {
     /* float: right; */
     width: var(--stamp_width_EN);
+    height: auto;
     position: relative;
 }
 img#stamp_CN {
     /* float: center; */
     width: var(--stamp_width_CN);
+    height: auto;
     position: relative;
 }

@@ -71,8 +71,8 @@
     --h5_margin: 1.6em;
     --h6_lineHeight: 1.6em;
     --h6_margin: 1.6em;
-    --stamp_width_CN: 25%;
-    --stamp_width_EN: 25%;
+    --stamp_width_CN: 250px;
+    --stamp_width_EN: 250px;
 
     /* Color variables */
     --mainColor: #6096bb;
