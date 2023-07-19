@@ -1,10 +1,10 @@
 @charset "UTF-8";
 @font-face {
-	font-family:"ui";
-	src:
+    font-family:"ui";
+    src:
     local("霞鹜文楷"),
     local("LXGW WenKai"),
-	url(../fonts/LXGWWenKai-Regular.woff2) format('woff2');
+    url(../fonts/LXGWWenKai-Regular.woff2) format('woff2');
     font-display: swap;
 }
 @font-face {
@@ -18,20 +18,20 @@
 }
 @font-face {
     font-family:"body";
-    src:local("方正宋刻本秀楷_GBK"), local("FZSongKeBenXiuKai-R-GBK"),
+    src:local("方正宋刻本秀楷_GBK"), local("FZSongKeBenXiuKai-R-GBK"), local("FZSongKeBenXiuKaiJF"),
     url(../fonts/FZSKBXKK.woff2) format('woff2');
     font-display: swap;
 }
 /* @font-face {
-	font-family:"康熙字典體傳承版";
-	src:local("康熙字典體傳承版"),
+    font-family:"康熙字典體傳承版";
+    src:local("康熙字典體傳承版"),
     url(../fonts/KX_47043_14.woff) format('woff');
     font-display: swap;
 } */
 /* @font-face {
-	font-family:"方正宋刻本秀楷_GBK";
-	src:local("方正宋刻本秀楷_GBK"),
-	url(../fonts/FZSKBXKK.woff2) format('woff2');
+    font-family:"方正宋刻本秀楷_GBK";
+    src:local("方正宋刻本秀楷_GBK"),
+    url(../fonts/FZSKBXKK.woff2) format('woff2');
     font-display: swap;
 } */
 
@@ -55,6 +55,9 @@
     --ui_tocHeight: 50;
     --ui_paginationCenter: 0;
     --ui_anchorTargetBefore: 1.6em;
+    --ui_dropZoneImgSize: 13em;
+    --ui_loadingImgSize: 380px;
+    --ui_footnoteImgSize: 12px;
 
     /* Passage variables */
     --p_lineHeight: 1.5em;
@@ -90,12 +93,12 @@
     --fontColor: black;
 
     /* Font variables */
-	--fontFamily_title: var(--fontFamily_title_CN);
-	--fontFamily_body: var(--fontFamily_body_CN);
+    --fontFamily_title: var(--fontFamily_title_CN);
+    --fontFamily_body: var(--fontFamily_body_CN);
 
     --fontFamily_title_CN: title, ui;
     --fontFamily_body_CN: body, ui;
-	--fontFamily_title_EN: ui;
+    --fontFamily_title_EN: ui;
     --fontFamily_body_EN: ui;
-	--fontFamily_ui: ui, Arial, Helvetica, sans-serif;
+    --fontFamily_ui: ui, Arial, Helvetica, sans-serif;
 }

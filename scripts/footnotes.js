@@ -43,15 +43,15 @@ var Footnotes = {
 
         var closeLink;
         if (typeof TouchEvent != "undefined") {
-        	// On a touch device.
-        	closeLink = jQuery(document.createElement('a'));
-        	// closeLink.html("x");
-	        closeLink.attr('id','footnotecloselink');
-	        closeLink.attr('href','#');
-	        closeLink.click(function() {
-	        	jQuery('#footnotediv').remove();
-	        	return false;
-	        });
+            // On a touch device.
+            closeLink = jQuery(document.createElement('a'));
+            // closeLink.html("x");
+            closeLink.attr('id','footnotecloselink');
+            closeLink.attr('href','#');
+            closeLink.click(function() {
+                jQuery('#footnotediv').remove();
+                return false;
+            });
         }
 
         div.html(footnoteContent);
@@ -74,7 +74,7 @@ var Footnotes = {
         });
         jQuery(document.body).append(div);
 
-		var actual_width = div.width();
+        var actual_width = div.width();
         var left = position.left;
         if (left + (margins + actual_width)  > jQuery(window).width() + jQuery(window).scrollLeft()) {
             left = jQuery(window).width() - (margins + actual_width) + jQuery(window).scrollLeft();

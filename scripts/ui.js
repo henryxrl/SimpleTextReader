@@ -18,7 +18,7 @@ var historyLineNumber = 0;
 var storePrevWindowWidth = window.innerWidth;
 var titlePageLineNumberOffset = 0;
 
-document.title = eval("style.ui_title_" + style.ui_LANG);
+document.title = eval(`style.ui_title_${style.ui_LANG}`);
 var dropZone = document.getElementById('dropZone');
 dropZone.addEventListener('dragenter', allowDrag);
 dropZone.addEventListener('dragenter', handleDragEnter, false);
@@ -28,7 +28,7 @@ dropZone.addEventListener("drop", handleDrop, false);
 dropZone.addEventListener("dragleave", handleDragLeave, false);
 dropZone.addEventListener("dblclick", openFileSelector, false);
 const loadingScreen = document.getElementById('loading');
-// loadingScreen.style.visibility = "visible"; // For debugging
+// loadingScreen.style.visibility = "visible"; // For debugging the loading screen
 
 const dropZoneText = document.getElementById("dropZoneText");
 const dropZoneImg = document.getElementById("dropZoneImg");
@@ -178,7 +178,7 @@ function handleSelectedFile(fileList) {
             
             // Detect language
             isEasternLan = getLanguage(fileContentChunks.slice(0, 50).join("\n"));
-            console.log("isEasternLan: " + isEasternLan);
+            console.log("isEasternLan: ", isEasternLan);
             // Change UI language based on detected language
             if (isEasternLan) {
                 style.ui_LANG = "CN";
@@ -186,14 +186,14 @@ function handleSelectedFile(fileList) {
                 style.ui_LANG = "EN";
             }
             // Set fonts based on detected language
-            style.fontFamily_title = eval("style.fontFamily_title_" + style.ui_LANG);
-            style.fontFamily_body = eval("style.fontFamily_body_" + style.ui_LANG);
+            style.fontFamily_title = eval(`style.fontFamily_title_${style.ui_LANG}`);
+            style.fontFamily_body = eval(`style.fontFamily_body_${style.ui_LANG}`);
 
             // Get book name and author
             filename = fileList[0].name;
             bookAndAuthor = getBookNameAndAuthor(filename.replace(/(.txt)$/i, ''));
-            console.log("BookName: " + bookAndAuthor.bookName);
-            console.log("Author: " + bookAndAuthor.author);
+            console.log("BookName: ", bookAndAuthor.bookName);
+            console.log("Author: ", bookAndAuthor.author);
 
             // Get all titles and process all footnotes
             allTitles.push([((style.ui_LANG === "EN") ? "TITLE PAGE" : "扉页"), 0]);
@@ -215,13 +215,13 @@ function handleSelectedFile(fileList) {
             // setMainContentUI();
 
             // Add title page
-            let stampRotation = (style.ui_LANG === "EN") ? "transform:rotate(" + randomFloatFromInterval(-50, 80) + "deg)" : "";
-            fileContentChunks.unshift("<div id=line" + (titlePageLineNumberOffset - 1) + " class='prevent-select stamp'><img id='stamp_" + style.ui_LANG + "' src='images/stamp_" + style.ui_LANG + ".png' style='left:calc(" + randomFloatFromInterval(0, 1) + " * (100% - " + eval("style.stamp_width_" + style.ui_LANG) + "));" + stampRotation + "'/></div>");
+            let stampRotation = (style.ui_LANG === "EN") ? `transform:rotate(${randomFloatFromInterval(-50, 80)}deg)` : "";
+            fileContentChunks.unshift(`<div id=line${(titlePageLineNumberOffset - 1)} class='prevent-select stamp'><img id='stamp_${style.ui_LANG}' src='images/stamp_${style.ui_LANG}.png' style='left:calc(${randomFloatFromInterval(0, 1)} * (100% - ${eval(`style.stamp_width_${style.ui_LANG}`)})); ${stampRotation}'/></div>`);
             if (bookAndAuthor.author !== "") {
-                fileContentChunks.unshift("<h1 id=line1 style='margin-top:0; margin-bottom:" + (parseFloat(style.h1_lineHeight)/2) + "em'>" + bookAndAuthor.author + "</h1>");
-                fileContentChunks.unshift("<h1 id=line0 style='margin-bottom:0'>" + bookAndAuthor.bookName + "</h1>");
+                fileContentChunks.unshift(`<h1 id=line1 style='margin-top:0; margin-bottom:${(parseFloat(style.h1_lineHeight)/2)}em'>${bookAndAuthor.author}</h1>`);
+                fileContentChunks.unshift(`<h1 id=line0 style='margin-bottom:0'>${bookAndAuthor.bookName}</h1>`);
             } else {
-                fileContentChunks.unshift("<h1 id=line0 style='margin-bottom:" + (parseFloat(style.h1_lineHeight)/2) + "em'>" + bookAndAuthor.bookName + "</h1>");
+                fileContentChunks.unshift(`<h1 id=line0 style='margin-bottom:${(parseFloat(style.h1_lineHeight)/2)}em'>${bookAndAuthor.bookName}</h1>`);
             }
 
             // Update the title of webpage
@@ -306,12 +306,12 @@ function generatePagination() {
     paginationList.classList.add("pagination");
 
     const showPages = getPageList(totalPages, currentPage, parseInt(style.ui_numPaginationItems));
-    // console.log("showPages: " + showPages + "; currentPage: " + currentPage);
+    // console.log(`showPages: ${showPages}; currentPage: ${currentPage}`);
     for (var i = 1; i <= showPages.length; i++) {
         // Add a prev page button
         if (showPages[i-1] === 1) {
             var paginationItem_prev = document.createElement("div");
-            paginationItem_prev.innerHTML = "<a href='#' onclick='gotoPage(" + (currentPage-1) + ")' class='prevent-select page'>&laquo;</a>";
+            paginationItem_prev.innerHTML = `<a href='#' onclick='gotoPage(${(currentPage-1)})' class='prevent-select page'>&laquo;</a>`;
             if (currentPage === 1) {
                 paginationItem_prev.classList.add("disabledbutton");
             }
@@ -325,7 +325,7 @@ function generatePagination() {
             paginationList.appendChild(paginationItem);
         } else {
             var paginationItem = document.createElement("div");
-            paginationItem.innerHTML = "<a href='#' onclick='gotoPage(" + showPages[i-1] + ")' class='prevent-select page'>" + showPages[i-1] + "</a>";
+            paginationItem.innerHTML = `<a href='#' onclick='gotoPage(${showPages[i-1]})' class='prevent-select page'>${showPages[i-1]}</a>`;
             if (showPages[i-1] === currentPage) {
                 paginationItem.classList.add("active");
                 paginationItem.children[0].classList.add("active");
@@ -336,7 +336,7 @@ function generatePagination() {
         // Add a next page button
         if (showPages[i-1] === totalPages) {
             var paginationItem_next = document.createElement("div");
-            paginationItem_next.innerHTML = "<a href='#' onclick='gotoPage(" + (currentPage+1) + ")' class='prevent-select page'>&raquo;</a>";
+            paginationItem_next.innerHTML = `<a href='#' onclick='gotoPage(${(currentPage+1)})' class='prevent-select page'>&raquo;</a>`;
             if (currentPage === totalPages) {
                 paginationItem_next.classList.add("disabledbutton");
             }
@@ -351,7 +351,7 @@ function processTOC() {
     // for each title in allTitles, create a link
     var toc = "";
     for (var i in allTitles) {
-        toc += "<a id='a" + allTitles[i][1] + "_bull' href='#line" + allTitles[i][1] + "' onclick='gotoLine(" + allTitles[i][1] + ")' class='prevent-select toc-bullet'></a><a id='a" + allTitles[i][1] + "' href='#line" + allTitles[i][1] + "' onclick='gotoLine(" + allTitles[i][1] + ")' class='prevent-select toc-text'>" + allTitles[i][0] + "</a><br/>";
+        toc += `<a id='a${allTitles[i][1]}_bull' href='#line${allTitles[i][1]}' onclick='gotoLine(${allTitles[i][1]})' class='prevent-select toc-bullet'></a><a id='a${allTitles[i][1]}' href='#line${allTitles[i][1]}' onclick='gotoLine(${allTitles[i][1]})' class='prevent-select toc-text'>${allTitles[i][0]}</a><br/>`;
     }
     return toc;
 }
@@ -411,10 +411,10 @@ function gotoPage(page, scrolltoTop=true) {
 
 function gotoLine(lineNumber, isTitle=true) {
     // Find the page number to jump to
-    // console.log("lineNumber: " + lineNumber + ", isTitle: " + isTitle);
+    // console.log(`lineNumber: ${lineNumber}, isTitle: ${isTitle}`);
     let needToGoPage = lineNumber % itemsPerPage === 0 ? (lineNumber / itemsPerPage + 1) : (Math.ceil(lineNumber / itemsPerPage));
     needToGoPage = needToGoPage > totalPages ? totalPages : (needToGoPage < 1 ? 1 : needToGoPage);
-    // console.log("needToGoPage: " + needToGoPage);
+    // console.log("needToGoPage: ", needToGoPage);
     if (needToGoPage !== currentPage) {
         gotoPage(needToGoPage, false);
     }
@@ -426,22 +426,22 @@ function gotoLine(lineNumber, isTitle=true) {
         gotoTitle_Clicked = true;
     } else {
         // scroll to the particular line
-        const line = document.getElementById("line" + lineNumber);
+        const line = document.getElementById(`line${lineNumber}`);
         try {
-            // console.log("line.tagName: " + line.tagName);
+            // console.log("line.tagName: ", line.tagName);
             if (line.tagName === "H2") {
                 // scroll back 3.2em to show the title and margin
                 // line-height:1.6em;
                 // margin-top:1.6em;
                 let scrollBackPx = emInPx * 3;
-                // console.log("scrollBackPx: " + scrollBackPx);
+                // console.log("scrollBackPx: ", scrollBackPx);
                 window.scrollBy(0, -scrollBackPx);
                 setTitleActive(lineNumber);
             } else {
                 line.scrollIntoView(true, {behavior: 'instant'});
             }
         } catch (error) {
-            console.log("Error: No tag with id 'line" + lineNumber + "' found.");
+            console.log(`Error: No tag with id 'line${lineNumber}' found.`);
         }
     }
 
@@ -450,15 +450,15 @@ function gotoLine(lineNumber, isTitle=true) {
 }
 
 function GetScrollPositions() {
-    // console.log("GetScrollPositions() called, gotoTitle_Clicked: " + gotoTitle_Clicked);
+    // console.log("GetScrollPositions() called, gotoTitle_Clicked: ", gotoTitle_Clicked);
     
     // Get current scroll position
     // const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    // console.log("Top: " + scrollTop + "px");
+    // console.log(`Top: ${scrollTop}px`);
 
     // Get the line number on top of the viewport
     let curLineNumber = getTopLineNumber();
-    // console.log("Current line: " + curLineNumber);
+    // console.log("Current line: ", curLineNumber);
 
     if (!gotoTitle_Clicked) {
         // Remember the line number in history
@@ -469,27 +469,27 @@ function GetScrollPositions() {
         for (var i = 0; i < allTitles.length; i++) {
             if (i < allTitles.length - 1) {
                 if (curLineNumber >= allTitles[i][1] && curLineNumber < allTitles[i+1][1]) {
-                    // console.log("Current title: " + allTitles[i][0]);
+                    // console.log("Current title: ", allTitles[i][0]);
                     curTitleID = allTitles[i][1];
                     break;
                 }
             } else {
                 if (curLineNumber >= allTitles[i][1] && curLineNumber < fileContentChunks.length) {
-                    // console.log("Current title: " + allTitles[i][0]);
+                    // console.log("Current title: ", allTitles[i][0]);
                     curTitleID = allTitles[i][1];
                     break;
                 }
             }
         }
-        // console.log("Current title ID: " + curTitleID);
+        // console.log("Current title ID: ", curTitleID);
 
         // Set the current title in the TOC as active
         setTitleActive(curTitleID);
     }
 
-    let readingProgressText = eval("style.ui_readingProgress_" + style.ui_LANG);
+    let readingProgressText = eval(`style.ui_readingProgress_${style.ui_LANG}`);
     readingProgressText = style.ui_LANG === "CN" ? readingProgressText : readingProgressText.replace("：", ":");
-    progressContainer.innerHTML = "<span style='text-decoration:underline'>" + bookAndAuthor.bookName + "</span><br/>" + readingProgressText + " " + (curLineNumber / fileContentChunks.length * 100).toFixed(1) + "%";
+    progressContainer.innerHTML = `<span style='text-decoration:underline'>${bookAndAuthor.bookName}</span><br/>${readingProgressText} ${(curLineNumber / fileContentChunks.length * 100).toFixed(1)}%`;
 
     gotoTitle_Clicked = false;
 }
@@ -502,14 +502,14 @@ function setTitleActive(titleID) {
     }
     try {
         // Set the selected title in the TOC as active
-        let selectedTitle = document.getElementById("a" + titleID);
+        let selectedTitle = document.getElementById(`a${titleID}`);
         selectedTitle.classList.add("toc-active");
         for (i in selectedTitle.children) {
             if (selectedTitle.children[i].classList) {
                 selectedTitle.children[i].classList.add("toc-active");
             }
         }
-        let selectedTitleBull = document.getElementById("a" + titleID + "_bull")
+        let selectedTitleBull = document.getElementById(`a${titleID}_bull`);
         selectedTitleBull.classList.add("toc-active");
         for (i in selectedTitleBull.children) {
             if (selectedTitleBull.children[i].classList) {
@@ -521,12 +521,12 @@ function setTitleActive(titleID) {
             tocContainer.scrollTo(0, selectedTitle.offsetTop - tocContainer.clientHeight / 2, {behavior: 'smooth'});
         }
         // Set the selected title's :target:before css style
-        let selectedLine = document.getElementById("line" + titleID);
+        let selectedLine = document.getElementById(`line${titleID}`);
         if (selectedLine && (selectedLine.tagName[0] === "H")) {
-            style.ui_anchorTargetBefore = eval("style.h" + selectedLine.tagName[1] + "_margin");
+            style.ui_anchorTargetBefore = eval(`style.h${selectedLine.tagName[1]}_margin`);
         }
     } catch (error) {
-        console.log("Error: No title with ID " + titleID + " found.");
+        console.log(`Error: No title with ID ${titleID} found.`);
     }
 }
 

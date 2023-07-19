@@ -83,8 +83,8 @@ To Offset the anchor link to clear fixed header
     transform: translate(-50%, -70%);
     -webkit-transform: translate(-50%, -70%);
     margin: auto;
-    width: 13em;
-    height: 13em;
+    width: var(--ui_dropZoneImgSize);
+    height: var(--ui_dropZoneImgSize);
     /* convert to var(--mainColor_focused) */
     /* filter: var(--mainColor_focused_filter); */
     /* convert to var(--mainColor) */
@@ -107,6 +107,7 @@ To Offset the anchor link to clear fixed header
     position: absolute;
     top: 50%;
     left: 50%;
+    width: var(--ui_loadingImgSize);
     transform: translate(-50%, -50%);
     -webkit-transform: translate(-50%, -50%);
     filter: var(--mainColor_filter);
@@ -278,8 +279,8 @@ a.toc-active::before {
 
 /* Footnote */
 img.footnote_img {
-    width: 12px;
-    height: 12px;
+    width: var(--ui_footnoteImgSize);
+    height: var(--ui_footnoteImgSize);
     vertical-align: super;
 }
 ol#footnote-content {

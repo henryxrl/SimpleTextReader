@@ -1,12 +1,16 @@
 function setHistory(filename, lineNumber) {
-    // console.log("History set to line: " + lineNumber);
+    // console.log("History set to line: ", lineNumber);
     localStorage.setItem(filename, lineNumber);
+    if (lineNumber === 0) {
+        // Don't save history if line number is 0
+        localStorage.removeItem(filename);
+    }
 }
 
 function getHistory(filename) {
     if (localStorage.getItem(filename)) {
         let tempLine = localStorage.getItem(filename);
-        console.log("History found! Go to line: " + tempLine);
+        console.log("History found! Go to line: ", tempLine);
         gotoLine(tempLine, false);
         return tempLine;
     }
@@ -82,36 +86,37 @@ function isInContainerViewport(container, el, margin=0) {
 
 // Credit: https://stackoverflow.com/questions/10463518/converting-em-to-px-in-javascript-and-getting-default-font-size
 function getSize(size='1em', parent=document.body) {
-    let l = document.createElement('div')
-    l.style.visibility = 'hidden'
-    l.style.boxSize = 'content-box'
-    l.style.position = 'absolute'
-    l.style.maxHeight = 'none'
-    l.style.height = size
-    parent.appendChild(l)
-    size = l.clientHeight
-    l.remove()
+    let l = document.createElement('div');
+    l.style.visibility = 'hidden';
+    l.style.boxSize = 'content-box';
+    l.style.position = 'absolute';
+    l.style.maxHeight = 'none';
+    l.style.height = size;
+    parent.appendChild(l);
+    size = l.clientHeight;
+    l.remove();
     return size;
 }
 
 function getSizePrecise(size='1em', parent=document.body) {
-    let l = document.createElement('div'), i = 1, s, t
-    l.style.visibility = 'hidden'
-    l.style.boxSize = 'content-box'
-    l.style.position = 'absolute'
-    l.style.maxHeight = 'none'
-    l.style.height = size
-    parent.appendChild(l)
-    t = l.clientHeight
+    let l = document.createElement('div'), i = 1, s, t;
+    l.style.visibility = 'hidden';
+    l.style.boxSize = 'content-box';
+    l.style.position = 'absolute';
+    l.style.maxHeight = 'none';
+    l.style.height = size;
+    parent.appendChild(l);
+    t = l.clientHeight;
     do {
-        if (t > 1789569.6)
-            break
-        s = t
-        i *= 10
-        l.style.height = 'calc(' + i + '*' + size + ')'
-        t = l.clientHeight
-    } while(t !== s * 10)
-    l.remove()
+        if (t > 1789569.6) {
+            break;
+        }
+        s = t;
+        i *= 10;
+        l.style.height = `calc(${i}*${size})`;
+        t = l.clientHeight;
+    } while(t !== s * 10);
+    l.remove();
     return t / i;
 }
 
