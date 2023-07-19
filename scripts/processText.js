@@ -203,22 +203,23 @@ function optimization(str) {
     const reg_colon = "[：:]?\\s*";
     const reg_someStrings = "\\s*(.{0,50}?)\\s*";
     const reg_punc = "\\s*[,，;；.。!！\?？\'\"、/／|｜]?\\s*";
-    const reg_bracket_left = "\\s*[\\[［\\(（\\{《「『﹁﹃]?\\s*";
-    const reg_bracket_right = "\\s*[\\]］\\)）\\}》」』﹂﹄]?\\s*";
+    const reg_bracket_left = "\\s*[\\[［\\(（\\{《「『﹁﹃【]?\\s*";
+    const reg_bracket_right = "\\s*[\\]］\\)）\\}》」』﹂﹄】]?\\s*";
     const reg_symbols = new RegExp(reg_weird_symbols, "g");
     current = current.replace(reg_symbols, "").trim();
 
     // Remove 知轩藏书 specific elements
     const reg_zxcs_url = `^(\\s*(${reg_http}www.zxcs.(me|info)${reg_http_end})\\s*)$`;
     const reg_zscs_dash = "^(\\s*[=]+\\s*$)";
-    const reg_zscs_download = `^(\\s*(更多精校小说尽在知轩藏书下载)\\s*${reg_colon}(${reg_http}www.zxcs.(me|info)${reg_http_end})$)`;
+    const reg_zscs_download = `^(\\s*(更多精校小说尽在知轩藏书下载)\\s*${reg_colon}(${reg_http}(www.)?zxcs(txt)?.(com|me|info)${reg_http_end})$)`;
     const reg_zscs_bookname = `^(\\s*((书名)?\\s*${reg_colon}${reg_bracket_left}${bookAndAuthor.bookName}${reg_bracket_right})\\s*$)`;
     const reg_zscs_author = `^(\\s*((作者)?\\s*${reg_colon}${bookAndAuthor.author})\\s*$)`;
     const reg_zscs_bookname_author1 = `^(\\s*((书名)?\\s*${reg_colon}${reg_bracket_left}${bookAndAuthor.bookName}${reg_bracket_right})\\s*((作者)?\\s*${reg_colon}${bookAndAuthor.author})\\s*$)`;
     const reg_zscs_bookname_author2 = `^(\\s*((书名)?\\s*${reg_colon}${reg_bracket_left}${bookAndAuthor.bookName}${reg_bracket_right})\\s*([\\(（)]?)(文字精校版)([)）]?)\\s*((作者)?\\s*${reg_colon}${bookAndAuthor.author})\\s*$)`;
     const reg_zscs_author_bookname = `^(\\s*((作者)?\\s*${reg_colon}${bookAndAuthor.author})\\s*((书名)?\\s*${reg_colon}${reg_bracket_left}${bookAndAuthor.bookName}${reg_bracket_right})\\s*$)`;
     const reg_zscs_ad1 = `^(\\s*(本书由本站书友从网络收集整理并上传分享)${reg_punc}(版权归原作者和出版社所有)${reg_punc}\\s*$)`;
-    const reg_zscs = new RegExp(`${reg_zxcs_url}|${reg_zscs_dash}|${reg_zscs_download}|${reg_zscs_bookname}|${reg_zscs_author}|${reg_zscs_bookname_author1}|${reg_zscs_bookname_author2}|${reg_zscs_author_bookname}|${reg_zscs_ad1}`, "i");
+    const reg_zscs_ad2 = `^(\\s*${reg_bracket_left}(4020电子书)${reg_bracket_right}(${reg_http}(www.)?4020book.com${reg_http_end})${reg_punc}\\s*$)`;
+    const reg_zscs = new RegExp(`${reg_zxcs_url}|${reg_zscs_dash}|${reg_zscs_download}|${reg_zscs_bookname}|${reg_zscs_author}|${reg_zscs_bookname_author1}|${reg_zscs_bookname_author2}|${reg_zscs_author_bookname}|${reg_zscs_ad1}|${reg_zscs_ad2}`, "i");
     current = current.replace(reg_zscs, "").trim();
 
     // Remove 塞班 specific elements

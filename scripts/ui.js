@@ -110,6 +110,7 @@ function allowDrag(event) {
         event.preventDefault();
     }
 }
+
 function handleDragEnter(event) {
     // console.log("Drag enter");
     dragCounter++;
@@ -165,7 +166,7 @@ function handleSelectedFile(fileList) {
         fileReader.onload = function (event) {
             event.preventDefault();
             // Detect encoding
-            const text = String.fromCharCode.apply(null, new Uint8Array(fileReader.result.slice(0, 100)));
+            const text = String.fromCharCode.apply(null, new Uint8Array(fileReader.result.slice(0, 1000)));
             const detectedEncoding = jschardet.detect(text).encoding;
             console.log('Encoding:', detectedEncoding);
     
@@ -370,8 +371,11 @@ function jumpToPage(pageNumber, scrolltoTop=true) {
         generatePagination();
     }
 
-    if (scrolltoTop) {
-        window.scrollTo(0, 0, {behavior: 'instant'});
+    if ((currentPage > 1) && (currentPage < totalPages)) {
+        if (scrolltoTop) {
+            console.log(1);
+            window.scrollTo(0, 0, {behavior: 'instant'});
+        }
     }
     GetScrollPositions();
 }
