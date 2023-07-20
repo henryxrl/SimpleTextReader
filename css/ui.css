@@ -1,5 +1,6 @@
 /* General UI */
 body {
+    font-size: 100% !important;
     background-color: var(--bgColor) !important;
 }
 div {
