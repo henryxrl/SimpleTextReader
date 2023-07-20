@@ -4,4 +4,8 @@ SimpleTextReader is the online text reader that simulates the result of SimpleEp
 
 Try it here: [https://txt.xrl.app](https://txt.xrl.app)
 
+## Important update
+
+* Now can be used as a Chrome/Firefox extension. Please load the directory as an extension in developer mode.
+
 This project is only for personal use and for learning purpose, not for commercial use.
