@@ -6,7 +6,7 @@ Try it here: [https://txt.xrl.app](https://txt.xrl.app)
 
 ## Important update
 
-Now SimpleTextReader is also available as a Chrome/Firefox extension with two distinct versions:
+Now SimpleTextReader is also available as a Chrome/Edge extension with two distinct versions:
 
 1. Regular version: Upon clicking the icon from the extension list, the full UI appears, providing the same functionality as the complete SimpleTextReader web app.
 

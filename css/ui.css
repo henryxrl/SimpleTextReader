@@ -2,6 +2,18 @@
 body {
     font-size: 100% !important;
     background-color: var(--bgColor) !important;
+    scrollbar-color: var(--fontInfoColor) var(--bgColor) !important;
+}
+::-webkit-scrollbar {
+    width: 14px;
+    background: var(--bgColor) !important;
+}
+::-webkit-scrollbar-thumb {
+    border: 4px solid var(--bgColor);
+    background-clip: padding-box;
+    border-radius: 10px;
+    background: var(--fontInfoColor) !important;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
 }
 div {
     -ms-overflow-style: none;  /* IE and Edge */

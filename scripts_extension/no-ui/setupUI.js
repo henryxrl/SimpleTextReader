@@ -5,19 +5,17 @@ var visited_content = false;
 var observer = new MutationObserver(function (mutations) {
     mutations.forEach(function (mutation) {
         if ((document.getElementsByTagName("body").length > 0) && (!visited_body)) {
-            // console.log("body exists");
-            document.body.setAttribute('style', 'background-color: #fefcf4 !important;')
-            // console.log("body style set");
+            document.body.setAttribute('style', 'background-color: #fefcf4 !important;');
 
             let loading = document.createElement('div');
             loading.setAttribute('id', 'loading');
             loading.setAttribute('class', 'uifont prevent-select');
-            loading.setAttribute('style', 'background: #fefcf4; position: fixed; top: 0; left: 0; width: 100%; height: 100%; visibility: visible !important; z-index: 999;')
+            loading.setAttribute('style', 'background: #fefcf4; position: fixed; top: 0; left: 0; width: 100%; height: 100%; visibility: visible !important; z-index: 999;');
             let loading_img = document.createElement('img');
             loading_img.setAttribute('id', 'loading_img');
             loading_img.setAttribute('class', 'uifont prevent-select');
             loading_img.setAttribute('src', chrome.runtime.getURL('images/loading_geometry.gif'));
-            loading_img.setAttribute('style', 'position: absolute; top: 50%; left: 50%; width: 380px; transform: translate(-50%, -50%); -webkit-transform: translate(-50%, -50%); filter: invert(52%) sepia(93%) saturate(187%) hue-rotate(166deg) brightness(92%) contrast(82%); visibility: visible !important; z-index: 999;')
+            loading_img.setAttribute('style', 'position: absolute; top: 50%; left: 50%; width: 380px; transform: translate(-50%, -50%); -webkit-transform: translate(-50%, -50%); filter: invert(52%) sepia(93%) saturate(187%) hue-rotate(166deg) brightness(92%) contrast(82%); visibility: visible !important; z-index: 999;');
             loading.appendChild(loading_img);
             document.body.appendChild(loading);
 
