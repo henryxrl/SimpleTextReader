@@ -18,15 +18,18 @@ var historyLineNumber = 0;
 var storePrevWindowWidth = window.innerWidth;
 var titlePageLineNumberOffset = 0;
 
-document.title = eval(`style.ui_title_${style.ui_LANG}`);
+// document.title = eval(`style.ui_title_${style.ui_LANG}`);
+document.title = style.ui_LANG === "CN" ? style.ui_title_CN : style.ui_title_EN;
 var dropZone = document.getElementById('dropZone');
-dropZone.addEventListener('dragenter', allowDrag);
-dropZone.addEventListener('dragenter', handleDragEnter, false);
-dropZone.addEventListener('dragover', allowDrag);
-dropZone.addEventListener("dragover", handleDragOver, false);
-dropZone.addEventListener("drop", handleDrop, false);
-dropZone.addEventListener("dragleave", handleDragLeave, false);
-dropZone.addEventListener("dblclick", openFileSelector, false);
+if (dropZone) {
+    dropZone.addEventListener('dragenter', allowDrag);
+    dropZone.addEventListener('dragenter', handleDragEnter, false);
+    dropZone.addEventListener('dragover', allowDrag);
+    dropZone.addEventListener("dragover", handleDragOver, false);
+    dropZone.addEventListener("drop", handleDrop, false);
+    dropZone.addEventListener("dragleave", handleDragLeave, false);
+    dropZone.addEventListener("dblclick", openFileSelector, false);
+}
 const loadingScreen = document.getElementById('loading');
 // loadingScreen.style.visibility = "visible"; // For debugging the loading screen
 
@@ -187,8 +190,10 @@ function handleSelectedFile(fileList) {
                 style.ui_LANG = "EN";
             }
             // Set fonts based on detected language
-            style.fontFamily_title = eval(`style.fontFamily_title_${style.ui_LANG}`);
-            style.fontFamily_body = eval(`style.fontFamily_body_${style.ui_LANG}`);
+            // style.fontFamily_title = eval(`style.fontFamily_title_${style.ui_LANG}`);
+            // style.fontFamily_body = eval(`style.fontFamily_body_${style.ui_LANG}`);
+            style.fontFamily_title = style.ui_LANG === "CN" ? style.fontFamily_title_CN : style.fontFamily_title_EN;
+            style.fontFamily_body = style.ui_LANG === "CN" ? style.fontFamily_body_CN : style.fontFamily_body_EN;
 
             // Get book name and author
             filename = fileList[0].name;
@@ -212,12 +217,14 @@ function handleSelectedFile(fileList) {
                 }
             }
             // console.log(allTitles);
-            tocContainer.innerHTML = processTOC();
+            // tocContainer.innerHTML = processTOC_bak();
+            processTOC();
             // setMainContentUI();
 
             // Add title page
             let stampRotation = (style.ui_LANG === "EN") ? `transform:rotate(${randomFloatFromInterval(-50, 80)}deg)` : "";
-            fileContentChunks.unshift(`<div id=line${(titlePageLineNumberOffset - 1)} class='prevent-select stamp'><img id='stamp_${style.ui_LANG}' src='images/stamp_${style.ui_LANG}.png' style='left:calc(${randomFloatFromInterval(0, 1)} * (100% - ${eval(`style.stamp_width_${style.ui_LANG}`)})); ${stampRotation}'/></div>`);
+            // fileContentChunks.unshift(`<div id=line${(titlePageLineNumberOffset - 1)} class='prevent-select stamp'><img id='stamp_${style.ui_LANG}' src='images/stamp_${style.ui_LANG}.png' style='left:calc(${randomFloatFromInterval(0, 1)} * (100% - ${eval(`style.stamp_width_${style.ui_LANG}`)})); ${stampRotation}'/></div>`);
+            fileContentChunks.unshift(`<div id=line${(titlePageLineNumberOffset - 1)} class='prevent-select stamp'><img id='stamp_${style.ui_LANG}' src='images/stamp_${style.ui_LANG}.png' style='left:calc(${randomFloatFromInterval(0, 1)} * (100% - ${style.ui_LANG === 'CN' ? style.stamp_width_CN : style.stamp_width_EN})); ${stampRotation}'/></div>`);
             if (bookAndAuthor.author !== "") {
                 fileContentChunks.unshift(`<h1 id=line1 style='margin-top:0; margin-bottom:${(parseFloat(style.h1_lineHeight)/2)}em'>${bookAndAuthor.author}</h1>`);
                 fileContentChunks.unshift(`<h1 id=line0 style='margin-bottom:0'>${bookAndAuthor.bookName}</h1>`);
@@ -276,9 +283,10 @@ function showCurrentPageContent() {
     // process line by line - fast
     for (var j = startIndex; j < endIndex && j < fileContentChunks.length; j++) {
         if (fileContentChunks[j].trim() !== '') {
-            processedResult = process(fileContentChunks[j], j, to_drop_cap);
+            let processedResult = process(fileContentChunks[j], j, to_drop_cap);
             to_drop_cap = processedResult[1] === 'h' ? true : false;
-            contentContainer.innerHTML += processedResult[0];
+            // contentContainer.innerHTML += processedResult[0];
+            contentContainer.appendChild(processedResult[0]);
         }
     }
 
@@ -312,7 +320,18 @@ function generatePagination() {
         // Add a prev page button
         if (showPages[i-1] === 1) {
             var paginationItem_prev = document.createElement("div");
-            paginationItem_prev.innerHTML = `<a href='#' onclick='gotoPage(${(currentPage-1)})' class='prevent-select page'>&laquo;</a>`;
+            // paginationItem_prev.innerHTML = `<a href='#' onclick='gotoPage(${(currentPage-1)})' class='prevent-select page'>&laquo;</a>`;
+            let tempItem = document.createElement("a");
+            tempItem.href = "#";
+            tempItem.addEventListener('click', function(event) {
+                event.preventDefault();
+                gotoPage((currentPage-1));
+            });
+            tempItem.classList.add("prevent-select");
+            tempItem.classList.add("page");
+            tempItem.innerHTML = "&laquo;";
+            paginationItem_prev.appendChild(tempItem);
+
             if (currentPage === 1) {
                 paginationItem_prev.classList.add("disabledbutton");
             }
@@ -322,11 +341,37 @@ function generatePagination() {
         // Add a page button
         if (showPages[i-1] === 0) {
             var paginationItem = document.createElement("div");
-            paginationItem.innerHTML = "<a href='#!'><input type='text' id='jumpInput' placeholder='···' size='1' oninput='this.size = (this.value.length <= 0 ? 1 : this.value.length)' onkeypress='jumpToPageInputField(event)'></a>";
+            // paginationItem.innerHTML = "<a href='#!'><input type='text' id='jumpInput' placeholder='···' size='1' oninput='this.size = (this.value.length <= 0 ? 1 : this.value.length)' onkeypress='jumpToPageInputField(event)'></a>";
+            let tempItem = document.createElement("a");
+            tempItem.href = "#!";
+            let tempInput = document.createElement("input");
+            tempInput.type = "text";
+            tempInput.id = "jumpInput";
+            tempInput.placeholder = "···";
+            tempInput.size = 1;
+            tempInput.addEventListener('input', function(event) {
+                this.size = (this.value.length <= 0 ? 1 : this.value.length);
+            });
+            tempInput.addEventListener('keypress', function(event) {
+                jumpToPageInputField(event);
+            });
+            tempItem.appendChild(tempInput);
+            paginationItem.appendChild(tempItem);
             paginationList.appendChild(paginationItem);
         } else {
             var paginationItem = document.createElement("div");
-            paginationItem.innerHTML = `<a href='#' onclick='gotoPage(${showPages[i-1]})' class='prevent-select page'>${showPages[i-1]}</a>`;
+            // paginationItem.innerHTML = `<a href='#' onclick='gotoPage(${showPages[i-1]})' class='prevent-select page'>${showPages[i-1]}</a>`;
+            let tempItem = document.createElement("a");
+            tempItem.href = "#";
+            tempItem.classList.add("prevent-select");
+            tempItem.classList.add("page");
+            tempItem.innerHTML = showPages[i-1];
+            tempItem.addEventListener('click', function(event) {
+                event.preventDefault();
+                gotoPage(parseInt(this.innerHTML));
+            });
+            paginationItem.appendChild(tempItem);
+
             if (showPages[i-1] === currentPage) {
                 paginationItem.classList.add("active");
                 paginationItem.children[0].classList.add("active");
@@ -337,7 +382,18 @@ function generatePagination() {
         // Add a next page button
         if (showPages[i-1] === totalPages) {
             var paginationItem_next = document.createElement("div");
-            paginationItem_next.innerHTML = `<a href='#' onclick='gotoPage(${(currentPage+1)})' class='prevent-select page'>&raquo;</a>`;
+            // paginationItem_next.innerHTML = `<a href='#' onclick='gotoPage(${(currentPage+1)})' class='prevent-select page'>&raquo;</a>`;
+            let tempItem = document.createElement("a");
+            tempItem.href = "#";
+            tempItem.addEventListener('click', function(event) {
+                event.preventDefault();
+                gotoPage((currentPage+1));
+            });
+            tempItem.classList.add("prevent-select");
+            tempItem.classList.add("page");
+            tempItem.innerHTML = "&raquo;";
+            paginationItem_next.appendChild(tempItem);
+
             if (currentPage === totalPages) {
                 paginationItem_next.classList.add("disabledbutton");
             }
@@ -348,13 +404,55 @@ function generatePagination() {
     paginationContainer.appendChild(paginationList);
 }
 
-function processTOC() {
+function processTOC_bak() {
     // for each title in allTitles, create a link
     var toc = "";
     for (var i in allTitles) {
         toc += `<a id='a${allTitles[i][1]}_bull' href='#line${allTitles[i][1]}' onclick='gotoLine(${allTitles[i][1]})' class='prevent-select toc-bullet'></a><a id='a${allTitles[i][1]}' href='#line${allTitles[i][1]}' onclick='gotoLine(${allTitles[i][1]})' class='prevent-select toc-text'>${allTitles[i][0]}</a><br/>`;
     }
+
     return toc;
+}
+
+function processTOC() {
+    for (var i in allTitles) {
+        let tempBullet = document.createElement("a");
+        tempBullet.id = `a${allTitles[i][1]}_bull`;
+        tempBullet.href = `#line${allTitles[i][1]}`;
+        tempBullet.classList.add("prevent-select");
+        tempBullet.classList.add("toc-bullet");
+        tempBullet.addEventListener('click', function(event) {
+            event.preventDefault();
+            // console.log("gotoLine: ", parseInt(event.target.id.replace(/(a|_bull)/g, '')));
+            gotoLine(parseInt(event.target.id.replace(/(a|_bull)/g, '')));
+            let line = document.getElementById(`line${parseInt(event.target.id.replace(/(a|_bull)/g, ''))}`);
+            let top = line.offsetTop;
+            let style = line.currentStyle || window.getComputedStyle(line);
+            let top_margin = parseFloat(style.marginTop);
+            // console.log("top: ", top, "top_margin: ", top_margin);
+            window.scrollTo(0, (top - top_margin), {behavior: 'instant'});
+        });
+        tocContainer.appendChild(tempBullet);
+
+        let tempText = document.createElement("a");
+        tempText.id = `a${allTitles[i][1]}`;
+        tempText.href = `#line${allTitles[i][1]}`;
+        tempText.classList.add("prevent-select");
+        tempText.classList.add("toc-text");
+        tempText.innerHTML = allTitles[i][0];
+        tempText.addEventListener('click', function(event) {
+            event.preventDefault();
+            // console.log("gotoLine: ", parseInt(event.target.id.replace(/(a)/g, '')));
+            gotoLine(parseInt(event.target.id.replace(/(a)/g, '')));
+            let line = document.getElementById(`line${parseInt(event.target.id.replace(/(a)/g, ''))}`);
+            let top = line.offsetTop;
+            let style = line.currentStyle || window.getComputedStyle(line);
+            let top_margin = parseFloat(style.marginTop);
+            // console.log("top: ", top, "top_margin: ", top_margin);
+            window.scrollTo(0, (top - top_margin), {behavior: 'instant'});
+        });
+        tocContainer.appendChild(tempText);
+    }
 }
 
 
@@ -373,7 +471,6 @@ function jumpToPage(pageNumber, scrolltoTop=true) {
 
     if ((currentPage > 1) && (currentPage < totalPages)) {
         if (scrolltoTop) {
-            console.log(1);
             window.scrollTo(0, 0, {behavior: 'instant'});
         }
     }
@@ -428,12 +525,15 @@ function gotoLine(lineNumber, isTitle=true) {
         setTitleActive(lineNumber);
 
         gotoTitle_Clicked = true;
+        // console.log("gotoTitle_Clicked: ", gotoTitle_Clicked);
     } else {
         // scroll to the particular line
         const line = document.getElementById(`line${lineNumber}`);
         try {
             // console.log("line.tagName: ", line.tagName);
             if (line.tagName === "H2") {
+                // Add the following line because we no longer use in-line onclick event
+                line.scrollIntoView(true, {behavior: 'instant'});
                 // scroll back 3.2em to show the title and margin
                 // line-height:1.6em;
                 // margin-top:1.6em;
@@ -491,7 +591,8 @@ function GetScrollPositions() {
         setTitleActive(curTitleID);
     }
 
-    let readingProgressText = eval(`style.ui_readingProgress_${style.ui_LANG}`);
+    // let readingProgressText = eval(`style.ui_readingProgress_${style.ui_LANG}`);
+    let readingProgressText = style.ui_LANG === "CN" ? style.ui_readingProgress_CN : style.ui_readingProgress_EN;
     readingProgressText = style.ui_LANG === "CN" ? readingProgressText : readingProgressText.replace("：", ":");
     progressContainer.innerHTML = `<span style='text-decoration:underline'>${bookAndAuthor.bookName}</span><br/>${readingProgressText} ${(curLineNumber / fileContentChunks.length * 100).toFixed(1)}%`;
 
@@ -527,7 +628,29 @@ function setTitleActive(titleID) {
         // Set the selected title's :target:before css style
         let selectedLine = document.getElementById(`line${titleID}`);
         if (selectedLine && (selectedLine.tagName[0] === "H")) {
-            style.ui_anchorTargetBefore = eval(`style.h${selectedLine.tagName[1]}_margin`);
+            // style.ui_anchorTargetBefore = eval(`style.h${selectedLine.tagName[1]}_margin`);
+            switch (selectedLine.tagName[1]) {
+                case '1':
+                    style.ui_anchorTargetBefore = style.h1_margin;
+                break;
+                case '2':
+                    style.ui_anchorTargetBefore = style.h2_margin;
+                break;
+                case '3':
+                    style.ui_anchorTargetBefore = style.h3_margin;
+                break;
+                case '4':
+                    style.ui_anchorTargetBefore = style.h4_margin;
+                break;
+                case '5':
+                    style.ui_anchorTargetBefore = style.h5_margin;
+                break;
+                case '6':
+                    style.ui_anchorTargetBefore = style.h6_margin;
+                break;
+                default:
+                    style.ui_anchorTargetBefore = style.h2_margin;
+            }
         }
     } catch (error) {
         console.log(`Error: No title with ID ${titleID} found.`);

@@ -170,6 +170,7 @@ To Offset the anchor link to clear fixed header
     border-radius: 5px;
 }
 #jumpInput {
+    color: black;
     border:0;
     /* outline:0; */
     background-color: var(--bgColor) !important;

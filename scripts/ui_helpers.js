@@ -1,5 +1,8 @@
 function setMainContentUI() {
-    dropZoneText.innerHTML = eval(`style.ui_dropZoneText_${style.ui_LANG}`);
+    if (dropZoneText) {
+        // dropZoneText.innerHTML = eval(`style.ui_dropZoneText_${style.ui_LANG}`);
+        dropZoneText.innerHTML = style.ui_LANG == "CN" ? style.ui_dropZoneText_CN : style.ui_dropZoneText_EN;
+    }
     // windowWith = windowLeftRightMargin + tocWidth + gapWidth + contentWidth + windowLeftRightMargin;
     style.ui_contentMarginLeft = (100 - parseInt(style.ui_contentWidth) - parseInt(style.ui_windowLeftRightMargin)).toString();
     style.ui_tocWidth = (100 - parseInt(style.ui_contentWidth) - parseInt(style.ui_windowLeftRightMargin) * 2 - parseInt(style.ui_gapWidth)).toString();
@@ -197,7 +200,8 @@ function resetVars() {
     storePrevWindowWidth = window.innerWidth;
     titlePageLineNumberOffset = 0;
 
-    document.title = eval(`style.ui_title_${style.ui_LANG}`);
+    // document.title = eval(`style.ui_title_${style.ui_LANG}`);
+    document.title = style.ui_LANG == "CN" ? style.ui_title_CN : style.ui_title_EN;
     contentContainer.innerHTML = "";
     tocContainer.innerHTML = "";
     progressContainer.innerHTML = "";

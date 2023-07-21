@@ -1,0 +1,40 @@
+{
+    "manifest_version": 3,
+    "name": "易笺（无界面版）",
+    "description": "支持本地和云端的所有txt文件，自动排版，自动分页，自动生成目录。",
+    "version": "1.0",
+    "permissions": ["activeTab", "tabs"],
+    "content_scripts": [
+        {
+            "matches": ["*://*/*.txt*", "file://*/*.txt*"],
+            "js": ["scripts_extension/no-ui/load_scripts_early.js", "scripts_extension/no-ui/setupUI.js"],
+            "run_at": "document_start"
+        },
+        {
+            "matches": ["*://*/*.txt*", "file://*/*.txt*"],
+            "js": ["scripts_extension/no-ui/load_scripts_late.js"],
+            "run_at": "document_end"
+        }
+    ],
+    "content_security_policy": {
+        "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+    },
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "scripts_extension/no-ui/*",
+                "scripts/*",
+                "fonts/*",
+                "images/*",
+                "css/*"
+            ],
+            "matches": ["<all_urls>"]
+        }
+    ],
+    "homepage_url": "https://github.com/henryxrl/SimpleTextReader",
+    "minimum_chrome_version": "88",
+    "icons": {
+        "24": "images/icon24.png",
+        "64": "images/icon64.png"
+    }
+}

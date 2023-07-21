@@ -53,19 +53,61 @@ function process(str, lineNumber, to_drop_cap) {
             let wrapper= document.createElement('div');
             wrapper.innerHTML= current;
             let tempElement = wrapper.firstChild;
-            tempElement.innerHTML = `<a href='#line${lineNumber}' onclick='gotoLine(${lineNumber})' class='prevent-select title'>${tempElement.innerHTML}</a>`;
+            // tempElement.innerHTML = `<a href='#line${lineNumber}' onclick='gotoLine(${lineNumber})' class='prevent-select title'>${tempElement.innerHTML}</a>`;
+
+            let tempAnchor = document.createElement('a');
+            tempAnchor.href = `#line${lineNumber}`;
+            tempAnchor.classList.add('prevent-select');
+            tempAnchor.classList.add('title');
+            tempAnchor.innerHTML = tempElement.innerHTML;
+            tempAnchor.addEventListener('click', function(event) {
+                // console.log("h1 Clicked");
+                event.preventDefault();
+                gotoLine(parseInt(this.parentElement.id.slice(4)));
+                let line = document.getElementById(`line${parseInt(this.parentElement.id.slice(4))}`);
+                let top = line.offsetTop;
+                let style = line.currentStyle || window.getComputedStyle(line);
+                let top_margin = parseFloat(style.marginTop);
+                window.scrollTo(0, (top - top_margin), {behavior: 'instant'});
+            });
+            tempElement.innerHTML = '';
+            tempElement.appendChild(tempAnchor);
+
             current = tempElement.outerHTML;
-            return [current, 't'];
+            return [tempElement, 't'];
         } else {
             // do nothing
-            return [current, 't'];
+            let tempSpan = document.createElement('span');
+            tempSpan.innerHTML = current;
+            return [tempSpan, 't'];
         }
     } else {
         let current = optimization(str.trim());
         if (current !== '') {
             if (regex_titles.test(current)) {
-                current = `<h2 id="line${lineNumber}"><a href='#line${lineNumber}' onclick='gotoLine(${lineNumber})' class='prevent-select title'>${current.replace(":", "").replace("：", "")}</a></h2>`;
-                return [current, 'h'];
+                // current = `<h2 id="line${lineNumber}"><a href='#line${lineNumber}' onclick='gotoLine(${lineNumber})' class='prevent-select title'>${current.replace(":", "").replace("：", "")}</a></h2>`;
+
+                let tempAnchor = document.createElement('a');
+                tempAnchor.href = `#line${lineNumber}`;
+                tempAnchor.classList.add('prevent-select');
+                tempAnchor.classList.add('title');
+                tempAnchor.innerHTML = current.replace(":", "").replace("：", "");
+                tempAnchor.addEventListener('click', function(event) {
+                    // console.log("h2 Clicked");
+                    event.preventDefault();
+                    gotoLine(parseInt(this.parentElement.id.slice(4)));
+                    let line = document.getElementById(`line${parseInt(this.parentElement.id.slice(4))}`);
+                    let top = line.offsetTop;
+                    let style = line.currentStyle || window.getComputedStyle(line);
+                    let top_margin = parseFloat(style.marginTop);
+                    window.scrollTo(0, (top - top_margin), {behavior: 'instant'});
+                });
+                let tempH2 = document.createElement('h2');
+                tempH2.id = `line${lineNumber}`;
+                tempH2.appendChild(tempAnchor);
+                // current = tempH2.outerHTML;
+
+                return [tempH2, 'h'];
             } else {
                 if (to_drop_cap && !isEasternLan) {
                     isPunctuation = regex_isPunctuation.test(current[0]);
@@ -74,17 +116,47 @@ function process(str, lineNumber, to_drop_cap) {
                         while (regex_isPunctuation.test(current[index])) {
                             index++;
                         }
-                        current = `<p id="line${lineNumber}" class="first"><span class="dropCap">${current.slice(0, index+1)}</span>${current.slice(index+1)}</p>`;
+                        // current = `<p id="line${lineNumber}" class="first"><span class="dropCap">${current.slice(0, index+1)}</span>${current.slice(index+1)}</p>`;
+                        
+                        let tempP = document.createElement('p');
+                        tempP.id = `line${lineNumber}`;
+                        tempP.classList.add('first');
+                        let tempSpan = document.createElement('span');
+                        tempSpan.classList.add('dropCap');
+                        tempSpan.innerHTML = current.slice(0, index+1);
+                        tempP.innerHTML = current.slice(index+1);
+                        tempP.appendChild(tempSpan);
+
+                        return [tempP, 'p'];
                     } else {
-                        current = `<p id="line${lineNumber}" class="first"><span class="dropCap">${current[0]}</span>${current.slice(1)}</p>`;
+                        // current = `<p id="line${lineNumber}" class="first"><span class="dropCap">${current[0]}</span>${current.slice(1)}</p>`;
+                        
+                        let tempP = document.createElement('p');
+                        tempP.id = `line${lineNumber}`;
+                        tempP.classList.add('first');
+                        let tempSpan = document.createElement('span');
+                        tempSpan.classList.add('dropCap');
+                        tempSpan.innerHTML = current[0];
+                        tempP.innerHTML = current.slice(1);
+                        tempP.appendChild(tempSpan);
+
+                        return [tempP, 'p'];
                     }
                 } else {
-                    current = `<p id="line${lineNumber}">${current}</p>`;
+                    // current = `<p id="line${lineNumber}">${current}</p>`;
+                    let tempP = document.createElement('p');
+                    tempP.id = `line${lineNumber}`;
+                    tempP.innerHTML = current;
+
+                    return [tempP, 'p'];
                 }
-                return [current, 'p'];
+                // return [current, 'p'];
             }
         } else {
-            return [current, 'e'];
+            // return [current, 'e'];
+            let tempSpan = document.createElement('span');
+            tempSpan.innerHTML = current;
+            return [tempSpan, 'e'];
         }
     }
 }

@@ -1,0 +1,20 @@
+{
+    "manifest_version": 3,
+    "name": "易笺",
+    "description": "支持秒开本地的所有txt文件，自动排版，自动分页，自动生成目录。",
+    "version": "1.0",
+    "background": {
+        "service_worker": "scripts_extension/regular/activate.js"
+    },
+    "action": {},
+    "content_security_policy": {
+        "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+    },
+    "minimum_chrome_version": "88",
+    "icons": {
+        "24": "images/icon24.png",
+        "64": "images/icon64.png"
+    },
+    "homepage_url": "https://github.com/henryxrl/SimpleTextReader",
+    "permissions": ["activeTab", "tabs"]
+}
