@@ -93,12 +93,12 @@
     --fontColor: black;
 
     /* Font variables */
-    --fontFamily_title: var(--fontFamily_title_CN);
-    --fontFamily_body: var(--fontFamily_body_CN);
-
     --fontFamily_title_CN: title, ui;
     --fontFamily_body_CN: body, ui;
     --fontFamily_title_EN: ui;
     --fontFamily_body_EN: ui;
     --fontFamily_ui: ui, Arial, Helvetica, sans-serif;
+
+    --fontFamily_title: var(--fontFamily_title_CN);
+    --fontFamily_body: var(--fontFamily_body_CN);
 }

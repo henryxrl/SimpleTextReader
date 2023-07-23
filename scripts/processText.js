@@ -124,8 +124,8 @@ function process(str, lineNumber, to_drop_cap) {
                         let tempSpan = document.createElement('span');
                         tempSpan.classList.add('dropCap');
                         tempSpan.innerHTML = current.slice(0, index+1);
-                        tempP.innerHTML = current.slice(index+1);
-                        tempP.appendChild(tempSpan);
+                        tempP.innerHTML = tempSpan.outerHTML + current.slice(index+1);
+                        // tempP.appendChild(tempSpan);
 
                         return [tempP, 'p'];
                     } else {
@@ -137,8 +137,8 @@ function process(str, lineNumber, to_drop_cap) {
                         let tempSpan = document.createElement('span');
                         tempSpan.classList.add('dropCap');
                         tempSpan.innerHTML = current[0];
-                        tempP.innerHTML = current.slice(1);
-                        tempP.appendChild(tempSpan);
+                        tempP.innerHTML = tempSpan.outerHTML + current.slice(1);
+                        // tempP.appendChild(tempSpan);
 
                         return [tempP, 'p'];
                     }

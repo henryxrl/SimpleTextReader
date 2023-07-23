@@ -1,4 +1,15 @@
-window.onload = function () {
+// console.log("document.readyState:", document.readyState);
+// console.log("paths:", paths);
+// if ((document.readyState === 'interactive') && (typeof paths == 'object') && (typeof style == 'object')) {
+if ((typeof paths == 'object') && (typeof style == 'object')) {
+    // console.log("paths:", paths);
+    // console.log("style:", style);
+    setupUI_content();
+} 
+
+
+function setupUI_content () {
+// window.onload = function () {
     var body = document.body;
     var pre = document.getElementsByTagName("pre");
     // document.title = "易笺";
@@ -26,8 +37,10 @@ window.onload = function () {
         style.ui_LANG = "EN";
     }
     // Set fonts based on detected language
-    style.fontFamily_title = eval(`style.fontFamily_title_${style.ui_LANG}`);
-    style.fontFamily_body = eval(`style.fontFamily_body_${style.ui_LANG}`);
+    // style.fontFamily_title = eval(`style.fontFamily_title_${style.ui_LANG}`);
+    // style.fontFamily_body = eval(`style.fontFamily_body_${style.ui_LANG}`);
+    style.fontFamily_title = style.ui_LANG === "CN" ? style.fontFamily_title_CN : style.fontFamily_title_EN;
+    style.fontFamily_body = style.ui_LANG === "CN" ? style.fontFamily_body_CN : style.fontFamily_body_EN;
 
     // Get book name and author
     filename = decodeURI(window.location.href.split("/").pop().split(new RegExp("(.txt)", "i")).shift());
@@ -57,7 +70,10 @@ window.onload = function () {
 
     // Add title page
     let stampRotation = (style.ui_LANG === "EN") ? `transform:rotate(${randomFloatFromInterval(-50, 80)}deg)` : "";
-    fileContentChunks.unshift(`<div id=line${(titlePageLineNumberOffset - 1)} class='prevent-select stamp'><img id='stamp_${style.ui_LANG}' src='${eval(`paths.img_path_stamp_${style.ui_LANG}`)}' style='left:calc(${randomFloatFromInterval(0, 1)} * (100% - ${`style.stamp_width_${style.ui_LANG}`})); ${stampRotation}'/></div>`);
+    // fileContentChunks.unshift(`<div id=line${(titlePageLineNumberOffset - 1)} class='prevent-select stamp'><img id='stamp_${style.ui_LANG}' src='${eval(`paths.img_path_stamp_${style.ui_LANG}`)}' style='left:calc(${randomFloatFromInterval(0, 1)} * (100% - ${`style.stamp_width_${style.ui_LANG}`})); ${stampRotation}'/></div>`);
+    let stampSrc = (style.ui_LANG === "CN") ? paths.img_path_stamp_CN : paths.img_path_stamp_EN;
+    // console.log("ui_LANG", style.ui_LANG, "stampSrc: ", stampSrc);
+    fileContentChunks.unshift(`<div id=line${(titlePageLineNumberOffset - 1)} class='prevent-select stamp'><img id='stamp_${style.ui_LANG}' src='${stampSrc}' style='left:calc(${randomFloatFromInterval(0, 1)} * (100% - ${style.ui_LANG === 'CN' ? style.stamp_width_CN : style.stamp_width_EN})); ${stampRotation}'/></div>`);
     if (bookAndAuthor.author !== "") {
         fileContentChunks.unshift(`<h1 id=line1 style='margin-top:0; margin-bottom:${(parseFloat(style.h1_lineHeight)/2)}em'>${bookAndAuthor.author}</h1>`);
         fileContentChunks.unshift(`<h1 id=line0 style='margin-bottom:0'>${bookAndAuthor.bookName}</h1>`);

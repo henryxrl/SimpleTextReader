@@ -181,7 +181,7 @@ To Offset the anchor link to clear fixed header
     color: var(--bgColor);
     border-radius: 5px;
 }
-#jumpInput {
+.jumpInput {
     color: black;
     border:0;
     /* outline:0; */

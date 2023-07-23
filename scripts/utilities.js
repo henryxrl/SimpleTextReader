@@ -123,3 +123,7 @@ function getSizePrecise(size='1em', parent=document.body) {
 function randomFloatFromInterval(min, max) {
     return (Math.random() * (max - min) + min);
 }
+
+function isVariableDefined(v) {
+    return (v !== "undefined" && v !== "" && v !== null && v !== undefined && v !== NaN);
+}

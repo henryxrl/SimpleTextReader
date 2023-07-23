@@ -1,10 +1,12 @@
 function setMainContentUI() {
-    if (dropZoneText) {
+    // console.log("setMainContentUI");
+    if (isVariableDefined(dropZoneText)) {
         // dropZoneText.innerHTML = eval(`style.ui_dropZoneText_${style.ui_LANG}`);
         dropZoneText.innerHTML = style.ui_LANG == "CN" ? style.ui_dropZoneText_CN : style.ui_dropZoneText_EN;
     }
     // windowWith = windowLeftRightMargin + tocWidth + gapWidth + contentWidth + windowLeftRightMargin;
     style.ui_contentMarginLeft = (100 - parseInt(style.ui_contentWidth) - parseInt(style.ui_windowLeftRightMargin)).toString();
+    // console.log("IN SETMAINCONTENTUI: style.ui_contentMarginLeft: " + style.ui_contentMarginLeft);
     style.ui_tocWidth = (100 - parseInt(style.ui_contentWidth) - parseInt(style.ui_windowLeftRightMargin) * 2 - parseInt(style.ui_gapWidth)).toString();
     style.ui_paginationCenter = (parseInt(style.ui_contentWidth) / 2 + parseInt(style.ui_contentMarginLeft)).toString();
     contentContainer.style.width = style.ui_contentWidth + '%';
@@ -128,30 +130,37 @@ function setTOC_onRatio(initial=false) {
 }
 
 function showDropZone(focused=false) {
-    let c = style.mainColor;
-    let filter = style.mainColor_filter;
-    if (focused) {
-        c = style.mainColor_focused;
-        filter = style.mainColor_focused_filter;
+    if (isVariableDefined(dropZone) && isVariableDefined(dropZoneText) && isVariableDefined(dropZoneImg)) {
+        let c = style.mainColor;
+        let filter = style.mainColor_filter;
+        if (focused) {
+            c = style.mainColor_focused;
+            filter = style.mainColor_focused_filter;
+        }
+        dropZone.style.visibility = "visible";
+        dropZone.style.zIndex = "999";
+        dropZone.style.borderColor = c;
+        dropZoneText.style.visibility = "visible";
+        dropZoneText.style.zIndex = "1000";
+        dropZoneText.style.color = c;
+        dropZoneImg.style.visibility = "visible";
+        dropZoneImg.style.zIndex = "1001";
+        dropZoneImg.style.setProperty("filter", filter);
+        return 0;
+    } else {
+        return 1;
     }
-    dropZone.style.visibility = "visible";
-    dropZone.style.zIndex = "999";
-    dropZone.style.borderColor = c;
-    dropZoneText.style.visibility = "visible";
-    dropZoneText.style.zIndex = "1000";
-    dropZoneText.style.color = c;
-    dropZoneImg.style.visibility = "visible";
-    dropZoneImg.style.zIndex = "1001";
-    dropZoneImg.style.setProperty("filter", filter);
 }
 
 function hideDropZone() {
-    dropZone.style.visibility = "hidden";
-    dropZone.style.zIndex = "1";
-    dropZoneText.style.visibility = "hidden";
-    dropZoneText.style.zIndex = "2";
-    dropZoneImg.style.visibility = "hidden";
-    dropZoneImg.style.zIndex = "3";
+    if (isVariableDefined(dropZone) && isVariableDefined(dropZoneText) && isVariableDefined(dropZoneImg)) {
+        dropZone.style.visibility = "hidden";
+        dropZone.style.zIndex = "1";
+        dropZoneText.style.visibility = "hidden";
+        dropZoneText.style.zIndex = "2";
+        dropZoneImg.style.visibility = "hidden";
+        dropZoneImg.style.zIndex = "3";
+    }
 }
 
 function showLoadingScreen() {

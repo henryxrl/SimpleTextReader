@@ -1,27 +1,5 @@
-// Define variables
-var style = new CSSGlobalVariables();
-var init = true;
-var filename = "";
-var fileContentChunks = []; // Declare the variable outside the handleDrop function
-var allTitles = [];
-var isEasternLan = true;
-var itemsPerPage = 200;
-var currentPage = 1;
-var totalPages = 0;
-var gotoTitle_Clicked = false;
-var bookAndAuthor = {};
-var footnotes = [];
-var footnote_proccessed_counter = 0;
-// Credit https://stackoverflow.com/questions/7110353/html5-dragleave-fired-when-hovering-a-child-element
-var dragCounter = 0;
-var historyLineNumber = 0;
-var storePrevWindowWidth = window.innerWidth;
-var titlePageLineNumberOffset = 0;
-
-// document.title = eval(`style.ui_title_${style.ui_LANG}`);
-document.title = style.ui_LANG === "CN" ? style.ui_title_CN : style.ui_title_EN;
-var dropZone = document.getElementById('dropZone');
-if (dropZone) {
+// Set up the UI
+if (isVariableDefined(dropZone)) {
     dropZone.addEventListener('dragenter', allowDrag);
     dropZone.addEventListener('dragenter', handleDragEnter, false);
     dropZone.addEventListener('dragover', allowDrag);
@@ -30,21 +8,6 @@ if (dropZone) {
     dropZone.addEventListener("dragleave", handleDragLeave, false);
     dropZone.addEventListener("dblclick", openFileSelector, false);
 }
-const loadingScreen = document.getElementById('loading');
-// loadingScreen.style.visibility = "visible"; // For debugging the loading screen
-
-const dropZoneText = document.getElementById("dropZoneText");
-const dropZoneImg = document.getElementById("dropZoneImg");
-const contentContainer = document.getElementById("content");
-const tocWrapper = document.getElementById("tocWrapper");
-const tocContainer = document.getElementById("tocContent");
-const paginationContainer = document.getElementById("pagination");
-const progressContainer = document.getElementById("progress");
-const footNoteContainer = document.getElementById("footnote-content");
-
-
-
-// Set up the UI
 setMainContentUI();
 // setMainContentUI_onRatio();
 // setTOC_onRatio(initial=true);
@@ -69,8 +32,11 @@ window.addEventListener('dragenter', function(event) {
     historyLineNumber = getHistory(filename);
     init = true;
     event.preventDefault();
-    showDropZone(focused=true);
-    contentContainer.style.display = "none";
+    let res = showDropZone(focused=true);
+    if (res == 0) {
+        // showDropZone success
+        contentContainer.style.display = "none";
+    }
 });
 
 window.onscroll = function(event) {
@@ -346,7 +312,7 @@ function generatePagination() {
             tempItem.href = "#!";
             let tempInput = document.createElement("input");
             tempInput.type = "text";
-            tempInput.id = "jumpInput";
+            tempInput.classList.add("jumpInput");
             tempInput.placeholder = "···";
             tempInput.size = 1;
             tempInput.addEventListener('input', function(event) {

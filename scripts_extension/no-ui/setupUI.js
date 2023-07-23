@@ -1,9 +1,14 @@
 // Create an observer instance.
+var visited_title = false;
 var visited_body = false;
 var visited_pre = false;
 var visited_content = false;
 var observer = new MutationObserver(function (mutations) {
     mutations.forEach(function (mutation) {
+        if ((document.getElementsByTagName("title").length > 0) && (!visited_title)) {
+            document.title = decodeURI(window.location.href.split("/").pop());
+            visited_title = true;
+        }
         if ((document.getElementsByTagName("body").length > 0) && (!visited_body)) {
             document.body.setAttribute('style', 'background-color: #fefcf4 !important;');
 
@@ -52,6 +57,7 @@ var observer = new MutationObserver(function (mutations) {
             // console.log("pre hidden");
         }
 
+        // console.log(document.getElementById("content"));
         if ((document.getElementById("content")) && (document.getElementById("content").innerHTML !== "") && (!visited_content)) {
             document.getElementById("loading").setAttribute("style", "visibility: hidden !important");
             document.getElementById("loading_img").setAttribute("style", "visibility: hidden !important");
