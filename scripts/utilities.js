@@ -10,6 +10,11 @@ function setHistory(filename, lineNumber) {
 function getHistory(filename) {
     if (localStorage.getItem(filename)) {
         let tempLine = localStorage.getItem(filename);
+        try {
+            tempLine = parseInt(tempLine) || 0;
+        } catch (error) {
+            tempLine = 0;
+        }
         console.log("History found! Go to line: ", tempLine);
         gotoLine(tempLine, false);
         return tempLine;

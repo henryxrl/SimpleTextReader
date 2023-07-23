@@ -79,7 +79,7 @@ function process(str, lineNumber, to_drop_cap) {
             // do nothing
             let tempSpan = document.createElement('span');
             tempSpan.innerHTML = current;
-            return [tempSpan, 't'];
+            return [tempSpan.firstChild, 't'];
         }
     } else {
         let current = optimization(str.trim());
@@ -155,6 +155,7 @@ function process(str, lineNumber, to_drop_cap) {
         } else {
             // return [current, 'e'];
             let tempSpan = document.createElement('span');
+            tempSpan.id = `line${lineNumber}`;
             tempSpan.innerHTML = current;
             return [tempSpan, 'e'];
         }
