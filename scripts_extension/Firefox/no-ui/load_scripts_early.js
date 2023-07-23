@@ -5,15 +5,12 @@ injectCustomImage('images/loading_geometry.gif', 'image/gif', function(path) {
 });
 
 
-
-
-
 function injectCustomImage(imgPath, imgType, callback) {
     let temp = document.createElement('link');
     temp.type = imgType;
     temp.rel = 'preload';
     temp.as = 'image';
-    temp.href = chrome.runtime.getURL(imgPath);
+    temp.href = browser.runtime.getURL(imgPath);
     temp.onload = function() {
         // var imgName = imgPath.split("/").pop().replace(".png", "").replace(".gif", "");
         // var evt = new CustomEvent(`injectCustomImageLoaded_${imgName}`, {

@@ -104,25 +104,29 @@ function getSize(size='1em', parent=document.body) {
 }
 
 function getSizePrecise(size='1em', parent=document.body) {
-    let l = document.createElement('div'), i = 1, s, t;
-    l.style.visibility = 'hidden';
-    l.style.boxSize = 'content-box';
-    l.style.position = 'absolute';
-    l.style.maxHeight = 'none';
-    l.style.height = size;
-    parent.appendChild(l);
-    t = l.clientHeight;
-    do {
-        if (t > 1789569.6) {
-            break;
-        }
-        s = t;
-        i *= 10;
-        l.style.height = `calc(${i}*${size})`;
+    if (isVariableDefined(parent)) {
+        let l = document.createElement('div'), i = 1, s, t;
+        l.style.visibility = 'hidden';
+        l.style.boxSize = 'content-box';
+        l.style.position = 'absolute';
+        l.style.maxHeight = 'none';
+        l.style.height = size;
+        parent.appendChild(l);
         t = l.clientHeight;
-    } while(t !== s * 10);
-    l.remove();
-    return t / i;
+        do {
+            if (t > 1789569.6) {
+                break;
+            }
+            s = t;
+            i *= 10;
+            l.style.height = `calc(${i}*${size})`;
+            t = l.clientHeight;
+        } while(t !== s * 10);
+        l.remove();
+        return t / i;
+    } else {
+        return -1;
+    }
 }
 
 function randomFloatFromInterval(min, max) {

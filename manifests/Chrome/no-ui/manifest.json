@@ -7,14 +7,14 @@
     "content_scripts": [
         {
             "matches": ["*://*/*.txt*", "file://*/*.txt*"],
-            "js": ["scripts_extension/no-ui/load_scripts_early.js"],
+            "js": ["scripts_extension/Chrome/no-ui/load_scripts_early.js"],
             "all_frames": true,
             "run_at": "document_start"
         },
         {
             "matches": ["*://*/*.txt*", "file://*/*.txt*"],
             "css": ["css/ui_variables.css", "css/ui.css", "css/reader.css", "css/footnotes.css"],
-            "js": ["scripts_extension/no-ui/load_scripts_late.js", "scripts_extension/no-ui/setupUI.js", "scripts/jquery.min.js", "scripts/jschardet.min.js", "scripts/css-global-variables.js", "scripts/regex_rules.js", "scripts/utilities.js", "scripts/footnotes.js", "scripts/ui_variables.js", "scripts/processText.js", "scripts/ui_helpers.js", "scripts/ui.js", "scripts_extension/no-ui/file_handler.js"],
+            "js": ["scripts_extension/Chrome/no-ui/load_scripts_late.js", "scripts_extension/Chrome/no-ui/setupUI.js", "scripts/jquery.min.js", "scripts/jschardet.min.js", "scripts/css-global-variables.js", "scripts/regex_rules.js", "scripts/utilities.js", "scripts/footnotes.js", "scripts/ui_variables.js", "scripts/processText.js", "scripts/ui_helpers.js", "scripts/ui.js", "scripts_extension/Chrome/no-ui/file_handler.js"],
             "all_frames": true,
             "run_at": "document_end"
         }
@@ -25,7 +25,7 @@
     "web_accessible_resources": [
         {
             "resources": [
-                "scripts_extension/no-ui/*",
+                "scripts_extension/Chrome/no-ui/*",
                 "scripts/*",
                 "fonts/*",
                 "images/*",

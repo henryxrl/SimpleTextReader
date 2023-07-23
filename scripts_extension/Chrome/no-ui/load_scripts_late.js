@@ -153,9 +153,9 @@ var interval = setInterval(function() {
                                 clearInterval(interval4);
 
                                 var js_path_receive_loaded_variables;
-                                injectAllCustomResources('scripts_extension/no-ui/receive_loaded_variables.js', function(path) {
-                                    // console.log("All custom resources loaded.");
-                                    // // console.log("img_path_drop: ", img_path_drop);
+                                injectAllCustomResources('scripts_extension/Chrome/no-ui/receive_loaded_variables.js', function(path) {
+                                    console.log("All custom resources loaded.");
+                                    // console.log("img_path_drop: ", img_path_drop);
                                     // console.log("img_path_stamp_CN: ", img_path_stamp_CN);
                                     // console.log("img_path_stamp_EN: ", img_path_stamp_EN);
                                     // console.log("img_path_note_CN: ", img_path_note_CN);
@@ -175,7 +175,7 @@ var interval = setInterval(function() {
                                     js_path_receive_loaded_variables = path;
 
                                     var js_path_file_handler;
-                                    injectCustomJs('scripts_extension/no-ui/file_handler.js', function(path) {
+                                    injectCustomJs('scripts_extension/Chrome/no-ui/file_handler.js', function(path) {
                                         // console.log("js_path_file_handler: ", path);
                                         js_path_file_handler = path;
                                     });
@@ -283,6 +283,7 @@ function injectCustomLink(linkPath, callback) {
     temp.type = 'text/css';
     temp.rel = 'stylesheet';
     temp.href = chrome.runtime.getURL(linkPath);
+    temp.crossOrigin = 'anonymous';
     temp.onload = function() {
         // var linkName = linkPath.split("/").pop().replace(".css", "");
         // var evt = new CustomEvent(`injectCustomLinkLoaded_${linkName}`, {

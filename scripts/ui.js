@@ -55,7 +55,10 @@ document.onkeydown = function(event) {
             jumpToPage(currentPage+1);
         break;
         case 'Escape':
-            resetUI();
+            // console.log("Escape pressed:", no_ui);
+            if (isVariableDefined(dropZone)) {
+                resetUI();
+            }
         break;
     }
 };

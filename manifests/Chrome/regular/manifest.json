@@ -4,7 +4,7 @@
     "description": "支持秒开本地的所有txt文件，自动排版，自动分页，自动生成目录。",
     "version": "1.0",
     "background": {
-        "service_worker": "scripts_extension/regular/activate.js"
+        "service_worker": "scripts_extension/Chrome/regular/activate.js"
     },
     "action": {},
     "content_security_policy": {

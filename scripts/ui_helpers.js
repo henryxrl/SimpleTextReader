@@ -9,46 +9,62 @@ function setMainContentUI() {
     // console.log("IN SETMAINCONTENTUI: style.ui_contentMarginLeft: " + style.ui_contentMarginLeft);
     style.ui_tocWidth = (100 - parseInt(style.ui_contentWidth) - parseInt(style.ui_windowLeftRightMargin) * 2 - parseInt(style.ui_gapWidth)).toString();
     style.ui_paginationCenter = (parseInt(style.ui_contentWidth) / 2 + parseInt(style.ui_contentMarginLeft)).toString();
-    contentContainer.style.width = style.ui_contentWidth + '%';
-    contentContainer.style.marginTop = '0px';
-    contentContainer.style.marginRight = '0px';
-    contentContainer.style.marginBottom = '0px';
-    contentContainer.style.marginLeft = style.ui_contentMarginLeft + '%';
-    tocWrapper.style.width = style.ui_tocWidth + '%';
-    tocWrapper.style.height = style.ui_tocHeight + '%';
-    tocWrapper.style.marginTop = '0px';
-    tocWrapper.style.marginRight = '0px';
-    tocWrapper.style.marginBottom = '0px';
-    tocWrapper.style.marginLeft = style.ui_windowLeftRightMargin + '%';
-    tocContainer.style.width = style.ui_tocWidth + '%';
-    tocContainer.style.height = 'auto';
-    paginationContainer.style.left = style.ui_paginationCenter + '%';
-    progressContainer.style.width = style.ui_tocWidth + '%';
-    progressContainer.style.marginTop = '2.5em';
-    progressContainer.style.marginRight = '0';
-    progressContainer.style.marginBottom = '2.5em';
-    progressContainer.style.marginLeft = style.ui_windowLeftRightMargin + '%';
-    progressContainer.style.top = '75%';
+    if (isVariableDefined(contentContainer)) {
+        contentContainer.style.width = style.ui_contentWidth + '%';
+        contentContainer.style.marginTop = '0px';
+        contentContainer.style.marginRight = '0px';
+        contentContainer.style.marginBottom = '0px';
+        contentContainer.style.marginLeft = style.ui_contentMarginLeft + '%';
+    }
+    if (isVariableDefined(tocWrapper)) {
+        tocWrapper.style.width = style.ui_tocWidth + '%';
+        tocWrapper.style.height = style.ui_tocHeight + '%';
+        tocWrapper.style.marginTop = '0px';
+        tocWrapper.style.marginRight = '0px';
+        tocWrapper.style.marginBottom = '0px';
+        tocWrapper.style.marginLeft = style.ui_windowLeftRightMargin + '%';
+    }
+    if (isVariableDefined(tocContainer)) {
+        tocContainer.style.width = style.ui_tocWidth + '%';
+        tocContainer.style.height = 'auto';
+    }
+    if (isVariableDefined(paginationContainer)) {
+        paginationContainer.style.left = style.ui_paginationCenter + '%';
+    }
+    if (isVariableDefined(progressContainer)) {
+        progressContainer.style.width = style.ui_tocWidth + '%';
+        progressContainer.style.marginTop = '2.5em';
+        progressContainer.style.marginRight = '0';
+        progressContainer.style.marginBottom = '2.5em';
+        progressContainer.style.marginLeft = style.ui_windowLeftRightMargin + '%';
+        progressContainer.style.top = '75%';
+    }
 }
 
 function updateTOCUI(isIncreasing) {
-    tocWrapper.style.height = style.ui_tocHeight + '%';
-    tocContainer.style.height = 'auto';
-    if (tocContainer.scrollHeight > (window.innerHeight * 0.5)) {
-        tocContainer.style.height = '50%';
+    if (isVariableDefined(tocWrapper)) {
+        tocWrapper.style.height = style.ui_tocHeight + '%';
+    }
+    if (isVariableDefined(tocContainer)) {
+        tocContainer.style.height = 'auto';
+        if (tocContainer.scrollHeight > (window.innerHeight * 0.5)) {
+            tocContainer.style.height = '50%';
+        }
     }
 
-    if (!isIncreasing) {
-        if (((paginationContainer.offsetWidth) > (contentContainer.offsetWidth * 0.5)) && (parseInt(style.ui_numPaginationItems) > 5)) {
-            style.ui_numPaginationItems = (parseInt(style.ui_numPaginationItems) - 2).toString();
-            style.ui_numPaginationItems = (Math.max(parseInt(style.ui_numPaginationItems), 5)).toString();
-            generatePagination();
-        }
-    } else {
-        if (((paginationContainer.offsetWidth + 2*(paginationContainer.offsetWidth / (parseInt(style.ui_numPaginationItems) + 2))) < (contentContainer.offsetWidth * 0.5)) && (parseInt(style.ui_numPaginationItems) < 9)) {
-            style.ui_numPaginationItems = (parseInt(style.ui_numPaginationItems) + 2).toString();
-            style.ui_numPaginationItems = (Math.min(parseInt(style.ui_numPaginationItems), 9)).toString();
-            generatePagination();
+    if (isVariableDefined(paginationContainer)) {
+        if (!isIncreasing) {
+            if (((paginationContainer.offsetWidth) > (contentContainer.offsetWidth * 0.5)) && (parseInt(style.ui_numPaginationItems) > 5)) {
+                style.ui_numPaginationItems = (parseInt(style.ui_numPaginationItems) - 2).toString();
+                style.ui_numPaginationItems = (Math.max(parseInt(style.ui_numPaginationItems), 5)).toString();
+                generatePagination();
+            }
+        } else {
+            if (((paginationContainer.offsetWidth + 2*(paginationContainer.offsetWidth / (parseInt(style.ui_numPaginationItems) + 2))) < (contentContainer.offsetWidth * 0.5)) && (parseInt(style.ui_numPaginationItems) < 9)) {
+                style.ui_numPaginationItems = (parseInt(style.ui_numPaginationItems) + 2).toString();
+                style.ui_numPaginationItems = (Math.min(parseInt(style.ui_numPaginationItems), 9)).toString();
+                generatePagination();
+            }
         }
     }
 }
