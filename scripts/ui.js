@@ -563,7 +563,15 @@ function GetScrollPositions() {
     // let readingProgressText = eval(`style.ui_readingProgress_${style.ui_LANG}`);
     let readingProgressText = style.ui_LANG === "CN" ? style.ui_readingProgress_CN : style.ui_readingProgress_EN;
     readingProgressText = style.ui_LANG === "CN" ? readingProgressText : readingProgressText.replace("：", ":");
-    progressContainer.innerHTML = `<span style='text-decoration:underline'>${bookAndAuthor.bookName}</span><br/>${readingProgressText} ${(curLineNumber / fileContentChunks.length * 100).toFixed(1)}%`;
+    
+    // progressContainer.innerHTML = `<span style='text-decoration:underline'>${bookAndAuthor.bookName}</span><br/>${readingProgressText} ${((curLineNumber + 1) / fileContentChunks.length * 100).toFixed(1)}%`;
+    let pastPageLines = (currentPage - 1) * itemsPerPage;
+    let curItemsPerPage = Math.min(itemsPerPage, (fileContentChunks.length - pastPageLines));
+    let curPagePercentage = (curLineNumber + 1 - pastPageLines) / (curItemsPerPage - getBottomLineNumber() + curLineNumber);
+    let scalePercentage = curItemsPerPage / fileContentChunks.length;
+    let pastPagePercentage = pastPageLines / fileContentChunks.length;
+    let totalPercentage = (curPagePercentage * scalePercentage + pastPagePercentage) * 100;
+    progressContainer.innerHTML = `<span style='text-decoration:underline'>${bookAndAuthor.bookName}</span><br/>${readingProgressText} ${totalPercentage.toFixed(1)}%`;
 
     gotoTitle_Clicked = false;
 }
@@ -632,6 +640,16 @@ function getTopLineNumber() {
         if (isInViewport(contentContainer.children[i])) {
             curLineNumber = parseInt(contentContainer.children[i].id.replace('line', ''));
             break;
+        }
+    }
+    return curLineNumber;
+}
+
+function getBottomLineNumber() {
+    let curLineNumber = 0;
+    for (i in contentContainer.children) {
+        if (isInViewport(contentContainer.children[i])) {
+            curLineNumber = parseInt(contentContainer.children[i].id.replace('line', ''));
         }
     }
     return curLineNumber;
