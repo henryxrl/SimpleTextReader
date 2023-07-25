@@ -214,6 +214,7 @@ function handleSelectedFile(fileList) {
             showCurrentPageContent();
             generatePagination();
             updateTOCUI(false);
+            GetScrollPositions();
 
             // Retrieve reading history if exists
             // removeAllHistory();    // for debugging

@@ -22,7 +22,7 @@ var titlePageLineNumberOffset = 0;
 
 // document.title = eval(`style.ui_title_${style.ui_LANG}`);
 if (!isVariableDefined(document.title)) {
-    document.title = style.ui_LANG === "CN" ? style.ui_title_CN : style.ui_title_EN;
+    document.title = (style.ui_LANG === "CN" ? style.ui_title_CN : style.ui_title_EN) || "易笺";
 }
 var dropZone = document.getElementById('dropZone');
 var loadingScreen = document.getElementById('loading');

@@ -89,6 +89,7 @@ function setupUI_content () {
     showCurrentPageContent();
     generatePagination();
     updateTOCUI(false);
+    GetScrollPositions();
 
     // Retrieve reading history if exists
     // removeAllHistory();    // for debugging
