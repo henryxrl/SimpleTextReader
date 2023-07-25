@@ -5,6 +5,7 @@ var init = true;
 var filename = "";
 var fileContentChunks = []; // Declare the variable outside the handleDrop function
 var allTitles = [];
+var encodingLookupByteLength = 1000;
 var isEasternLan = true;
 var itemsPerPage = 200;
 var currentPage = 1;

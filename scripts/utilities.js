@@ -16,7 +16,10 @@ function getHistory(filename) {
             tempLine = 0;
         }
         console.log("History found! Go to line: ", tempLine);
-        gotoLine(tempLine, false);
+        let success = gotoLine(tempLine, false);
+        if (success === -1) {
+            tempLine = 0;
+        }
         return tempLine;
     }
     return 0;

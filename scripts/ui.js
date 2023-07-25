@@ -138,8 +138,13 @@ function handleSelectedFile(fileList) {
         fileReader.onload = function (event) {
             event.preventDefault();
             // Detect encoding
-            const text = String.fromCharCode.apply(null, new Uint8Array(fileReader.result.slice(0, 1000)));
-            const detectedEncoding = jschardet.detect(text).encoding;
+            let tempBuffer = new Uint8Array(fileReader.result.slice(0, encodingLookupByteLength));
+            while (tempBuffer.byteLength < encodingLookupByteLength) {
+                // make copies of tempBuffer till it is more than 1000 bytes
+                tempBuffer = new Uint8Array([...tempBuffer, ...tempBuffer]);
+            }
+            const text = String.fromCharCode.apply(null, tempBuffer);
+            const detectedEncoding = jschardet.detect(text).encoding || "utf-8";
             console.log('Encoding:', detectedEncoding);
     
             // Get file content
@@ -207,13 +212,16 @@ function handleSelectedFile(fileList) {
             // Show content
             init = false;
             showCurrentPageContent();
-            window.scrollBy(0, 1);  // scroll 1 pixel so that if the first line is a header, it will show up in TOC
             generatePagination();
             updateTOCUI(false);
 
             // Retrieve reading history if exists
             // removeAllHistory();    // for debugging
-            getHistory(filename);
+            let curLineNumber = getHistory(filename);
+            if ((currentPage === 1) && (curLineNumber === 0) && (window.scrollY === 0)) {
+                // if the first line is a header, it will show up in TOC
+                setTitleActive(curLineNumber);
+            }
         };
 
         fileReader.onloadstart = function (event) {
@@ -515,11 +523,13 @@ function gotoLine(lineNumber, isTitle=true) {
             }
         } catch (error) {
             console.log(`Error: No tag with id 'line${lineNumber}' found.`);
+            return -1;
         }
     }
 
     // Remember the line number in history
     setHistory(filename, lineNumber);
+    return 0;
 }
 
 function GetScrollPositions() {
@@ -571,7 +581,10 @@ function GetScrollPositions() {
     let scalePercentage = curItemsPerPage / fileContentChunks.length;
     let pastPagePercentage = pastPageLines / fileContentChunks.length;
     let totalPercentage = (curPagePercentage * scalePercentage + pastPagePercentage) * 100;
-    progressContainer.innerHTML = `<span style='text-decoration:underline'>${bookAndAuthor.bookName}</span><br/>${readingProgressText} ${totalPercentage.toFixed(1)}%`;
+    if ((curLineNumber === 0) && (currentPage === 1) && (window.scrollY <= 5)) {
+        totalPercentage = 0;
+    }
+    progressContainer.innerHTML = `<span style='text-decoration:underline'>${bookAndAuthor.bookName}</span><br/>${readingProgressText} ${totalPercentage.toFixed(1).replace(".0", "")}%`;
 
     gotoTitle_Clicked = false;
 }

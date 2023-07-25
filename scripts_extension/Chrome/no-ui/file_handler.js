@@ -87,11 +87,14 @@ function setupUI_content () {
     // Show content
     init = false;
     showCurrentPageContent();
-    window.scrollBy(0, 1);  // scroll 1 pixel so that if the first line is a header, it will show up in TOC
     generatePagination();
     updateTOCUI(false);
 
     // Retrieve reading history if exists
     // removeAllHistory();    // for debugging
-    getHistory(filename);
+    let curLineNumber = getHistory(filename);
+    if ((currentPage === 1) && (curLineNumber === 0) && (window.scrollY === 0)) {
+        // if the first line is a header, it will show up in TOC
+        setTitleActive(curLineNumber);
+    }
 }
