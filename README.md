@@ -20,6 +20,16 @@ To utilize either version, navigate to the `manifests` directory, choose either 
 
 Now SimpleTextReader can be installed as a PWA in supported browsers (Chromium-based browsers such as Chrome and Edge).
 
+### Desktop Application
+
+Added code to package the web project as a desktop application using Tauri.
+
+To build and compile the software, please follow these steps:
+
+1. Install Tauri by following the prerequisites mentioned in the [Tauri Documentation](https://tauri.app/v1/guides/getting-started/prerequisites).
+2. Run the following command in your terminal: `cargo tauri build`
+3. After compiling, the resulting files can be found in the `src-tauri\target\release\bundle` folder.
+
 ---
 
 ### This project is only for personal use and for learning purpose, not for commercial use.
