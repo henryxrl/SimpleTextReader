@@ -2,14 +2,8 @@
   "build": {
     "beforeBuildCommand": "",
     "beforeDevCommand": "",
-    "devPath": "..",
-    "distDir": [
-      "../css",
-      "../fonts",
-      "../images",
-      "../scripts",
-      "../index.html"
-    ]
+    "devPath": "../src",
+    "distDir": "../src"
   },
   "package": {
     "productName": "SimpleTextReader",
