@@ -31,6 +31,6 @@ jobs:
       - name: Upload File To CDN
         id: upload
         run: |
-          rm -rf *.git
+          rm -rf .git .github azcopy*
           azcopy cp --recursive  './*' 'https://simpletextreader.blob.core.windows.net/$web'
           az cdn endpoint purge --resource-group kube-group --name simpletextreader --profile-name simpletextreader --content-paths "/*" --no-wait
