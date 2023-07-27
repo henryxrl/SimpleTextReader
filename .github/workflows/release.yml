@@ -22,6 +22,7 @@ jobs:
         run: |
             curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
             wget https://aka.ms/downloadazcopy-v10-linux && tar -xvf downloadazcopy-v10-linux && sudo cp ./azcopy_linux_amd64_*/azcopy /usr/bin/
+            rm -rf azcopy_linux_amd64_*
       - name: Login To Azure
         id: login
         run: |
@@ -31,6 +32,5 @@ jobs:
       - name: Upload File To CDN
         id: upload
         run: |
-          rm -rf .git .github azcopy*
-          azcopy cp --recursive  './*' 'https://simpletextreader.blob.core.windows.net/$web'
+          azcopy cp --recursive --exclude-path '.git;.github' './*' 'https://simpletextreader.blob.core.windows.net/$web'
           az cdn endpoint purge --resource-group kube-group --name simpletextreader --profile-name simpletextreader --content-paths "/*" --no-wait
