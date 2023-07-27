@@ -1,0 +1,36 @@
+name: Release Static File To CDN
+
+on:
+  push:
+    tags:
+      - v*
+      - V*
+jobs:
+  push_to_cdn:
+    name: Release Static File To CDN
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_VERSION: 5.2.1
+      DOCKER_CHAIN_NAME: optimism
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Install Azure Tools
+        id: meta
+        run: |
+            curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+            wget https://aka.ms/downloadazcopy-v10-linux && tar -xvf downloadazcopy-v10-linux && sudo cp ./azcopy_linux_amd64_*/azcopy /usr/bin/
+      - name: Login To Azure
+        id: login
+        run: |
+            az login --service-principal -u ${{ secrets.AZURE_APPLICATION_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+            export AZCOPY_SPA_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}
+            azcopy login --service-principal --application-id ${{ secrets.AZURE_APPLICATION_ID }} --tenant-id ${{ secrets.AZURE_TENANT_ID }}
+      - name: Upload File To CDN
+        id: upload
+        run: |
+          rm -rf *.git
+          azcopy cp --recursive  './*' 'https://simpletextreader.blob.core.windows.net/$web'
+          az cdn endpoint purge --resource-group kube-group --name simpletextreader --profile-name simpletextreader --content-paths "/*" --no-wait
