@@ -2,7 +2,9 @@
 
 SimpleTextReader is the online text reader that simulates the result of SimpleEpub2, providing a web-based reading experience.
 
-Try it here: [https://txt.xrl.app](https://txt.xrl.app)
+Official site: [https://reader.yijian.app](https://reader.yijian.app)
+
+Big thanks to [Manjusaka](https://github.com/Zheaoli) for his amazing help and hosting 易笺! Really appreciate it!
 
 ## Important Updates
 
