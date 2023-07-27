@@ -20,6 +20,14 @@ To utilize either version, navigate to the `manifests` directory, choose either 
 
 Now SimpleTextReader can be installed as a PWA in supported browsers (Chromium-based browsers such as Chrome and Edge).
 
+Now in Firefox store!
+
+1. [Regular (EN)](https://addons.mozilla.org/en-US/firefox/addon/yijian/) | [易笺 (CN)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
+
+1. [No-UI (EN)](https://addons.mozilla.org/en-US/firefox/addon/yijian_nogui/) | [易笺无界面版 (CN)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian_nogui/)
+
+Chrome/Edge store extensions will be coming soon.
+
 ---
 
 ### This project is only for personal use and for learning purpose, not for commercial use.
