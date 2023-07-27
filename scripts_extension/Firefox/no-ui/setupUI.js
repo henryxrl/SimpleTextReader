@@ -32,6 +32,13 @@ var observer = new MutationObserver(function (mutations) {
             let progress = document.createElement('div');
             progress.setAttribute('id', 'progress');
             progress.setAttribute('class', 'uifont prevent-select');
+            let progressTitle = document.createElement('span');
+            progressTitle.setAttribute('id', 'progress-title');
+            progress.appendChild(progressTitle);
+            progress.appendChild(document.createElement('br'));
+            let progressContent = document.createElement('span');
+            progressContent.setAttribute('id', 'progress-content');
+            progress.appendChild(progressContent);
             document.body.appendChild(progress);
 
             let content = document.createElement('div');

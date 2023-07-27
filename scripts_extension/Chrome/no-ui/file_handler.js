@@ -60,7 +60,7 @@ function setupUI_content () {
             }
 
             // process all footnotes
-            fileContentChunks[i] = makeFootNote(fileContentChunks[i]);
+            fileContentChunks[i] = makeFootNote(fileContentChunks[i], (style.ui_LANG === "CN" ? paths.img_path_note_CN : paths.img_path_note_EN));
         }
     }
     // console.log(allTitles);
@@ -69,11 +69,11 @@ function setupUI_content () {
     // setMainContentUI();
 
     // Add title page
-    let stampRotation = (style.ui_LANG === "EN") ? `transform:rotate(${randomFloatFromInterval(-50, 80)}deg)` : "";
-    // fileContentChunks.unshift(`<div id=line${(titlePageLineNumberOffset - 1)} class='prevent-select stamp'><img id='stamp_${style.ui_LANG}' src='${eval(`paths.img_path_stamp_${style.ui_LANG}`)}' style='left:calc(${randomFloatFromInterval(0, 1)} * (100% - ${`style.stamp_width_${style.ui_LANG}`})); ${stampRotation}'/></div>`);
-    let stampSrc = (style.ui_LANG === "CN") ? paths.img_path_stamp_CN : paths.img_path_stamp_EN;
-    // console.log("ui_LANG", style.ui_LANG, "stampSrc: ", stampSrc);
-    fileContentChunks.unshift(`<div id=line${(titlePageLineNumberOffset - 1)} class='prevent-select stamp'><img id='stamp_${style.ui_LANG}' src='${stampSrc}' style='left:calc(${randomFloatFromInterval(0, 1)} * (100% - ${style.ui_LANG === 'CN' ? style.stamp_width_CN : style.stamp_width_EN})); ${stampRotation}'/></div>`);
+    let sealRotation = (style.ui_LANG === "EN") ? `transform:rotate(${randomFloatFromInterval(-50, 80)}deg)` : "";
+    // fileContentChunks.unshift(`<div id=line${(titlePageLineNumberOffset - 1)} class='prevent-select seal'><img id='seal_${style.ui_LANG}' src='${eval(`paths.img_path_seal_${style.ui_LANG}`)}' style='left:calc(${randomFloatFromInterval(0, 1)} * (100% - ${`style.seal_width_${style.ui_LANG}`})); ${sealRotation}'/></div>`);
+    let sealSrc = (style.ui_LANG === "CN") ? paths.img_path_seal_CN : paths.img_path_seal_EN;
+    // console.log("ui_LANG", style.ui_LANG, "sealSrc: ", sealSrc);
+    fileContentChunks.unshift(`<div id=line${(titlePageLineNumberOffset - 1)} class='prevent-select seal'><img id='seal_${style.ui_LANG}' src='${sealSrc}' style='left:calc(${randomFloatFromInterval(0, 1)} * (100% - ${style.ui_LANG === 'CN' ? style.seal_width_CN : style.seal_width_EN})); ${sealRotation}'/></div>`);
     if (bookAndAuthor.author !== "") {
         fileContentChunks.unshift(`<h1 id=line1 style='margin-top:0; margin-bottom:${(parseFloat(style.h1_lineHeight)/2)}em'>${bookAndAuthor.author}</h1>`);
         fileContentChunks.unshift(`<h1 id=line0 style='margin-bottom:0'>${bookAndAuthor.bookName}</h1>`);
@@ -89,7 +89,7 @@ function setupUI_content () {
     showCurrentPageContent();
     generatePagination();
     updateTOCUI(false);
-    GetScrollPositions();
+    GetScrollPositions(toSetHistory=false);
 
     // Retrieve reading history if exists
     // removeAllHistory();    // for debugging

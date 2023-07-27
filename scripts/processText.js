@@ -51,8 +51,8 @@ function process(str, lineNumber, to_drop_cap) {
         current = str.trim();
         if (current.slice(1, 3) === "h1") {
             let wrapper= document.createElement('div');
-            wrapper.innerHTML= current;
-            let tempElement = wrapper.firstChild;
+            wrapper.innerHTML = current;
+            let tempElement = wrapper.firstElementChild;
             // tempElement.innerHTML = `<a href='#line${lineNumber}' onclick='gotoLine(${lineNumber})' class='prevent-select title'>${tempElement.innerHTML}</a>`;
 
             let tempAnchor = document.createElement('a');
@@ -79,7 +79,7 @@ function process(str, lineNumber, to_drop_cap) {
             // do nothing
             let tempSpan = document.createElement('span');
             tempSpan.innerHTML = current;
-            return [tempSpan.firstChild, 't'];
+            return [tempSpan.firstElementChild, 't'];
         }
     } else {
         let current = optimization(str.trim());
@@ -123,9 +123,9 @@ function process(str, lineNumber, to_drop_cap) {
                         tempP.classList.add('first');
                         let tempSpan = document.createElement('span');
                         tempSpan.classList.add('dropCap');
-                        tempSpan.innerHTML = current.slice(0, index+1);
-                        tempP.innerHTML = tempSpan.outerHTML + current.slice(index+1);
-                        // tempP.appendChild(tempSpan);
+                        tempSpan.innerText = current.slice(0, index+1);
+                        tempP.appendChild(tempSpan);
+                        tempP.innerHTML += current.slice(index+1);
 
                         return [tempP, 'p'];
                     } else {
@@ -136,9 +136,9 @@ function process(str, lineNumber, to_drop_cap) {
                         tempP.classList.add('first');
                         let tempSpan = document.createElement('span');
                         tempSpan.classList.add('dropCap');
-                        tempSpan.innerHTML = current[0];
-                        tempP.innerHTML = tempSpan.outerHTML + current.slice(1);
-                        // tempP.appendChild(tempSpan);
+                        tempSpan.innerText = current[0];
+                        tempP.appendChild(tempSpan);
+                        tempP.innerHTML += current.slice(1);
 
                         return [tempP, 'p'];
                     }
@@ -156,7 +156,7 @@ function process(str, lineNumber, to_drop_cap) {
             // return [current, 'e'];
             let tempSpan = document.createElement('span');
             tempSpan.id = `line${lineNumber}`;
-            tempSpan.innerHTML = current;
+            tempSpan.innerText = current;
             return [tempSpan, 'e'];
         }
     }
@@ -214,7 +214,7 @@ function getBookNameAndAuthor(str) {
     }
 }
 
-function makeFootNote(str) {
+function makeFootNote(str, footNoteImgPath) {
     let current = str.trim();
 
     // Find if footnote characters exist
@@ -223,7 +223,11 @@ function makeFootNote(str) {
 
         if (allMatches.length == 1 && current.indexOf(allMatches[0]) == 0) {
             // this is the actual footnote itself
-            footNoteContainer.innerHTML += `<li id='fn${footnote_proccessed_counter}'>${current.slice(1)}</li>`;
+            // footNoteContainer.innerHTML += `<li id='fn${footnote_proccessed_counter}'>${current.slice(1)}</li>`;
+            let tempLi = document.createElement('li');
+            tempLi.id = `fn${footnote_proccessed_counter}`;
+            tempLi.innerText = current.slice(1);
+            footNoteContainer.appendChild(tempLi);
             footnote_proccessed_counter++;
             return "";
         } else {
@@ -232,7 +236,7 @@ function makeFootNote(str) {
                 // console.log("footnote.length: ", footnotes.length);
                 // console.log("Found footnote: ", allMatches[i]);
                 let curIndex = current.indexOf(allMatches[i]);
-                current = `${current.slice(0, curIndex)}<a rel="footnote" href="#fn${footnotes.length}"><img class="footnote_img" src="images/note_${style.ui_LANG}.png"/></a>${current.slice(curIndex + 1)}`;
+                current = `${current.slice(0, curIndex)}<a rel="footnote" href="#fn${footnotes.length}"><img class="footnote_img" src="${footNoteImgPath}"/></a>${current.slice(curIndex + 1)}`;
                 footnotes.push(allMatches[i]);
             }
         }
