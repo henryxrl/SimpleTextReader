@@ -25,8 +25,8 @@ jobs:
       - name: Login To Azure
         id: login
         run: |
-            az login --service-principal -u ${{ secrets.AZURE_APPLICATION_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-            export AZCOPY_SPA_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}
+            az login --service-principal -u ${{ secrets.AZURE_APPLICATION_ID }} -p ${{ secrets.AZURE_CLIENT_SECRECT }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+            export AZCOPY_SPA_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRECT }}
             azcopy login --service-principal --application-id ${{ secrets.AZURE_APPLICATION_ID }} --tenant-id ${{ secrets.AZURE_TENANT_ID }}
       - name: Upload File To CDN
         id: upload
