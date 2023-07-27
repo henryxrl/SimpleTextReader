@@ -29,11 +29,11 @@ injectCustomFont('fonts/qiji-combo.woff', 'font/woff', function(path) {
     // console.log("font_path_title: ", path);
     font_path_title = path;
 });
-var font_path_body;
-injectCustomFont('fonts/FZSKBXKK.woff2', 'font/woff2', function(path) {
-    // console.log("font_path_body: ", path);
-    font_path_body = path;
-});
+// var font_path_body;
+// injectCustomFont('fonts/FZSKBXKK.woff2', 'font/woff2', function(path) {
+//     // console.log("font_path_body: ", path);
+//     font_path_body = path;
+// });
 var font_path_ui;
 injectCustomFont('fonts/LXGWWenKai-Regular.woff2', 'font/woff2', function(path) {
     // console.log("font_path_ui: ", path);
@@ -47,15 +47,15 @@ injectCustomImage('images/drop.png', 'image/png', function(path) {
     // console.log("img_path_drop: ", path);
     img_path_drop = path;
 });
-var img_path_stamp_CN;
-injectCustomImage('images/stamp_CN.png', 'image/png', function(path) {
-    // console.log("img_path_stamp_CN: ", path);
-    img_path_stamp_CN = path;
+var img_path_seal_CN;
+injectCustomImage('images/seal_CN.png', 'image/png', function(path) {
+    // console.log("img_path_seal_CN: ", path);
+    img_path_seal_CN = path;
 });
-var img_path_stamp_EN;
-injectCustomImage('images/stamp_EN.png', 'image/png', function(path) {
-    // console.log("img_path_stamp_EN: ", path);
-    img_path_stamp_EN = path;
+var img_path_seal_EN;
+injectCustomImage('images/seal_EN.png', 'image/png', function(path) {
+    // console.log("img_path_seal_EN: ", path);
+    img_path_seal_EN = path;
 });
 var img_path_note_CN;
 injectCustomImage('images/note_CN.png', 'image/png', function(path) {
@@ -98,7 +98,7 @@ injectCustomJs('scripts/utilities.js', function(path) {
 
 // Load resources in order!!
 var interval = setInterval(function() {
-    if (isVariableDefined(css_path_ui_variables) && isVariableDefined(css_path_ui) && isVariableDefined(css_path_reader) && isVariableDefined(css_path_footnotes) && isVariableDefined(font_path_title) && isVariableDefined(font_path_body) && isVariableDefined(font_path_ui) && isVariableDefined(img_path_drop) && isVariableDefined(img_path_stamp_CN) && isVariableDefined(img_path_stamp_EN) && isVariableDefined(img_path_note_CN) && isVariableDefined(img_path_note_EN) && isVariableDefined(js_path_jquery) && isVariableDefined(js_path_jschardet) && isVariableDefined(js_path_css_global_variables) && isVariableDefined(js_path_regex_rules) && isVariableDefined(js_path_utilities)) {
+    if (isVariableDefined(css_path_ui_variables) && isVariableDefined(css_path_ui) && isVariableDefined(css_path_reader) && isVariableDefined(css_path_footnotes) && isVariableDefined(font_path_title) && isVariableDefined(font_path_ui) && isVariableDefined(img_path_drop) && isVariableDefined(img_path_seal_CN) && isVariableDefined(img_path_seal_EN) && isVariableDefined(img_path_note_CN) && isVariableDefined(img_path_note_EN) && isVariableDefined(js_path_jquery) && isVariableDefined(js_path_jschardet) && isVariableDefined(js_path_css_global_variables) && isVariableDefined(js_path_regex_rules) && isVariableDefined(js_path_utilities)) {
         console.log('Resources that are required to load first are loaded.');
         clearInterval(interval);
 
@@ -122,7 +122,7 @@ var interval = setInterval(function() {
 
 
         var interval2 = setInterval(function() {
-            if (isVariableDefined(css_path_ui_variables) && isVariableDefined(css_path_ui) && isVariableDefined(css_path_reader) && isVariableDefined(css_path_footnotes) && isVariableDefined(font_path_title) && isVariableDefined(font_path_body) && isVariableDefined(font_path_ui) && isVariableDefined(img_path_drop) && isVariableDefined(img_path_stamp_CN) && isVariableDefined(img_path_stamp_EN) && isVariableDefined(img_path_note_CN) && isVariableDefined(img_path_note_EN) && isVariableDefined(js_path_jquery) && isVariableDefined(js_path_jschardet) && isVariableDefined(js_path_css_global_variables) && isVariableDefined(js_path_regex_rules) && isVariableDefined(js_path_utilities) && isVariableDefined(js_path_footnotes) && isVariableDefined(js_path_ui_variables) && isVariableDefined(js_path_processText)) {
+            if (isVariableDefined(css_path_ui_variables) && isVariableDefined(css_path_ui) && isVariableDefined(css_path_reader) && isVariableDefined(css_path_footnotes) && isVariableDefined(font_path_title) && isVariableDefined(font_path_ui) && isVariableDefined(img_path_drop) && isVariableDefined(img_path_seal_CN) && isVariableDefined(img_path_seal_EN) && isVariableDefined(img_path_note_CN) && isVariableDefined(img_path_note_EN) && isVariableDefined(js_path_jquery) && isVariableDefined(js_path_jschardet) && isVariableDefined(js_path_css_global_variables) && isVariableDefined(js_path_regex_rules) && isVariableDefined(js_path_utilities) && isVariableDefined(js_path_footnotes) && isVariableDefined(js_path_ui_variables) && isVariableDefined(js_path_processText)) {
                 console.log('Subsequent resources are loaded.');
                 clearInterval(interval2);
 
@@ -135,7 +135,7 @@ var interval = setInterval(function() {
 
 
                 var interval3 = setInterval(function() {
-                    if (isVariableDefined(css_path_ui_variables) && isVariableDefined(css_path_ui) && isVariableDefined(css_path_reader) && isVariableDefined(css_path_footnotes) && isVariableDefined(font_path_title) && isVariableDefined(font_path_body) && isVariableDefined(font_path_ui) && isVariableDefined(img_path_drop) && isVariableDefined(img_path_stamp_CN) && isVariableDefined(img_path_stamp_EN) && isVariableDefined(img_path_note_CN) && isVariableDefined(img_path_note_EN) && isVariableDefined(js_path_jquery) && isVariableDefined(js_path_jschardet) && isVariableDefined(js_path_css_global_variables) && isVariableDefined(js_path_regex_rules) && isVariableDefined(js_path_utilities) && isVariableDefined(js_path_footnotes) && isVariableDefined(js_path_ui_variables) && isVariableDefined(js_path_processText) && isVariableDefined(js_path_ui_helpers)) {
+                    if (isVariableDefined(css_path_ui_variables) && isVariableDefined(css_path_ui) && isVariableDefined(css_path_reader) && isVariableDefined(css_path_footnotes) && isVariableDefined(font_path_title) && isVariableDefined(font_path_ui) && isVariableDefined(img_path_drop) && isVariableDefined(img_path_seal_CN) && isVariableDefined(img_path_seal_EN) && isVariableDefined(img_path_note_CN) && isVariableDefined(img_path_note_EN) && isVariableDefined(js_path_jquery) && isVariableDefined(js_path_jschardet) && isVariableDefined(js_path_css_global_variables) && isVariableDefined(js_path_regex_rules) && isVariableDefined(js_path_utilities) && isVariableDefined(js_path_footnotes) && isVariableDefined(js_path_ui_variables) && isVariableDefined(js_path_processText) && isVariableDefined(js_path_ui_helpers)) {
                         console.log('UI related resources are loaded.');
                         clearInterval(interval3);
 
@@ -148,7 +148,7 @@ var interval = setInterval(function() {
 
 
                         var interval4 = setInterval(function() {
-                            if (isVariableDefined(css_path_ui_variables) && isVariableDefined(css_path_ui) && isVariableDefined(css_path_reader) && isVariableDefined(css_path_footnotes) && isVariableDefined(font_path_title) && isVariableDefined(font_path_body) && isVariableDefined(font_path_ui) && isVariableDefined(img_path_drop) && isVariableDefined(img_path_stamp_CN) && isVariableDefined(img_path_stamp_EN) && isVariableDefined(img_path_note_CN) && isVariableDefined(img_path_note_EN) && isVariableDefined(js_path_jquery) && isVariableDefined(js_path_jschardet) && isVariableDefined(js_path_css_global_variables) && isVariableDefined(js_path_regex_rules) && isVariableDefined(js_path_utilities) && isVariableDefined(js_path_footnotes) && isVariableDefined(js_path_ui_variables) && isVariableDefined(js_path_processText) && isVariableDefined(js_path_ui_helpers) && isVariableDefined(js_path_ui)) {
+                            if (isVariableDefined(css_path_ui_variables) && isVariableDefined(css_path_ui) && isVariableDefined(css_path_reader) && isVariableDefined(css_path_footnotes) && isVariableDefined(font_path_title) && isVariableDefined(font_path_ui) && isVariableDefined(img_path_drop) && isVariableDefined(img_path_seal_CN) && isVariableDefined(img_path_seal_EN) && isVariableDefined(img_path_note_CN) && isVariableDefined(img_path_note_EN) && isVariableDefined(js_path_jquery) && isVariableDefined(js_path_jschardet) && isVariableDefined(js_path_css_global_variables) && isVariableDefined(js_path_regex_rules) && isVariableDefined(js_path_utilities) && isVariableDefined(js_path_footnotes) && isVariableDefined(js_path_ui_variables) && isVariableDefined(js_path_processText) && isVariableDefined(js_path_ui_helpers) && isVariableDefined(js_path_ui)) {
                                 console.log('All resources are loaded.');
                                 clearInterval(interval4);
 
@@ -156,8 +156,8 @@ var interval = setInterval(function() {
                                 injectAllCustomResources('scripts_extension/Firefox/no-ui/receive_loaded_variables.js', function(path) {
                                     console.log("All custom resources loaded.");
                                     // console.log("img_path_drop: ", img_path_drop);
-                                    // console.log("img_path_stamp_CN: ", img_path_stamp_CN);
-                                    // console.log("img_path_stamp_EN: ", img_path_stamp_EN);
+                                    // console.log("img_path_seal_CN: ", img_path_seal_CN);
+                                    // console.log("img_path_seal_EN: ", img_path_seal_EN);
                                     // console.log("img_path_note_CN: ", img_path_note_CN);
                                     // console.log("img_path_note_EN: ", img_path_note_EN);
                                     // console.log("js_path_jquery: ", js_path_jquery);
@@ -204,8 +204,8 @@ function injectAllCustomResources(jsPath, callback) {
     temp.onload = function() {
         var details = cloneInto({
             "img_path_drop": img_path_drop,
-            "img_path_stamp_CN": img_path_stamp_CN,
-            "img_path_stamp_EN": img_path_stamp_EN,
+            "img_path_seal_CN": img_path_seal_CN,
+            "img_path_seal_EN": img_path_seal_EN,
             "img_path_note_CN": img_path_note_CN,
             "img_path_note_EN": img_path_note_EN,
             "js_path_jquery": js_path_jquery,

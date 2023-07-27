@@ -187,7 +187,7 @@ function handleSelectedFile(fileList) {
                     }
 
                     // process all footnotes
-                    fileContentChunks[i] = makeFootNote(fileContentChunks[i]);
+                    fileContentChunks[i] = makeFootNote(fileContentChunks[i], `images/note_${style.ui_LANG}.png`);
                 }
             }
             // console.log(allTitles);
@@ -196,9 +196,9 @@ function handleSelectedFile(fileList) {
             // setMainContentUI();
 
             // Add title page
-            let stampRotation = (style.ui_LANG === "EN") ? `transform:rotate(${randomFloatFromInterval(-50, 80)}deg)` : "";
-            // fileContentChunks.unshift(`<div id=line${(titlePageLineNumberOffset - 1)} class='prevent-select stamp'><img id='stamp_${style.ui_LANG}' src='images/stamp_${style.ui_LANG}.png' style='left:calc(${randomFloatFromInterval(0, 1)} * (100% - ${eval(`style.stamp_width_${style.ui_LANG}`)})); ${stampRotation}'/></div>`);
-            fileContentChunks.unshift(`<div id=line${(titlePageLineNumberOffset - 1)} class='prevent-select stamp'><img id='stamp_${style.ui_LANG}' src='images/stamp_${style.ui_LANG}.png' style='left:calc(${randomFloatFromInterval(0, 1)} * (100% - ${style.ui_LANG === 'CN' ? style.stamp_width_CN : style.stamp_width_EN})); ${stampRotation}'/></div>`);
+            let sealRotation = (style.ui_LANG === "EN") ? `transform:rotate(${randomFloatFromInterval(-50, 80)}deg)` : "";
+            // fileContentChunks.unshift(`<div id=line${(titlePageLineNumberOffset - 1)} class='prevent-select seal'><img id='seal_${style.ui_LANG}' src='images/seal_${style.ui_LANG}.png' style='left:calc(${randomFloatFromInterval(0, 1)} * (100% - ${eval(`style.seal_width_${style.ui_LANG}`)})); ${sealRotation}'/></div>`);
+            fileContentChunks.unshift(`<div id=line${(titlePageLineNumberOffset - 1)} class='prevent-select seal'><img id='seal_${style.ui_LANG}' src='images/seal_${style.ui_LANG}.png' style='left:calc(${randomFloatFromInterval(0, 1)} * (100% - ${style.ui_LANG === 'CN' ? style.seal_width_CN : style.seal_width_EN})); ${sealRotation}'/></div>`);
             if (bookAndAuthor.author !== "") {
                 fileContentChunks.unshift(`<h1 id=line1 style='margin-top:0; margin-bottom:${(parseFloat(style.h1_lineHeight)/2)}em'>${bookAndAuthor.author}</h1>`);
                 fileContentChunks.unshift(`<h1 id=line0 style='margin-bottom:0'>${bookAndAuthor.bookName}</h1>`);
@@ -214,7 +214,7 @@ function handleSelectedFile(fileList) {
             showCurrentPageContent();
             generatePagination();
             updateTOCUI(false);
-            GetScrollPositions();
+            GetScrollPositions(toSetHistory=false);
 
             // Retrieve reading history if exists
             // removeAllHistory();    // for debugging
@@ -307,7 +307,8 @@ function generatePagination() {
             });
             tempItem.classList.add("prevent-select");
             tempItem.classList.add("page");
-            tempItem.innerHTML = "&laquo;";
+            // tempItem.innerHTML = "&laquo;";
+            tempItem.innerText = "«";
             paginationItem_prev.appendChild(tempItem);
 
             if (currentPage === 1) {
@@ -343,7 +344,8 @@ function generatePagination() {
             tempItem.href = "#";
             tempItem.classList.add("prevent-select");
             tempItem.classList.add("page");
-            tempItem.innerHTML = showPages[i-1];
+            // tempItem.innerHTML = showPages[i-1];
+            tempItem.innerText = showPages[i-1];
             tempItem.addEventListener('click', function(event) {
                 event.preventDefault();
                 gotoPage(parseInt(this.innerHTML));
@@ -369,7 +371,8 @@ function generatePagination() {
             });
             tempItem.classList.add("prevent-select");
             tempItem.classList.add("page");
-            tempItem.innerHTML = "&raquo;";
+            // tempItem.innerHTML = "&raquo;";
+            tempItem.innerText = "»";
             paginationItem_next.appendChild(tempItem);
 
             if (currentPage === totalPages) {
@@ -417,7 +420,8 @@ function processTOC() {
         tempText.href = `#line${allTitles[i][1]}`;
         tempText.classList.add("prevent-select");
         tempText.classList.add("toc-text");
-        tempText.innerHTML = allTitles[i][0];
+        // tempText.innerHTML = allTitles[i][0];
+        tempText.innerText = allTitles[i][0];
         tempText.addEventListener('click', function(event) {
             event.preventDefault();
             // console.log("gotoLine: ", parseInt(event.target.id.replace(/(a)/g, '')));
@@ -533,7 +537,7 @@ function gotoLine(lineNumber, isTitle=true) {
     return 0;
 }
 
-function GetScrollPositions() {
+function GetScrollPositions(toSetHistory=true) {
     // console.log("GetScrollPositions() called, gotoTitle_Clicked: ", gotoTitle_Clicked);
     
     // Get current scroll position
@@ -546,7 +550,9 @@ function GetScrollPositions() {
 
     if (!gotoTitle_Clicked) {
         // Remember the line number in history
-        setHistory(filename, curLineNumber);
+        if (toSetHistory) {
+            setHistory(filename, curLineNumber);
+        }
 
         // Get the title the detectected line belongs to
         let curTitleID = 0;
@@ -585,7 +591,9 @@ function GetScrollPositions() {
     if ((curLineNumber === 0) && (currentPage === 1) && (window.scrollY <= 5)) {
         totalPercentage = 0;
     }
-    progressContainer.innerHTML = `<span style='text-decoration:underline'>${bookAndAuthor.bookName}</span><br/>${readingProgressText} ${totalPercentage.toFixed(1).replace(".0", "")}%`;
+    // progressContainer.innerHTML = `<span style='text-decoration:underline'>${bookAndAuthor.bookName}</span><br/>${readingProgressText} ${totalPercentage.toFixed(1).replace(".0", "")}%`;
+    document.getElementById("progress-title").innerText = bookAndAuthor.bookName;
+    document.getElementById("progress-content").innerText = `${readingProgressText} ${totalPercentage.toFixed(1).replace(".0", "")}%`;
 
     gotoTitle_Clicked = false;
 }

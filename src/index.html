@@ -8,8 +8,8 @@
     <link rel="preload" href="./fonts/LXGWWenKai-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="./images/drop.png" as="image" type="image/png">
     <link rel="preload" href="./images/loading_geometry.gif" as="image" type="image/gif">
-    <link rel="preload" href="./images/stamp_CN.png" as="image" type="image/png">
-    <link rel="preload" href="./images/stamp_EN.png" as="image" type="image/png">
+    <link rel="preload" href="./images/seal_CN.png" as="image" type="image/png">
+    <link rel="preload" href="./images/seal_EN.png" as="image" type="image/png">
     <link rel="preload" href="./images/note_CN.png" as="image" type="image/png">
     <link rel="preload" href="./images/note_EN.png" as="image" type="image/png">
     <link rel="icon" type="image/png" href="./images/icon.png">
@@ -29,7 +29,11 @@
     <div id="loading" class="uifont prevent-select"><img src='./images/loading_geometry.gif'/></div>
 
     <div id="tocWrapper"><div id="tocContent"></div></div>
-    <div id="progress" class="uifont prevent-select"></div>
+    <div id="progress" class="uifont prevent-select">
+        <span id="progress-title"></span>
+        <br/>
+        <span id="progress-content"></span>
+    </div>
     <div id="content"></div>
     <div id="pagination" class="uifont prevent-select"></div>
 

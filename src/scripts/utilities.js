@@ -139,3 +139,9 @@ function randomFloatFromInterval(min, max) {
 function isVariableDefined(v) {
     return (v !== "undefined" && v !== "" && v !== null && v !== undefined && v !== NaN);
 }
+
+function createElementFromHTML(htmlString) {
+    var div = document.createElement('div');
+    div.innerHTML = htmlString.trim();
+    return div.firstElementChild;
+}

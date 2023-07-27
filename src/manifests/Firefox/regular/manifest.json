@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "易笺",
-    "description": "支持秒开本地的所有txt文件，自动排版，自动分页，自动生成目录。",
+    "description": "txt（小说）阅读器：支持秒开本地的所有txt文件，自动排版，自动分页，自动生成目录，记录阅读进度。",
     "version": "1.0",
     "background": {
         "scripts": ["scripts_extension/Firefox/regular/activate.js"]
@@ -13,5 +13,6 @@
         "24": "images/icon24.png",
         "64": "images/icon64.png"
     },
-    "homepage_url": "https://github.com/henryxrl/SimpleTextReader"
+    "homepage_url": "https://github.com/henryxrl/SimpleTextReader",
+    "permissions": []
 }

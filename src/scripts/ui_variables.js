@@ -35,4 +35,6 @@ var tocWrapper = document.getElementById("tocWrapper");
 var tocContainer = document.getElementById("tocContent");
 var paginationContainer = document.getElementById("pagination");
 var progressContainer = document.getElementById("progress");
+var progressTitle = document.getElementById("progress-title");
+var progressContent = document.getElementById("progress-content");
 var footNoteContainer = document.getElementById("footnote-content");

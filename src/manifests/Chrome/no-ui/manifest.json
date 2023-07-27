@@ -1,9 +1,9 @@
 {
     "manifest_version": 3,
     "name": "易笺（无界面版）",
-    "description": "支持本地和云端的所有txt文件，自动排版，自动分页，自动生成目录。",
+    "description": "txt（小说）阅读器：支持本地和云端的所有txt文件，自动排版，自动分页，自动生成目录，记录阅读进度。",
     "version": "1.0",
-    "permissions": ["activeTab", "tabs", "scripting"],
+    "permissions": [],
     "content_scripts": [
         {
             "matches": ["*://*/*.txt*", "file://*/*.txt*"],
