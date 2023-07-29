@@ -1,14 +1,30 @@
 function setMainContentUI() {
     // console.log("setMainContentUI");
+    
+    // Dark mode
+    darkModeToggle.checked = (!getUIMode());
+    setUIMode(!darkModeToggle.checked);
+    style.ui_Mode = (!darkModeToggle.checked ? "light" : "dark");
+    // console.log(style.ui_Mode);
+    darkModeActualButton.style.setProperty("visibility", "visible");
+    setTimeout(function() {
+        style.darkMode_animation = style.darkMode_default_animation;
+    }, 1000);
+
+    // Drop zone
     if (isVariableDefined(dropZoneText)) {
         // dropZoneText.innerHTML = eval(`style.ui_dropZoneText_${style.ui_LANG}`);
         dropZoneText.innerText = (style.ui_LANG == "CN" ? style.ui_dropZoneText_CN : style.ui_dropZoneText_EN) || "txt";
     }
+    
+    // UI calculations
     // windowWith = windowLeftRightMargin + tocWidth + gapWidth + contentWidth + windowLeftRightMargin;
     style.ui_contentMarginLeft = (100 - parseInt(style.ui_contentWidth) - parseInt(style.ui_windowLeftRightMargin)).toString();
     // console.log("IN SETMAINCONTENTUI: style.ui_contentMarginLeft: " + style.ui_contentMarginLeft);
     style.ui_tocWidth = (100 - parseInt(style.ui_contentWidth) - parseInt(style.ui_windowLeftRightMargin) * 2 - parseInt(style.ui_gapWidth)).toString();
     style.ui_paginationCenter = (parseInt(style.ui_contentWidth) / 2 + parseInt(style.ui_contentMarginLeft)).toString();
+    
+    // Main content
     if (isVariableDefined(contentContainer)) {
         contentContainer.style.width = style.ui_contentWidth + '%';
         contentContainer.style.marginTop = '0px';
@@ -16,6 +32,8 @@ function setMainContentUI() {
         contentContainer.style.marginBottom = '0px';
         contentContainer.style.marginLeft = style.ui_contentMarginLeft + '%';
     }
+
+    // TOC
     if (isVariableDefined(tocWrapper)) {
         tocWrapper.style.width = style.ui_tocWidth + '%';
         tocWrapper.style.height = style.ui_tocHeight + '%';
@@ -28,9 +46,13 @@ function setMainContentUI() {
         tocContainer.style.width = style.ui_tocWidth + '%';
         tocContainer.style.height = 'auto';
     }
+
+    // Pagination
     if (isVariableDefined(paginationContainer)) {
         paginationContainer.style.left = style.ui_paginationCenter + '%';
     }
+
+    // Progress
     if (isVariableDefined(progressContainer)) {
         progressContainer.style.width = style.ui_tocWidth + '%';
         progressContainer.style.marginTop = '2.5em';

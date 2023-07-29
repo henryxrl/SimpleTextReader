@@ -8,6 +8,12 @@ if (isVariableDefined(dropZone)) {
     dropZone.addEventListener("dragleave", handleDragLeave, false);
     dropZone.addEventListener("dblclick", openFileSelector, false);
 }
+if (isVariableDefined(darkModeToggle)) {
+    // localStorage.removeItem("UIMode");
+    darkModeToggle.addEventListener("change", (e) => {
+        setUIMode(!e.target.checked);
+    });
+}
 setMainContentUI();
 // setMainContentUI_onRatio();
 // setTOC_onRatio(initial=true);

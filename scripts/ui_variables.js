@@ -38,3 +38,6 @@ var progressContainer = document.getElementById("progress");
 var progressTitle = document.getElementById("progress-title");
 var progressContent = document.getElementById("progress-content");
 var footNoteContainer = document.getElementById("footnote-content");
+
+var darkModeActualButton = document.getElementById("switch-btn");   // just for set visibility
+var darkModeToggle = document.getElementById("switch");

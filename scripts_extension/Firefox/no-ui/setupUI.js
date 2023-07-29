@@ -10,17 +10,31 @@ var observer = new MutationObserver(function (mutations) {
             visited_title = true;
         }
         if ((document.getElementsByTagName("body").length > 0) && (!visited_body)) {
-            document.body.setAttribute('style', 'background-color: #fefcf4 !important;');
+            // Implement getUIMode() here
+            let lightMode = true;
+            if (localStorage.getItem("UIMode") !== null) {
+                lightMode = JSON.parse(localStorage.getItem("UIMode"));
+                console.log(`UI mode is ${(lightMode ? "light" : "dark")}.`);
+                document.documentElement.setAttribute("data-theme", (lightMode ? "light" : "dark"));
+            } else {
+                console.log("UI mode is light by default.");
+                document.documentElement.setAttribute("data-theme", "light");
+            }
+
+            let bgColor = lightMode ? "#fdf5e8" : "#0d1018";
+            let filter = lightMode ? "invert(52%) sepia(93%) saturate(187%) hue-rotate(166deg) brightness(92%) contrast(82%)" : "invert(22%) sepia(47%) saturate(1327%) hue-rotate(180deg) brightness(91%) contrast(80%)";
+            // document.body.setAttribute('style', 'background-color: #fefcf4 !important;');
+            document.body.setAttribute('style', `background-color: ${bgColor};`);
 
             let loading = document.createElement('div');
             loading.setAttribute('id', 'loading');
             loading.setAttribute('class', 'uifont prevent-select');
-            loading.setAttribute('style', 'background: #fefcf4; position: fixed; top: 0; left: 0; width: 100%; height: 100%; visibility: visible !important; z-index: 999;');
+            loading.setAttribute('style', `background: ${bgColor}; position: fixed; top: 0; left: 0; width: 100%; height: 100%; visibility: visible !important; z-index: 999;`);
             let loading_img = document.createElement('img');
             loading_img.setAttribute('id', 'loading_img');
             loading_img.setAttribute('class', 'uifont prevent-select');
             loading_img.setAttribute('src', browser.runtime.getURL('images/loading_geometry.gif'));
-            loading_img.setAttribute('style', 'position: absolute; top: 50%; left: 50%; width: 380px; transform: translate(-50%, -50%); -webkit-transform: translate(-50%, -50%); filter: invert(52%) sepia(93%) saturate(187%) hue-rotate(166deg) brightness(92%) contrast(82%); visibility: visible !important; z-index: 999;');
+            loading_img.setAttribute('style', `position: absolute; top: 50%; left: 50%; width: 380px; transform: translate(-50%, -50%); -webkit-transform: translate(-50%, -50%); filter: ${filter}; visibility: visible !important; z-index: 999;`);
             loading.appendChild(loading_img);
             document.body.appendChild(loading);
 
@@ -40,6 +54,31 @@ var observer = new MutationObserver(function (mutations) {
             progressContent.setAttribute('id', 'progress-content');
             progress.appendChild(progressContent);
             document.body.appendChild(progress);
+
+            let darkModeCheckbox = document.createElement('input');
+            darkModeCheckbox.setAttribute('id', 'switch');
+            darkModeCheckbox.setAttribute('type', 'checkbox');
+            let darkModeSwitchBtn = document.createElement('div');
+            darkModeSwitchBtn.setAttribute('id', 'switch-btn');
+            darkModeSwitchBtn.setAttribute('class', 'switch-btn');
+            darkModeSwitchBtn.setAttribute('style', 'visibility: hidden');
+            darkModeSwitchBtn.setAttribute('z-index', '1005');
+            let darkModeSwitchBtnLabel = document.createElement('label');
+            darkModeSwitchBtnLabel.setAttribute('for', 'switch');
+            let darkModeSwitchIcons = document.createElement('div');
+            darkModeSwitchIcons.setAttribute('class', 'icons');
+            let darkModeSwitchIconLight = document.createElement('span');
+            darkModeSwitchIconLight.setAttribute('class', 'material-symbols-rounded');
+            darkModeSwitchIconLight.innerText = " light_mode ";
+            let darkModeSwitchIconDark = document.createElement('span');
+            darkModeSwitchIconDark.setAttribute('class', 'material-symbols-rounded');
+            darkModeSwitchIconDark.innerText = " nights_stay ";
+            darkModeSwitchIcons.appendChild(darkModeSwitchIconLight);
+            darkModeSwitchIcons.appendChild(darkModeSwitchIconDark);
+            darkModeSwitchBtnLabel.appendChild(darkModeSwitchIcons);
+            darkModeSwitchBtn.appendChild(darkModeSwitchBtnLabel);
+            document.body.appendChild(darkModeCheckbox);
+            document.body.appendChild(darkModeSwitchBtn);
 
             let content = document.createElement('div');
             content.setAttribute('id', 'content');

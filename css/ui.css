@@ -166,19 +166,19 @@ To Offset the anchor link to clear fixed header
     margin: 0 5px;
 }
 .pagination a {
-    color: black;
+    color: var(--paginationFontColor);
     float: left;
     padding: 8px 16px;
     text-decoration: none;
 }
 .pagination a.active {
     background-color: var(--mainColor_focused);
-    color: var(--bgColor);
+    color: var(--paginationActiveFontColor);
     border-radius: 5px;
 }
 .pagination a:hover:not(.active) {
     background-color: var(--mainColor);
-    color: var(--bgColor);
+    color: var(--paginationActiveFontColor);
     border-radius: 5px;
 }
 .jumpInput {

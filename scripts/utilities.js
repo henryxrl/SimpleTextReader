@@ -145,3 +145,20 @@ function createElementFromHTML(htmlString) {
     div.innerHTML = htmlString.trim();
     return div.firstElementChild;
 }
+
+function setUIMode(mode) {
+    console.log(`UI mode set to ${(mode ? "light" : "dark")}.`);
+    localStorage.setItem("UIMode", mode);
+    document.documentElement.setAttribute("data-theme", (mode ? "light" : "dark"));
+}
+
+function getUIMode() {
+    if (isVariableDefined(localStorage.getItem("UIMode"))) {
+        let mode = JSON.parse(localStorage.getItem("UIMode"));
+        console.log(`UI mode is ${(mode ? "light" : "dark")}.`);
+        return mode;
+    } else {
+        console.log("UI mode is light by default.");
+        return true;
+    }
+}

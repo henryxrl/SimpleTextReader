@@ -16,13 +16,23 @@ Now SimpleTextReader is also available as a Chrome/Firefox extension with two di
 
 2. No-UI version: Once activated, any URL ending in ".txt" will be automatically opened using SimpleTextReader. However, please be aware that this version might have slower performance when opening large text files. The delay is due to the browser's default behavior of loading the entire file at once, which cannot be modified.
 
-To utilize either version, navigate to the `manifests` directory, choose either `Chrome` or `Firefox` directory depending on your browser of choice, and copy the desired version of `manifest.json` into the root directory. Then load the extension in the browser under `Developer mode`.
-
 ### Version 1.1
 
 Now SimpleTextReader can be installed as a PWA in supported browsers (Chromium-based browsers such as Chrome and Edge).
 
-Now in Firefox store!
+### Version 1.2
+
+Enable dark mode.
+
+## Usage
+
+### Load unpacked extensions
+
+Clone the repo, navigate to the `manifests` directory, choose either `Chrome` or `Firefox` directory depending on your browser of choice, choose the regular version and/or the no-ui version, and copy the desired version of `manifest.json` into the root directory. Then load the extension in the browser under `Developer mode`.
+
+### Download from online stores
+
+Firefox:
 
 1. [Regular (EN)](https://addons.mozilla.org/en-US/firefox/addon/yijian/) | [易笺 (CN)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
 

@@ -2,6 +2,11 @@ injectCustomIcon('images/icon.png', 'image/png');
 
 
 
+var css_path_darkmode;
+injectCustomLink('css/darkmode_toggle.css', function(path) {
+    // console.log("css_path_darkmode: ", path);
+    css_path_darkmode = path;
+});
 var css_path_ui_variables;
 injectCustomLink('css/ui_variables.css', function(path) {
     // console.log("css_path_ui_variables: ", path);
@@ -24,6 +29,11 @@ injectCustomLink('css/footnotes.css', function(path) {
 });
 
 
+var font_path_icon;
+injectCustomFont('fonts/icons.woff2', 'font/woff2', function(path) {
+    // console.log("font_path_icon: ", path);
+    font_path_icon = path;
+});
 var font_path_title;
 injectCustomFont('fonts/qiji-combo.woff', 'font/woff', function(path) {
     // console.log("font_path_title: ", path);
@@ -98,7 +108,7 @@ injectCustomJs('scripts/utilities.js', function(path) {
 
 // Load resources in order!!
 var interval = setInterval(function() {
-    if (isVariableDefined(css_path_ui_variables) && isVariableDefined(css_path_ui) && isVariableDefined(css_path_reader) && isVariableDefined(css_path_footnotes) && isVariableDefined(font_path_title) && isVariableDefined(font_path_ui) && isVariableDefined(img_path_drop) && isVariableDefined(img_path_seal_CN) && isVariableDefined(img_path_seal_EN) && isVariableDefined(img_path_note_CN) && isVariableDefined(img_path_note_EN) && isVariableDefined(js_path_jquery) && isVariableDefined(js_path_jschardet) && isVariableDefined(js_path_css_global_variables) && isVariableDefined(js_path_regex_rules) && isVariableDefined(js_path_utilities)) {
+    if (isVariableDefined(css_path_darkmode) && isVariableDefined(css_path_ui_variables) && isVariableDefined(css_path_ui) && isVariableDefined(css_path_reader) && isVariableDefined(css_path_footnotes) && isVariableDefined(font_path_icon) && isVariableDefined(font_path_title) && isVariableDefined(font_path_ui) && isVariableDefined(img_path_drop) && isVariableDefined(img_path_seal_CN) && isVariableDefined(img_path_seal_EN) && isVariableDefined(img_path_note_CN) && isVariableDefined(img_path_note_EN) && isVariableDefined(js_path_jquery) && isVariableDefined(js_path_jschardet) && isVariableDefined(js_path_css_global_variables) && isVariableDefined(js_path_regex_rules) && isVariableDefined(js_path_utilities)) {
         console.log('Resources that are required to load first are loaded.');
         clearInterval(interval);
 
@@ -122,7 +132,7 @@ var interval = setInterval(function() {
 
 
         var interval2 = setInterval(function() {
-            if (isVariableDefined(css_path_ui_variables) && isVariableDefined(css_path_ui) && isVariableDefined(css_path_reader) && isVariableDefined(css_path_footnotes) && isVariableDefined(font_path_title) && isVariableDefined(font_path_ui) && isVariableDefined(img_path_drop) && isVariableDefined(img_path_seal_CN) && isVariableDefined(img_path_seal_EN) && isVariableDefined(img_path_note_CN) && isVariableDefined(img_path_note_EN) && isVariableDefined(js_path_jquery) && isVariableDefined(js_path_jschardet) && isVariableDefined(js_path_css_global_variables) && isVariableDefined(js_path_regex_rules) && isVariableDefined(js_path_utilities) && isVariableDefined(js_path_footnotes) && isVariableDefined(js_path_ui_variables) && isVariableDefined(js_path_processText)) {
+            if (isVariableDefined(css_path_darkmode) && isVariableDefined(css_path_ui_variables) && isVariableDefined(css_path_ui) && isVariableDefined(css_path_reader) && isVariableDefined(css_path_footnotes) && isVariableDefined(font_path_icon) && isVariableDefined(font_path_title) && isVariableDefined(font_path_ui) && isVariableDefined(img_path_drop) && isVariableDefined(img_path_seal_CN) && isVariableDefined(img_path_seal_EN) && isVariableDefined(img_path_note_CN) && isVariableDefined(img_path_note_EN) && isVariableDefined(js_path_jquery) && isVariableDefined(js_path_jschardet) && isVariableDefined(js_path_css_global_variables) && isVariableDefined(js_path_regex_rules) && isVariableDefined(js_path_utilities) && isVariableDefined(js_path_footnotes) && isVariableDefined(js_path_ui_variables) && isVariableDefined(js_path_processText)) {
                 console.log('Subsequent resources are loaded.');
                 clearInterval(interval2);
 
@@ -135,7 +145,7 @@ var interval = setInterval(function() {
 
 
                 var interval3 = setInterval(function() {
-                    if (isVariableDefined(css_path_ui_variables) && isVariableDefined(css_path_ui) && isVariableDefined(css_path_reader) && isVariableDefined(css_path_footnotes) && isVariableDefined(font_path_title) && isVariableDefined(font_path_ui) && isVariableDefined(img_path_drop) && isVariableDefined(img_path_seal_CN) && isVariableDefined(img_path_seal_EN) && isVariableDefined(img_path_note_CN) && isVariableDefined(img_path_note_EN) && isVariableDefined(js_path_jquery) && isVariableDefined(js_path_jschardet) && isVariableDefined(js_path_css_global_variables) && isVariableDefined(js_path_regex_rules) && isVariableDefined(js_path_utilities) && isVariableDefined(js_path_footnotes) && isVariableDefined(js_path_ui_variables) && isVariableDefined(js_path_processText) && isVariableDefined(js_path_ui_helpers)) {
+                    if (isVariableDefined(css_path_darkmode) && isVariableDefined(css_path_ui_variables) && isVariableDefined(css_path_ui) && isVariableDefined(css_path_reader) && isVariableDefined(css_path_footnotes) && isVariableDefined(font_path_icon) && isVariableDefined(font_path_title) && isVariableDefined(font_path_ui) && isVariableDefined(img_path_drop) && isVariableDefined(img_path_seal_CN) && isVariableDefined(img_path_seal_EN) && isVariableDefined(img_path_note_CN) && isVariableDefined(img_path_note_EN) && isVariableDefined(js_path_jquery) && isVariableDefined(js_path_jschardet) && isVariableDefined(js_path_css_global_variables) && isVariableDefined(js_path_regex_rules) && isVariableDefined(js_path_utilities) && isVariableDefined(js_path_footnotes) && isVariableDefined(js_path_ui_variables) && isVariableDefined(js_path_processText) && isVariableDefined(js_path_ui_helpers)) {
                         console.log('UI related resources are loaded.');
                         clearInterval(interval3);
 
@@ -148,7 +158,7 @@ var interval = setInterval(function() {
 
 
                         var interval4 = setInterval(function() {
-                            if (isVariableDefined(css_path_ui_variables) && isVariableDefined(css_path_ui) && isVariableDefined(css_path_reader) && isVariableDefined(css_path_footnotes) && isVariableDefined(font_path_title) && isVariableDefined(font_path_ui) && isVariableDefined(img_path_drop) && isVariableDefined(img_path_seal_CN) && isVariableDefined(img_path_seal_EN) && isVariableDefined(img_path_note_CN) && isVariableDefined(img_path_note_EN) && isVariableDefined(js_path_jquery) && isVariableDefined(js_path_jschardet) && isVariableDefined(js_path_css_global_variables) && isVariableDefined(js_path_regex_rules) && isVariableDefined(js_path_utilities) && isVariableDefined(js_path_footnotes) && isVariableDefined(js_path_ui_variables) && isVariableDefined(js_path_processText) && isVariableDefined(js_path_ui_helpers) && isVariableDefined(js_path_ui)) {
+                            if (isVariableDefined(css_path_darkmode) && isVariableDefined(css_path_ui_variables) && isVariableDefined(css_path_ui) && isVariableDefined(css_path_reader) && isVariableDefined(css_path_footnotes) && isVariableDefined(font_path_icon) && isVariableDefined(font_path_title) && isVariableDefined(font_path_ui) && isVariableDefined(img_path_drop) && isVariableDefined(img_path_seal_CN) && isVariableDefined(img_path_seal_EN) && isVariableDefined(img_path_note_CN) && isVariableDefined(img_path_note_EN) && isVariableDefined(js_path_jquery) && isVariableDefined(js_path_jschardet) && isVariableDefined(js_path_css_global_variables) && isVariableDefined(js_path_regex_rules) && isVariableDefined(js_path_utilities) && isVariableDefined(js_path_footnotes) && isVariableDefined(js_path_ui_variables) && isVariableDefined(js_path_processText) && isVariableDefined(js_path_ui_helpers) && isVariableDefined(js_path_ui)) {
                                 console.log('All resources are loaded.');
                                 clearInterval(interval4);
 
