@@ -256,7 +256,7 @@ a.toc-text, a.toc-text:link, a.toc-text:visited {
     margin: 0.3em 0 1.3em 1em;
 }
 a.toc-text:hover:not(.active) {
-    color: var(--mainColor_focused);
+    color: var(--mainColor);
 }
 a.toc-text:active {
     color: var(--mainColor_focused);

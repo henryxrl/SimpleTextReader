@@ -80,12 +80,13 @@
 
     /* Color variables */
     --mainColor: #6096bb;
-    --mainColor_focused: #274c77;
+    --mainColor_focused: #2f5086;
 
     --mainColor_filter: invert(52%) sepia(93%) saturate(187%) hue-rotate(166deg) brightness(92%) contrast(82%);
     --mainColor_focused_filter: invert(22%) sepia(47%) saturate(1327%) hue-rotate(180deg) brightness(91%) contrast(80%);
 
-    --bgColor: #fdf5e8;
+    /* --bgColor: #fdf5e8; */
+    --bgColor: #fdf3df;
     --borderColor: lightgray;
     --shadowColor: rgba(0, 0, 0, 0.12);
     --paginationFontColor: black;
@@ -124,5 +125,6 @@
     --paginationFontColor: lightgray;
     --paginationActiveFontColor: lightgray;
     --fontInfoColor: gray;
-    --fontColor: #fdf5e8;
+    /* --fontColor: #fdf3df; */
+    --fontColor: #f2e6ce;
 }
