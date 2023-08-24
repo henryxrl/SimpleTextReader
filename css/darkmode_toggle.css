@@ -1,12 +1,12 @@
 /* fallback */
-@font-face {
+/* @font-face {
     font-family: "Material Symbols Rounded";
     font-style: normal;
     font-weight: 100 700;
     src: url(../fonts/icons.woff2) format("woff2");
-}
+} */
 
-.material-symbols-rounded {
+/* .material-symbols-rounded {
     font-family: "Material Symbols Rounded";
     font-weight: normal;
     font-style: normal;
@@ -20,7 +20,7 @@
     direction: ltr;
     -webkit-font-feature-settings: "liga";
     -webkit-font-smoothing: antialiased;
-}
+} */
 
 input[type="checkbox"] {
     display: none;
@@ -52,6 +52,20 @@ label {
     transition: var(--darkMode_animation);
 }
 
+svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: var(--mainColor_focused);
+}
+
+svg.moon {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: var(--mainColor);
+}
+
 .icons {
     display: flex;
     align-items: center;
@@ -75,5 +89,5 @@ input[type="checkbox"]:checked ~ .switch-btn label {
 }
 
 input[type="checkbox"]:checked ~ .switch-btn label .icons {
-    transform: translateX(-20px);
+    transform: translateX(-22px);
 }

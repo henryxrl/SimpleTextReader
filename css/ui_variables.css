@@ -107,7 +107,7 @@
 
     /* Dark mode variables */
     --darkMode_init_animation: all 0s ease;
-    --darkMode_default_animation: all 0.5s ease;
+    --darkMode_default_animation: all 0.2s ease;
     --darkMode_animation: var(--darkMode_init_animation);
     --darkMode_color: var(--mainColor);
     --lightMode_color: lightgray;

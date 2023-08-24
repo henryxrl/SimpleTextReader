@@ -3,17 +3,20 @@ body {
     font-size: 100% !important;
     background-color: var(--bgColor) !important;
     scrollbar-color: var(--fontInfoColor) var(--bgColor) !important;
+    /* transition: var(--darkMode_animation); */
 }
 ::-webkit-scrollbar {
     width: 14px;
     background: var(--bgColor) !important;
+    transition: var(--darkMode_animation);
 }
 ::-webkit-scrollbar-thumb {
     border: 4px solid var(--bgColor);
     background-clip: padding-box;
     border-radius: 10px;
     background: var(--fontInfoColor) !important;
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+    /* transition: var(--darkMode_animation); */
 }
 div {
     -ms-overflow-style: none;  /* IE and Edge */
@@ -75,6 +78,7 @@ To Offset the anchor link to clear fixed header
     box-sizing: border-box;
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
+    /* transition: var(--darkMode_animation); */
 }
 #dropZoneText {
     visibility: show;
