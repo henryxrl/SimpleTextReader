@@ -17,7 +17,7 @@ if (isVariableDefined(darkModeToggle)) {
 setMainContentUI();
 // setMainContentUI_onRatio();
 // setTOC_onRatio(initial=true);
-let emInPx = getSizePrecise('1em', parent=contentContainer);
+let emInPx = getSizePrecise('1em', contentContainer);
 
 
 
