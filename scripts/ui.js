@@ -134,10 +134,77 @@ function handleDrop(event) {
     handleSelectedFile(fileList);
 }
 
+// by cataerogong:
+//    usage:
+//    function renameSomeFile(f) { // rename some file's name
+//        if (f.name=="A.txt") {
+//            return new File([f], "New File Name.txt", {type: f.type, lastModified: f.lastModified});
+//        } else {
+//            return f;
+//        }
+//    }
+//    function unzipFile(f) {
+//        if (f.name.endsWith(".zip")) { // support zip-file
+//            newF = unzip(f)[0]; // unzip and return the first file
+//            return newF;
+//        } else {
+//            return f;
+//        }
+//    }
+//    fileloadCallback.regBefore(renameSomeFile);
+//    fileloadCallback.regBefore(unzipFile);
+var fileloadCallback = {
+    beforeList: [],
 
+    afterList: [],
+
+    regBefore(func) {
+        this.beforeList.push(async f => {
+            return (await func(f)) || f;
+        });
+    },
+
+    regAfter(func) {
+       this. afterList.push(async () => {
+            return await func();
+        });
+    },
+
+    async before(f) {
+        try {
+            let newF = f;
+            for (func of this.beforeList) {
+                newF = await func(newF);
+            }
+            console.log("fileloadCallback.before() finished:", newF);
+            return newF;
+        } catch (e) {
+            console.log(e);
+            return f;
+        }
+    },
+
+    async after() {
+        try {
+            let p = Promise.resolve();
+            for (let i = 0; i < this.afterList.length; i++) {
+                p = p.then(this.afterList[i]);
+            }
+            await p.then(() => { console.log("fileloadCallback.after() finished."); });
+        } catch (e) {
+            console.log(e);
+            return f;
+        }
+    }
+};
 
 // Main functions
-function handleSelectedFile(fileList) {
+// by cataerogong:
+//    call fileloadCallback before and after file-load.
+//    async function fileloadCallback.before(file_blob) -> new_file_blob
+//    async function fileloadCallback.after() -> undefined
+async function handleSelectedFile(fileList) {
+    fileList = [await fileloadCallback.before(fileList[0])]
     if (fileList.length > 0 && fileList[0].type === "text/plain") {
         var fileReader = new FileReader();
 
@@ -245,11 +312,12 @@ function handleSelectedFile(fileList) {
             hideContent();
         };
 
-        fileReader.onloadend = function (event) {
+        fileReader.onloadend = async function (event) {
             event.preventDefault();
             hideDropZone();
             hideLoadingScreen();
             showContent();
+            await fileloadCallback.after();
         };
 
         fileReader.readAsArrayBuffer(fileList[0]);
