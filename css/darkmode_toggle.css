@@ -22,11 +22,11 @@
     -webkit-font-smoothing: antialiased;
 } */
 
-input[type="checkbox"] {
+#btnWrapper input[type="checkbox"] {
     display: none;
 }
 
-.switch-btn {
+/* .switch-btn {
     width: 30px;
     height: 30px;
     background-color: var(--lightMode_color);
@@ -37,22 +37,22 @@ input[type="checkbox"] {
     bottom: 20px;
     right: 20px;
     z-index: 1005;
-}
+} */
 
-label {
-    width: 30px;
-    height: 30px;
+#switch-btn label {
+    width: 2rem;
+    height: 2rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--bgColor);
-    border-radius: 30px;
+    /* background: var(--bgColor); */
+    /* border-radius: 30px; */
     overflow: hidden;
     cursor: pointer;
     transition: var(--darkMode_animation);
 }
 
-svg {
+/* svg {
     width: 24px;
     height: 24px;
     fill: none;
@@ -64,13 +64,13 @@ svg.moon {
     height: 24px;
     fill: none;
     stroke: var(--mainColor);
-}
+} */
 
 .icons {
     display: flex;
     align-items: center;
-    gap: 20px;
-    transform: translate(-11px, 19px) rotate(120deg);
+    gap: 1.5rem;
+    transform: translateY(1.5rem) rotate(90deg);
     user-select: none;
     color: var(--mainColor_focused);
     transition: var(--darkMode_animation);
@@ -79,15 +79,55 @@ svg.moon {
     overflow-y: unset;
 }
 
-input[type="checkbox"]:checked ~ .switch-btn {
-    background-color: var(--darkMode_color);
+#btnWrapper input[type="checkbox"]:checked ~ #switch-btn {
+    /* background-color: var(--darkMode_color); */
     transition: var(--darkMode_animation);
 }
 
-input[type="checkbox"]:checked ~ .switch-btn label {
+#btnWrapper input[type="checkbox"]:checked ~ #switch-btn label {
     box-shadow: 0px 3px 5px 0px rgba(0, 0, 0, 0.2);
 }
 
-input[type="checkbox"]:checked ~ .switch-btn label .icons {
-    transform: translateX(-22px);
+#btnWrapper input[type="checkbox"]:checked ~ #switch-btn label .icons {
+    transform: translateX(-1.5rem);
+}
+
+.btn-group {
+    display: flex;
+    flex-flow: column;
+    gap: 1rem;
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 1005;
+}
+
+.btn-icon {
+    width: 2rem;
+    height: 2rem;
+    border: 0.2rem solid;
+    border-color: var(--lightMode_color);
+    border-radius: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+    transition: var(--darkMode_animation);
+}
+
+[data-theme="dark"] .btn-icon {
+    border-color: var(--darkMode_color);
+}
+
+svg.icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    stroke: var(--mainColor_focused);
+    fill: var(--mainColor_focused);
+}
+
+[data-theme="dark"] svg.icon {
+    stroke: var(--mainColor);
+    fill: var(--mainColor);
 }

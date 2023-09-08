@@ -769,3 +769,13 @@ function getBottomLineNumber() {
     }
     return curLineNumber;
 }
+
+FUNC_KEYDOWN_ = document.onkeydown; // 保存页面原来的 onkeydown 函数，下面会临时屏蔽 onkeydown
+function freezeContent() {
+    document.onkeydown = null;
+    $("body").css("overflow-y", "hidden");
+}
+function unfreezeContent() {
+    document.onkeydown = FUNC_KEYDOWN_;
+    $("body").css("overflow-y", "auto");
+}
