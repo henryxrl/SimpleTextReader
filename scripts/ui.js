@@ -134,10 +134,96 @@ function handleDrop(event) {
     handleSelectedFile(fileList);
 }
 
+// by cataerogong:
+//    regBefore( <callback> ) // <callback>: function (file_blob) -> new_file_blob
+//    regAfter( <callback> ) // <callback>: function () -> undefined
+//
+//    example:
+//    function renameSomeFile(f) { // change some file's name
+//        if (f.name=="A.txt") {
+//            return new File([f], "B.txt", {type: f.type, lastModified: f.lastModified});
+//        } else {
+//            return f;
+//        }
+//    }
+//    function unzipFile(f) { // support zip-file
+//        if (f.name.endsWith(".zip")) {
+//            newF = unzip(f)[0]; // unzip and return the first file
+//            return newF;
+//        } else {
+//            return f;
+//        }
+//    }
+//    async function saveFileToDB(f) { // save file to db
+//        if (f.type == "text/plain")
+//            await db.saveFile(f); // call async function, wait for finish.
+//        return f;
+//    }
+//    async function loadProgress() { // load progress from webdav
+//        let line = await webdav.getProgress(filename);
+//        setHistory(filename, line);
+//        getHistory(filename);
+//    }
+//    fileloadCallback.regBefore(renameSomeFile);
+//    fileloadCallback.regBefore(unzipFile);
+//    fileloadCallback.regBefore(saveFileToDB);
+//    fileloadCallback.regAfter(loadProgress);
+var fileloadCallback = {
+    beforeList: [],
 
+    afterList: [],
+
+    regBefore(callback) {
+        if ((typeof(callback) == "function") && !this.beforeList.includes(callback))
+            this.beforeList.push(callback);
+    },
+    unregBefore(callback) {
+        let i = this.beforeList.indexOf(callback);
+        if (i >= 0) this.beforeList.splice(i, 1);
+    },
+
+    regAfter(callback) {
+        if ((typeof(callback) == "function") && !this.afterList.includes(callback))
+            this.afterList.push(callback);
+    },
+    unregAfter(callback) {
+        let i = this.afterList.indexOf(callback);
+        if (i >= 0) this.afterList.splice(i, 1);
+    },
+
+    async before(f) {
+        let newF = f;
+        try {
+            for (func of this.beforeList) {
+                newF = (await func(newF)) || newF;
+            }
+        } catch (e) {
+            console.log("fileloadCallback.before() error:", e);
+        }
+        console.log("fileloadCallback.before() finished:", newF);
+        return newF;
+    },
+
+    async after() {
+        try {
+            for (func of this.afterList) {
+                await func();
+            }
+        } catch (e) {
+            console.log("fileloadCallback.after() error:", e);
+        }
+        console.log("fileloadCallback.after() finished.");
+    }
+};
 
 // Main functions
-function handleSelectedFile(fileList) {
+// by cataerogong:
+//    call fileloadCallback before and after file-load.
+//    async function fileloadCallback.before(file_blob) -> new_file_blob
+//    async function fileloadCallback.after() -> undefined
+async function handleSelectedFile(fileList) {
+    if (fileList.length > 0)
+        fileList = [await fileloadCallback.before(fileList[0])];
     if (fileList.length > 0 && fileList[0].type === "text/plain") {
         var fileReader = new FileReader();
 
@@ -250,6 +336,7 @@ function handleSelectedFile(fileList) {
             hideDropZone();
             hideLoadingScreen();
             showContent();
+            fileloadCallback.after();
         };
 
         fileReader.readAsArrayBuffer(fileList[0]);
@@ -681,4 +768,14 @@ function getBottomLineNumber() {
         }
     }
     return curLineNumber;
+}
+
+FUNC_KEYDOWN_ = document.onkeydown; // 保存页面原来的 onkeydown 函数，下面会临时屏蔽 onkeydown
+function freezeContent() {
+    document.onkeydown = null;
+    $("body").css("overflow-y", "hidden");
+}
+function unfreezeContent() {
+    document.onkeydown = FUNC_KEYDOWN_;
+    $("body").css("overflow-y", "auto");
 }
