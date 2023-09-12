@@ -240,6 +240,9 @@ var bookshelf = {
                 booklist.sort((a, b) => (a.localeCompare(b, "zh")));
                 let container = $(".bookshelf .dlg-body");
                 container.html("");
+                let storageInfo = await navigator.storage.estimate();
+                if (storageInfo) container.append(`<div class="sub-title">【提示】书籍保存在浏览器缓存空间内，可能会被系统自动清除。<br/>
+                    已用空间：${(storageInfo.usage/storageInfo.quota*100).toFixed(1)}% (${(storageInfo.usage/1000/1000).toFixed(2)} MB / ${(storageInfo.quota/1000/1000).toFixed(2)} MB)<div>`);
                 for (const name of booklist) {
                     container.append(this.genBookItem(name));
                 }
@@ -252,9 +255,7 @@ var bookshelf = {
     async show() {
         if (this.enabled) {
             $(`<div class="bookshelf">
-			<div class="dlg-cap">本地缓存书架
-				<div style="font-size:1rem;font-family:ui;text-align:center;">拖入文件 / 空白处双击</div>
-			</div>
+			<div class="dlg-cap">本地书架</div>
 			<span class="dlg-body"></span>
 			</div>`).appendTo("#dropZone");
             this.refreshBookList();

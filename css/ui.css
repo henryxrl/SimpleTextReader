@@ -448,6 +448,13 @@ input:invalid {
     z-index: 2000;
 }
 
+.bookshelf .sub-title {
+    color: var(--fontInfoColor);
+    font-size:1rem;
+    font-family:var(--fontFamily_ui);
+    text-align:center;
+}
+
 .bookshelf .dlg-body {
     text-align: center;
     margin-right: 4rem; /* 避开 btn-group */
