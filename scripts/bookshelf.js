@@ -215,37 +215,39 @@ var bookshelf = {
         }
     },
 
-    genBookItem(name) {
-        let book = $(`<div class="book" data-filename="${name}">
+    genBookItem(bookInfo) {
+        let book = $(`<div class="book" data-filename="${bookInfo.name}">
 			<div style="height:1.5rem;line-height:1.5rem;"><span class="delete-btn" title="删除">&times;</span></div>
-			<div class="cover">${name}</div></div>`);
+			<div class="cover">${bookInfo.name}</div>
+            <div class="size">${(bookInfo.size/1000/1000).toFixed(2)} MB</div>
+            </div>`);
         book.find(".cover").click((evt) => {
             evt.originalEvent.stopPropagation();
             this.hide();
-            this.openBook(name);
+            this.openBook(bookInfo.name);
         });
         book.find(".delete-btn").click((evt) => {
             evt.originalEvent.stopPropagation();
-            this.deleteBook(name, () => this.refreshBookList());
+            this.deleteBook(bookInfo.name, () => this.refreshBookList());
         });
         return book;
     },
 
     async refreshBookList() {
         if (this.enabled) {
+            let container = $(".bookshelf .dlg-body");
+            container.html("");
+            let storageInfo = await navigator.storage.estimate();
+            if (storageInfo) container.append(`<div class="sub-title">【提示】书籍保存在浏览器缓存空间内，可能会被系统自动清除。<br/>
+                已用空间：${(storageInfo.usage/storageInfo.quota*100).toFixed(1)}% (${(storageInfo.usage/1000/1000).toFixed(2)} MB / ${(storageInfo.quota/1000/1000).toFixed(2)} MB)<div>`);
             let booklist = [];
             try {
                 for (const book of await this.db.getAllBooks()) {
-                    booklist.push(book.name);
+                    booklist.push({name: book.name, size: book.data.size});
                 }
-                booklist.sort((a, b) => (a.localeCompare(b, "zh")));
-                let container = $(".bookshelf .dlg-body");
-                container.html("");
-                let storageInfo = await navigator.storage.estimate();
-                if (storageInfo) container.append(`<div class="sub-title">【提示】书籍保存在浏览器缓存空间内，可能会被系统自动清除。<br/>
-                    已用空间：${(storageInfo.usage/storageInfo.quota*100).toFixed(1)}% (${(storageInfo.usage/1000/1000).toFixed(2)} MB / ${(storageInfo.quota/1000/1000).toFixed(2)} MB)<div>`);
-                for (const name of booklist) {
-                    container.append(this.genBookItem(name));
+                booklist.sort((a, b) => (a.name.localeCompare(b.name, "zh")));
+                for (const bookInfo of booklist) {
+                    container.append(this.genBookItem(bookInfo));
                 }
             } catch (e) {
                 console.log(e);

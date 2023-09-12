@@ -487,3 +487,14 @@ input:invalid {
     background-color: var(--bgColor);
     cursor: pointer;
 }
+
+.bookshelf .book .size {
+    color: var(--fontInfoColor);
+    font-size: 0.9rem;
+    font-family: var(--fontFamily_ui);
+    text-align: right;
+    background-color: var(--bgColor);
+    /* margin-top: 1px; */
+    padding-right: 10px;
+
+}
