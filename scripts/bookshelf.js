@@ -190,6 +190,7 @@ var bookshelf = {
                     console.log("saveBook: ", file.name);
                     // 先把文件保存到缓存db中
                     await bookshelf.db.putBook(file.name, file);
+                    if (!await bookshelf.db.isBookExist(file.name)) alert("保存到本地书架失败（缓存空间可能已满）");
                     // 刷新 Bookshelf in DropZone
                     await bookshelf.refreshBookList();
                 }
