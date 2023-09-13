@@ -8,13 +8,13 @@
 #footnotediv {
     background-color: var(--bgColor);
     font-size: 1.0em;
-    color: var(--mainColor_focused);
+    color: var(--mainColor_active);
     padding: 5px 12px;
     border: 1px solid var(--borderColor);
     border-radius: 8px;
-    box-shadow: 0 0 5px  var(--mainColor);
-    -webkit-box-shadow: var(--mainColor) 0 0 5px;
-    -moz-box-shadow: 0 0 5px var(--mainColor);
+    box-shadow: 0 0 5px var(--mainColor_inactive);
+    -webkit-box-shadow: var(--mainColor_inactive) 0 0 5px;
+    -moz-box-shadow: 0 0 5px var(--mainColor_inactive);
     font-family:var(--fontFamily_ui) !important;
 }
 

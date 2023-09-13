@@ -53,11 +53,15 @@ Ads detection rules
 const regex_weird_symbols = "[※★☆◎━┏┓┗┛╰●╯]+";
 const regex_http = "(http[s]?[:：]//)?";
 const regex_http_end = "[/]?\\s*";
-const regex_colon = "[：:]?\\s*";
+const regex_colon_nospace = "[：:]?";
+const regex_colon = `${regex_colon_nospace}\\s*`;
 const regex_someStrings = "\\s*(.{0,50}?)\\s*";
-const regex_punc = "\\s*[,，;；.。!！\?？\'\"、/／|｜]?\\s*";
-const regex_bracket_left = "\\s*[\\[［\\(（\\{《「『﹁﹃【]?\\s*";
-const regex_bracket_right = "\\s*[\\]］\\)）\\}》」』﹂﹄】]?\\s*";
+const regex_punc_nospace = "[,，;；.。!！\?？\'\"、/／|｜]?";
+const regex_punc = `\\s*${regex_punc_nospace}\\s*`;
+const regex_bracket_left_nospace = "[\\[［\\(（\\{《「『﹁﹃【]?";
+const regex_bracket_left = `\\s*${regex_bracket_left_nospace}\\s*`;
+const regex_bracket_right_nospace = "[\\]］\\)）\\}》」』﹂﹄】]?";
+const regex_bracket_right = `\\s*${regex_bracket_right_nospace}\\s*`;
 var rules_symbols = regex_weird_symbols;
 
 // 知轩藏书 patterns
@@ -68,7 +72,7 @@ var rules_zxcs = () => [
     `^(\\s*((书名)?\\s*${regex_colon}${regex_bracket_left}${bookAndAuthor.bookName}${regex_bracket_right})\\s*$)`,
     `^(\\s*((作者)?\\s*${regex_colon}${bookAndAuthor.author})\\s*$)`,
     `^(\\s*((书名)?\\s*${regex_colon}${regex_bracket_left}${bookAndAuthor.bookName}${regex_bracket_right})\\s*((作者)?\\s*${regex_colon}${bookAndAuthor.author})\\s*$)`,
-    `^(\\s*((书名)?\\s*${regex_colon}${regex_bracket_left}${bookAndAuthor.bookName}${regex_bracket_right})\\s*([\\(（)]?)(文字精校版)([)）]?)\\s*((作者)?\\s*${regex_colon}${bookAndAuthor.author})\\s*$)`,
+    `^(\\s*((书名)?\\s*${regex_colon}${regex_bracket_left}${bookAndAuthor.bookName}${regex_bracket_right})\\s*([\\(（)]?)((文字精校版)|(校对版全本)|(精校版全本))([)）]?)\\s*((作者)?\\s*${regex_colon}${bookAndAuthor.author})\\s*$)`,
     `^(\\s*((作者)?\\s*${regex_colon}${bookAndAuthor.author})\\s*((书名)?\\s*${regex_colon}${regex_bracket_left}${bookAndAuthor.bookName}${regex_bracket_right})\\s*$)`,
     `^(\\s*(本书由本站书友从网络收集整理并上传分享)${regex_punc}(版权归原作者和出版社所有)${regex_punc}\\s*$)`,
     `^(\\s*${regex_bracket_left}(4020电子书)${regex_bracket_right}(${regex_http}(www.)?4020book.com${regex_http_end})${regex_punc}\\s*$)`

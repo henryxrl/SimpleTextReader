@@ -59,10 +59,38 @@
     --ui_dropZoneImgSize: 13em;
     --ui_loadingImgSize: 380px;
     --ui_footnoteImgSize: 12px;
+    --ui_paginationBottom: 30px;
+    --ui_paginationOpacity: 1;
+
+    /* UI settings variables */
+    --ui_reset_CN: 重置;
+    --ui_reset_EN: Reset;
+    --ui_parameters_CN: 界面参数;
+    --ui_parameters_EN: UI Parameters;
+    --ui_lightHeight_CN: 行高;
+    --ui_lightHeight_EN: Line Height;
+    --ui_fontSize_CN: 字号;
+    --ui_fontSize_EN: Font Size;
+    --ui_lightMode_mainColor_CN: 日间主题颜色;
+    --ui_lightMode_mainColor_EN: Light Mode Theme Color;
+    --ui_lightMode_fontColor_CN: 日间字体颜色;
+    --ui_lightMode_fontColor_EN: Light Mode Font Color;
+    --ui_lightMode_bgColor_CN: 日间背景颜色;
+    --ui_lightMode_bgColor_EN: Light Mode BG Color;
+    --ui_darkMode_mainColor_CN: 夜间主题颜色;
+    --ui_darkMode_mainColor_EN: Dark Mode Theme Color;
+    --ui_darkMode_fontColor_CN: 夜间字体颜色;
+    --ui_darkMode_fontColor_EN: Dark Mode Font Color;
+    --ui_darkMode_bgColor_CN: 夜间背景颜色;
+    --ui_darkMode_bgColor_EN: Dark Mode BG Color;
+    --ui_pagination2pageBottom_dist_CN: 分页条与底部距离;
+    --ui_pagination2pageBottom_dist_EN: Pagination-Bottom Distance;
+    --ui_pagination_transparency_CN: 分页条透明度;
+    --ui_pagination_transparency_EN: Pagination Opacity;
 
     /* Passage variables */
     --p_lineHeight: 1.5em;
-    --p_fontSize: 1.4em;
+    --p_fontSize: 1.5em;
     --h1_lineHeight: 1.6em;
     --h1_margin: 2.5em;
     --h2_lineHeight: 1.6em;
@@ -79,11 +107,12 @@
     --seal_width_EN: 250px;
 
     /* Color variables */
-    --mainColor: #6096bb;
-    --mainColor_focused: #2f5086;
+    --mainColor_inactive: #6096bb;
+    --mainColor_active: #2f5086;
 
-    --mainColor_filter: invert(52%) sepia(93%) saturate(187%) hue-rotate(166deg) brightness(92%) contrast(82%);
-    --mainColor_focused_filter: invert(22%) sepia(47%) saturate(1327%) hue-rotate(180deg) brightness(91%) contrast(80%);
+    /* --mainColor_inactive_filter: invert(52%) sepia(93%) saturate(187%) hue-rotate(166deg) brightness(92%) contrast(82%); */
+    /* --mainColor_active_filter: invert(22%) sepia(47%) saturate(1327%) hue-rotate(180deg) brightness(91%) contrast(80%); */
+    --toGray_filter: invert(53%) sepia(0%) saturate(76%) hue-rotate(158deg) brightness(95%) contrast(82%);
 
     /* --bgColor: #fdf5e8; */
     --bgColor: #fdf3df;
@@ -109,22 +138,35 @@
     --darkMode_init_animation: all 0s ease;
     --darkMode_default_animation: all 0.2s ease;
     --darkMode_animation: var(--darkMode_init_animation);
-    --darkMode_color: var(--mainColor);
-    --lightMode_color: lightgray;
+    --darkMode_color: var(--mainColor_inactive);
+    --lightMode_color: var(--mainColor_active);
+
+    --darkMode_mainColor_inactive: #274c77;
+    --darkMode_mainColor_active: #6096bb;
+    /* --darkMode_mainColor_inactive_filter: invert(22%) sepia(47%) saturate(1327%) hue-rotate(180deg) brightness(91%) contrast(80%); */
+    /* --darkMode_mainColor_active_filter: invert(52%) sepia(93%) saturate(187%) hue-rotate(166deg) brightness(92%) contrast(82%); */
+    --darkMode_bgColor: #0d1018;
+    --darkMode_borderColor: gray;
+    /* --darkMode_shadowColor: rgba(255, 255, 255, 0.5); */
+    --darkMode_shadowColor: rgba(0, 0, 0, 0.12);
+    --darkMode_paginationFontColor: lightgray;
+    --darkMode_paginationActiveFontColor: lightgray;
+    --darkMode_fontInfoColor: gray;
+    /* --darkMode_fontColor: #fdf3df; */
+    --darkMode_fontColor: #f2e6ce;
 }
 
 [data-theme="dark"] {
     --ui_Mode: dark;
-    --mainColor: #274c77;
-    --mainColor_focused: #6096bb;
-    --mainColor_filter: invert(22%) sepia(47%) saturate(1327%) hue-rotate(180deg) brightness(91%) contrast(80%);
-    --mainColor_focused_filter: invert(52%) sepia(93%) saturate(187%) hue-rotate(166deg) brightness(92%) contrast(82%);
-    --bgColor: #0d1018;
-    --borderColor: gray;
-    --shadowColor: rgba(0, 0, 0, 0.12);
-    --paginationFontColor: lightgray;
-    --paginationActiveFontColor: lightgray;
-    --fontInfoColor: gray;
-    /* --fontColor: #fdf3df; */
-    --fontColor: #f2e6ce;
+    --mainColor_inactive: var(--darkMode_mainColor_inactive);
+    --mainColor_active: var(--darkMode_mainColor_active);
+    /* --mainColor_inactive_filter: var(--darkMode_mainColor_inactive_filter); */
+    /* --mainColor_active_filter: var(--darkMode_mainColor_active_filter); */
+    --bgColor: var(--darkMode_bgColor);
+    --borderColor: var(--darkMode_borderColor);
+    --shadowColor: var(--darkMode_shadowColor);
+    --paginationFontColor: var(--darkMode_paginationFontColor);
+    --paginationActiveFontColor: var(--darkMode_paginationActiveFontColor);
+    --fontInfoColor: var(--darkMode_fontInfoColor);
+    --fontColor: var(--darkMode_fontColor);
 }

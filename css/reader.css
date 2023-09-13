@@ -71,7 +71,7 @@ h1 {
     font-weight:bold;
     font-size:xxx-large;
     font-family:var(--fontFamily_title);
-    color:var(--mainColor_focused);
+    color:var(--mainColor_active);
     margin:var(--h1_margin) 0 var(--h1_margin) 0;
 }
 h2 {
@@ -80,7 +80,7 @@ h2 {
     font-weight:bold;
     font-size:xx-large;
     font-family:var(--fontFamily_title);
-    color:var(--mainColor_focused);
+    color:var(--mainColor_active);
     margin:var(--h2_margin) 0 var(--h2_margin) 0;
 }
 h3 {
@@ -89,7 +89,7 @@ h3 {
     font-weight:bold;
     font-size:x-large;
     font-family:var(--fontFamily_title);
-    color:var(--mainColor_focused);
+    color:var(--mainColor_active);
     margin:var(--h3_margin) 0 var(--h3_margin) 0;
 }
 h4 {
@@ -98,7 +98,7 @@ h4 {
     font-weight:bold;
     font-size:large;
     font-family:var(--fontFamily_title);
-    color:var(--mainColor_focused);
+    color:var(--mainColor_active);
     margin:var(--h4_margin) 0 var(--h4_margin) 0;
 }
 h5 {
@@ -107,7 +107,7 @@ h5 {
     font-weight:bold;
     font-size:medium;
     font-family:var(--fontFamily_title);
-    color:var(--mainColor_focused);
+    color:var(--mainColor_active);
     margin:var(--h5_margin) 0 var(--h5_margin) 0;
 }
 h6 {
@@ -116,6 +116,6 @@ h6 {
     font-weight:bold;
     font-size:small;
     font-family:var(--fontFamily_title);
-    color:var(--mainColor_focused);
+    color:var(--mainColor_active);
     margin:var(--h6_margin) 0 var(--h6_margin) 0;
 }

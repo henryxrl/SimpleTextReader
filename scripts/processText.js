@@ -178,15 +178,30 @@ function getTitle(str) {
 
 function getBookNameAndAuthor(str) {
     let current = str.trim();
-    current = current.replace("（校对版全本）", "");
+    const reg_filename_ad = new RegExp(`${regex_bracket_left_nospace}((文字精校版)|(校对版全本)|(精校版全本))${regex_bracket_right_nospace}`);
+    current = current.replace(reg_filename_ad, "");
+    
+    const reg_bookname_ad1 = new RegExp(`^(\\s*(书名(${regex_colon})+)?)`);
+    const reg_bookname_ad2 = new RegExp(`${regex_bracket_left_nospace}${regex_bracket_right_nospace}`, 'g');
+    const reg_bookname_ad3 = new RegExp(`${regex_colon_nospace}`, 'g');
+    
     if (regex_isEastern.test(current)) {
-        let pos = current.toLowerCase().indexOf("作者");
+        let pos = current.toLowerCase().lastIndexOf("作者");
         if (pos !== -1) {
             return {
-                "bookName": current.slice(0, pos).replace("书名", "").replace("：", "").replace(":", "").replace("《", "").replace("》", "").replace("「", "").replace("」", "").replace("『", "").replace("』", "").replace("﹁", "").replace("﹂", "").replace("﹃", "").replace("﹄", "").trim(),
-                "author": current.slice(pos + 2).replace("：", "").replace("：", "").replace(":", "").replace("《", "").replace("》", "").replace("「", "").replace("」", "").replace("『", "").replace("』", "").replace("﹁", "").replace("﹂", "").replace("﹃", "").replace("﹄", "").trim()
+                // "bookName": current.slice(0, pos).replace("书名", "").replace("：", "").replace(":", "").replace("《", "").replace("》", "").replace("「", "").replace("」", "").replace("『", "").replace("』", "").replace("﹁", "").replace("﹂", "").replace("﹃", "").replace("﹄", "").trim(),
+                "bookName": current.slice(0, pos).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").trim(),
+                // "author": current.slice(pos + 2).replace("：", "").replace(":", "").replace("《", "").replace("》", "").replace("「", "").replace("」", "").replace("『", "").replace("』", "").replace("﹁", "").replace("﹂", "").replace("﹃", "").replace("﹄", "").trim()
+                "author": current.slice(pos + 2).replace(reg_bookname_ad3, "").replace(reg_bookname_ad2, "").trim()
             };
         } else {
+            let pos2 = current.toLowerCase().lastIndexOf(" by ");
+            if (pos2 !== -1) {
+                return {
+                    "bookName": current.slice(0, pos2).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").trim(),
+                    "author": current.slice(pos2 + 4).replace(reg_bookname_ad3, "").replace(reg_bookname_ad2, "").trim()
+                };
+            }
             // No complete book name and author info
             // Treat file name as book name and application name as author
             return {
@@ -196,11 +211,11 @@ function getBookNameAndAuthor(str) {
             };
         }
     } else {
-        let pos = current.toLowerCase().indexOf(" by ");
+        let pos = current.toLowerCase().lastIndexOf(" by ");
         if (pos !== -1) {
             return {
-                "bookName": current.slice(0, pos).trim(),
-                "author": current.slice(pos + 4).trim()
+                "bookName": current.slice(0, pos).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").trim(),
+                "author": current.slice(pos + 4).replace(reg_bookname_ad3, "").replace(reg_bookname_ad2, "").trim()
             };
         } else {
             // No complete book name and author info

@@ -1,0 +1,103 @@
+/* fallback */
+/* @font-face {
+    font-family: "Material Symbols Rounded";
+    font-style: normal;
+    font-weight: 100 700;
+    src: url(../fonts/icons.woff2) format("woff2");
+} */
+
+/* .material-symbols-rounded {
+    font-family: "Material Symbols Rounded";
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: "liga";
+    -webkit-font-smoothing: antialiased;
+} */
+
+input[type="checkbox"] {
+    display: none;
+}
+
+.switch-btn {
+    width: 30px;
+    height: 30px;
+    /* background-color: var(--lightMode_color); */
+    border-radius: 8px;
+    /* padding: 4px; */
+    transition: var(--darkMode_animation);
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1005;
+}
+
+label {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* background: var(--bgColor); */
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: var(--darkMode_animation);
+}
+
+svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: var(--fontInfoColor);
+}
+
+.icons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    transform: translate(-11px, 19px) rotate(120deg);
+    user-select: none;
+    /* color: var(--mainColor_active); */
+    transition: var(--darkMode_animation);
+    bottom: 0px;
+    right: 0px;
+    overflow-y: unset;
+}
+
+input[type="checkbox"]:checked ~ .switch-btn {
+    /* background-color: var(--darkMode_color); */
+    transition: var(--darkMode_animation);
+}
+
+input[type="checkbox"]:checked ~ .switch-btn label .icons {
+    transform: translateX(-22px);
+}
+
+input[type="checkbox"]:not(:checked):hover ~ .switch-btn label {
+    /* light mode */
+    background: rgba(0, 0, 0, 0.1);
+}
+
+input[type="checkbox"]:checked:hover ~ .switch-btn label {
+    /* dark mode */
+    background: rgba(255, 255, 255, 0.1);
+}
+
+input[type="checkbox"]:hover ~ .switch-btn label .icons svg .tofill {
+    fill: var(--mainColor_inactive);
+    stroke: var(--mainColor_inactive);
+}
+
+input[type="checkbox"]:hover ~ .switch-btn label .icons svg .tofill-inverse {
+    fill: var(--bgColor);
+    /* stroke: var(--bgColor); */
+}
