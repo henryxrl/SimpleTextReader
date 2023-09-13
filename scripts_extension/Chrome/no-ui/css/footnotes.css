@@ -1,0 +1,58 @@
+
+#footnotediv {
+    position: absolute;
+    width: 400px;
+    overflow: visible;
+}
+
+#footnotediv {
+    background-color: var(--bgColor);
+    font-size: 1.0em;
+    color: var(--mainColor_active);
+    padding: 5px 12px;
+    border: 1px solid var(--borderColor);
+    border-radius: 8px;
+    box-shadow: 0 0 5px  var(--mainColor_inactive);
+    -webkit-box-shadow: var(--mainColor_inactive) 0 0 5px;
+    -moz-box-shadow: 0 0 5px var(--mainColor_inactive);
+    font-family:var(--fontFamily_ui) !important;
+}
+
+#footnotediv p {
+    margin: 0;
+    padding: 5px 0;
+}
+
+a.footnotebacklink {
+    border-bottom: none;
+}
+
+a.footnotebacklink img {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+#footnotecloselink {
+    color: var(--fontInfoColor);
+    text-decoration: none;
+    text-align: right;
+    margin: 0;
+    padding: 0 5px;
+    font-size: 1.0em;
+    position: absolute;
+    float: right;
+    top: 0;
+    right: 0;
+    font-family: var(--fontFamily_ui);
+    font-weight: bold;
+}
+
+sup a {
+    margin: 0;
+    padding: 0 4px 5px 4px;
+}
+
+sup {
+    padding: 0;
+}

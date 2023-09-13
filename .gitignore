@@ -1,8 +1,8 @@
 # Current project
-**/FZSKBXKK.woff2
+# **/FZSKBXKK.woff2
 **/KX_47043_14.woff
 **/dist/
-**/publish_extension.py
+# **/publish_extension.py
 
 # Ignore Mac DS_Store files
 **/.DS_Store

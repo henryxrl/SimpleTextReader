@@ -315,6 +315,11 @@ async function handleSelectedFile(fileList) {
                 // if the first line is a header, it will show up in TOC
                 setTitleActive(curLineNumber);
             }
+
+            // Set up settings UI
+            loadSettings();
+            applySettings();
+            initiateSettingMenu();
         };
 
         fileReader.onloadstart = function (event) {

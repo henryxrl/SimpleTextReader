@@ -1,5 +1,6 @@
 /* General UI */
 body {
+    min-width: 500px;
     font-size: 100% !important;
     background-color: var(--bgColor) !important;
     scrollbar-color: var(--fontInfoColor) var(--bgColor) !important;
@@ -41,7 +42,7 @@ div::-webkit-scrollbar {
 }
 .uifont {
     font-family: var(--fontFamily_ui);
-    color: var(--mainColor);
+    color: var(--mainColor_inactive);
 }
 .prevent-select {
     -webkit-touch-callout : none;     /* iOS Safari */
@@ -73,7 +74,7 @@ To Offset the anchor link to clear fixed header
     height: 100%;
     z-index: 999;
     visibility: show;
-    border: 0.5em dashed var(--mainColor);
+    border: 0.5em dashed var(--mainColor_inactive);
     border-radius: 16px;
     box-sizing: border-box;
     -moz-box-sizing: border-box;
@@ -90,6 +91,7 @@ To Offset the anchor link to clear fixed header
     -webkit-transform: translate(-50%, 20%);
     margin: auto;
     font-size: 5em;
+    color: var(--fontInfoColor);
 }
 #dropZoneImg {
     visibility: show;
@@ -102,10 +104,12 @@ To Offset the anchor link to clear fixed header
     margin: auto;
     width: var(--ui_dropZoneImgSize);
     height: var(--ui_dropZoneImgSize);
-    /* convert to var(--mainColor_focused) */
-    /* filter: var(--mainColor_focused_filter); */
-    /* convert to var(--mainColor) */
-    filter: var(--mainColor_filter);
+    /* convert to var(--mainColor_active) */
+    /* filter: var(--mainColor_active_filter); */
+    /* convert to var(--mainColor_inactive) */
+    /* filter: var(--mainColor_inactive_filter); */
+    /* convert to var(--fontInfoColor) */
+    filter: var(--toGray_filter);
 }
 
 
@@ -127,14 +131,16 @@ To Offset the anchor link to clear fixed header
     width: var(--ui_loadingImgSize);
     transform: translate(-50%, -50%);
     -webkit-transform: translate(-50%, -50%);
-    filter: var(--mainColor_filter);
+    /* filter: var(--mainColor_inactive_filter); */
+    filter: var(--toGray_filter);
 }
 
 
 /* Pagination */
 #pagination {
+    opacity: var(--ui_paginationOpacity);
     position: fixed;
-    bottom: 30px;
+    bottom: var(--ui_paginationBottom);
     background-color: var(--bgColor);
     border: 1px dashed var(--borderColor);
     border-radius: 8px;
@@ -176,12 +182,12 @@ To Offset the anchor link to clear fixed header
     text-decoration: none;
 }
 .pagination a.active {
-    background-color: var(--mainColor_focused);
+    background-color: var(--mainColor_active);
     color: var(--paginationActiveFontColor);
     border-radius: 5px;
 }
 .pagination a:hover:not(.active) {
-    background-color: var(--mainColor);
+    background-color: var(--mainColor_inactive);
     color: var(--paginationActiveFontColor);
     border-radius: 5px;
 }
@@ -207,7 +213,7 @@ To Offset the anchor link to clear fixed header
     /* height: 50%; */
 }
 #tocContent {
-    /* border: var(--mainColor_focused) solid 1px; */
+    /* border: var(--mainColor_active) solid 1px; */
     /* width: 16%; */
     /* height: 50%; */
     /* margin: 0 0 0 3%; */
@@ -256,29 +262,29 @@ a, a:link, a:visited, a:hover, a:active {
     text-decoration: none;
 }
 a.title, a.title:link, a.title:visited {
-    color: var(--mainColor_focused);
+    color: var(--mainColor_active);
 }
 a.toc-text, a.toc-text:link, a.toc-text:visited {
     color: var(--fontInfoColor);
     margin: 0.3em 0 1.3em 1em;
 }
 a.toc-text:hover:not(.active) {
-    color: var(--mainColor);
+    color: var(--mainColor_inactive);
 }
 a.toc-text:active {
-    color: var(--mainColor_focused);
+    color: var(--mainColor_active);
 }
 a.toc-active {
     font-weight: bold;
-    color: var(--mainColor_focused) !important;
+    color: var(--mainColor_active) !important;
     visibility: visible !important;
     opacity: 1 !important;
 }
 .toc-bullet.toc-active {
-    background-color: var(--mainColor_focused) !important;
+    background-color: var(--mainColor_active) !important;
 }
 a.toc-active::before {
-    background-color: var(--mainColor_focused) !important;
+    background-color: var(--mainColor_active) !important;
 }
 
 
@@ -329,22 +335,28 @@ img#seal_CN {
     position: relative;
 }
 
+
+/* Settings dialog */
 dialog {
-    border-radius: 10px;
+    border-radius: 8px;
     padding: 0px;
     font-family: ui;
     font-size: 1.2rem;
     background-color: var(--bgColor);
-    color: var(--mainColor_focused);
+    color: var(--mainColor_active);
     display: grid;
     grid-template-rows: max-content 1fr max-content;
-    box-shadow: 0px 0px 10px black;
+    /* box-shadow: 0px 0px 10px black; */
+    box-shadow: 0 0 5px var(--mainColor_inactive);
+    -webkit-box-shadow: var(--mainColor_inactive) 0 0 5px;
+    -moz-box-shadow: 0 0 5px var(--mainColor_inactive);
+    border: 0px;
 }
 
 .dlg-cap {
     padding: 0.5rem 0;
     font-size: 1.6rem;
-    font-family: title;
+    font-family: ui;
     text-align: center;
     overflow: hidden;
     border-bottom: 2px solid var(--borderColor);
@@ -353,40 +365,40 @@ dialog {
 .dlg-close {
     display: inline-block;
     position: absolute;
-    top: 0.5rem;
+    top: 0.6rem;
     right: 0.5rem;
     cursor: pointer;
     text-align: center;
     font-size: 2rem;
     color: var(--bgColor);
-    background-color: var(--mainColor_focused);
-    border-radius: 20%;
+    background-color: var(--mainColor_active);
+    border-radius: 5px;
     width: 1.6rem;
     height: 1.6rem;
-    line-height: 1.6rem;
+    line-height: 1.4rem;
 }
 
 .dlg-foot {
-    padding: 0.5rem 2rem;
+    padding: 1rem 1rem;
     border-top: 2px solid var(--borderColor);
 }
 
 .dlg-foot button {
     font-family: ui;
     padding: 2px 10px;
-    border: 1px solid var(--mainColor_focused);
+    border: 1px solid var(--mainColor_active);
     border-radius: 5px;
     font-size: 1.2rem;
     color: var(--bgColor);
-    background-color: var(--mainColor_focused);
+    background-color: var(--mainColor_active);
     cursor: pointer;
 }
 
 .dlg-body {
     display: block;
     flex: 1;
-    margin: 0.2rem 1rem;
-    overflow-y: scroll;
+    margin: 0.2rem 1rem 1rem 1rem;
+    /* overflow-y: scroll; */
     scrollbar-gutter: stable both-edges;
     scrollbar-width: thin;
 }
@@ -394,10 +406,10 @@ dialog {
 .dlg-body input,
 .dlg-body select {
     margin: 1px;
-    border: 1px solid var(--mainColor_focused);
+    border: 1px solid var(--mainColor_active);
     font-family: ui;
     font-size: 1.2rem;
-    color: var(--mainColor_focused);
+    color: var(--mainColor_active);
     background-color: var(--bgColor);
 }
 
@@ -412,9 +424,9 @@ input:invalid {
 
 #settingDlg .sub-cap {
     color: var(--bgColor);
-    background-color: var(--mainColor_focused);
+    background-color: var(--mainColor_active);
     margin: 1rem 0;
-    padding: 0.2rem 1rem;
+    /* padding: 0.2rem 1rem; */
     text-align: center;
 }
 
@@ -429,5 +441,116 @@ input:invalid {
 }
 
 #settingDlg .setting-group-UI {
-    grid-template-columns: repeat(2, max-content 1fr);
+    /* grid-template-columns: repeat(2, max-content 1fr); */
+}
+
+dialog::backdrop {
+    backdrop-filter: blur(5px);
+}
+
+
+/* Settings menu */
+#settings-menu {
+    font-size: 1.2em;
+    position: fixed;
+    right: 20px;
+    bottom: 100px;
+    z-index: 1004;
+    background-color: var(--bgColor);
+    border: 1px solid var(--borderColor);
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 0 5px var(--shadowColor);
+    -webkit-box-shadow: var(--shadowColor) 0 0 5px;
+    -moz-box-shadow: 0 0 5px var(--shadowColor);
+    font-family: var(--fontFamily_ui) !important;
+    color: var(--mainColor_active) !important;
+    visibility: hidden;
+}
+
+.settingItem-wrapper {
+    padding: 10px 0px;
+    overflow-y: unset !important;
+    display: flex;
+    justify-content: center; /* Align horizontal */
+    align-items: center; /* Align vertical */
+}
+
+.settingItem-span {
+    display: inline-block;
+    width: 12rem;
+    cursor: default;
+}
+
+.color-picker {
+    background-color: var(--bgColor) !important;
+    border: 1px solid var(--borderColor) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 0 5px var(--shadowColor) !important;
+    -webkit-box-shadow: var(--shadowColor) 0 0 5px !important;
+    -moz-box-shadow: 0 0 5px var(--shadowColor) !important;
+}
+
+.myColor {
+    width: 200px;
+    height: 20px;
+    border: 1px solid var(--borderColor) !important;
+}
+
+.myColor:hover {
+    box-shadow: 0 0 1px 1px var(--shadowColor) !important;
+}
+
+input[type="color"]::-moz-color-swatch,
+input[type="color"]::-webkit-color-swatch {
+    border: 1px solid var(--borderColor) !important;
+    border-radius: 5px !important;
+    /* border: none;
+    border-color: transparent !important; */
+    padding: 0 !important;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+    border: 1px solid var(--borderColor) !important;
+    border-radius: 5px !important;
+    /* border: none;
+    border-color: transparent !important; */
+    padding: 0 !important;
+}
+
+input[type="color"] {
+    background-color: var(--bgColor) !important;
+    width: 200px;
+    height: 20px;
+    border: none;
+    border-color: transparentred !important;
+    padding: 0 !important;
+}
+
+input[type="color"]:hover,
+input[type="color"]:focus {
+    /* box-shadow: 0 0 1px 1px var(--shadowColor) !important; */
+    cursor: grab;
+    outline:none;
+}
+
+input[type="color"]:not(:hover) {
+    cursor: initial;
+}
+
+#setting-reset-btn {
+    font-size: 0.8em;
+    font-family: var(--fontFamily_ui) !important;
+    color: var(--bgColor);
+    background-color: var(--mainColor_active);
+    border: 1px solid var(--mainColor_active);
+    border-radius: 8px;
+    padding: 5px 20px;
+    margin-top: 20px;
+    cursor: pointer
+}
+
+#setting-reset-btn:hover {
+    background-color: var(--mainColor_inactive);
+    border: 1px solid var(--mainColor_inactive);
 }

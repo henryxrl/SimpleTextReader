@@ -1,0 +1,91 @@
+#switch {
+    display: none;
+}
+
+#switch-btn label {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+    transition: var(--darkMode_animation);
+}
+
+.btn-icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+    transition: var(--darkMode_animation);
+}
+
+svg.icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    stroke: var(--fontInfoColor);
+    fill: none;
+}
+
+.icons {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    transform: translateY(1.5rem) rotate(90deg);
+    user-select: none;
+    color: var(--mainColor_active);
+    transition: var(--darkMode_animation);
+    bottom: 0px;
+    right: 0px;
+    overflow-y: unset;
+}
+
+#switch:checked ~ #switch-btn {
+    transition: var(--darkMode_animation);
+}
+
+#switch:checked ~ #switch-btn label .icons {
+    transform: translateX(-1.5rem);
+}
+
+#switch:hover ~ #switch-btn label .icons .tofill,
+.btn-icon:hover:not(:focus) svg .tofill {
+    fill: var(--mainColor_inactive);
+    stroke: var(--mainColor_inactive);
+}
+
+#switch:hover ~ #switch-btn label .icons .tofill-inverse,
+.btn-icon:hover:not(:focus) svg .tofill-inverse {
+    fill: var(--bgColor);
+    /* stroke: var(--bgColor); */
+}
+
+.btn-icon:focus {
+    background: var(--mainColor_active);
+}
+
+.btn-icon:focus svg .tofill {
+    fill: var(--bgColor);
+    stroke: var(--bgColor);
+}
+
+#switch:hover ~ #switch-btn label,
+.btn-icon:hover:not(:focus) {
+    /* light mode */
+    background: rgba(125, 125, 125, 0.1);
+}
+
+.btn-group {
+    display: flex;
+    flex-flow: column;
+    gap: 1rem;
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 1005;
+}

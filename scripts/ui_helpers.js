@@ -1,6 +1,18 @@
 function setMainContentUI() {
     // console.log("setMainContentUI");
-    
+
+    // console.log(style.mainColor_active);
+    // console.log(hexToHSL(style.mainColor_active));
+    // console.log(hexToHSL(style.mainColor_active, 1.5));
+    // console.log(HSLToHex(...hexToHSL(style.mainColor_active)));
+    // console.log(HSLToHex(...hexToHSL(style.mainColor_active, 1.5)));
+
+    // const rgb = hexToRGB(style.mainColor_active);
+    // const color = new Color(rgb[0], rgb[1], rgb[2]);
+    // const solver = new Solver(color);
+    // const result = solver.solve(10);
+    // console.log(result.filter);
+
     // Dark mode
     darkModeToggle.checked = (!getUIMode());
     setUIMode(!darkModeToggle.checked);
@@ -169,21 +181,22 @@ function setTOC_onRatio(initial=false) {
 
 function showDropZone(focused=false) {
     if (isVariableDefined(dropZone) && isVariableDefined(dropZoneText) && isVariableDefined(dropZoneImg)) {
-        let c = style.mainColor;
-        let filter = style.mainColor_filter;
+        let c = style.mainColor_inactive;
+        // let filter = style.mainColor_inactive_filter;
         if (focused) {
-            c = style.mainColor_focused;
-            filter = style.mainColor_focused_filter;
+            c = style.mainColor_active;
+            // filter = style.mainColor_active_filter;
         }
+        let filter = style.toGray_filter;
         dropZone.style.visibility = "visible";
         dropZone.style.zIndex = "999";
         dropZone.style.borderColor = c;
         dropZoneText.style.visibility = "visible";
         dropZoneText.style.zIndex = "1000";
-        dropZoneText.style.color = c;
+        // dropZoneText.style.color = c;
         dropZoneImg.style.visibility = "visible";
         dropZoneImg.style.zIndex = "1001";
-        dropZoneImg.style.setProperty("filter", filter);
+        // dropZoneImg.style.setProperty("filter", filter);
         return 0;
     } else {
         return 1;
