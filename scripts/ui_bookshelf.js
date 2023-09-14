@@ -189,17 +189,14 @@ var bookshelf = {
     },
 
     // 更新书籍阅读进度
-    updateBookProgressInfo(fname, bookElm = null) {
+    updateBookProgressInfo(fname, bookElm = null, inLoop = false) {
         if (!bookElm) {
             bookElm = $(`.bookshelf .book[data-filename="${fname}"]`);
             if (bookElm.length <= 0) {
                 return;
             }
         }
-        // let progress = STReHelper.getLocalProgress(fname);
-        console.log(fname);
-        let progress = getProgressText(fname);
-        console.log(progress);
+        let progress = getProgressText(fname, !inLoop);
         if (progress) {
             bookElm.addClass("read").css("--read-progress", progress);
             bookElm.find(".progress").html("进度：" + progress).attr("title", progress);
@@ -269,7 +266,7 @@ var bookshelf = {
     loop() {
         if (this.enabled) {
             localStorage.setItem(this._FILENAME_, filename);
-            if (filename) this.updateBookProgressInfo(filename);
+            if (filename) this.updateBookProgressInfo(filename, null, true);
             setTimeout(() => this.loop(), 1000);
         }
     },

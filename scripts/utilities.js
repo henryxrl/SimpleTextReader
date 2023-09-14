@@ -7,7 +7,7 @@ function setHistory(filename, lineNumber) {
     }
 }
 
-function getHistory(filename) {
+function getHistory(filename, consoleLog=true) {
     if (localStorage.getItem(filename)) {
         let tempLine = localStorage.getItem(filename);
         try {
@@ -15,7 +15,9 @@ function getHistory(filename) {
         } catch (error) {
             tempLine = 0;
         }
-        console.log("History found! Go to line: ", tempLine);
+        if (consoleLog) {
+            console.log(`History of "${filename}" found! Go to line: ${tempLine}`);
+        }
         let success = gotoLine(tempLine, false);
         if (success === -1) {
             tempLine = 0;
@@ -29,10 +31,12 @@ function saveProgressText(filename, progressText) {
     localStorage.setItem(filename + "_progressText", progressText);
 }
 
-function getProgressText(filename) {
+function getProgressText(filename, consoleLog=true) {
     if (localStorage.getItem(filename + "_progressText")) {
         let tempText = localStorage.getItem(filename + "_progressText");
-        console.log("Progress text found! Text: ", tempText);
+        if (consoleLog) {
+            console.log(`Progress of "${filename}" found! Progress: ${tempText}`);
+        }
         return tempText;
     }
     return "";
