@@ -109,34 +109,6 @@ class BookshelfDB {
     }
 }
 
-class SettingGroupBookshelf extends SettingGroupBase {
-    constructor() {
-        super("setting-group-bookshelf", "本地缓存书架");
-        this.settings["enable"] = new SettingCheckbox(this.id + "-enable", "启用", true);
-        this.settings["reopen"] = new SettingCheckbox(this.id + "-reopen", "启动时打开上次阅读书籍", true);
-    }
-
-    genHTML() {
-        let sts = this.settings;
-        let html = `<div class="sub-cap">${this.desc}</div>
-            <div class="setting-group setting-group-bookshelf">
-            <div class="row">${sts["enable"].genInputElm()} ${sts["enable"].genLabelElm()}</div>
-            <div class="row">${sts["reopen"].genInputElm()} ${sts["reopen"].genLabelElm()}</div>
-            </div>`;
-        return html;
-    }
-
-    apply() {
-        if (this.settings["enable"].value) {
-            bookshelf.enable();
-        } else {
-            bookshelf.disable();
-        }
-        return this;
-    }
-
-}
-
 var bookshelf = {
 
     enabled: false,
@@ -160,7 +132,7 @@ var bookshelf = {
 
     async openBook(fname) {
         if (this.enabled) {
-            console.log("Open book from cache: " + fname);
+            // console.log("Open book from cache: " + fname);
             showLoadingScreen();
             try {
                 let book = await this.db.getBook(fname);
@@ -185,9 +157,9 @@ var bookshelf = {
         if (bookshelf.enabled) {
             if (file.type === "text/plain") {
                 if (file[bookshelf._CACHE_FLAG_]) {
-                    console.log("Openning cache-book, so not save.");
+                    // console.log("Openning cache-book, so not save.");
                 } else {
-                    console.log("saveBook: ", file.name);
+                    // console.log("saveBook: ", file.name);
                     // 先把文件保存到缓存db中
                     await bookshelf.db.putBook(file.name, file);
                     if (!await bookshelf.db.isBookExist(file.name)) alert("保存到本地书架失败（缓存空间可能已满）");
@@ -223,7 +195,6 @@ var bookshelf = {
             </div>`);
         book.find(".cover").click((evt) => {
             evt.originalEvent.stopPropagation();
-            this.hide();
             this.openBook(bookInfo.name);
         });
         book.find(".delete-btn").click((evt) => {
@@ -235,11 +206,14 @@ var bookshelf = {
 
     async refreshBookList() {
         if (this.enabled) {
-            let container = $(".bookshelf .dlg-body");
+            let container = $(".bookshelf .booklist");
             container.html("");
             let storageInfo = await navigator.storage.estimate();
-            if (storageInfo) container.append(`<div class="sub-title">【提示】书籍保存在浏览器缓存空间内，可能会被系统自动清除。<br/>
-                已用空间：${(storageInfo.usage/storageInfo.quota*100).toFixed(1)}% (${(storageInfo.usage/1000/1000).toFixed(2)} MB / ${(storageInfo.quota/1000/1000).toFixed(2)} MB)<div>`);
+            if (storageInfo) {
+                $("#bookshelfUsagePct").html((storageInfo.usage/storageInfo.quota*100).toFixed(1));
+                $("#bookshelfUsage").html((storageInfo.usage/1000/1000).toFixed(2));
+                $("#bookshelfQuota").html((storageInfo.quota/1000/1000).toFixed(2));
+            }
             let booklist = [];
             try {
                 for (const book of await this.db.getAllBooks()) {
@@ -258,18 +232,12 @@ var bookshelf = {
     async show() {
         if (this.enabled) {
             $(`<div class="bookshelf">
-			<div class="dlg-cap">本地书架</div>
-			<span class="dlg-body"></span>
+			<div class="title">缓存书架
+            <div class="sub-title">【提示】书籍保存在浏览器缓存空间内，可能会被系统自动清除。<br/>
+                已用空间：<span id="bookshelfUsagePct"></span>% (<span id="bookshelfUsage"></span> MB / <span id="bookshelfQuota"></span> MB)</div></div>
+			<div class="booklist"></div>
 			</div>`).appendTo("#dropZone");
-            this.refreshBookList();
-        }
-        return this;
-    },
-
-    hide() {
-        if (this.enabled) {
-            $("#bookshelfDlg").remove();
-            unfreezeContent();
+            await this.refreshBookList();
         }
         return this;
     },
@@ -285,9 +253,8 @@ var bookshelf = {
         if (!this.enabled) {
             this.db = new BookshelfDB();
             fileloadCallback.regBefore(this.saveBook);
-            $("#STRe-bookshelf-btn").show();
             this.enabled = true;
-            this.show(true);
+            this.show();
             console.log("Module <Bookshelf> enabled.");
             setTimeout(() => this.loop(), 1000);
         }
@@ -298,32 +265,17 @@ var bookshelf = {
         if (this.enabled) {
             fileloadCallback.unregBefore(this.saveBook);
             $(".bookshelf").remove();
-            $("#STRe-bookshelf-btn").hide();
             this.db = null;
             this.enabled = false;
             console.log("Module <Bookshelf> disabled.");
         }
         return this;
     },
-
-    init() {
-        $(`<div id="STRe-bookshelf-btn" class="btn-icon">
-		<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-			<path stroke="none" d="M9 3v15h3V3H9m3 2l4 13l3-1l-4-13l-3 1M5 5v13h3V5H5M3 19v2h18v-2H3Z"/>
-		</svg></div>`)
-            .click(() => { this.refreshBookList(); resetUI(); })
-            .prependTo($("#btnWrapper"))
-            .hide();
-
-        settingMgr.groups["Bookshelf"] = new SettingGroupBookshelf();
-        settingMgr.load("Bookshelf").apply("Bookshelf");
-    },
 };
 
-bookshelf.init();
-
-// 启动时打开上次阅读书籍
-if (settingMgr.groups["Bookshelf"].settings["reopen"].value) {
-    // if (STRe_Settings.settings.enableRos.val) {
+// 启用 bookshelf 功能
+if (!location.search.includes("no-bookshelf")) { // 地址后面加 "?no-bookshelf" 停用 bookshelf 功能
+    bookshelf.enable();
+    // 启动时打开上次阅读书籍
     bookshelf.reopenBook();
 }

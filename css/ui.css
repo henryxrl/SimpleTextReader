@@ -508,8 +508,6 @@ dialog::backdrop {
     left: 0;
     right: 0;
     padding: 0;
-    font-family: var(--fontFamily_ui);
-    font-size: 1.2rem;
     background: var(--bgColor);
     color: var(--fontColor);
     display: grid;
@@ -517,26 +515,37 @@ dialog::backdrop {
     z-index: 2000;
 }
 
-.bookshelf .sub-title {
-    color: var(--fontInfoColor);
-    font-size:1rem;
-    font-family:var(--fontFamily_ui);
-    text-align:center;
+.bookshelf .title {
+    padding: 0.5rem 0;
+    font-size: 1.6rem;
+    font-family: var(--fontFamily_title);
+    text-align: center;
+    overflow: hidden;
+    border-bottom: 2px solid var(--borderColor);
 }
 
-.bookshelf .dlg-body {
+.bookshelf .sub-title {
+    color: var(--fontInfoColor);
+    font-size: 1rem;
+    font-family: var(--fontFamily_ui);
     text-align: center;
-    margin-right: 4rem; /* 避开 btn-group */
+}
+
+.bookshelf .booklist {
+    overflow-y: auto;
+    text-align: center;
+    margin: 2px 3rem; /* 避开 btn-group */
 }
 
 .bookshelf .book {
     display: inline-grid;
     grid-template-rows: max-content 1fr;
+    font-family: var(--fontFamily_ui);
     font-size: 1.2rem;
     width: 10rem;
     height: 15rem;
     color: var(--fontColor);
-    background-color: var(--mainColor);
+    background-color: var(--mainColor_inactive);
     margin: 1vw;
     padding: 5px;
 }
@@ -565,6 +574,7 @@ dialog::backdrop {
     background-color: var(--bgColor);
     /* margin-top: 1px; */
     padding-right: 10px;
+}
 
 input[type="color"]::-moz-color-swatch,
 input[type="color"]::-webkit-color-swatch {

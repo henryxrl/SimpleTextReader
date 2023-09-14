@@ -200,7 +200,7 @@ var fileloadCallback = {
         } catch (e) {
             console.log("fileloadCallback.before() error:", e);
         }
-        console.log("fileloadCallback.before() finished:", newF);
+        // console.log("fileloadCallback.before() finished:", newF);
         return newF;
     },
 
@@ -212,7 +212,7 @@ var fileloadCallback = {
         } catch (e) {
             console.log("fileloadCallback.after() error:", e);
         }
-        console.log("fileloadCallback.after() finished.");
+        // console.log("fileloadCallback.after() finished.");
     }
 };
 
