@@ -7,7 +7,7 @@ body {
     /* transition: var(--darkMode_animation); */
 }
 ::-webkit-scrollbar {
-    width: 14px;
+    width: var(--ui_scrollBarWidth) !important;
     background: var(--bgColor) !important;
     transition: var(--darkMode_animation);
 }
@@ -352,7 +352,6 @@ dialog {
     -moz-box-shadow: 0 0 5px var(--mainColor_inactive);
     border: 0px;
 }
-
 .dlg-cap {
     padding: 0.5rem 0;
     font-size: 1.6rem;
@@ -361,7 +360,6 @@ dialog {
     overflow: hidden;
     border-bottom: 2px solid var(--borderColor);
 }
-
 .dlg-close {
     display: inline-block;
     position: absolute;
@@ -377,12 +375,10 @@ dialog {
     height: 1.6rem;
     line-height: 1.4rem;
 }
-
 .dlg-foot {
     padding: 1rem 1rem;
     border-top: 2px solid var(--borderColor);
 }
-
 .dlg-foot button {
     font-family: ui;
     padding: 2px 10px;
@@ -393,7 +389,6 @@ dialog {
     background-color: var(--mainColor_active);
     cursor: pointer;
 }
-
 .dlg-body {
     display: block;
     flex: 1;
@@ -402,7 +397,6 @@ dialog {
     scrollbar-gutter: stable both-edges;
     scrollbar-width: thin;
 }
-
 .dlg-body input,
 .dlg-body select {
     margin: 1px;
@@ -412,16 +406,13 @@ dialog {
     color: var(--mainColor_active);
     background-color: var(--bgColor);
 }
-
 .dlg-body input[type="checkbox"] {
    width: 1rem;
    height: 1rem;
 }
-
 input:invalid {
     background-color: pink;
 }
-
 #settingDlg .sub-cap {
     color: var(--bgColor);
     background-color: var(--mainColor_active);
@@ -429,21 +420,17 @@ input:invalid {
     /* padding: 0.2rem 1rem; */
     text-align: center;
 }
-
 #settingDlg .setting-group {
     display: grid;
     grid-gap: 0.5rem;
     grid-template-columns: max-content 1fr;
 }
-
 #settingDlg .setting-group .row {
     grid-column: 1 / -1;
 }
-
 #settingDlg .setting-group-UI {
     /* grid-template-columns: repeat(2, max-content 1fr); */
 }
-
 dialog::backdrop {
     backdrop-filter: blur(5px);
 }
@@ -453,8 +440,8 @@ dialog::backdrop {
 #settings-menu {
     font-size: 1.2em;
     position: fixed;
-    right: 20px;
-    bottom: 100px;
+    right: calc(var(--ui_btnGap) + var(--ui_scrollBarWidth) + var(--ui_btnOffset));
+    bottom: calc(3 * (var(--ui_btnGap) + var(--ui_btnSize)));
     z-index: 1004;
     background-color: var(--bgColor);
     border: 1px solid var(--borderColor);
@@ -467,7 +454,6 @@ dialog::backdrop {
     color: var(--mainColor_active) !important;
     visibility: hidden;
 }
-
 .settingItem-wrapper {
     padding: 10px 0px;
     overflow-y: unset !important;
@@ -475,13 +461,11 @@ dialog::backdrop {
     justify-content: center; /* Align horizontal */
     align-items: center; /* Align vertical */
 }
-
 .settingItem-span {
     display: inline-block;
     width: 12rem;
     cursor: default;
 }
-
 .color-picker {
     background-color: var(--bgColor) !important;
     border: 1px solid var(--borderColor) !important;
@@ -490,17 +474,14 @@ dialog::backdrop {
     -webkit-box-shadow: var(--shadowColor) 0 0 5px !important;
     -moz-box-shadow: 0 0 5px var(--shadowColor) !important;
 }
-
 .myColor {
     width: 200px;
     height: 20px;
     border: 1px solid var(--borderColor) !important;
 }
-
 .myColor:hover {
     box-shadow: 0 0 1px 1px var(--shadowColor) !important;
 }
-
 input[type="color"]::-moz-color-swatch,
 input[type="color"]::-webkit-color-swatch {
     border: 1px solid var(--borderColor) !important;
@@ -509,7 +490,6 @@ input[type="color"]::-webkit-color-swatch {
     border-color: transparent !important; */
     padding: 0 !important;
 }
-
 input[type="color"]::-webkit-color-swatch-wrapper {
     border: 1px solid var(--borderColor) !important;
     border-radius: 5px !important;
@@ -517,7 +497,6 @@ input[type="color"]::-webkit-color-swatch-wrapper {
     border-color: transparent !important; */
     padding: 0 !important;
 }
-
 input[type="color"] {
     background-color: var(--bgColor) !important;
     width: 200px;
@@ -526,18 +505,15 @@ input[type="color"] {
     border-color: transparentred !important;
     padding: 0 !important;
 }
-
 input[type="color"]:hover,
 input[type="color"]:focus {
     /* box-shadow: 0 0 1px 1px var(--shadowColor) !important; */
     cursor: grab;
     outline:none;
 }
-
 input[type="color"]:not(:hover) {
     cursor: initial;
 }
-
 #setting-reset-btn {
     font-size: 0.8em;
     font-family: var(--fontFamily_ui) !important;
@@ -549,7 +525,6 @@ input[type="color"]:not(:hover) {
     margin-top: 20px;
     cursor: pointer
 }
-
 #setting-reset-btn:hover {
     background-color: var(--mainColor_inactive);
     border: 1px solid var(--mainColor_inactive);
@@ -570,7 +545,6 @@ input[type="color"]:not(:hover) {
     grid-template-rows: max-content 1fr;
     z-index: 2000;
 }
-
 .bookshelf .title {
     padding: 0.5rem 0;
     font-size: 1.6rem;
@@ -579,20 +553,17 @@ input[type="color"]:not(:hover) {
     overflow: hidden;
     border-bottom: 2px solid var(--borderColor);
 }
-
 .bookshelf .sub-title {
     color: var(--fontInfoColor);
     font-size: 1rem;
     font-family: var(--fontFamily_ui);
     text-align: center;
 }
-
 .bookshelf .booklist {
     overflow-y: auto;
     text-align: center;
     margin: 2px 3rem; /* 避开 btn-group */
 }
-
 .bookshelf .book {
     display: inline-grid;
     grid-template-rows: max-content 1fr;
@@ -605,7 +576,6 @@ input[type="color"]:not(:hover) {
     margin: 1vw;
     padding: 5px;
 }
-
 .bookshelf .book .delete-btn {
     font-family: var(--fontFamily_title);
     display: block;
@@ -614,14 +584,12 @@ input[type="color"]:not(:hover) {
     font-size: 1.5rem;
     line-height: 1.2rem;
 }
-
 .bookshelf .book .cover {
     font-family: var(--fontFamily_ui);
     text-align: left;
     background-color: var(--bgColor);
     cursor: pointer;
 }
-
 .bookshelf .book .size {
     color: var(--fontInfoColor);
     font-size: 0.9rem;

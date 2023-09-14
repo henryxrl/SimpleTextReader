@@ -18,7 +18,7 @@ function setMainContentUI() {
     setUIMode(!darkModeToggle.checked);
     style.ui_Mode = (!darkModeToggle.checked ? "light" : "dark");
     // console.log(style.ui_Mode);
-    darkModeActualButton.style.setProperty("visibility", "visible");
+    // darkModeActualButton.style.setProperty("visibility", "visible");
     setTimeout(function() {
         style.darkMode_animation = style.darkMode_default_animation;
     }, 1000);
@@ -197,6 +197,9 @@ function showDropZone(focused=false) {
         dropZoneImg.style.visibility = "visible";
         dropZoneImg.style.zIndex = "1001";
         // dropZoneImg.style.setProperty("filter", filter);
+
+        // Fix icons location with/without scrollbar
+        style.ui_btnOffset = "0px";
         return 0;
     } else {
         return 1;
@@ -211,15 +214,24 @@ function hideDropZone() {
         dropZoneText.style.zIndex = "2";
         dropZoneImg.style.visibility = "hidden";
         dropZoneImg.style.zIndex = "3";
+
+        // Fix icons location with/without scrollbar
+        style.ui_btnOffset = (-1 * parseInt(style.ui_scrollBarWidth)).toString() + "px";
     }
 }
 
 function showLoadingScreen() {
     loadingScreen.style.visibility = "visible";
+
+    // Fix icons location with/without scrollbar
+    style.ui_btnOffset = "0px";
 }
 
 function hideLoadingScreen() {
     loadingScreen.style.visibility = "hidden";
+
+    // Fix icons location with/without scrollbar
+    // style.ui_btnOffset = (-1 * parseInt(style.ui_scrollBarWidth)).toString() + "px";
 }
 
 function showContent() {

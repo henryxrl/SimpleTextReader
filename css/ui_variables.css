@@ -43,6 +43,10 @@
     --ui_LANG: CN;
     --ui_title_CN: 易笺;
     --ui_title_EN: SimpleTextReader;
+    --ui_scrollBarWidth: 15px;
+    --ui_btnOffset: 0px;
+    --ui_btnGap: 1rem;
+    --ui_btnSize: 1.5rem;
     --ui_dropZoneText_CN: txt;
     --ui_dropZoneText_EN: txt;
     --ui_readingProgress_CN: 阅读进度：;

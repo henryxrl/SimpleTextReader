@@ -210,7 +210,7 @@ var bookshelf = {
         let book = $(`<div class="book" data-filename="${bookInfo.name}">
             <div style="height:1.5rem;line-height:1.5rem;"><span class="delete-btn" title="删除">&times;</span></div>
             <div class="cover">${bookInfo.name}</div>
-            <div class="size">${(bookInfo.size/1000/1000).toFixed(2)} MB</div>
+            <div class="size">${formatBytes(bookInfo.size)}</div>
             <div class="progress"></div>
             </div>`);
         book.find(".cover").click((evt) => {
@@ -229,11 +229,18 @@ var bookshelf = {
         if (this.enabled) {
             let container = $(".bookshelf .booklist");
             container.html("");
-            let storageInfo = await navigator.storage.estimate();
+            let storageInfo = null;
+            try {
+                storageInfo = await navigator.storage.estimate();
+            } catch (e) {
+                console.log(e);
+            }
             if (storageInfo) {
                 $("#bookshelfUsagePct").html((storageInfo.usage/storageInfo.quota*100).toFixed(1));
-                $("#bookshelfUsage").html((storageInfo.usage/1000/1000).toFixed(2));
-                $("#bookshelfQuota").html((storageInfo.quota/1000/1000).toFixed(2));
+                $("#bookshelfUsage").html(formatBytes(storageInfo.usage));
+                $("#bookshelfQuota").html(formatBytes(storageInfo.quota));
+            } else {
+                $("#bookshelfUsageText").hide();
             }
             let booklist = [];
             try {
@@ -255,7 +262,7 @@ var bookshelf = {
             $(`<div class="bookshelf">
             <div class="title">缓存书架
             <div class="sub-title">【提示】书籍保存在浏览器缓存空间内，可能会被系统自动清除。<br/>
-                已用空间：<span id="bookshelfUsagePct"></span>% (<span id="bookshelfUsage"></span> MB / <span id="bookshelfQuota"></span> MB)</div></div>
+                <span id="bookshelfUsageText">已用空间：<span id="bookshelfUsagePct"></span>% (<span id="bookshelfUsage"></span> / <span id="bookshelfQuota"></span>)</span></div></div>
             <div class="booklist"></div>
             </div>`).appendTo("#dropZone");
             await this.refreshBookList();
