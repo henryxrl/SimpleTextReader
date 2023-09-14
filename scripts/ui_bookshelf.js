@@ -109,6 +109,7 @@ class BookshelfDB {
     }
 }
 
+
 var bookshelf = {
 
     enabled: false,
@@ -187,11 +188,33 @@ var bookshelf = {
         }
     },
 
+    // 更新书籍阅读进度
+    updateBookProgressInfo(fname, bookElm = null) {
+        if (!bookElm) {
+            bookElm = $(`.bookshelf .book[data-filename="${fname}"]`);
+            if (bookElm.length <= 0) {
+                return;
+            }
+        }
+        // let progress = STReHelper.getLocalProgress(fname);
+        console.log(fname);
+        let progress = getProgressText(fname);
+        console.log(progress);
+        if (progress) {
+            bookElm.addClass("read").css("--read-progress", progress);
+            bookElm.find(".progress").html("进度：" + progress).attr("title", progress);
+        } else {
+            bookElm.removeClass("read").css("--read-progress", "");
+            bookElm.find(".progress").html("进度：无");
+        }
+    },
+
     genBookItem(bookInfo) {
         let book = $(`<div class="book" data-filename="${bookInfo.name}">
-			<div style="height:1.5rem;line-height:1.5rem;"><span class="delete-btn" title="删除">&times;</span></div>
-			<div class="cover">${bookInfo.name}</div>
+            <div style="height:1.5rem;line-height:1.5rem;"><span class="delete-btn" title="删除">&times;</span></div>
+            <div class="cover">${bookInfo.name}</div>
             <div class="size">${(bookInfo.size/1000/1000).toFixed(2)} MB</div>
+            <div class="progress"></div>
             </div>`);
         book.find(".cover").click((evt) => {
             evt.originalEvent.stopPropagation();
@@ -201,6 +224,7 @@ var bookshelf = {
             evt.originalEvent.stopPropagation();
             this.deleteBook(bookInfo.name, () => this.refreshBookList());
         });
+        this.updateBookProgressInfo(bookInfo.name, book);
         return book;
     },
 
@@ -232,11 +256,11 @@ var bookshelf = {
     async show() {
         if (this.enabled) {
             $(`<div class="bookshelf">
-			<div class="title">缓存书架
+            <div class="title">缓存书架
             <div class="sub-title">【提示】书籍保存在浏览器缓存空间内，可能会被系统自动清除。<br/>
                 已用空间：<span id="bookshelfUsagePct"></span>% (<span id="bookshelfUsage"></span> MB / <span id="bookshelfQuota"></span> MB)</div></div>
-			<div class="booklist"></div>
-			</div>`).appendTo("#dropZone");
+            <div class="booklist"></div>
+            </div>`).appendTo("#dropZone");
             await this.refreshBookList();
         }
         return this;
@@ -245,6 +269,7 @@ var bookshelf = {
     loop() {
         if (this.enabled) {
             localStorage.setItem(this._FILENAME_, filename);
+            if (filename) this.updateBookProgressInfo(filename);
             setTimeout(() => this.loop(), 1000);
         }
     },
@@ -271,10 +296,27 @@ var bookshelf = {
         }
         return this;
     },
+
+    init() {
+        $(`<div id="STRe-bookshelf-btn" class="btn-icon">
+        <svg class="icon" viewBox="0 0 800 800" id="Flat" xmlns="http://www.w3.org/2000/svg">
+        <path class="tofill" d="M730,611.2l-129.4-483c-7.2-26.7-34.6-42.5-61.2-35.4l-96.6,25.9c-1.1,0.3-2.1,0.7-3.1,1c-9.4-12.4-24.1-19.7-39.7-19.7H300
+        c-8.8,0-17.4,2.3-25,6.8c-7.6-4.4-16.2-6.8-25-6.8H150c-27.6,0-50,22.4-50,50v500c0,27.6,22.4,50,50,50h100c8.8,0,17.4-2.3,25-6.8
+        c7.6,4.4,16.2,6.8,25,6.8h100c27.6,0,50-22.4,50-50V338.8l86.9,324.2c7.1,26.7,34.5,42.5,61.2,35.4c0,0,0,0,0,0l96.6-25.9
+        C721.3,665.2,737.2,637.8,730,611.2z M488.1,287.8l96.6-25.9l64.7,241.5l-96.6,25.9L488.1,287.8z M552.3,141.1l19.4,72.4l-96.6,25.9
+        L455.7,167L552.3,141.1z M400,150l0,375H300V150H400z M250,150v75H150v-75H250z M150,650V275h100v375H150z M400,650H300v-75h100
+        L400,650L400,650z M681.8,624.1L585.2,650l-19.4-72.4l96.6-25.9L681.8,624.1L681.8,624.1z"/>
+        <path class="tofill" d="M665.9,513.9l-122.7,32.8l-70.7-263.3l122.7-32.8L665.9,513.9z M262,262H136v400h126V262z" opacity="0.3" /></div>`)
+            .click(() => { this.refreshBookList(); resetUI(); })
+            .prependTo($("#btnWrapper"))
+            // .hide();
+    },
 };
+
 
 // 启用 bookshelf 功能
 if (!location.search.includes("no-bookshelf")) { // 地址后面加 "?no-bookshelf" 停用 bookshelf 功能
+    bookshelf.init();
     bookshelf.enable();
     // 启动时打开上次阅读书籍
     bookshelf.reopenBook();

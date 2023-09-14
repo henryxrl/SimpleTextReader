@@ -25,11 +25,18 @@
     transition: var(--darkMode_animation);
 }
 
-svg.icon {
+svg.icon-nofill {
     width: 1.5rem;
     height: 1.5rem;
     stroke: var(--fontInfoColor);
     fill: none;
+}
+
+svg.icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    stroke: var(--fontInfoColor);
+    fill: var(--fontInfoColor);
 }
 
 .icons {
@@ -57,6 +64,7 @@ svg.icon {
 .btn-icon:hover:not(:focus) svg .tofill {
     fill: var(--mainColor_inactive);
     stroke: var(--mainColor_inactive);
+    opacity: 1;
 }
 
 #switch:hover ~ #switch-btn label .icons .tofill-inverse,

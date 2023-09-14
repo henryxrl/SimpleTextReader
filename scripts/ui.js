@@ -692,6 +692,7 @@ function GetScrollPositions(toSetHistory=true) {
     // progressContainer.innerHTML = `<span style='text-decoration:underline'>${bookAndAuthor.bookName}</span><br/>${readingProgressText} ${totalPercentage.toFixed(1).replace(".0", "")}%`;
     document.getElementById("progress-title").innerText = bookAndAuthor.bookName;
     document.getElementById("progress-content").innerText = `${readingProgressText} ${totalPercentage.toFixed(1).replace(".0", "")}%`;
+    saveProgressText(filename, `${totalPercentage.toFixed(1).replace(".0", "")}%`);
 
     gotoTitle_Clicked = false;
 }

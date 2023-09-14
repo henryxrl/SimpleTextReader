@@ -25,6 +25,19 @@ function getHistory(filename) {
     return 0;
 }
 
+function saveProgressText(filename, progressText) {
+    localStorage.setItem(filename + "_progressText", progressText);
+}
+
+function getProgressText(filename) {
+    if (localStorage.getItem(filename + "_progressText")) {
+        let tempText = localStorage.getItem(filename + "_progressText");
+        console.log("Progress text found! Text: ", tempText);
+        return tempText;
+    }
+    return "";
+}
+
 function removeAllHistory() {
     localStorage.clear();
 }

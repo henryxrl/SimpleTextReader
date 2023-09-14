@@ -501,6 +501,62 @@ dialog::backdrop {
     box-shadow: 0 0 1px 1px var(--shadowColor) !important;
 }
 
+input[type="color"]::-moz-color-swatch,
+input[type="color"]::-webkit-color-swatch {
+    border: 1px solid var(--borderColor) !important;
+    border-radius: 5px !important;
+    /* border: none;
+    border-color: transparent !important; */
+    padding: 0 !important;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+    border: 1px solid var(--borderColor) !important;
+    border-radius: 5px !important;
+    /* border: none;
+    border-color: transparent !important; */
+    padding: 0 !important;
+}
+
+input[type="color"] {
+    background-color: var(--bgColor) !important;
+    width: 200px;
+    height: 20px;
+    border: none;
+    border-color: transparentred !important;
+    padding: 0 !important;
+}
+
+input[type="color"]:hover,
+input[type="color"]:focus {
+    /* box-shadow: 0 0 1px 1px var(--shadowColor) !important; */
+    cursor: grab;
+    outline:none;
+}
+
+input[type="color"]:not(:hover) {
+    cursor: initial;
+}
+
+#setting-reset-btn {
+    font-size: 0.8em;
+    font-family: var(--fontFamily_ui) !important;
+    color: var(--bgColor);
+    background-color: var(--mainColor_active);
+    border: 1px solid var(--mainColor_active);
+    border-radius: 8px;
+    padding: 5px 20px;
+    margin-top: 20px;
+    cursor: pointer
+}
+
+#setting-reset-btn:hover {
+    background-color: var(--mainColor_inactive);
+    border: 1px solid var(--mainColor_inactive);
+}
+
+
+/* Book Shelf */
 .bookshelf {
     position: absolute;
     top: 0;
@@ -574,58 +630,4 @@ dialog::backdrop {
     background-color: var(--bgColor);
     /* margin-top: 1px; */
     padding-right: 10px;
-}
-
-input[type="color"]::-moz-color-swatch,
-input[type="color"]::-webkit-color-swatch {
-    border: 1px solid var(--borderColor) !important;
-    border-radius: 5px !important;
-    /* border: none;
-    border-color: transparent !important; */
-    padding: 0 !important;
-}
-
-input[type="color"]::-webkit-color-swatch-wrapper {
-    border: 1px solid var(--borderColor) !important;
-    border-radius: 5px !important;
-    /* border: none;
-    border-color: transparent !important; */
-    padding: 0 !important;
-}
-
-input[type="color"] {
-    background-color: var(--bgColor) !important;
-    width: 200px;
-    height: 20px;
-    border: none;
-    border-color: transparentred !important;
-    padding: 0 !important;
-}
-
-input[type="color"]:hover,
-input[type="color"]:focus {
-    /* box-shadow: 0 0 1px 1px var(--shadowColor) !important; */
-    cursor: grab;
-    outline:none;
-}
-
-input[type="color"]:not(:hover) {
-    cursor: initial;
-}
-
-#setting-reset-btn {
-    font-size: 0.8em;
-    font-family: var(--fontFamily_ui) !important;
-    color: var(--bgColor);
-    background-color: var(--mainColor_active);
-    border: 1px solid var(--mainColor_active);
-    border-radius: 8px;
-    padding: 5px 20px;
-    margin-top: 20px;
-    cursor: pointer
-}
-
-#setting-reset-btn:hover {
-    background-color: var(--mainColor_inactive);
-    border: 1px solid var(--mainColor_inactive);
 }
