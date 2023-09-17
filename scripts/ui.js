@@ -62,7 +62,7 @@ document.onkeydown = function(event) {
             jumpToPage(currentPage+1);
         break;
         case 'Escape':
-            // console.log("Escape pressed:", no_ui);
+            // console.log("Escape pressed");
             if (isVariableDefined(dropZone)) {
                 resetUI();
             }
@@ -75,10 +75,11 @@ function openFileSelector(event) {
     var fileSelector = document.createElement("input");
     fileSelector.setAttribute("type", "file");
     fileSelector.setAttribute("accept", ".txt");
+    fileSelector.setAttribute("multiple", "");
     fileSelector.click();
     // get the selected filepath
     fileSelector.onchange = function() {
-        handleSelectedFile(this.files);
+        handleMultipleFiles(this.files);
     };
     fileSelector.remove();
 }
@@ -131,8 +132,19 @@ function handleDrop(event) {
     resetVars();
     // setTOC_onRatio(initial=true);
 
-    var fileList = event.dataTransfer.files;
-    handleSelectedFile(fileList);
+    handleMultipleFiles(event.dataTransfer.files);
+}
+
+function handleMultipleFiles(fileList) {
+    var files = Array.from(fileList).filter(file => file.type === "text/plain");
+    if (files.length > 1) {
+        if (isVariableDefined(bookshelf)) {
+            for (const [i, file] of files.entries())
+                bookshelf.saveBook(file, (i === files.length - 1));
+        }
+    } else {
+        handleSelectedFile(files);
+    }
 }
 
 // by cataerogong:
@@ -265,8 +277,8 @@ async function handleSelectedFile(fileList) {
             // Set fonts based on detected language
             // style.fontFamily_title = eval(`style.fontFamily_title_${style.ui_LANG}`);
             // style.fontFamily_body = eval(`style.fontFamily_body_${style.ui_LANG}`);
-            style.fontFamily_title = style.ui_LANG === "CN" ? style.fontFamily_title_CN : style.fontFamily_title_EN;
-            style.fontFamily_body = style.ui_LANG === "CN" ? style.fontFamily_body_CN : style.fontFamily_body_EN;
+            style.fontFamily_title = style.ui_LANG === "EN" ? style.fontFamily_title_EN : style.fontFamily_title_CN;
+            style.fontFamily_body = style.ui_LANG === "EN" ? style.fontFamily_body_EN : style.fontFamily_body_CN;
 
             // Get book name and author
             filename = fileList[0].name;
@@ -297,7 +309,7 @@ async function handleSelectedFile(fileList) {
             // Add title page
             let sealRotation = (style.ui_LANG === "EN") ? `transform:rotate(${randomFloatFromInterval(-50, 80)}deg)` : "";
             // fileContentChunks.unshift(`<div id=line${(titlePageLineNumberOffset - 1)} class='prevent-select seal'><img id='seal_${style.ui_LANG}' src='images/seal_${style.ui_LANG}.png' style='left:calc(${randomFloatFromInterval(0, 1)} * (100% - ${eval(`style.seal_width_${style.ui_LANG}`)})); ${sealRotation}'/></div>`);
-            fileContentChunks.unshift(`<div id=line${(titlePageLineNumberOffset - 1)} class='prevent-select seal'><img id='seal_${style.ui_LANG}' src='images/seal_${style.ui_LANG}.png' style='left:calc(${randomFloatFromInterval(0, 1)} * (100% - ${style.ui_LANG === 'CN' ? style.seal_width_CN : style.seal_width_EN})); ${sealRotation}'/></div>`);
+            fileContentChunks.unshift(`<div id=line${(titlePageLineNumberOffset - 1)} class='prevent-select seal'><img id='seal_${style.ui_LANG}' src='images/seal_${style.ui_LANG}.png' style='left:calc(${randomFloatFromInterval(0, 1)} * (100% - ${style.ui_LANG === 'EN' ? style.seal_width_EN : style.seal_width_CN})); ${sealRotation}'/></div>`);
             if (bookAndAuthor.author !== "") {
                 fileContentChunks.unshift(`<h1 id=line1 style='margin-top:0; margin-bottom:${(parseFloat(style.h1_lineHeight)/2)}em'>${bookAndAuthor.author}</h1>`);
                 fileContentChunks.unshift(`<h1 id=line0 style='margin-bottom:0'>${bookAndAuthor.bookName}</h1>`);
@@ -369,7 +381,9 @@ function showCurrentPageContent() {
             let processedResult = process(fileContentChunks[j], j, to_drop_cap);
             to_drop_cap = processedResult[1] === 'h' ? true : false;
             // contentContainer.innerHTML += processedResult[0];
+            console.log(1)
             contentContainer.appendChild(processedResult[0]);
+            console.log(2)
         }
     }
 
@@ -682,11 +696,6 @@ function GetScrollPositions(toSetHistory=true) {
         setTitleActive(curTitleID);
     }
 
-    // let readingProgressText = eval(`style.ui_readingProgress_${style.ui_LANG}`);
-    let readingProgressText = style.ui_LANG === "CN" ? style.ui_readingProgress_CN : style.ui_readingProgress_EN;
-    readingProgressText = style.ui_LANG === "CN" ? readingProgressText : readingProgressText.replace("：", ":");
-    
-    // progressContainer.innerHTML = `<span style='text-decoration:underline'>${bookAndAuthor.bookName}</span><br/>${readingProgressText} ${((curLineNumber + 1) / fileContentChunks.length * 100).toFixed(1)}%`;
     let pastPageLines = (currentPage - 1) * itemsPerPage;
     let curItemsPerPage = Math.min(itemsPerPage, (fileContentChunks.length - pastPageLines));
     let curPagePercentage = (curLineNumber + 1 - pastPageLines) / (curItemsPerPage - getBottomLineNumber() + curLineNumber);
@@ -696,9 +705,10 @@ function GetScrollPositions(toSetHistory=true) {
     if ((curLineNumber === 0) && (currentPage === 1) && (window.scrollY <= 5)) {
         totalPercentage = 0;
     }
-    // progressContainer.innerHTML = `<span style='text-decoration:underline'>${bookAndAuthor.bookName}</span><br/>${readingProgressText} ${totalPercentage.toFixed(1).replace(".0", "")}%`;
-    document.getElementById("progress-title").innerText = bookAndAuthor.bookName;
-    document.getElementById("progress-content").innerText = `${readingProgressText} ${totalPercentage.toFixed(1).replace(".0", "")}%`;
+
+    progressTitle.innerText = bookAndAuthor.bookName;
+    progressContent.setAttribute("data-lang", style.ui_LANG);
+    progressContent.innerText = `${totalPercentage.toFixed(1).replace(".0", "")}%`;
     saveProgressText(filename, `${totalPercentage.toFixed(1).replace(".0", "")}%`);
 
     gotoTitle_Clicked = false;
@@ -788,6 +798,7 @@ function freezeContent() {
     document.onkeydown = null;
     $("body").css("overflow-y", "hidden");
 }
+
 function unfreezeContent() {
     document.onkeydown = FUNC_KEYDOWN_;
     $("body").css("overflow-y", "auto");

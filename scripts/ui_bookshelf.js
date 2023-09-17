@@ -114,7 +114,6 @@ var bookshelf = {
 
     enabled: false,
     db: null,
-    bookCount: 0,
     showScrollBtns: false,
 
     _FILENAME_: "STR-Filename",
@@ -157,7 +156,7 @@ var bookshelf = {
         }
     },
 
-    async saveBook(file) {
+    async saveBook(file, refreshNow = true) {
         if (bookshelf.enabled) {
             if (file.type === "text/plain") {
                 if (file[bookshelf._CACHE_FLAG_]) {
@@ -168,7 +167,9 @@ var bookshelf = {
                     await bookshelf.db.putBook(file.name, file);
                     if (!await bookshelf.db.isBookExist(file.name)) alert("保存到本地书架失败（缓存空间可能已满）");
                     // 刷新 Bookshelf in DropZone
-                    await bookshelf.refreshBookList();
+                    // await bookshelf.refreshBookList();
+                    if (refreshNow)
+                        await resetUI();
                 }
             }
         }
@@ -220,7 +221,7 @@ var bookshelf = {
             </div>
             <div class="coverContainer">
                 <span class="coverText">${bookInfo.name}</span>
-                <canvas class="coverCanvas" id="canvas-${this.bookCount}" width="${canvasWidth}" height="${canvasHeight}"></canvas>
+                <canvas class="coverCanvas" width="${canvasWidth}" height="${canvasHeight}"></canvas>
             </div>
             <div class="infoContainer">
                 <div class="progress"></div>
@@ -256,7 +257,13 @@ var bookshelf = {
         });
         book.find(".delete-btn").click((evt) => {
             evt.originalEvent.stopPropagation();
-            this.deleteBook(bookInfo.name, () => this.refreshBookList());
+            // this.deleteBook(bookInfo.name, () => this.refreshBookList());
+            this.deleteBook(bookInfo.name, () => {
+                // this.refreshBookList()
+                let b = $(evt.currentTarget).parents(".book");
+                b.fadeOut(300, () => b.remove());
+                // b.animate({width: 0, opacity: 0}, 500, () => b.remove());
+            });
         });
         this.updateBookProgressInfo(bookInfo.name, book);
         return book;
@@ -280,7 +287,6 @@ var bookshelf = {
                 $("#bookshelfUsageText").hide();
             }
             let booklist = [];
-            this.bookCount = 0;
             try {
                 for (const book of await this.db.getAllBooks()) {
                     booklist.push({name: book.name, size: book.data.size});
@@ -290,10 +296,17 @@ var bookshelf = {
                     container.append(this.genBookItem(bookInfo));
                 }
                 container.trigger("contentchange");
-                this.bookCount += booklist.length;
             } catch (e) {
                 console.log(e);
             }
+
+            // if (booklist.length <= 0) {
+            //     this.hide();
+            //     this.hideTriggerBtn();
+            // } else {
+            //     this.show(false);
+            //     this.show()
+            // }
         }
     },
 
@@ -458,8 +471,8 @@ var bookshelf = {
         L400,650L400,650z M681.8,624.1L585.2,650l-19.4-72.4l96.6-25.9L681.8,624.1L681.8,624.1z"/>
         <path class="tofill" d="M665.9,513.9l-122.7,32.8l-70.7-263.3l122.7-32.8L665.9,513.9z M262,262H136v400h126V262z" opacity="0.3" /></div>`)
         .click(() => {
-            this.refreshBookList();
-            this.show();
+            // this.refreshBookList();
+            // this.show();
             resetUI();
         })
         .prependTo($("#btnWrapper"))
@@ -474,5 +487,4 @@ if (!location.search.includes("no-bookshelf")) { // 地址后面加 "?no-bookshe
 
     // 启动时打开上次阅读书籍
     bookshelf.reopenBook();
-    // bookshelf.hide();
 }

@@ -212,25 +212,25 @@ function initiateSettingMenu() {
     }
     
     // let settingLineHeight = createMenuItem("行高", "setting_p_lineHeight", p_lineHeight);
-    let settingLineHeight = createRangeItem((style.ui_LANG === "CN" ? style.ui_lightHeight_CN : style.ui_lightHeight_EN), "setting_p_lineHeight", parseFloat(p_lineHeight), 1, 3, 0.5, unit='em');
+    let settingLineHeight = createRangeItem("setting_p_lineHeight", parseFloat(p_lineHeight), 1, 3, 0.5, unit='em');
     // let settingFontSize = createMenuItem("字号", "setting_p_fontSize", p_fontSize);
-    let settingFontSize = createRangeItem((style.ui_LANG === "CN" ? style.ui_fontSize_CN : style.ui_fontSize_EN), "setting_p_fontSize", parseFloat(p_fontSize), 1, 3, 0.5, unit='em');
+    let settingFontSize = createRangeItem("setting_p_fontSize", parseFloat(p_fontSize), 1, 3, 0.5, unit='em');
     // let settingLightMainColorActive = createMenuItem("日间主题色", "setting_light_mainColor_active", light_mainColor_active);
-    let settingLightMainColorActive = createColorItem((style.ui_LANG === "CN" ? style.ui_lightMode_mainColor_CN : style.ui_lightMode_mainColor_EN), "setting_light_mainColor_active", light_mainColor_active, savedValues=["#2F5086"]);
+    let settingLightMainColorActive = createColorItem("setting_light_mainColor_active", light_mainColor_active, savedValues=["#2F5086"]);
     // let settingLightFontColor = createMenuItem("日间字符色", "setting_light_fontColor", light_fontColor);
-    let settingLightFontColor = createColorItem((style.ui_LANG === "CN" ? style.ui_lightMode_fontColor_CN : style.ui_lightMode_fontColor_EN), "setting_light_fontColor", light_fontColor, savedValues=["black"]);
+    let settingLightFontColor = createColorItem("setting_light_fontColor", light_fontColor, savedValues=["black"]);
     // let settingLightBgColor = createMenuItem("日间背景色", "setting_light_bgColor", light_bgColor);
-    let settingLightBgColor = createColorItem((style.ui_LANG === "CN" ? style.ui_lightMode_bgColor_CN : style.ui_lightMode_bgColor_EN), "setting_light_bgColor", light_bgColor, savedValues=["#FDF3DF"]);
+    let settingLightBgColor = createColorItem("setting_light_bgColor", light_bgColor, savedValues=["#FDF3DF"]);
     // let settingDarkMainColorActive = createMenuItem("夜间主题色", "setting_dark_mainColor_active", dark_mainColor_active);
-    let settingDarkMainColorActive = createColorItem((style.ui_LANG === "CN" ? style.ui_darkMode_mainColor_CN : style.ui_darkMode_mainColor_EN), "setting_dark_mainColor_active", dark_mainColor_active, savedValues=["#6096BB"]);
+    let settingDarkMainColorActive = createColorItem("setting_dark_mainColor_active", dark_mainColor_active, savedValues=["#6096BB"]);
     // let settingDarkFontColor = createMenuItem("夜间字符色", "setting_dark_fontColor", dark_fontColor);
-    let settingDarkFontColor = createColorItem((style.ui_LANG === "CN" ? style.ui_darkMode_fontColor_CN : style.ui_darkMode_fontColor_EN), "setting_dark_fontColor", dark_fontColor, savedValues=["#F2E6CE"]);
+    let settingDarkFontColor = createColorItem("setting_dark_fontColor", dark_fontColor, savedValues=["#F2E6CE"]);
     // let settingDarkBgColor = createMenuItem("夜间背景色", "setting_dark_bgColor", dark_bgColor);
-    let settingDarkBgColor = createColorItem((style.ui_LANG === "CN" ? style.ui_darkMode_bgColor_CN : style.ui_darkMode_bgColor_EN), "setting_dark_bgColor", dark_bgColor, savedValues=["#0D1018"]);
+    let settingDarkBgColor = createColorItem("setting_dark_bgColor", dark_bgColor, savedValues=["#0D1018"]);
     // let settingPaginationBottom = createMenuItem("分页条与底部距离", "setting_pagination_bottom", pagination_bottom);
-    let settingPaginationBottom = createRangeItem((style.ui_LANG === "CN" ? style.ui_pagination2pageBottom_dist_CN : style.ui_pagination2pageBottom_dist_EN), "setting_pagination_bottom", parseFloat(pagination_bottom), 1, 30, 1, unit='px');
+    let settingPaginationBottom = createRangeItem("setting_pagination_bottom", parseFloat(pagination_bottom), 1, 30, 1, unit='px');
     // let settingPaginationOpacity = createMenuItem("分页条透明度", "setting_pagination_opacity", pagination_opacity);
-    let settingPaginationOpacity = createRangeItem((style.ui_LANG === "CN" ? style.ui_pagination_transparency_CN : style.ui_pagination_transparency_EN), "setting_pagination_opacity", parseFloat(pagination_opacity), 0, 1, 0.1, unit='');
+    let settingPaginationOpacity = createRangeItem("setting_pagination_opacity", parseFloat(pagination_opacity), 0, 1, 0.1, unit='');
 
     settingsMenu.appendChild(settingLineHeight);
     settingsMenu.appendChild(settingFontSize);
@@ -252,7 +252,7 @@ function initiateSettingMenu() {
         loadDefaultSettings();
         saveSettings();
     });
-    settingReset.innerText = (style.ui_LANG === "CN" ? style.ui_reset_CN : style.ui_reset_EN);
+    settingReset.setAttribute('data-lang', style.ui_LANG);
     settingButtons.appendChild(settingReset);
     settingsMenu.appendChild(settingButtons);
 
@@ -362,7 +362,7 @@ function createMenuItem(text, id, value) {
     return settingItem;
 }
 
-function createRangeItem(text, id, value, min, max, step, unit='') {
+function createRangeItem(id, value, min, max, step, unit='') {
     // <div class="settingItem-wrapper">
     //     <span class="settingItem-span">行高</span>
     //     <div class="range-slider" style="--min:1; --max:3; --step:0.5; --value:1.5; --text-value:&quot;1.5&quot;; --suffix:'em';--ticks-color:white;">
@@ -375,12 +375,13 @@ function createRangeItem(text, id, value, min, max, step, unit='') {
     settingItem.setAttribute('class', 'settingItem-wrapper');
     let settingItemText = document.createElement('span');
     settingItemText.setAttribute('class', 'settingItem-span');
+    settingItemText.setAttribute('id', `settingLabel-${id}`);
     if (style.ui_LANG === "EN") {
         settingItemText.setAttribute('style', 'width:16rem;')
     }
     settingItemText.setAttribute('onselectstart', 'return false;');
     settingItemText.setAttribute('onmousedown', 'return false;');
-    settingItemText.innerText = text;
+    settingItemText.setAttribute('data-lang', style.ui_LANG);
     let settingItemInput = document.createElement('div');
     settingItemInput.setAttribute('class', 'range-slider');
     settingItemInput.setAttribute('style', '--min:' + min + '; --max:' + max + '; --step:' + step + '; --value:' + value + '; --text-value:"' + JSON.stringify(value) + '"; --suffix:"' + unit + '";--ticks-color:' + style.bgColor + ';');
@@ -410,7 +411,7 @@ function createRangeItem(text, id, value, min, max, step, unit='') {
     return settingItem;
 }
 
-function createColorItem(text, id, value, savedValues=[]) {
+function createColorItem(id, value, savedValues=[]) {
     // <div class="settingItem-wrapper">
     //     <span class="settingItem-span">日间字符色</span>
     //     <input
@@ -426,12 +427,13 @@ function createColorItem(text, id, value, savedValues=[]) {
     settingItem.setAttribute('class', 'settingItem-wrapper');
     let settingItemText = document.createElement('span');
     settingItemText.setAttribute('class', 'settingItem-span');
+    settingItemText.setAttribute('id', `settingLabel-${id}`);
     if (style.ui_LANG === "EN") {
         settingItemText.setAttribute('style', 'width:16rem;')
     }
     settingItemText.setAttribute('onselectstart', 'return false;');
     settingItemText.setAttribute('onmousedown', 'return false;');
-    settingItemText.innerText = text;
+    settingItemText.setAttribute('data-lang', style.ui_LANG);
     let settingItemInput = document.createElement('input');
     settingItemInput.setAttribute('id', id);
     settingItemInput.setAttribute('class', 'myColor');       // use yaireo's color picker; at the moment, it doesn't work with the oninput event.
@@ -494,7 +496,7 @@ function setColorValue(id, value) {
 
     //     }
     // });
-    $(window).trigger('resize');
-    temp_item.style.display = "none";
-    temp_item.style.display = "block";
+    // $(window).trigger('resize');
+    // temp_item.style.display = "none";
+    // temp_item.style.display = "block";
 }

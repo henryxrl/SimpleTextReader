@@ -53,8 +53,6 @@ function process(str, lineNumber, to_drop_cap) {
             let wrapper= document.createElement('div');
             wrapper.innerHTML = current;
             let tempElement = wrapper.firstElementChild;
-            // tempElement.innerHTML = `<a href='#line${lineNumber}' onclick='gotoLine(${lineNumber})' class='prevent-select title'>${tempElement.innerHTML}</a>`;
-
             let tempAnchor = document.createElement('a');
             tempAnchor.href = `#line${lineNumber}`;
             tempAnchor.classList.add('prevent-select');
@@ -85,8 +83,6 @@ function process(str, lineNumber, to_drop_cap) {
         let current = optimization(str.trim());
         if (current !== '') {
             if (regex_titles.test(current)) {
-                // current = `<h2 id="line${lineNumber}"><a href='#line${lineNumber}' onclick='gotoLine(${lineNumber})' class='prevent-select title'>${current.replace(":", "").replace("：", "")}</a></h2>`;
-
                 let tempAnchor = document.createElement('a');
                 tempAnchor.href = `#line${lineNumber}`;
                 tempAnchor.classList.add('prevent-select');
@@ -105,7 +101,6 @@ function process(str, lineNumber, to_drop_cap) {
                 let tempH2 = document.createElement('h2');
                 tempH2.id = `line${lineNumber}`;
                 tempH2.appendChild(tempAnchor);
-                // current = tempH2.outerHTML;
 
                 return [tempH2, 'h'];
             } else {
@@ -116,8 +111,6 @@ function process(str, lineNumber, to_drop_cap) {
                         while (regex_isPunctuation.test(current[index])) {
                             index++;
                         }
-                        // current = `<p id="line${lineNumber}" class="first"><span class="dropCap">${current.slice(0, index+1)}</span>${current.slice(index+1)}</p>`;
-                        
                         let tempP = document.createElement('p');
                         tempP.id = `line${lineNumber}`;
                         tempP.classList.add('first');
@@ -129,8 +122,6 @@ function process(str, lineNumber, to_drop_cap) {
 
                         return [tempP, 'p'];
                     } else {
-                        // current = `<p id="line${lineNumber}" class="first"><span class="dropCap">${current[0]}</span>${current.slice(1)}</p>`;
-                        
                         let tempP = document.createElement('p');
                         tempP.id = `line${lineNumber}`;
                         tempP.classList.add('first');
@@ -143,7 +134,6 @@ function process(str, lineNumber, to_drop_cap) {
                         return [tempP, 'p'];
                     }
                 } else {
-                    // current = `<p id="line${lineNumber}">${current}</p>`;
                     let tempP = document.createElement('p');
                     tempP.id = `line${lineNumber}`;
                     tempP.innerHTML = current;
@@ -204,7 +194,6 @@ function getBookNameAndAuthor(str) {
             // Treat file name as book name and application name as author
             return {
                 "bookName": current,
-                // "author": style.ui_title_CN
                 "author": ""
             };
         }
@@ -220,7 +209,6 @@ function getBookNameAndAuthor(str) {
             // Treat file name as book name and application name as author
             return {
                 "bookName": current,
-                // "author": style.ui_title_EN
                 "author": ""
             };
         }
@@ -236,7 +224,6 @@ function makeFootNote(str, footNoteImgPath) {
 
         if (allMatches.length == 1 && current.indexOf(allMatches[0]) == 0) {
             // this is the actual footnote itself
-            // footNoteContainer.innerHTML += `<li id='fn${footnote_proccessed_counter}'>${current.slice(1)}</li>`;
             let tempLi = document.createElement('li');
             tempLi.id = `fn${footnote_proccessed_counter}`;
             tempLi.innerText = current.slice(1);

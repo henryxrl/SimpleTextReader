@@ -26,7 +26,7 @@ function setMainContentUI() {
     // Drop zone
     if (isVariableDefined(dropZoneText)) {
         // dropZoneText.innerHTML = eval(`style.ui_dropZoneText_${style.ui_LANG}`);
-        dropZoneText.innerText = (style.ui_LANG == "CN" ? style.ui_dropZoneText_CN : style.ui_dropZoneText_EN) || "txt";
+        dropZoneText.setAttribute("data-lang", style.ui_LANG);
     }
     
     // UI calculations
@@ -249,6 +249,10 @@ function hideContent() {
 }
 
 function resetUI() {
+    if (isVariableDefined(bookshelf)) {
+        bookshelf.refreshBookList();
+        bookshelf.show();
+    }
     resetVars();
     showDropZone();
     hideLoadingScreen();
@@ -273,7 +277,7 @@ function resetVars() {
     titlePageLineNumberOffset = 0;
 
     // document.title = eval(`style.ui_title_${style.ui_LANG}`);
-    document.title = style.ui_LANG == "CN" ? style.ui_title_CN : style.ui_title_EN;
+    document.title = (style.ui_LANG === "EN" ? style.ui_title_EN : style.ui_title_CN) || "易笺";
     contentContainer.innerHTML = "";
     tocContainer.innerHTML = "";
     progressTitle.innerHTML = "";
