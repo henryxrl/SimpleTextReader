@@ -59,7 +59,7 @@ $(`<div id="STRe-setting-btn" class="btn-icon">
         showSettingMenu();
     }
 })
-.prependTo($("#btnWrapper"))
+.appendTo($("#btnWrapper"))
 // .hide();
 
 

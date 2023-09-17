@@ -97,3 +97,13 @@ svg.icon {
     right: calc(var(--ui_btnGap) + var(--ui_scrollBarWidth) + var(--ui_btnOffset));
     z-index: 1005;
 }
+
+.scroll-btn-group {
+    display: flex;
+    flex-flow: column;
+    gap: var(--ui_btnGap);
+    position: fixed;
+    bottom: calc(var(--ui_btnGap) + var(--ui_scrollBarWidth));
+    left: calc(var(--ui_btnGap) + var(--ui_scrollBarWidth) + var(--ui_btnOffset));
+    z-index: 1005;
+}

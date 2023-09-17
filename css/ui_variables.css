@@ -47,6 +47,9 @@
     --ui_btnOffset: 0px;
     --ui_btnGap: 1rem;
     --ui_btnSize: 1.5rem;
+    --ui_bookCoverWidth: 12rem;
+    --ui_bookCoverHeight: 16rem;
+    --ui_bookContainerHeight: 18rem;
     --ui_dropZoneText_CN: txt;
     --ui_dropZoneText_EN: txt;
     --ui_readingProgress_CN: 阅读进度：;
@@ -60,7 +63,19 @@
     --ui_tocHeight: 50;
     --ui_paginationCenter: 0;
     --ui_anchorTargetBefore: 1.6em;
+    --ui_dropZoneTextTop: 50%;
+    --ui_dropZoneTextLeft: 50%;
+    --ui_dropZoneTextSize: 5em;
+    --ui_dropZoneImgTop: 50%;
+    --ui_dropZoneImgLeft: 50%;
     --ui_dropZoneImgSize: 13em;
+    --ui_dropZoneTextTop_hasBookshelf: 16%;
+    --ui_dropZoneTextLeft_hasBookshelf: 50%;
+    --ui_dropZoneTextSize_hasBookshelf: 4em;
+    --ui_dropZoneImgTop_hasBookshelf: 16%;
+    --ui_dropZoneImgLeft_hasBookshelf: 50%;
+    --ui_dropZoneImgSize_hasBookshelf: 10em;
+    --ui_bookShelfTop: 33%;
     --ui_loadingImgSize: 380px;
     --ui_footnoteImgSize: 12px;
     --ui_paginationBottom: 30px;
@@ -111,8 +126,11 @@
     --seal_width_EN: 250px;
 
     /* Color variables */
+    --logoColor1: #314874;
+    --logoColor2: #32323b;
+    --logoColor3: #fdf3df;
     --mainColor_inactive: #6096bb;
-    --mainColor_active: #2f5086;
+    --mainColor_active: #314874;
 
     /* --mainColor_inactive_filter: invert(52%) sepia(93%) saturate(187%) hue-rotate(166deg) brightness(92%) contrast(82%); */
     /* --mainColor_active_filter: invert(22%) sepia(47%) saturate(1327%) hue-rotate(180deg) brightness(91%) contrast(80%); */
@@ -145,18 +163,16 @@
     --darkMode_color: var(--mainColor_inactive);
     --lightMode_color: var(--mainColor_active);
 
-    --darkMode_mainColor_inactive: #274c77;
+    --darkMode_mainColor_inactive: #314874;
     --darkMode_mainColor_active: #6096bb;
     /* --darkMode_mainColor_inactive_filter: invert(22%) sepia(47%) saturate(1327%) hue-rotate(180deg) brightness(91%) contrast(80%); */
     /* --darkMode_mainColor_active_filter: invert(52%) sepia(93%) saturate(187%) hue-rotate(166deg) brightness(92%) contrast(82%); */
     --darkMode_bgColor: #0d1018;
     --darkMode_borderColor: gray;
-    /* --darkMode_shadowColor: rgba(255, 255, 255, 0.5); */
     --darkMode_shadowColor: rgba(0, 0, 0, 0.12);
     --darkMode_paginationFontColor: lightgray;
     --darkMode_paginationActiveFontColor: lightgray;
     --darkMode_fontInfoColor: gray;
-    /* --darkMode_fontColor: #fdf3df; */
     --darkMode_fontColor: #f2e6ce;
 }
 

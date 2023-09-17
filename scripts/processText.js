@@ -189,9 +189,7 @@ function getBookNameAndAuthor(str) {
         let pos = current.toLowerCase().lastIndexOf("作者");
         if (pos !== -1) {
             return {
-                // "bookName": current.slice(0, pos).replace("书名", "").replace("：", "").replace(":", "").replace("《", "").replace("》", "").replace("「", "").replace("」", "").replace("『", "").replace("』", "").replace("﹁", "").replace("﹂", "").replace("﹃", "").replace("﹄", "").trim(),
                 "bookName": current.slice(0, pos).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").trim(),
-                // "author": current.slice(pos + 2).replace("：", "").replace(":", "").replace("《", "").replace("》", "").replace("「", "").replace("」", "").replace("『", "").replace("』", "").replace("﹁", "").replace("﹂", "").replace("﹃", "").replace("﹄", "").trim()
                 "author": current.slice(pos + 2).replace(reg_bookname_ad3, "").replace(reg_bookname_ad2, "").trim()
             };
         } else {

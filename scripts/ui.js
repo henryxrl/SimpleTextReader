@@ -12,6 +12,7 @@ if (isVariableDefined(darkModeToggle)) {
     // localStorage.removeItem("UIMode");
     darkModeToggle.addEventListener("change", (e) => {
         setUIMode(!e.target.checked);
+        resetUI();
     });
 }
 setMainContentUI();
@@ -229,6 +230,12 @@ async function handleSelectedFile(fileList) {
 
         fileReader.onload = function (event) {
             event.preventDefault();
+
+            if (fileReader.result.byteLength === 0 || event.target.result.byteLength === 0) {
+                console.log("Empty file");
+                return;
+            }
+
             // Detect encoding
             let tempBuffer = new Uint8Array(fileReader.result.slice(0, encodingLookupByteLength));
             while (tempBuffer.byteLength < encodingLookupByteLength) {

@@ -114,6 +114,8 @@ var bookshelf = {
 
     enabled: false,
     db: null,
+    bookCount: 0,
+    showScrollBtns: false,
 
     _FILENAME_: "STR-Filename",
     _CACHE_FLAG_: "STR-Cache-File",
@@ -142,6 +144,7 @@ var bookshelf = {
                     book[this._CACHE_FLAG_] = true;
                     resetVars();
                     handleSelectedFile([book]);
+                    this.hide(true);
                     return true;
                 } else {
                     alert("发生错误！");
@@ -196,24 +199,58 @@ var bookshelf = {
                 return;
             }
         }
-        let progress = getProgressText(fname, !inLoop);
+        // let progress = getProgressText(fname, !inLoop);
+        let progress = getProgressText(fname, false);
         if (progress) {
             bookElm.addClass("read").css("--read-progress", progress);
-            bookElm.find(".progress").html("进度：" + progress).attr("title", progress);
+            bookElm.find(".progress").html(progress).attr("title", progress);
         } else {
             bookElm.removeClass("read").css("--read-progress", "");
-            bookElm.find(".progress").html("进度：无");
+            bookElm.find(".progress").html("0%");
         }
     },
 
     genBookItem(bookInfo) {
+        let canvasWidth = getSizePrecise(style.ui_bookCoverWidth);
+        let canvasHeight = getSizePrecise(style.ui_bookCoverHeight);
+        currentBookNameAndAuthor = getBookNameAndAuthor(bookInfo.name.replace(".txt", ""));
         let book = $(`<div class="book" data-filename="${bookInfo.name}">
-            <div style="height:1.5rem;line-height:1.5rem;"><span class="delete-btn" title="删除">&times;</span></div>
-            <div class="cover">${bookInfo.name}</div>
-            <div class="size">${formatBytes(bookInfo.size)}</div>
-            <div class="progress"></div>
+            <div class="delete-btn-wrapper">
+                <span class="delete-btn" title="删除">&times;</span>
+            </div>
+            <div class="coverContainer">
+                <span class="coverText">${bookInfo.name}</span>
+                <canvas class="coverCanvas" id="canvas-${this.bookCount}" width="${canvasWidth}" height="${canvasHeight}"></canvas>
+            </div>
+            <div class="infoContainer">
+                <div class="progress"></div>
+                <div class="size">${formatBytes(bookInfo.size)}</div>
+            </div>
             </div>`);
-        book.find(".cover").click((evt) => {
+        let canvas = book.find(".coverCanvas");
+        let ctx = canvas[0].getContext("2d");
+        let coverSettings = {
+            "width": canvasWidth,
+            "height": canvasHeight,
+            "padding": canvasWidth / 8,
+            "bottomRectHeightRatio": 0.3,
+            // "coverColor1": style.mainColor_inactive,
+            // "coverColor2": style.mainColor_active,
+            // "textColor": style.bgColor,
+            "coverColor1": style.logoColor1,
+            "coverColor2": style.logoColor2,
+            "textColor1": style.logoColor3,
+            "textColor2": style.logoColor3,
+            "font1": style.fontFamily_title_CN,
+            "font2": style.fontFamily_body_CN,
+            // "font1": "HiraKakuProN-W6",
+            // "font2": "HiraKakuProN-W3",
+            "bookTitle": currentBookNameAndAuthor.bookName,
+            "authorName": currentBookNameAndAuthor.author,
+        };
+        generateCover(coverSettings, ctx);
+            
+        book.find(".coverContainer").click((evt) => {
             evt.originalEvent.stopPropagation();
             this.openBook(bookInfo.name);
         });
@@ -243,6 +280,7 @@ var bookshelf = {
                 $("#bookshelfUsageText").hide();
             }
             let booklist = [];
+            this.bookCount = 0;
             try {
                 for (const book of await this.db.getAllBooks()) {
                     booklist.push({name: book.name, size: book.data.size});
@@ -251,23 +289,131 @@ var bookshelf = {
                 for (const bookInfo of booklist) {
                     container.append(this.genBookItem(bookInfo));
                 }
+                container.trigger("contentchange");
+                this.bookCount += booklist.length;
             } catch (e) {
                 console.log(e);
             }
         }
     },
 
-    async show() {
+    async show(refresh = true) {
         if (this.enabled) {
+            if (isVariableDefined(dropZoneText)) {
+                dropZoneText.setAttribute("style", `top: ${style.ui_dropZoneTextTop_hasBookshelf}; left: ${style.ui_dropZoneTextLeft_hasBookshelf}; font-size: ${style.ui_dropZoneTextSize_hasBookshelf}`);
+            }
+            if (isVariableDefined(dropZoneImg)) {
+                dropZoneImg.setAttribute("style", `top: ${style.ui_dropZoneImgTop_hasBookshelf}; left: ${style.ui_dropZoneImgLeft_hasBookshelf}; width: ${style.ui_dropZoneImgSize_hasBookshelf}; height: ${style.ui_dropZoneImgSize_hasBookshelf}`);
+            }
+
+            if (isVariableDefined($(".bookshelf")) && $(".bookshelf").length > 0) {
+                $(".bookshelf").show();
+                return;
+            }
+
             $(`<div class="bookshelf">
             <div class="title">缓存书架
             <div class="sub-title">【提示】书籍保存在浏览器缓存空间内，可能会被系统自动清除。<br/>
                 <span id="bookshelfUsageText">已用空间：<span id="bookshelfUsagePct"></span>% (<span id="bookshelfUsage"></span> / <span id="bookshelfQuota"></span>)</span></div></div>
             <div class="booklist"></div>
-            </div>`).appendTo("#dropZone");
-            await this.refreshBookList();
+            <div class="scroll-btn-group">
+                <div class="btn-icon" id="scrollTop-btn" style="visibility:hidden">
+                    <svg class="icon" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 125">
+                        <path class="tofill" d="M15.1,65.7c-3.6,0-7.2-1.5-9.7-4.5C0.9,55.8,1.7,47.9,7,43.4l34.9-29.1c4.7-3.9,11.5-3.9,16.2,0L93,43.4 c5.4,4.5,6.1,12.4,1.6,17.8c-4.5,5.4-12.4,6.1-17.8,1.6L50,40.5L23.2,62.8C20.8,64.8,18,65.7,15.1,65.7z" opacity="1"/>
+                        <path class="tofill" d="M15.1,113.6c-3.6,0-7.2-1.5-9.7-4.5C0.9,103.6,1.7,95.8,7,91.3l34.9-29.1c4.7-3.9,11.5-3.9,16.2,0L93,91.3 c5.4,4.5,6.1,12.4,1.6,17.8c-4.5,5.4-12.4,6.1-17.8,1.6L50,88.3l-26.8,22.3C20.8,112.6,18,113.6,15.1,113.6z" opacity="0.5"/>
+                    </svg>
+                </div>
+                <div class="btn-icon" id="scrollBottom-btn" style="visibility:hidden">
+                    <svg class="icon" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 125">
+                        <path class="tofill" d="M84.9,59.3c3.6,0,7.2,1.5,9.7,4.5c4.5,5.4,3.7,13.3-1.6,17.8l-34.9,29.1c-4.7,3.9-11.5,3.9-16.2,0L7,81.6 c-5.4-4.5-6.1-12.4-1.6-17.8s12.4-6.1,17.8-1.6L50,84.5l26.8-22.3C79.2,60.2,82,59.3,84.9,59.3z" opacity="1"/>
+                        <path class="tofill" d="M84.9,11.4c3.6,0,7.2,1.5,9.7,4.5c4.5,5.5,3.7,13.3-1.6,17.8L58.1,62.8c-4.7,3.9-11.5,3.9-16.2,0L7,33.7 c-5.4-4.5-6.1-12.4-1.6-17.8s12.4-6.1,17.8-1.6L50,36.7l26.8-22.3C79.2,12.4,82,11.4,84.9,11.4z" opacity="0.5"/>
+                    </svg>
+                </div>
+            </div>
+            </div>`)
+            .on("dblclick", function(event) {
+                // disable double click event inside bookshelf
+                event.stopPropagation();
+            })
+            .appendTo("#dropZone");
+
+            function defineScrollBtns() {
+                // console.log(this.scrollTop, this.scrollHeight-this.offsetHeight);
+                if (this.showScrollBtns) {
+                    if (this.scrollTop > 0) {
+                        $("#scrollTop-btn")
+                        .css("visibility", "visible")
+                        .click(() => {
+                            // this.scrollTop = 0;
+                            $(this).stop(true, false);
+                            $(this).animate({scrollTop: 0}, 200);
+                        });
+                    } else {
+                        $("#scrollTop-btn").css("visibility", "hidden");
+                    }
+                    if (this.scrollHeight-this.offsetHeight - this.scrollTop > 1) {
+                        $("#scrollBottom-btn")
+                        .css("visibility", "visible")
+                        .click(() => {
+                            // this.scrollTop = this.scrollHeight-this.offsetHeight;
+                            $(this).stop(true, false);
+                            $(this).animate({scrollTop: this.scrollHeight-this.offsetHeight}, 200);
+                        });
+                    } else {
+                        $("#scrollBottom-btn").css("visibility", "hidden");
+                    }
+                }
+            };
+
+            $(".booklist").on("scroll", defineScrollBtns);
+
+            $(".booklist").bind("contentchange", function() {
+                // isOverflown(this) ? $(".booklist-scroll-btns").show() : $(".booklist-scroll-btns").hide();
+                if (this.scrollHeight > this.parentNode.clientHeight) {
+                    // console.log('overflown', this.scrollTop, this.scrollHeight-this.offsetHeight);
+                    this.showScrollBtns = true;
+                    defineScrollBtns.call(this);
+                } else {
+                    // console.log('not overflown');
+                    this.showScrollBtns = false;
+                    $("#scrollTop-btn").css("visibility", "hidden");
+                    $("#scrollBottom-btn").css("visibility", "hidden");
+                }
+            });
+
+            $(window).on("resize", function() {
+                $(".booklist").trigger("contentchange");
+            });
+
+            if (refresh)
+                await this.refreshBookList();
         }
         return this;
+    },
+
+    async hide(doNotRemove = true) {
+        if (this.enabled) {
+            if (isVariableDefined(dropZoneText)) {
+                dropZoneText.setAttribute("style", `top: ${style.ui_dropZoneTextTop}; left: ${style.ui_dropZoneTextLeft}; font-size: ${style.ui_dropZoneTextSize}`);
+            }
+            if (isVariableDefined(dropZoneImg)) {
+                dropZoneImg.setAttribute("style", `top: ${style.ui_dropZoneImgTop}; left: ${style.ui_dropZoneImgLeft}; width: ${style.ui_dropZoneImgSize}; height: ${style.ui_dropZoneImgSize}`);
+            }
+            if (!doNotRemove) {
+                $(".bookshelf").remove();
+            } else {
+                $(".bookshelf").hide();
+            }
+        }
+        return this;
+    },
+
+    hideTriggerBtn() {
+        $("#STRe-bookshelf-btn").hide();
+    },
+
+    showTriggerBtn() {
+        $("#STRe-bookshelf-btn").show();
     },
 
     loop() {
@@ -284,7 +430,7 @@ var bookshelf = {
             fileloadCallback.regBefore(this.saveBook);
             this.enabled = true;
             this.show();
-            console.log("Module <Bookshelf> enabled.");
+            // console.log("Module <Bookshelf> enabled.");
             setTimeout(() => this.loop(), 1000);
         }
         return this;
@@ -293,10 +439,10 @@ var bookshelf = {
     disable() {
         if (this.enabled) {
             fileloadCallback.unregBefore(this.saveBook);
-            $(".bookshelf").remove();
+            this.hide();
             this.db = null;
             this.enabled = false;
-            console.log("Module <Bookshelf> disabled.");
+            // console.log("Module <Bookshelf> disabled.");
         }
         return this;
     },
@@ -311,17 +457,22 @@ var bookshelf = {
         L455.7,167L552.3,141.1z M400,150l0,375H300V150H400z M250,150v75H150v-75H250z M150,650V275h100v375H150z M400,650H300v-75h100
         L400,650L400,650z M681.8,624.1L585.2,650l-19.4-72.4l96.6-25.9L681.8,624.1L681.8,624.1z"/>
         <path class="tofill" d="M665.9,513.9l-122.7,32.8l-70.7-263.3l122.7-32.8L665.9,513.9z M262,262H136v400h126V262z" opacity="0.3" /></div>`)
-            .click(() => { this.refreshBookList(); resetUI(); })
-            .prependTo($("#btnWrapper"))
-            // .hide();
+        .click(() => {
+            this.refreshBookList();
+            this.show();
+            resetUI();
+        })
+        .prependTo($("#btnWrapper"))
+        // .hide();
     },
 };
-
 
 // 启用 bookshelf 功能
 if (!location.search.includes("no-bookshelf")) { // 地址后面加 "?no-bookshelf" 停用 bookshelf 功能
     bookshelf.init();
     bookshelf.enable();
+
     // 启动时打开上次阅读书籍
     bookshelf.reopenBook();
+    // bookshelf.hide();
 }
