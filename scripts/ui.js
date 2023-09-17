@@ -381,9 +381,7 @@ function showCurrentPageContent() {
             let processedResult = process(fileContentChunks[j], j, to_drop_cap);
             to_drop_cap = processedResult[1] === 'h' ? true : false;
             // contentContainer.innerHTML += processedResult[0];
-            console.log(1)
             contentContainer.appendChild(processedResult[0]);
-            console.log(2)
         }
     }
 

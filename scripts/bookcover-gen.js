@@ -75,7 +75,7 @@ function generateCover(settings, ctx) {
             data.font,
             lineHeightMultiplier,
             textWidth,
-            textHeight * 0.96
+            textHeight * 1
         ); // 0.8 limits the max height of the text to 80% of the rect height
         var finalFontSize = res[1];
         // console.log("final size: " + finalFontSize);
@@ -149,10 +149,15 @@ function generateCover(settings, ctx) {
     }
 
     function getFontSize(str, font, lineHeightMultiplier, maxWidth, maxHeight) {
+        if (getLanguage(str)) {
+            // is Eastern language
+            str = str.replace(/ /g, "");
+        }
+
         const match = /(?<value>\d+\.?\d*)/;
         const fontSizeIncrement = 5;
 
-        var fontSize = 10;
+        var fontSize = parseInt(maxHeight / 10) || 10;
         ctx.font = font.replace(match, fontSize);
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -174,11 +179,8 @@ function generateCover(settings, ctx) {
             ctx.font = ctx.font.replace(match, fontSize);
             var res = fittingString(ctx, str, maxWidth);
             width = res[1];
-            contineTrying = width <= maxWidth;
-            height =
-                fontSize *
-                (res[0].length +
-                    (res[0].length - 1) * (lineHeightMultiplier - 1));
+            contineTrying = width <= maxWidth || height <= maxHeight / 4;
+            height = fontSize * (res[0].length + (res[0].length - 1) * (lineHeightMultiplier - 1));
             // console.log(`fontSize: ${fontSize}; height: ${height}; maxHeight: ${maxHeight}; width: ${width}; maxWidth: ${maxWidth}`);
             savedLines.push(res[0]);
             if (savedLines.length > 2) {
@@ -218,16 +220,12 @@ function generateCover(settings, ctx) {
                         var s = str.substring(idx, i).trim();
                         // console.log(s);
                         while (!isNaN(s.slice(-1))) {
-                            // console.log("last character is number");
+                            // console.log("last character is number, expand.");
                             i++;
                             s = str.substring(idx, i).trim();
                             // console.log(s);
                         }
-                        if (
-                            regex_isPunctuation.test(
-                                str.substring(i, i + 1).trim()
-                            )
-                        ) {
+                        if (regex_isPunctuation.test(str.substring(i, i + 1).trim())) {
                             // console.log("next character is punctuation");
                             i += 2;
                             s = str.substring(idx, i).trim();

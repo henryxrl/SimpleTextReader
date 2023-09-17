@@ -214,7 +214,7 @@ var bookshelf = {
     genBookItem(bookInfo) {
         let canvasWidth = getSizePrecise(style.ui_bookCoverWidth);
         let canvasHeight = getSizePrecise(style.ui_bookCoverHeight);
-        currentBookNameAndAuthor = getBookNameAndAuthor(bookInfo.name.replace(".txt", ""));
+        currentBookNameAndAuthor = getBookNameAndAuthor(bookInfo.name.replace(/(.txt)$/i, ''));
         let book = $(`<div class="book" data-filename="${bookInfo.name}">
             <div class="delete-btn-wrapper">
                 <span class="delete-btn" title="删除">&times;</span>
@@ -359,7 +359,7 @@ var bookshelf = {
                         .click(() => {
                             // this.scrollTop = 0;
                             $(this).stop(true, false);
-                            $(this).animate({scrollTop: 0}, 200);
+                            $(this).animate({scrollTop: 0}, this.scrollHeight / 10);
                         });
                     } else {
                         $("#scrollTop-btn").css("visibility", "hidden");
@@ -370,7 +370,7 @@ var bookshelf = {
                         .click(() => {
                             // this.scrollTop = this.scrollHeight-this.offsetHeight;
                             $(this).stop(true, false);
-                            $(this).animate({scrollTop: this.scrollHeight-this.offsetHeight}, 200);
+                            $(this).animate({scrollTop: this.scrollHeight-this.offsetHeight}, this.scrollHeight / 10);
                         });
                     } else {
                         $("#scrollBottom-btn").css("visibility", "hidden");
