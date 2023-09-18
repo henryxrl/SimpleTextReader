@@ -222,12 +222,19 @@ function generateCover(settings, ctx) {
                         while (!isNaN(s.slice(-1))) {
                             // console.log("last character is number, expand.");
                             i++;
+                            if (i > str.length) {
+                                i = str.length;
+                                s = str.substring(idx, i).trim();
+                                break;
+                            }
                             s = str.substring(idx, i).trim();
                             // console.log(s);
                         }
                         if (regex_isPunctuation.test(str.substring(i, i + 1).trim())) {
                             // console.log("next character is punctuation");
                             i += 2;
+                            if (i > str.length)
+                                i = str.length;
                             s = str.substring(idx, i).trim();
                             // console.log(s);
                         }
@@ -235,6 +242,10 @@ function generateCover(settings, ctx) {
                         // console.log([s, w]);
                         if (w >= maxWidth) {
                             i--;
+                            if (i < 1) {
+                                i = 1;
+                                idx = 0;
+                            }
                             strs.push(str.substring(idx, i).trim());
                             savedWidths.push(
                                 c.measureText(str.substring(idx, i).trim())
@@ -260,6 +271,9 @@ function generateCover(settings, ctx) {
                     var w = c.measureText(s).width;
                     if (w >= maxWidth) {
                         i--;
+                        if (i < 0) {
+                            i = 0;
+                        }
                         strs.push(texts.slice(0, i + 1).join(" "));
                         savedWidths.push(
                             c.measureText(texts.slice(0, i + 1).join(" ")).width
