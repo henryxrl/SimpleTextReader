@@ -502,7 +502,7 @@ input[type="color"] {
     width: 200px;
     height: 20px;
     border: none;
-    border-color: transparentred !important;
+    border-color: transparent !important;
     padding: 0 !important;
 }
 input[type="color"]:hover,

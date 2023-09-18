@@ -114,7 +114,6 @@ var bookshelf = {
 
     enabled: false,
     db: null,
-    showScrollBtns: false,
 
     _FILENAME_: "STR-Filename",
     _CACHE_FLAG_: "STR-Cache-File",
@@ -324,6 +323,9 @@ var bookshelf = {
                     dropZoneImg.setAttribute("style", `top: ${style.ui_dropZoneImgTop_hasBookshelf}; left: ${style.ui_dropZoneImgLeft_hasBookshelf}; width: ${style.ui_dropZoneImgSize_hasBookshelf}; height: ${style.ui_dropZoneImgSize_hasBookshelf}`);
                 }
                 $(".bookshelf").show();
+
+                $(".booklist").trigger("contentchange");
+
                 return;
             }
         }
@@ -398,43 +400,38 @@ var bookshelf = {
 
             function defineScrollBtns() {
                 // console.log(this.scrollTop, this.scrollHeight-this.offsetHeight);
-                if (this.showScrollBtns) {
-                    if (this.scrollTop > 0) {
-                        $("#scrollTop-btn")
-                        .css("visibility", "visible")
-                        .click(() => {
-                            // this.scrollTop = 0;
-                            $(this).stop(true, false);
-                            $(this).animate({scrollTop: 0}, this.scrollHeight / 10);
-                        });
-                    } else {
-                        $("#scrollTop-btn").css("visibility", "hidden");
-                    }
-                    if (this.scrollHeight-this.offsetHeight - this.scrollTop > 1) {
-                        $("#scrollBottom-btn")
-                        .css("visibility", "visible")
-                        .click(() => {
-                            // this.scrollTop = this.scrollHeight-this.offsetHeight;
-                            $(this).stop(true, false);
-                            $(this).animate({scrollTop: this.scrollHeight-this.offsetHeight}, this.scrollHeight / 10);
-                        });
-                    } else {
-                        $("#scrollBottom-btn").css("visibility", "hidden");
-                    }
+                if (this.scrollTop > 0) {
+                    $("#scrollTop-btn")
+                    .css("visibility", "visible")
+                    .click(() => {
+                        // this.scrollTop = 0;
+                        $(this).stop(true, false);
+                        $(this).animate({scrollTop: 0}, this.scrollHeight / 10);
+                    });
+                } else {
+                    $("#scrollTop-btn").css("visibility", "hidden");
+                }
+                if (this.scrollHeight-this.offsetHeight - this.scrollTop > 1) {
+                    $("#scrollBottom-btn")
+                    .css("visibility", "visible")
+                    .click(() => {
+                        // this.scrollTop = this.scrollHeight-this.offsetHeight;
+                        $(this).stop(true, false);
+                        $(this).animate({scrollTop: this.scrollHeight-this.offsetHeight}, this.scrollHeight / 10);
+                    });
+                } else {
+                    $("#scrollBottom-btn").css("visibility", "hidden");
                 }
             };
 
             $(".booklist").on("scroll", defineScrollBtns);
 
             $(".booklist").bind("contentchange", function() {
-                // isOverflown(this) ? $(".booklist-scroll-btns").show() : $(".booklist-scroll-btns").hide();
                 if (this.scrollHeight > this.parentNode.clientHeight) {
                     // console.log('overflown', this.scrollTop, this.scrollHeight-this.offsetHeight);
-                    this.showScrollBtns = true;
                     defineScrollBtns.call(this);
                 } else {
                     // console.log('not overflown');
-                    this.showScrollBtns = false;
                     $("#scrollTop-btn").css("visibility", "hidden");
                     $("#scrollBottom-btn").css("visibility", "hidden");
                 }
