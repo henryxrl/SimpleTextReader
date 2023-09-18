@@ -259,10 +259,10 @@ var bookshelf = {
             evt.originalEvent.stopPropagation();
             // this.deleteBook(bookInfo.name, () => this.refreshBookList());
             this.deleteBook(bookInfo.name, () => {
-                // this.refreshBookList()
                 let b = $(evt.currentTarget).parents(".book");
                 b.fadeOut(300, () => b.remove());
                 // b.animate({width: 0, opacity: 0}, 500, () => b.remove());
+                this.refreshBookList();     // need to refresh booklist every time after delete
             });
         });
         this.updateBookProgressInfo(bookInfo.name, book);
@@ -300,29 +300,74 @@ var bookshelf = {
                 console.log(e);
             }
 
-            // if (booklist.length <= 0) {
-            //     this.hide();
-            //     this.hideTriggerBtn();
-            // } else {
-            //     this.show(false);
-            //     this.show()
-            // }
+            // If there is no book in bookshelf, hide the bookshelf
+            // Otherwise, show the bookshelf, but not the bookshelf trigger button
+            // Only show the bookshelf trigger button when a book is opened
+            if (booklist.length <= 0) {
+                this.hide();
+                this.hideTriggerBtn();
+            } else {
+                this.show();
+                // this.showTriggerBtn();
+            }
         }
     },
 
-    async show(refresh = true) {
+    async show() {
         if (this.enabled) {
-            if (isVariableDefined(dropZoneText)) {
-                dropZoneText.setAttribute("style", `top: ${style.ui_dropZoneTextTop_hasBookshelf}; left: ${style.ui_dropZoneTextLeft_hasBookshelf}; font-size: ${style.ui_dropZoneTextSize_hasBookshelf}`);
-            }
-            if (isVariableDefined(dropZoneImg)) {
-                dropZoneImg.setAttribute("style", `top: ${style.ui_dropZoneImgTop_hasBookshelf}; left: ${style.ui_dropZoneImgLeft_hasBookshelf}; width: ${style.ui_dropZoneImgSize_hasBookshelf}; height: ${style.ui_dropZoneImgSize_hasBookshelf}`);
-            }
-
-            if (isVariableDefined($(".bookshelf")) && $(".bookshelf").length > 0) {
+            // console.log($(".bookshelf .booklist").children().length);
+            if (isVariableDefined($(".bookshelf")) && $(".bookshelf .booklist").children().length > 0) {
+                if (isVariableDefined(dropZoneText)) {
+                    dropZoneText.setAttribute("style", `top: ${style.ui_dropZoneTextTop_hasBookshelf}; left: ${style.ui_dropZoneTextLeft_hasBookshelf}; font-size: ${style.ui_dropZoneTextSize_hasBookshelf}`);
+                }
+                if (isVariableDefined(dropZoneImg)) {
+                    dropZoneImg.setAttribute("style", `top: ${style.ui_dropZoneImgTop_hasBookshelf}; left: ${style.ui_dropZoneImgLeft_hasBookshelf}; width: ${style.ui_dropZoneImgSize_hasBookshelf}; height: ${style.ui_dropZoneImgSize_hasBookshelf}`);
+                }
                 $(".bookshelf").show();
                 return;
             }
+        }
+        return this;
+    },
+
+    async hide(doNotRemove = true) {
+        if (this.enabled) {
+            if (isVariableDefined(dropZoneText)) {
+                dropZoneText.setAttribute("style", `top: ${style.ui_dropZoneTextTop}; left: ${style.ui_dropZoneTextLeft}; font-size: ${style.ui_dropZoneTextSize}`);
+            }
+            if (isVariableDefined(dropZoneImg)) {
+                dropZoneImg.setAttribute("style", `top: ${style.ui_dropZoneImgTop}; left: ${style.ui_dropZoneImgLeft}; width: ${style.ui_dropZoneImgSize}; height: ${style.ui_dropZoneImgSize}`);
+            }
+            if (!doNotRemove) {
+                $(".bookshelf").remove();
+            } else {
+                $(".bookshelf").hide();
+            }
+        }
+        return this;
+    },
+
+    hideTriggerBtn() {
+        $("#STRe-bookshelf-btn").hide();
+    },
+
+    showTriggerBtn() {
+        $("#STRe-bookshelf-btn").show();
+    },
+
+    loop() {
+        if (this.enabled) {
+            localStorage.setItem(this._FILENAME_, filename);
+            if (filename) this.updateBookProgressInfo(filename, null, true);
+            setTimeout(() => this.loop(), 1000);
+        }
+    },
+
+    enable() {
+        if (!this.enabled) {
+            this.db = new BookshelfDB();
+            fileloadCallback.regBefore(this.saveBook);
+            this.enabled = true;
 
             $(`<div class="bookshelf">
             <div class="title">缓存书架
@@ -344,6 +389,7 @@ var bookshelf = {
                 </div>
             </div>
             </div>`)
+            .hide()
             .on("dblclick", function(event) {
                 // disable double click event inside bookshelf
                 event.stopPropagation();
@@ -398,51 +444,6 @@ var bookshelf = {
                 $(".booklist").trigger("contentchange");
             });
 
-            if (refresh)
-                await this.refreshBookList();
-        }
-        return this;
-    },
-
-    async hide(doNotRemove = true) {
-        if (this.enabled) {
-            if (isVariableDefined(dropZoneText)) {
-                dropZoneText.setAttribute("style", `top: ${style.ui_dropZoneTextTop}; left: ${style.ui_dropZoneTextLeft}; font-size: ${style.ui_dropZoneTextSize}`);
-            }
-            if (isVariableDefined(dropZoneImg)) {
-                dropZoneImg.setAttribute("style", `top: ${style.ui_dropZoneImgTop}; left: ${style.ui_dropZoneImgLeft}; width: ${style.ui_dropZoneImgSize}; height: ${style.ui_dropZoneImgSize}`);
-            }
-            if (!doNotRemove) {
-                $(".bookshelf").remove();
-            } else {
-                $(".bookshelf").hide();
-            }
-        }
-        return this;
-    },
-
-    hideTriggerBtn() {
-        $("#STRe-bookshelf-btn").hide();
-    },
-
-    showTriggerBtn() {
-        $("#STRe-bookshelf-btn").show();
-    },
-
-    loop() {
-        if (this.enabled) {
-            localStorage.setItem(this._FILENAME_, filename);
-            if (filename) this.updateBookProgressInfo(filename, null, true);
-            setTimeout(() => this.loop(), 1000);
-        }
-    },
-
-    enable() {
-        if (!this.enabled) {
-            this.db = new BookshelfDB();
-            fileloadCallback.regBefore(this.saveBook);
-            this.enabled = true;
-            this.show();
             // console.log("Module <Bookshelf> enabled.");
             setTimeout(() => this.loop(), 1000);
         }
@@ -471,12 +472,10 @@ var bookshelf = {
         L400,650L400,650z M681.8,624.1L585.2,650l-19.4-72.4l96.6-25.9L681.8,624.1L681.8,624.1z"/>
         <path class="tofill" d="M665.9,513.9l-122.7,32.8l-70.7-263.3l122.7-32.8L665.9,513.9z M262,262H136v400h126V262z" opacity="0.3" /></div>`)
         .click(() => {
-            // this.refreshBookList();
-            // this.show();
             resetUI();
         })
         .prependTo($("#btnWrapper"))
-        // .hide();
+        .hide();
     },
 };
 
@@ -484,6 +483,7 @@ var bookshelf = {
 if (!location.search.includes("no-bookshelf")) { // 地址后面加 "?no-bookshelf" 停用 bookshelf 功能
     bookshelf.init();
     bookshelf.enable();
+    bookshelf.refreshBookList();    // Now whether or not to show bookshelf depends on whether there is a book in bookshelf
 
     // 启动时打开上次阅读书籍
     bookshelf.reopenBook();

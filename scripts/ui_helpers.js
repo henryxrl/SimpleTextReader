@@ -200,6 +200,10 @@ function showDropZone(focused=false) {
 
         // Fix icons location with/without scrollbar
         style.ui_btnOffset = "0px";
+
+        // Hide bookshelf trigger button if bookshelf is opened
+        if (isVariableDefined(bookshelf))
+            bookshelf.hideTriggerBtn();
         return 0;
     } else {
         return 1;
@@ -217,6 +221,10 @@ function hideDropZone() {
 
         // Fix icons location with/without scrollbar
         style.ui_btnOffset = (-1 * parseInt(style.ui_scrollBarWidth)).toString() + "px";
+
+        // Show bookshelf trigger button if a book is opened
+        if (isVariableDefined(bookshelf))
+            bookshelf.showTriggerBtn();
     }
 }
 
