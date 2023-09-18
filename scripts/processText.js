@@ -172,22 +172,29 @@ function getBookNameAndAuthor(str) {
     current = current.replace(reg_filename_ad, "");
     
     const reg_bookname_ad1 = new RegExp(`^(\\s*(书名(${regex_colon})+)?)`);
-    const reg_bookname_ad2 = new RegExp(`${regex_bracket_left_nospace}${regex_bracket_right_nospace}`, 'g');
-    const reg_bookname_ad3 = new RegExp(`${regex_colon_nospace}`, 'g');
+    // const reg_bookname_ad2 = new RegExp(`${regex_bracket_left_nospace}${regex_bracket_right_nospace}`, 'g');
+    // const reg_bookname_ad3 = new RegExp(`${regex_colon_nospace}`, 'g');
+    const reg_bookname_ad2 = new RegExp(`^${regex_bracket_left_nospace}`, '');
+    const reg_bookname_ad3 = new RegExp(`${regex_bracket_right_nospace}$`, '');
+    const reg_bookname_ad4 = new RegExp(`^${regex_colon_nospace}`);
     
     if (regex_isEastern.test(current)) {
         let pos = current.toLowerCase().lastIndexOf("作者");
         if (pos !== -1) {
+            // console.log(current.slice(0, pos).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim());
+            // console.log(current.slice(pos + 2).replace(reg_bookname_ad4, "").replace(reg_bookname_ad3, "").replace(reg_bookname_ad2, "").trim());
             return {
-                "bookName": current.slice(0, pos).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").trim(),
-                "author": current.slice(pos + 2).replace(reg_bookname_ad3, "").replace(reg_bookname_ad2, "").trim()
+                "bookName": current.slice(0, pos).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim(),
+                "author": current.slice(pos + 2).replace(reg_bookname_ad4, "").trim()
             };
         } else {
             let pos2 = current.toLowerCase().lastIndexOf(" by ");
             if (pos2 !== -1) {
+                // console.log(current.slice(0, pos2).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim());
+                // console.log(current.slice(pos2 + 4).replace(reg_bookname_ad4, "").replace(reg_bookname_ad3, "").replace(reg_bookname_ad2, "").trim());
                 return {
-                    "bookName": current.slice(0, pos2).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").trim(),
-                    "author": current.slice(pos2 + 4).replace(reg_bookname_ad3, "").replace(reg_bookname_ad2, "").trim()
+                    "bookName": current.slice(0, pos2).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim(),
+                    "author": current.slice(pos2 + 4).replace(reg_bookname_ad4, "").trim()
                 };
             }
             // No complete book name and author info
@@ -200,9 +207,11 @@ function getBookNameAndAuthor(str) {
     } else {
         let pos = current.toLowerCase().lastIndexOf(" by ");
         if (pos !== -1) {
+            // console.log(current.slice(0, pos).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim());
+            // console.log(ccurrent.slice(pos + 4).replace(reg_bookname_ad4, "").replace(reg_bookname_ad3, "").replace(reg_bookname_ad2, "").trim());
             return {
-                "bookName": current.slice(0, pos).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").trim(),
-                "author": current.slice(pos + 4).replace(reg_bookname_ad3, "").replace(reg_bookname_ad2, "").trim()
+                "bookName": current.slice(0, pos).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim(),
+                "author": current.slice(pos + 4).replace(reg_bookname_ad4, "").trim()
             };
         } else {
             // No complete book name and author info

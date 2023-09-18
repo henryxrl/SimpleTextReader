@@ -157,7 +157,7 @@ function generateCover(settings, ctx) {
         const match = /(?<value>\d+\.?\d*)/;
         const fontSizeIncrement = 5;
 
-        var fontSize = parseInt(maxHeight / 10) || 10;
+        var fontSize = Math.max(parseInt(maxHeight / 10) || 10, 10);
         ctx.font = font.replace(match, fontSize);
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -179,7 +179,7 @@ function generateCover(settings, ctx) {
             ctx.font = ctx.font.replace(match, fontSize);
             var res = fittingString(ctx, str, maxWidth);
             width = res[1];
-            contineTrying = width <= maxWidth || height <= maxHeight / 4;
+            contineTrying = ((width <= maxWidth) || (height <= maxHeight / 4));
             height = fontSize * (res[0].length + (res[0].length - 1) * (lineHeightMultiplier - 1));
             // console.log(`fontSize: ${fontSize}; height: ${height}; maxHeight: ${maxHeight}; width: ${width}; maxWidth: ${maxWidth}`);
             savedLines.push(res[0]);
