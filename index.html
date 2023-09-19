@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html data-lang="zh">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <title></title>
@@ -8,10 +8,10 @@
         <link rel="preload" href="./fonts/LXGWWenKai-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
         <link rel="preload" href="./images/drop.png" as="image" type="image/png" />
         <link rel="preload" href="./images/loading_geometry.gif" as="image" type="image/gif" />
-        <link rel="preload" href="./images/seal_CN.png" as="image" type="image/png" />
-        <link rel="preload" href="./images/seal_EN.png" as="image" type="image/png" />
-        <link rel="preload" href="./images/note_CN.png" as="image" type="image/png" />
-        <link rel="preload" href="./images/note_EN.png" as="image" type="image/png" />
+        <link rel="preload" href="./images/seal_zh.png" as="image" type="image/png" />
+        <link rel="preload" href="./images/seal_en.png" as="image" type="image/png" />
+        <link rel="preload" href="./images/note_zh.png" as="image" type="image/png" />
+        <link rel="preload" href="./images/note_en.png" as="image" type="image/png" />
         <link rel="icon" type="image/png" href="./images/icon.png" />
         <link rel="stylesheet" type="text/css" href="./css/yaireo/ui-range.css" crossorigin="anonymous" />
         <link rel="stylesheet" type="text/css" href="./css/yaireo/my-range.css" crossorigin="anonymous" />
@@ -24,6 +24,28 @@
         <link rel="stylesheet" type="text/css" href="./css/footnotes.css" crossorigin="anonymous" />
 
         <link rel="manifest" href="./manifests/PWA/manifest.json" />
+
+        <script type="text/javascript">
+            (function() {
+                const respectUserLangSetting = false;
+                document.documentElement.setAttribute("respectUserLangSetting", respectUserLangSetting);
+                // console.log("Respect user language settings: " + document.documentElement.getAttribute("respectUserLangSetting"));
+
+                const browser_LANGs = navigator.languages || [navigator.userLanguage] || [navigator.browserLanguage] || [navigator.language] || ["zh"];
+                const browser_LANG = browser_LANGs.includes("zh") ? "zh" : navigator.language.split("-")[0];
+                console.log("Browser language: " + browser_LANG);
+                const user_LANG = localStorage.getItem("UILang") || browser_LANG;
+                let webLANG = "";
+                if (respectUserLangSetting) {
+                    webLANG = user_LANG;
+                } else {
+                    webLANG = browser_LANG;
+                }
+                document.documentElement.setAttribute("webLANG", webLANG);
+                document.documentElement.setAttribute("data-lang", webLANG);
+                console.log("App set to language: " + webLANG);
+            })();
+        </script>
     </head>
     <body>
         <div id="dropZone" class="uifont prevent-select">
@@ -79,6 +101,7 @@
         <script type="text/javascript" src="./scripts/yaireo/position.js"></script>
         <script type="text/javascript" src="./scripts/yaireo/color-picker.js"></script>
         <script type="text/javascript" src="./scripts/yaireo/my-color.js"></script>
+        <script type="text/javascript" src="./scripts/selector.js"></script>
         <script type="text/javascript" src="./scripts/regex_rules.js"></script>
         <script type="text/javascript" src="./scripts/utilities.js"></script>
         <script type="text/javascript" src="./scripts/ui_settings.js"></script>

@@ -306,6 +306,7 @@ a.toc-active::before {
 
 /* Footnote */
 img.footnote_img {
+    content: var(--footnote_img_url);
     width: var(--ui_footnoteImgSize);
     height: var(--ui_footnoteImgSize);
     vertical-align: super;
@@ -322,16 +323,13 @@ div.seal {
     margin: 6em 0 6em 0;
     overflow: hidden;
 }
-img#seal_EN {
+img#seal {
+    content: var(--seal_url);
     /* float: right; */
-    width: var(--seal_width_EN);
+    width: var(--seal_width);
     height: auto;
-    position: relative;
-}
-img#seal_CN {
-    /* float: center; */
-    width: var(--seal_width_CN);
-    height: auto;
+    left: calc(var(--seal_left) * (100% - var(--seal_width)));
+    transform: rotate(var(--seal_rotate));
     position: relative;
 }
 
@@ -438,7 +436,7 @@ dialog::backdrop {
 
 /* Settings menu */
 #settings-menu {
-    font-size: 1.2em;
+    font-size: var(--ui_settingMenuFontSize);
     position: fixed;
     right: calc(var(--ui_btnGap) + var(--ui_scrollBarWidth) + var(--ui_btnOffset));
     bottom: calc(2 * (var(--ui_btnGap) + var(--ui_btnSize)));
@@ -463,7 +461,7 @@ dialog::backdrop {
 }
 .settingItem-span {
     display: inline-block;
-    width: 12rem;
+    width: var(--ui_settingMenuWidth);
     cursor: default;
 }
 .color-picker {
@@ -475,8 +473,8 @@ dialog::backdrop {
     -moz-box-shadow: 0 0 5px var(--shadowColor) !important;
 }
 .myColor {
-    width: 200px;
-    height: 20px;
+    width: var(--ui_settingContentWidth);
+    height: var(--ui_settingContentHeight);
     border: 1px solid var(--borderColor) !important;
 }
 .myColor:hover {
@@ -499,8 +497,8 @@ input[type="color"]::-webkit-color-swatch-wrapper {
 }
 input[type="color"] {
     background-color: var(--bgColor) !important;
-    width: 200px;
-    height: 20px;
+    width: var(--ui_settingContentWidth);
+    height: var(--ui_settingContentHeight);
     border: none;
     border-color: transparent !important;
     padding: 0 !important;
@@ -528,6 +526,89 @@ input[type="color"]:not(:hover) {
 #setting-reset-btn:hover {
     background-color: var(--mainColor_inactive);
     border: 1px solid var(--mainColor_inactive);
+}
+.select {
+    overflow-y: unset;
+    user-select: none;
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    /* font-size: var(--ui_settingMenuFontSize); */
+    color:  var(--mainColor_active);
+    width:  var(--ui_settingContentWidth);
+    height: calc(var(--ui_settingContentHeight) * 1.2);
+}
+.select-hidden {
+    display: none;
+    visibility: hidden;
+    padding-right: 10px;
+}
+.select-styled {
+    position: absolute; 
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: var(--bgColor);
+    transition: all 0.2s ease-in;
+    vertical-align: top;
+    /* font-size: var(--ui_settingMenuFontSize); */
+}
+.select-styled:after {
+    content:"";
+    width: 0;
+    height: 0;
+    border: 0.4em solid transparent;
+    border-color: var(--mainColor_active) transparent transparent transparent;
+    position: absolute;
+    top: 0.4em;
+    right: 0px;
+    transition: all 0.15s ease;
+}
+.select-styled:hover {
+    background-color: color-mix(in srgb,var(--bgColor),#000 0%);
+}
+.select-styled:active, .select-styled.active {
+    background-color: color-mix(in srgb,var(--bgColor),#000 0%);
+}
+.select-styled:active:after, .select-styled.active:after {
+    top: 0em;
+    border-color: transparent transparent var(--mainColor_active) transparent;
+    transition: all 0.15s ease;
+}
+.select-options {
+    display: none; 
+    position: absolute;
+    top: 120%;
+    right: 0;
+    left: 0;
+    z-index: 2;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background-color: color-mix(in srgb,var(--bgColor),#000 0%);
+    border: 1px solid var(--borderColor);
+    box-shadow: 0 0 5px var(--shadowColor);
+    border-radius: 5px;
+    -webkit-box-shadow: var(--shadowColor) 0 0 5px;
+    -moz-box-shadow: 0 0 5px var(--shadowColor);
+}
+.select-options li {
+    margin: 0;
+    padding: 10px 0;
+    /* text-indent: 15px; */
+    background-color: color-mix(in srgb,var(--bgColor),#000 0%);
+    transition: all 0.15s ease-in;
+    border-radius: 5px;
+    text-align: center;
+}
+.select-options li:hover,
+.select-options li .is-selected {
+    color: var(--bgColor);
+    background: var(--mainColor_active);
+}
+.select-options li[rel="hide"] {
+    display: none;
 }
 
 
@@ -640,13 +721,35 @@ input[type="color"]:not(:hover) {
     text-align: left;
     background-color: var(--bgColor);
     cursor: pointer;
-    box-shadow: 5px 5px 10px -5px black, inset -2px 2px 4px black;
+    /* box-shadow: 5px 5px 10px -5px black, 5px 10px 14px -3px rgba(0,0,0,0.5), inset -5px -5px 10px black; */
+    box-shadow: 5px 5px 10px -5px black, inset -5px -5px 10px black;
     margin: auto;
     overflow: visible;
-    border-radius: 3px;
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
+    border-radius: 3px 5px 5px 3px;
+    -moz-border-radius: 3px 5px 5px 3px;
+    -webkit-border-radius: 3px 5px 5px 3px;
     z-index: 1;
+}
+.bookshelf .book .coverContainer::after {
+    /* the book bend */
+    content: '';
+    position: absolute;
+    top: 0;
+    width: var(--ui_bookCoverWidth);
+    height: var(--ui_bookCoverHeight);
+    background-repeat: no-repeat;
+    background-image: linear-gradient(to right, transparent 2%, rgba(0,0,0,0.1) 3%, rgba(0,0,0,0.1) 4%, transparent 5%), linear-gradient(-50deg, rgba(0,0,0,0.1) 20%, transparent 100%), linear-gradient(-50deg, rgba(0,0,0,0.2) 20%, transparent 100%), linear-gradient(to bottom, rgba(0,0,0,0.1) 20%, transparent 100%), linear-gradient(to bottom, rgba(0,0,0,0.1) 20%, transparent 100%);
+    background-size: 100% 100%, 2% 20%, 1% 20%, 2% 20%, 1% 20%;
+    background-position: 0 0, 2.2% 100%, 3% 100%, 2.2% 0, 3% 0;
+    
+    /* another implementation - not as good */
+    /* content: '';
+    position: absolute;
+    width: 2px;
+    height: 100%;
+    left: 5px;
+    background-color: rgba(0, 0, 0, 0.25);
+    box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.4); */
 }
 .bookshelf .book .coverContainer:hover {
     /* box-shadow: 0px 0px 20px -5px var(--mainColor_active), inset -2px 2px 4px black; */
@@ -657,9 +760,9 @@ input[type="color"]:not(:hover) {
 .bookshelf .book .coverContainer .coverCanvas {
     width: var(--ui_bookCoverWidth);
     height: var(--ui_bookCoverHeight);
-    border-radius: 3px;
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
+    border-radius: 3px 5px 5px 3px;
+    -moz-border-radius: 3px 5px 5px 3px;
+    -webkit-border-radius: 3px 5px 5px 3px;
 }
 .bookshelf .book .size {
     color: var(--fontInfoColor);

@@ -20,10 +20,7 @@ var historyLineNumber = 0;
 var storePrevWindowWidth = window.innerWidth;
 var titlePageLineNumberOffset = 0;
 
-// document.title = eval(`style.ui_title_${style.ui_LANG}`);
-if (!isVariableDefined(document.title)) {
-    document.title = (style.ui_LANG === "EN" ? style.ui_title_EN : style.ui_title_CN) || "易笺";
-}
+setTitle();
 var dropZone = document.getElementById('dropZone');
 var loadingScreen = document.getElementById('loading');
 // loadingScreen.style.visibility = "visible"; // For debugging the loading screen

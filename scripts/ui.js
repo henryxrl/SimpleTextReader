@@ -12,7 +12,7 @@ if (isVariableDefined(darkModeToggle)) {
     // localStorage.removeItem("UIMode");
     darkModeToggle.addEventListener("change", (e) => {
         setUIMode(!e.target.checked);
-        resetUI();
+        // resetUI();
     });
 }
 setMainContentUI();
@@ -269,16 +269,7 @@ async function handleSelectedFile(fileList) {
             isEasternLan = getLanguage(fileContentChunks.slice(0, 50).join("\n"));
             console.log("isEasternLan: ", isEasternLan);
             // Change UI language based on detected language
-            if (isEasternLan) {
-                style.ui_LANG = "CN";
-            } else {
-                style.ui_LANG = "EN";
-            }
-            // Set fonts based on detected language
-            // style.fontFamily_title = eval(`style.fontFamily_title_${style.ui_LANG}`);
-            // style.fontFamily_body = eval(`style.fontFamily_body_${style.ui_LANG}`);
-            style.fontFamily_title = style.ui_LANG === "EN" ? style.fontFamily_title_EN : style.fontFamily_title_CN;
-            style.fontFamily_body = style.ui_LANG === "EN" ? style.fontFamily_body_EN : style.fontFamily_body_CN;
+            setLanguage((isEasternLan ? "zh" : "en"), false);
 
             // Get book name and author
             filename = fileList[0].name;
@@ -287,7 +278,7 @@ async function handleSelectedFile(fileList) {
             console.log("Author: ", bookAndAuthor.author);
 
             // Get all titles and process all footnotes
-            allTitles.push([((style.ui_LANG === "EN") ? "TITLE PAGE" : "扉页"), 0]);
+            allTitles.push([style.ui_titlePage, 0]);
             titlePageLineNumberOffset = (bookAndAuthor.author !== "") ? 3 : 2;
             for (var i in fileContentChunks) {
                 if (fileContentChunks[i].trim() !== '') {
@@ -298,7 +289,7 @@ async function handleSelectedFile(fileList) {
                     }
 
                     // process all footnotes
-                    fileContentChunks[i] = makeFootNote(fileContentChunks[i], `images/note_${style.ui_LANG}.png`);
+                    fileContentChunks[i] = makeFootNote(fileContentChunks[i]);
                 }
             }
             // console.log(allTitles);
@@ -307,9 +298,13 @@ async function handleSelectedFile(fileList) {
             // setMainContentUI();
 
             // Add title page
-            let sealRotation = (style.ui_LANG === "EN") ? `transform:rotate(${randomFloatFromInterval(-50, 80)}deg)` : "";
-            // fileContentChunks.unshift(`<div id=line${(titlePageLineNumberOffset - 1)} class='prevent-select seal'><img id='seal_${style.ui_LANG}' src='images/seal_${style.ui_LANG}.png' style='left:calc(${randomFloatFromInterval(0, 1)} * (100% - ${eval(`style.seal_width_${style.ui_LANG}`)})); ${sealRotation}'/></div>`);
-            fileContentChunks.unshift(`<div id=line${(titlePageLineNumberOffset - 1)} class='prevent-select seal'><img id='seal_${style.ui_LANG}' src='images/seal_${style.ui_LANG}.png' style='left:calc(${randomFloatFromInterval(0, 1)} * (100% - ${style.ui_LANG === 'EN' ? style.seal_width_EN : style.seal_width_CN})); ${sealRotation}'/></div>`);
+            style.seal_rotate_en = `${randomFloatFromInterval(-50, 80)}deg`;
+            style.seal_left = randomFloatFromInterval(0, 1);
+            fileContentChunks.unshift(`
+                <div id=line${(titlePageLineNumberOffset - 1)} class='prevent-select seal'>
+                    <img id='seal'></img>
+                </div>`
+            );
             if (bookAndAuthor.author !== "") {
                 fileContentChunks.unshift(`<h1 id=line1 style='margin-top:0; margin-bottom:${(parseFloat(style.h1_lineHeight)/2)}em'>${bookAndAuthor.author}</h1>`);
                 fileContentChunks.unshift(`<h1 id=line0 style='margin-bottom:0'>${bookAndAuthor.bookName}</h1>`);
@@ -318,7 +313,7 @@ async function handleSelectedFile(fileList) {
             }
 
             // Update the title of webpage
-            document.title = bookAndAuthor.bookName;
+            setTitle(bookAndAuthor.bookName);
 
             // Show content
             init = false;
@@ -705,7 +700,6 @@ function GetScrollPositions(toSetHistory=true) {
     }
 
     progressTitle.innerText = bookAndAuthor.bookName;
-    progressContent.setAttribute("data-lang", style.ui_LANG);
     progressContent.innerText = `${totalPercentage.toFixed(1).replace(".0", "")}%`;
     saveProgressText(filename, `${totalPercentage.toFixed(1).replace(".0", "")}%`);
 

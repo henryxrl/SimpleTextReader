@@ -39,10 +39,6 @@
 
 :root {
     /* UI variables */
-    --ui_Mode: light;
-    --ui_LANG: CN;
-    --ui_title_CN: 易笺;
-    --ui_title_EN: SimpleTextReader;
     --ui_scrollBarWidth: 15px;
     --ui_btnOffset: 0px;
     --ui_btnGap: 1rem;
@@ -50,10 +46,6 @@
     --ui_bookCoverWidth: 12rem;
     --ui_bookCoverHeight: 16rem;
     --ui_bookContainerHeight: 18rem;
-    --ui_dropZoneText_CN: "txt";
-    --ui_dropZoneText_EN: "txt";
-    --ui_readingProgress_CN: "阅读进度：";
-    --ui_readingProgress_EN: "Progress: ";   /* Have to use chinese colon and replace it later */
     --ui_contentWidth: 72;
     --ui_windowLeftRightMargin: 6;
     --ui_gapWidth: 3;
@@ -81,31 +73,63 @@
     --ui_paginationBottom: 30px;
     --ui_paginationOpacity: 1;
 
+    /* UI strings */
+    --ui_Mode: light;
+    --ui_LANG: zh;
+    --ui_title: "";
+    --ui_title_zh: 易笺;
+    --ui_title_en: SimpleTextReader;
+    --ui_dropZoneText_zh: "txt";
+    --ui_dropZoneText_en: "txt";
+    --ui_readingProgress_zh: "阅读进度：";
+    --ui_readingProgress_en: "Progress: ";   /* Have to use chinese colon and replace it later */
+    --ui_titlePage: "";
+    --ui_titlePage_zh: 扉页;
+    --ui_titlePage_en: TITLE PAGE;
+
     /* UI settings variables */
-    --ui_reset_CN: "重置";
-    --ui_reset_EN: "Reset";
-    --ui_parameters_CN: "界面参数";
-    --ui_parameters_EN: "UI Parameters";
-    --ui_lightHeight_CN: "行高";
-    --ui_lightHeight_EN: "Line Height";
-    --ui_fontSize_CN: "字号";
-    --ui_fontSize_EN: "Font Size";
-    --ui_lightMode_mainColor_CN: "日间主题颜色";
-    --ui_lightMode_mainColor_EN: "Light Mode Theme Color";
-    --ui_lightMode_fontColor_CN: "日间字体颜色";
-    --ui_lightMode_fontColor_EN: "Light Mode Font Color";
-    --ui_lightMode_bgColor_CN: "日间背景颜色";
-    --ui_lightMode_bgColor_EN: "Light Mode BG Color";
-    --ui_darkMode_mainColor_CN: "夜间主题颜色";
-    --ui_darkMode_mainColor_EN: "Dark Mode Theme Color";
-    --ui_darkMode_fontColor_CN: "夜间字体颜色";
-    --ui_darkMode_fontColor_EN: "Dark Mode Font Color";
-    --ui_darkMode_bgColor_CN: "夜间背景颜色";
-    --ui_darkMode_bgColor_EN: "Dark Mode BG Color";
-    --ui_pagination2pageBottom_dist_CN: "分页条与底部距离";
-    --ui_pagination2pageBottom_dist_EN: "Pagination-Bottom Distance";
-    --ui_pagination_opacity_CN: "分页条透明度";
-    --ui_pagination_opacity_EN: "Pagination Opacity";
+    --ui_settingMenuFontSize_zh: 1.2em;
+    --ui_settingMenuFontSize_en: 1em;
+    --ui_settingMenuWidth_zh: 12rem;
+    --ui_settingMenuWidth_en: 16rem;
+    --ui_settingContentWidth: 200px;
+    --ui_settingContentHeight: 20px;
+
+    /* UI settings strings */
+    --ui_reset_zh: "重置";
+    --ui_reset_en: "Reset";
+    --ui_parameters_zh: "界面参数";
+    --ui_parameters_en: "UI Parameters";
+    --ui_language_zh: "界面语言";
+    --ui_language_en: "UI Language";
+    --ui_language_text: "";
+    --ui_language_text_zh: 自适应;
+    --ui_language_text_en: Adaptive;
+    --ui_lightHeight_zh: "行高";
+    --ui_lightHeight_en: "Line Height";
+    --ui_fontSize_zh: "字号";
+    --ui_fontSize_en: "Font Size";
+    --ui_lightMode_mainColor_zh: "日间主题颜色";
+    --ui_lightMode_mainColor_en: "Light Mode Theme Color";
+    --ui_lightMode_fontColor_zh: "日间字体颜色";
+    --ui_lightMode_fontColor_en: "Light Mode Font Color";
+    --ui_lightMode_bgColor_zh: "日间背景颜色";
+    --ui_lightMode_bgColor_en: "Light Mode BG Color";
+    --ui_darkMode_mainColor_zh: "夜间主题颜色";
+    --ui_darkMode_mainColor_en: "Dark Mode Theme Color";
+    --ui_darkMode_fontColor_zh: "夜间字体颜色";
+    --ui_darkMode_fontColor_en: "Dark Mode Font Color";
+    --ui_darkMode_bgColor_zh: "夜间背景颜色";
+    --ui_darkMode_bgColor_en: "Dark Mode BG Color";
+    --ui_pagination2pageBottom_dist_zh: "分页条与底部距离";
+    --ui_pagination2pageBottom_dist_en: "Pagination-Bottom Distance";
+    --ui_pagination_opacity_zh: "分页条透明度";
+    --ui_pagination_opacity_en: "Pagination Opacity";
+
+    /* UI bookshelf strings */
+    --ui_removeBook: "";
+    --ui_removeBook_zh: 删除书籍;
+    --ui_removeBook_en: Remove Book;
 
     /* Passage variables */
     --p_lineHeight: 1.5em;
@@ -122,15 +146,26 @@
     --h5_margin: 1.6em;
     --h6_lineHeight: 1.6em;
     --h6_margin: 1.6em;
-    --seal_width_CN: 250px;
-    --seal_width_EN: 250px;
+    --seal_width: 0px;
+    --seal_width_zh: 250px;
+    --seal_width_en: 250px;
+    --seal_url: "";
+    --seal_url_zh: url(../images/seal_zh.png);
+    --seal_url_en: url(../images/seal_en.png);
+    --seal_rotate: 0deg;
+    --seal_rotate_zh: 0deg;
+    --seal_rotate_en: 0deg;
+    --seal_left: 0;
+    --footnote_img_url: "";
+    --footnote_img_url_zh: url(../images/note_zh.png);
+    --footnote_img_url_en: url(../images/note_en.png);
 
     /* Color variables */
     --logoColor1: #314874;
     --logoColor2: #32323b;
     --logoColor3: #fdf3df;
-    --mainColor_inactive: #6096bb;
     --mainColor_active: #314874;
+    --mainColor_inactive: #6096bb;
 
     /* --mainColor_inactive_filter: invert(52%) sepia(93%) saturate(187%) hue-rotate(166deg) brightness(92%) contrast(82%); */
     /* --mainColor_active_filter: invert(22%) sepia(47%) saturate(1327%) hue-rotate(180deg) brightness(91%) contrast(80%); */
@@ -147,14 +182,13 @@
     --fontColor: black;
 
     /* Font variables */
-    --fontFamily_title_CN: title, ui;
-    --fontFamily_body_CN: body, ui;
-    --fontFamily_title_EN: ui;
-    --fontFamily_body_EN: ui;
+    --fontFamily_title: "";
+    --fontFamily_title_zh: title, ui;
+    --fontFamily_title_en: ui;
+    --fontFamily_body: "";
+    --fontFamily_body_zh: body, ui;
+    --fontFamily_body_en: ui;
     --fontFamily_ui: ui, Arial, Helvetica, sans-serif;
-
-    --fontFamily_title: var(--fontFamily_title_CN);
-    --fontFamily_body: var(--fontFamily_body_CN);
 
     /* Dark mode variables */
     --darkMode_init_animation: all 0s ease;
@@ -163,8 +197,8 @@
     --darkMode_color: var(--mainColor_inactive);
     --lightMode_color: var(--mainColor_active);
 
-    --darkMode_mainColor_inactive: #314874;
     --darkMode_mainColor_active: #6096bb;
+    --darkMode_mainColor_inactive: #314874;
     /* --darkMode_mainColor_inactive_filter: invert(22%) sepia(47%) saturate(1327%) hue-rotate(180deg) brightness(91%) contrast(80%); */
     /* --darkMode_mainColor_active_filter: invert(52%) sepia(93%) saturate(187%) hue-rotate(166deg) brightness(92%) contrast(82%); */
     --darkMode_bgColor: #0d1018;
@@ -178,8 +212,8 @@
 
 [data-theme="dark"] {
     --ui_Mode: dark;
-    --mainColor_inactive: var(--darkMode_mainColor_inactive);
     --mainColor_active: var(--darkMode_mainColor_active);
+    --mainColor_inactive: var(--darkMode_mainColor_inactive);
     /* --mainColor_inactive_filter: var(--darkMode_mainColor_inactive_filter); */
     /* --mainColor_active_filter: var(--darkMode_mainColor_active_filter); */
     --bgColor: var(--darkMode_bgColor);
@@ -191,40 +225,64 @@
     --fontColor: var(--darkMode_fontColor);
 }
 
-[data-lang="CN"] {
-    --ui_title: var(--ui_title_CN);
-    --ui_dropZoneText: var(--ui_dropZoneText_CN);
-    --ui_readingProgress: var(--ui_readingProgress_CN);
-    --ui_reset: var(--ui_reset_CN);
-    --ui_parameters: var(--ui_parameters_CN);
-    --ui_lightHeight: var(--ui_lightHeight_CN);
-    --ui_fontSize: var(--ui_fontSize_CN);
-    --ui_lightMode_mainColor: var(--ui_lightMode_mainColor_CN);
-    --ui_lightMode_fontColor: var(--ui_lightMode_fontColor_CN);
-    --ui_lightMode_bgColor: var(--ui_lightMode_bgColor_CN);
-    --ui_darkMode_mainColor: var(--ui_darkMode_mainColor_CN);
-    --ui_darkMode_fontColor: var(--ui_darkMode_fontColor_CN);
-    --ui_darkMode_bgColor: var(--ui_darkMode_bgColor_CN);
-    --ui_pagination2pageBottom_dist: var(--ui_pagination2pageBottom_dist_CN);
-    --ui_pagination_opacity: var(--ui_pagination_opacity_CN);
+[data-lang="zh"] {
+    --ui_title: var(--ui_title_zh);
+    --ui_titlePage: var(--ui_titlePage_zh);
+    --ui_dropZoneText: var(--ui_dropZoneText_zh);
+    --fontFamily_title: var(--fontFamily_title_zh);
+    --fontFamily_body: var(--fontFamily_body_zh);
+    --ui_readingProgress: var(--ui_readingProgress_zh);
+    --seal_width: var(--seal_width_zh);
+    --seal_url: var(--seal_url_zh);
+    --seal_rotate: var(--seal_rotate_zh);
+    --footnote_img_url: var(--footnote_img_url_zh);
+    --ui_reset: var(--ui_reset_zh);
+    --ui_parameters: var(--ui_parameters_zh);
+    --ui_language: var(--ui_language_zh);
+    --ui_language_text: var(--ui_language_text_zh);
+    --ui_lightHeight: var(--ui_lightHeight_zh);
+    --ui_fontSize: var(--ui_fontSize_zh);
+    --ui_lightMode_mainColor: var(--ui_lightMode_mainColor_zh);
+    --ui_lightMode_fontColor: var(--ui_lightMode_fontColor_zh);
+    --ui_lightMode_bgColor: var(--ui_lightMode_bgColor_zh);
+    --ui_darkMode_mainColor: var(--ui_darkMode_mainColor_zh);
+    --ui_darkMode_fontColor: var(--ui_darkMode_fontColor_zh);
+    --ui_darkMode_bgColor: var(--ui_darkMode_bgColor_zh);
+    --ui_pagination2pageBottom_dist: var(--ui_pagination2pageBottom_dist_zh);
+    --ui_pagination_opacity: var(--ui_pagination_opacity_zh);
+    --ui_settingMenuFontSize: var(--ui_settingMenuFontSize_zh);
+    --ui_settingMenuWidth: var(--ui_settingMenuWidth_zh);
+    --ui_removeBook: var(--ui_removeBook_zh);
 }
 
-[data-lang="EN"] {
-    --ui_title: var(--ui_title_EN);
-    --ui_dropZoneText: var(--ui_dropZoneText_EN);
-    --ui_readingProgress: var(--ui_readingProgress_EN);
-    --ui_reset: var(--ui_reset_EN);
-    --ui_parameters: var(--ui_parameters_EN);
-    --ui_lightHeight: var(--ui_lightHeight_EN);
-    --ui_fontSize: var(--ui_fontSize_EN);
-    --ui_lightMode_mainColor: var(--ui_lightMode_mainColor_EN);
-    --ui_lightMode_fontColor: var(--ui_lightMode_fontColor_EN);
-    --ui_lightMode_bgColor: var(--ui_lightMode_bgColor_EN);
-    --ui_darkMode_mainColor: var(--ui_darkMode_mainColor_EN);
-    --ui_darkMode_fontColor: var(--ui_darkMode_fontColor_EN);
-    --ui_darkMode_bgColor: var(--ui_darkMode_bgColor_EN);
-    --ui_pagination2pageBottom_dist: var(--ui_pagination2pageBottom_dist_EN);
-    --ui_pagination_opacity: var(--ui_pagination_opacity_EN);
+[data-lang="en"] {
+    --ui_title: var(--ui_title_en);
+    --ui_titlePage: var(--ui_titlePage_en);
+    --ui_dropZoneText: var(--ui_dropZoneText_en);
+    --fontFamily_title: var(--fontFamily_title_en);
+    --fontFamily_body: var(--fontFamily_body_en);
+    --ui_readingProgress: var(--ui_readingProgress_en);
+    --seal_width: var(--seal_width_en);
+    --seal_url: var(--seal_url_en);
+    --seal_rotate: var(--seal_rotate_en);
+    --footnote_img_url: var(--footnote_img_url_en);
+    --ui_reset: var(--ui_reset_en);
+    --ui_parameters: var(--ui_parameters_en);
+    --ui_language: var(--ui_language_en);
+    --ui_language_text: var(--ui_language_text_en);
+    --ui_lightHeight: var(--ui_lightHeight_en);
+    --ui_fontSize: var(--ui_fontSize_en);
+    --ui_lightMode_mainColor: var(--ui_lightMode_mainColor_en);
+    --ui_lightMode_fontColor: var(--ui_lightMode_fontColor_en);
+    --ui_lightMode_bgColor: var(--ui_lightMode_bgColor_en);
+    --ui_darkMode_mainColor: var(--ui_darkMode_mainColor_en);
+    --ui_darkMode_fontColor: var(--ui_darkMode_fontColor_en);
+    --ui_darkMode_bgColor: var(--ui_darkMode_bgColor_en);
+    --ui_pagination2pageBottom_dist: var(--ui_pagination2pageBottom_dist_en);
+    --ui_pagination_opacity: var(--ui_pagination_opacity_en);
+    --ui_settingMenuFontSize: var(--ui_settingMenuFontSize_en);
+    --ui_settingMenuWidth: var(--ui_settingMenuWidth_en);
+    --ui_removeBook: var(--ui_removeBook_en);
 }
 
 #dropZoneText::before {
@@ -235,6 +293,9 @@
 }
 #setting-reset-btn::before {
     content: var(--ui_reset);
+}
+#settingLabel-setting_uilanguage::before {
+    content: var(--ui_language);
 }
 #settingLabel-setting_p_lineHeight::before {
     content: var(--ui_lightHeight);

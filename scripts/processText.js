@@ -224,7 +224,7 @@ function getBookNameAndAuthor(str) {
     }
 }
 
-function makeFootNote(str, footNoteImgPath) {
+function makeFootNote(str) {
     let current = str.trim();
 
     // Find if footnote characters exist
@@ -245,7 +245,7 @@ function makeFootNote(str, footNoteImgPath) {
                 // console.log("footnote.length: ", footnotes.length);
                 // console.log("Found footnote: ", allMatches[i]);
                 let curIndex = current.indexOf(allMatches[i]);
-                current = `${current.slice(0, curIndex)}<a rel="footnote" href="#fn${footnotes.length}"><img class="footnote_img" src="${footNoteImgPath}"/></a>${current.slice(curIndex + 1)}`;
+                current = `${current.slice(0, curIndex)}<a rel="footnote" href="#fn${footnotes.length}"><img class="footnote_img"/></a>${current.slice(curIndex + 1)}`;
                 footnotes.push(allMatches[i]);
             }
         }

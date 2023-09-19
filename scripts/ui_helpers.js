@@ -23,12 +23,6 @@ function setMainContentUI() {
         style.darkMode_animation = style.darkMode_default_animation;
     }, 1000);
 
-    // Drop zone
-    if (isVariableDefined(dropZoneText)) {
-        // dropZoneText.innerHTML = eval(`style.ui_dropZoneText_${style.ui_LANG}`);
-        dropZoneText.setAttribute("data-lang", style.ui_LANG);
-    }
-    
     // UI calculations
     // windowWith = windowLeftRightMargin + tocWidth + gapWidth + contentWidth + windowLeftRightMargin;
     style.ui_contentMarginLeft = (100 - parseInt(style.ui_contentWidth) - parseInt(style.ui_windowLeftRightMargin)).toString();
@@ -257,9 +251,9 @@ function hideContent() {
 }
 
 function resetUI() {
+    setLanguage(webLANG);
     if (isVariableDefined(bookshelf)) {
         bookshelf.refreshBookList();
-        bookshelf.show();
     }
     resetVars();
     showDropZone();
@@ -284,8 +278,7 @@ function resetVars() {
     storePrevWindowWidth = window.innerWidth;
     titlePageLineNumberOffset = 0;
 
-    // document.title = eval(`style.ui_title_${style.ui_LANG}`);
-    document.title = (style.ui_LANG === "EN" ? style.ui_title_EN : style.ui_title_CN) || "易笺";
+    setTitle();
     contentContainer.innerHTML = "";
     tocContainer.innerHTML = "";
     progressTitle.innerHTML = "";

@@ -47,20 +47,9 @@ function generateCover(settings, ctx) {
     /* 
    Main functions 
   */
-    function drawBackground(data) {
+    function drawBackground(data, drawGlare = true) {
         var r = parseRect(data.rect);
-        
-        var grV = ctx.createLinearGradient(0, 0, 10, 0);
-        grV.addColorStop(0, data.color);
-        grV.addColorStop(0.14, '#aeb0b5');
-        grV.addColorStop(0.24,  '#7b7e87');
-        grV.addColorStop(0.33,  data.color);
-        grV.addColorStop(0.76,  '#7b7e87');
-        grV.addColorStop(0.81,  '#63656b');
-        grV.addColorStop(1,  data.color);
-
-        ctx.fillStyle = grV;
-        // ctx.fillStyle = data.color;      // uncomment to disable gradient on book covers
+        ctx.fillStyle = data.color;
         ctx.fillRect(r.x, r.y, r.w, r.h);
     }
 
@@ -116,9 +105,7 @@ function generateCover(settings, ctx) {
                 coverStyle.background[1].color = coverStyle.background[0].color;
                 rect1Height += rect2Height;
                 textHeightRect1 = rect1Height - 2 * settings.padding;
-                coverStyle.text[0].pos = `${settings.width / 2}, ${
-                    rect1Height / 2
-                }`;
+                coverStyle.text[0].pos = `${settings.width / 2}, ${rect1Height / 2}`;
             }
             var json = JSON.parse(JSON.stringify(coverStyle));
             drawAll(json);

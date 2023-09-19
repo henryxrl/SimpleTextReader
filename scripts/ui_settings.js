@@ -3,17 +3,12 @@ style = new CSSGlobalVariables();
 // console.log('Style loaded.')
 // console.log(style);
 
-// let p_lineHeight_default = getCSS(":root", "--p_lineHeight");
-// let p_fontSize_default = getCSS(":root", "--p_fontSize");
-// let light_mainColor_active_default = getCSS(":root", "--mainColor_active");
-// let light_mainColor_inactive_default = getCSS(":root", "--mainColor_inactive");
-// let light_fontColor_default = getCSS(":root", "--fontColor");
-// let light_bgColor_default = getCSS(":root", "--bgColor");
-// let dark_mainColor_active_default = getCSS('[data-theme="dark"]', "--mainColor_active");
-// let dark_mainColor_inactive_default = getCSS('[data-theme="dark"]', "--mainColor_inactive");
-// let dark_fontColor_default = getCSS('[data-theme="dark"]', "--fontColor");
-// let dark_bgColor_default = getCSS('[data-theme="dark"]', "--bgColor");
-// let pagination_bottom_default = getCSS("#pagination", "bottom");
+// Initialize variables
+const ui_language_mapping = {
+    "zh": "简体中文",
+    "en": "English"
+}
+let ui_language_default = style.ui_LANG;
 let p_lineHeight_default = style.p_lineHeight;
 let p_fontSize_default = style.p_fontSize;
 let light_mainColor_active_default = style.mainColor_active;
@@ -27,6 +22,7 @@ let dark_bgColor_default = style.darkMode_bgColor;
 let pagination_bottom_default = style.ui_paginationBottom;
 let pagination_opacity_default = style.ui_paginationOpacity;
 
+let ui_language;
 let p_lineHeight;
 let p_fontSize;
 let light_mainColor_active;
@@ -73,6 +69,8 @@ initiateSettingMenu();
 // Main functions
 //
 function loadSettings() {
+    if (respectUserLangSetting)
+        ui_language = localStorage.getItem("UILang") || ui_language_default;
     p_lineHeight = localStorage.getItem("p_lineHeight") || p_lineHeight_default;
     p_fontSize = localStorage.getItem("p_fontSize") || p_fontSize_default;
     light_mainColor_active = localStorage.getItem("light_mainColor_active") || light_mainColor_active_default;
@@ -86,6 +84,8 @@ function loadSettings() {
     pagination_bottom = localStorage.getItem("pagination_bottom") || pagination_bottom_default;
     pagination_opacity = localStorage.getItem("pagination_opacity") || pagination_opacity_default;
 
+    // console.log(localStorage.getItem("UILang"));
+    // console.log(ui_language_default);
     // console.log(localStorage.getItem("p_lineHeight"));
     // console.log(p_lineHeight_default);
     // console.log(localStorage.getItem("p_fontSize"));
@@ -113,6 +113,8 @@ function loadSettings() {
 }
 
 function loadDefaultSettings() {
+    if (respectUserLangSetting)
+        ui_language = ui_language_default;
     p_lineHeight = p_lineHeight_default;
     p_fontSize = p_fontSize_default;
     light_mainColor_active = light_mainColor_active_default;
@@ -126,30 +128,23 @@ function loadDefaultSettings() {
     pagination_bottom = pagination_bottom_default;
     pagination_opacity = pagination_opacity_default;
 
-    setNumericValue("setting_p_lineHeight", p_lineHeight);
-    setNumericValue("setting_p_fontSize", p_fontSize);
+    if (respectUserLangSetting)
+        setSelectorValue("setting_uilanguage", ui_language);
+    setRangeValue("setting_p_lineHeight", p_lineHeight);
+    setRangeValue("setting_p_fontSize", p_fontSize);
     setColorValue("setting_light_mainColor_active", light_mainColor_active);
     setColorValue("setting_light_fontColor", light_fontColor);
     setColorValue("setting_light_bgColor", light_bgColor);
     setColorValue("setting_dark_mainColor_active", dark_mainColor_active);
     setColorValue("setting_dark_fontColor", dark_fontColor);
     setColorValue("setting_dark_bgColor", dark_bgColor);
-    setNumericValue("setting_pagination_bottom", pagination_bottom);
-    setNumericValue("setting_pagination_opacity", pagination_opacity);
+    setRangeValue("setting_pagination_bottom", pagination_bottom);
+    setRangeValue("setting_pagination_opacity", pagination_opacity);
 }
 
 function applySettings() {
-    // setCSS(":root", "--p_lineHeight", p_lineHeight, p_lineHeight_default);
-    // setCSS(":root", "--p_fontSize", p_fontSize, p_fontSize_default);
-    // setCSS(":root", "--mainColor_active", light_mainColor_active, light_mainColor_active_default);
-    // setCSS(":root", "--mainColor_inactive", light_mainColor_inactive, light_mainColor_inactive_default);
-    // setCSS(":root", "--fontColor", light_fontColor, light_fontColor_default);
-    // setCSS(":root", "--bgColor", light_bgColor, light_bgColor_default);
-    // setCSS('[data-theme="dark"]', "--mainColor_active", dark_mainColor_active, dark_mainColor_active_default);
-    // setCSS('[data-theme="dark"]', "--mainColor_inactive", dark_mainColor_inactive, dark_mainColor_inactive_default);
-    // setCSS('[data-theme="dark"]', "--fontColor", dark_fontColor, dark_fontColor_default);
-    // setCSS('[data-theme="dark"]', "--bgColor", dark_bgColor, dark_bgColor_default);
-    // setCSS("#pagination", "bottom", pagination_bottom, pagination_bottom_default);
+    if (respectUserLangSetting)
+        style.ui_LANG = ui_language;
     style.p_lineHeight = p_lineHeight;
     style.p_fontSize = p_fontSize;
     style.mainColor_active = light_mainColor_active;
@@ -163,7 +158,7 @@ function applySettings() {
     style.ui_paginationBottom = pagination_bottom;
     style.ui_paginationOpacity = pagination_opacity;
 
-    if (style.ui_Mode == "dark") {
+    if (style.ui_Mode === "dark") {
         style.mainColor_active = style.darkMode_mainColor_active;
         style.mainColor_inactive = style.darkMode_mainColor_inactive;
         style.fontColor = style.darkMode_fontColor;
@@ -171,20 +166,29 @@ function applySettings() {
     }
 }
 
-function saveSettings() {
+function saveSettings(toSetLanguage = false) {
+    if (respectUserLangSetting)
+        ui_language = $("#setting_uilanguage").closest(".select").children(".select-options").children(".is-selected").attr("rel") || ui_language_default;
     p_lineHeight = $("#setting_p_lineHeight").val() + 'em' || p_lineHeight_default;
     p_fontSize = $("#setting_p_fontSize").val() + 'em' || p_fontSize_default;
     light_mainColor_active = $("#setting_light_mainColor_active").val() || light_mainColor_active_default;
     light_mainColor_inactive = HSLToHex(...hexToHSL(($("#setting_light_mainColor_active").val() || light_mainColor_active_default), 1.5));
+    // light_mainColor_inactive = pSBC(0.25, ($("#setting_light_mainColor_active").val() || light_mainColor_active_default), false, true);   // 25% lighter (linear)
     light_fontColor = $("#setting_light_fontColor").val() || light_fontColor_default;
     light_bgColor = $("#setting_light_bgColor").val() || light_bgColor_default;
     dark_mainColor_active = $("#setting_dark_mainColor_active").val() || dark_mainColor_active_default;
     dark_mainColor_inactive = HSLToHex(...hexToHSL(($("#setting_dark_mainColor_active").val() || dark_mainColor_active_default), 0.5));
+    // dark_mainColor_inactive = pSBC(-0.25, ($("#setting_dark_mainColor_active").val() || dark_mainColor_active_default), false, true);   // 25% darker (linear)
     dark_fontColor = $("#setting_dark_fontColor").val() || dark_fontColor_default;
     dark_bgColor = $("#setting_dark_bgColor").val() || dark_bgColor_default;
     pagination_bottom = $("#setting_pagination_bottom").val() + 'px' || pagination_bottom_default;
     pagination_opacity = $("#setting_pagination_opacity").val() || pagination_opacity_default;
 
+    if (respectUserLangSetting && toSetLanguage)
+        setLanguage(ui_language);
+
+    if (respectUserLangSetting)
+        localStorage.setItem("UILang", ui_language);
     localStorage.setItem("p_lineHeight", p_lineHeight);
     localStorage.setItem("p_fontSize", p_fontSize);
     localStorage.setItem("light_mainColor_active", light_mainColor_active);
@@ -199,39 +203,33 @@ function saveSettings() {
     localStorage.setItem("pagination_opacity", pagination_opacity);
     
     applySettings();
-    // hideSettingMenu();
+
+    if (isVariableDefined(bookshelf))
+        bookshelf.updateAllBookCovers();
 }
 
 function initiateSettingMenu() {
     removeSettingMenu();
     
-    let settingsMenu = document.createElement('div');
-    settingsMenu.setAttribute('id', 'settings-menu');
-    if (style.ui_LANG === "EN") {
-        settingsMenu.setAttribute('style', 'font-size:1em;')
-    }
+    let settingsMenu = document.createElement("div");
+    settingsMenu.setAttribute("id", "settings-menu");
     
-    // let settingLineHeight = createMenuItem("行高", "setting_p_lineHeight", p_lineHeight);
+    let settingUILanguage = null;
+    if (respectUserLangSetting)
+        settingUILanguage = createSelectorItem("setting_uilanguage", Object.keys(ui_language_mapping), Object.values(ui_language_mapping));
     let settingLineHeight = createRangeItem("setting_p_lineHeight", parseFloat(p_lineHeight), 1, 3, 0.5, unit='em');
-    // let settingFontSize = createMenuItem("字号", "setting_p_fontSize", p_fontSize);
     let settingFontSize = createRangeItem("setting_p_fontSize", parseFloat(p_fontSize), 1, 3, 0.5, unit='em');
-    // let settingLightMainColorActive = createMenuItem("日间主题色", "setting_light_mainColor_active", light_mainColor_active);
     let settingLightMainColorActive = createColorItem("setting_light_mainColor_active", light_mainColor_active, savedValues=["#2F5086"]);
-    // let settingLightFontColor = createMenuItem("日间字符色", "setting_light_fontColor", light_fontColor);
     let settingLightFontColor = createColorItem("setting_light_fontColor", light_fontColor, savedValues=["black"]);
-    // let settingLightBgColor = createMenuItem("日间背景色", "setting_light_bgColor", light_bgColor);
     let settingLightBgColor = createColorItem("setting_light_bgColor", light_bgColor, savedValues=["#FDF3DF"]);
-    // let settingDarkMainColorActive = createMenuItem("夜间主题色", "setting_dark_mainColor_active", dark_mainColor_active);
     let settingDarkMainColorActive = createColorItem("setting_dark_mainColor_active", dark_mainColor_active, savedValues=["#6096BB"]);
-    // let settingDarkFontColor = createMenuItem("夜间字符色", "setting_dark_fontColor", dark_fontColor);
     let settingDarkFontColor = createColorItem("setting_dark_fontColor", dark_fontColor, savedValues=["#F2E6CE"]);
-    // let settingDarkBgColor = createMenuItem("夜间背景色", "setting_dark_bgColor", dark_bgColor);
     let settingDarkBgColor = createColorItem("setting_dark_bgColor", dark_bgColor, savedValues=["#0D1018"]);
-    // let settingPaginationBottom = createMenuItem("分页条与底部距离", "setting_pagination_bottom", pagination_bottom);
     let settingPaginationBottom = createRangeItem("setting_pagination_bottom", parseFloat(pagination_bottom), 1, 30, 1, unit='px');
-    // let settingPaginationOpacity = createMenuItem("分页条透明度", "setting_pagination_opacity", pagination_opacity);
     let settingPaginationOpacity = createRangeItem("setting_pagination_opacity", parseFloat(pagination_opacity), 0, 1, 0.1, unit='');
 
+    if (respectUserLangSetting)
+        settingsMenu.appendChild(settingUILanguage);
     settingsMenu.appendChild(settingLineHeight);
     settingsMenu.appendChild(settingFontSize);
     settingsMenu.appendChild(settingLightMainColorActive);
@@ -252,21 +250,26 @@ function initiateSettingMenu() {
         loadDefaultSettings();
         saveSettings();
     });
-    settingReset.setAttribute('data-lang', style.ui_LANG);
     settingButtons.appendChild(settingReset);
     settingsMenu.appendChild(settingButtons);
-
     document.body.appendChild(settingsMenu);
-    setTimeout(myColor_init, 200);
-
+    
+    // add click event listener
     document.addEventListener('click', handleClickOutsideBox);
     // settingsMenu_shown = true;
+
+    // render color picker
+    setTimeout(myColor_init, 200);
 
     // manually set settings value
     document.getElementById("setting_p_lineHeight").value = parseFloat(p_lineHeight);
     document.getElementById("setting_p_fontSize").value = parseFloat(p_fontSize);
     document.getElementById("setting_pagination_bottom").value = parseFloat(pagination_bottom);
     document.getElementById("setting_pagination_opacity").value = parseFloat(pagination_opacity);
+
+    // render selector
+    if (respectUserLangSetting)
+        selector_init(saveSettings, Object.keys(ui_language_mapping).indexOf(ui_language));
 }
 
 function showSettingMenu() {
@@ -277,7 +280,6 @@ function showSettingMenu() {
 }
 
 function hideSettingMenu() {
-    // $("#settings-menu").remove();
     document.getElementById("settings-menu").style.zIndex = "-1";
     document.getElementById("settings-menu").style.visibility = "hidden";
     settingsMenu_shown = false;
@@ -345,18 +347,22 @@ function setCSS(sel, prop, val, def) {
     }
 }
 
-function createMenuItem(text, id, value) {
+function createSelectorItem(id, values, texts) {
     let settingItem = document.createElement('div');
+    settingItem.setAttribute('class', 'settingItem-wrapper');
     let settingItemText = document.createElement('span');
+    settingItemText.setAttribute('class', 'settingItem-span');
+    settingItemText.setAttribute('id', `settingLabel-${id}`);
     settingItemText.setAttribute('onselectstart', 'return false;');
     settingItemText.setAttribute('onmousedown', 'return false;');
-    settingItemText.setAttribute('style', 'display:inline-block;width:10rem');
-    settingItemText.innerText = text;
-    let settingItemInput = document.createElement('input');
-    settingItemInput.setAttribute('type', 'text');
-    settingItemInput.setAttribute('size', '10');
+    let settingItemInput = document.createElement('select');
     settingItemInput.setAttribute('id', id);
-    settingItemInput.setAttribute('value', value);
+    values.forEach(function(value, i) {
+        let option = document.createElement('option');
+        option.setAttribute('value', value);
+        option.innerText = texts[i];
+        settingItemInput.appendChild(option);
+    });
     settingItem.appendChild(settingItemText);
     settingItem.appendChild(settingItemInput);
     return settingItem;
@@ -376,12 +382,8 @@ function createRangeItem(id, value, min, max, step, unit='') {
     let settingItemText = document.createElement('span');
     settingItemText.setAttribute('class', 'settingItem-span');
     settingItemText.setAttribute('id', `settingLabel-${id}`);
-    if (style.ui_LANG === "EN") {
-        settingItemText.setAttribute('style', 'width:16rem;')
-    }
     settingItemText.setAttribute('onselectstart', 'return false;');
     settingItemText.setAttribute('onmousedown', 'return false;');
-    settingItemText.setAttribute('data-lang', style.ui_LANG);
     let settingItemInput = document.createElement('div');
     settingItemInput.setAttribute('class', 'range-slider');
     settingItemInput.setAttribute('style', '--min:' + min + '; --max:' + max + '; --step:' + step + '; --value:' + value + '; --text-value:"' + JSON.stringify(value) + '"; --suffix:"' + unit + '";--ticks-color:' + style.bgColor + ';');
@@ -428,12 +430,8 @@ function createColorItem(id, value, savedValues=[]) {
     let settingItemText = document.createElement('span');
     settingItemText.setAttribute('class', 'settingItem-span');
     settingItemText.setAttribute('id', `settingLabel-${id}`);
-    if (style.ui_LANG === "EN") {
-        settingItemText.setAttribute('style', 'width:16rem;')
-    }
     settingItemText.setAttribute('onselectstart', 'return false;');
     settingItemText.setAttribute('onmousedown', 'return false;');
-    settingItemText.setAttribute('data-lang', style.ui_LANG);
     let settingItemInput = document.createElement('input');
     settingItemInput.setAttribute('id', id);
     settingItemInput.setAttribute('class', 'myColor');       // use yaireo's color picker; at the moment, it doesn't work with the oninput event.
@@ -452,7 +450,12 @@ function createColorItem(id, value, savedValues=[]) {
     return settingItem;
 }
 
-function setNumericValue(id, value) {
+function setSelectorValue(id, value) {
+    let temp_item = document.getElementById(id);
+    temp_item.value = value;
+}
+
+function setRangeValue(id, value) {
     let temp_item = document.getElementById(id);
     temp_item.value = parseFloat(value);
     temp_item.parentElement.style.setProperty("--value", parseFloat(value));

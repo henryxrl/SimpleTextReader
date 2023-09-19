@@ -145,8 +145,8 @@ var bookshelf = {
                     this.hide(true);
                     return true;
                 } else {
-                    alert("发生错误！");
-                    throw new Error("openBook error! " + fname);
+                    // alert("发生错误！");
+                    throw new Error(`openBook error: "${fname}"`);
                 }
             } catch (e) {
                 console.log(e);
@@ -163,12 +163,20 @@ var bookshelf = {
                 } else {
                     // console.log("saveBook: ", file.name);
                     // 先把文件保存到缓存db中
-                    await bookshelf.db.putBook(file.name, file);
-                    if (!await bookshelf.db.isBookExist(file.name)) alert("保存到本地书架失败（缓存空间可能已满）");
-                    // 刷新 Bookshelf in DropZone
-                    // await bookshelf.refreshBookList();
-                    if (refreshNow)
-                        await resetUI();
+                    try {
+                        await bookshelf.db.putBook(file.name, file);
+                        if (!await bookshelf.db.isBookExist(file.name)) {
+                            // alert("保存到本地书架失败（缓存空间可能已满）");
+                            throw new Error(`saveBook error (localStorage full): "${file.name}"`);
+                        } 
+
+                        // 刷新 Bookshelf in DropZone
+                        // await bookshelf.refreshBookList();
+                        if (refreshNow)
+                            await resetUI();
+                    } catch (e) {
+                        console.log(e);
+                    }
                 }
             }
         }
@@ -216,7 +224,7 @@ var bookshelf = {
         currentBookNameAndAuthor = getBookNameAndAuthor(bookInfo.name.replace(/(.txt)$/i, ''));
         let book = $(`<div class="book" data-filename="${bookInfo.name}">
             <div class="delete-btn-wrapper">
-                <span class="delete-btn" title="删除">&times;</span>
+                <span class="delete-btn" title="${style.ui_removeBook}">&times;</span>
             </div>
             <div class="coverContainer">
                 <span class="coverText">${bookInfo.name}</span>
@@ -234,15 +242,16 @@ var bookshelf = {
             "height": canvasHeight,
             "padding": canvasWidth / 8,
             "bottomRectHeightRatio": 0.3,
-            // "coverColor1": style.mainColor_inactive,
-            // "coverColor2": style.mainColor_active,
-            // "textColor": style.bgColor,
-            "coverColor1": style.logoColor1,
-            "coverColor2": style.logoColor2,
-            "textColor1": style.logoColor3,
-            "textColor2": style.logoColor3,
-            "font1": style.fontFamily_title_CN,
-            "font2": style.fontFamily_body_CN,
+            "coverColor1": style.mainColor_inactive,
+            "coverColor2": style.mainColor_active,
+            "textColor1": style.bgColor,
+            "textColor2": style.bgColor,
+            // "coverColor1": style.logoColor1,
+            // "coverColor2": style.logoColor2,
+            // "textColor1": style.logoColor3,
+            // "textColor2": style.logoColor3,
+            "font1": style.fontFamily_title_zh,
+            "font2": style.fontFamily_body_zh,
             // "font1": "HiraKakuProN-W6",
             // "font2": "HiraKakuProN-W3",
             "bookTitle": currentBookNameAndAuthor.bookName,
@@ -266,6 +275,38 @@ var bookshelf = {
         });
         this.updateBookProgressInfo(bookInfo.name, book);
         return book;
+    },
+
+    async updateAllBookCovers() {
+        Array.from(document.getElementsByClassName("book")).forEach(book => {
+            let book_filename = book.getAttribute("data-filename");
+            let book_cover = book.getElementsByTagName("canvas")[0];
+            let canvasWidth = book_cover.width;
+            let canvasHeight = book_cover.height;
+            currentBookNameAndAuthor = getBookNameAndAuthor(book_filename.replace(/(.txt)$/i, ''));
+            let ctx = book_cover.getContext("2d");
+            let coverSettings = {
+                "width": canvasWidth,
+                "height": canvasHeight,
+                "padding": canvasWidth / 8,
+                "bottomRectHeightRatio": 0.3,
+                "coverColor1": style.mainColor_inactive,
+                "coverColor2": style.mainColor_active,
+                "textColor1": style.bgColor,
+                "textColor2": style.bgColor,
+                // "coverColor1": style.logoColor1,
+                // "coverColor2": style.logoColor2,
+                // "textColor1": style.logoColor3,
+                // "textColor2": style.logoColor3,
+                "font1": style.fontFamily_title_zh,
+                "font2": style.fontFamily_body_zh,
+                // "font1": "HiraKakuProN-W6",
+                // "font2": "HiraKakuProN-W3",
+                "bookTitle": currentBookNameAndAuthor.bookName,
+                "authorName": currentBookNameAndAuthor.author,
+            };
+            generateCover(coverSettings, ctx);
+        });
     },
 
     async refreshBookList() {
