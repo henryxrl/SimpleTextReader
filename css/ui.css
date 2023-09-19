@@ -28,9 +28,7 @@ div::-webkit-scrollbar {
     display: none;
 }
 #content {
-    /* width: 75%; */
     height: 100%;
-    /* margin: 0 0 0 22%; */
     display: block;
     overflow-x: hidden;
 }
@@ -159,8 +157,6 @@ To Offset the anchor link to clear fixed header
     0 4px 4px var(--shadowColor), 
     0 8px 8px var(--shadowColor),
     0 16px 16px var(--shadowColor);
-    /* display: none; */
-    /* left: 61%; */
     transform: translate(-50%);
     -webkit-transform: translate(-50%);
     font-size: 0.9em;
@@ -195,9 +191,10 @@ To Offset the anchor link to clear fixed header
     opacity: 1;
 }
 .jumpInput {
-    color: black;
-    border:0;
-    /* outline:0; */
+    color: var(--paginationFontColor);
+    font-family: var(--fontFamily_ui);
+    border: 0;
+    outline:0;
     background-color: var(--bgColor) !important;
 }
 .disabledbutton {
@@ -319,13 +316,11 @@ ol#footnote-content {
 
 /* Seal */
 div.seal {
-    /* text-align: center; */
     margin: 6em 0 6em 0;
     overflow: hidden;
 }
 img#seal {
     content: var(--seal_url);
-    /* float: right; */
     width: var(--seal_width);
     height: auto;
     left: calc(var(--seal_left) * (100% - var(--seal_width)));
@@ -344,7 +339,6 @@ dialog {
     color: var(--mainColor_active);
     display: grid;
     grid-template-rows: max-content 1fr max-content;
-    /* box-shadow: 0px 0px 10px black; */
     box-shadow: 0 0 5px var(--mainColor_inactive);
     -webkit-box-shadow: var(--mainColor_inactive) 0 0 5px;
     -moz-box-shadow: 0 0 5px var(--mainColor_inactive);
@@ -415,7 +409,6 @@ input:invalid {
     color: var(--bgColor);
     background-color: var(--mainColor_active);
     margin: 1rem 0;
-    /* padding: 0.2rem 1rem; */
     text-align: center;
 }
 #settingDlg .setting-group {
