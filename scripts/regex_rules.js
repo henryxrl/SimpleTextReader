@@ -68,7 +68,7 @@ var rules_symbols = regex_weird_symbols;
 var rules_zxcs = () => [
     `^(\\s*(${regex_http}www.zxcs.(me|info)${regex_http_end})\\s*)$`,
     "^(\\s*[=]+\\s*$)",
-    `^(\\s*(更多精校小说尽在知轩藏书下载)\\s*${regex_colon}(${regex_http}(www.)?zxcs(txt|8)?.(com|me|info)${regex_http_end})$)`,
+    `^(\\s*(更多精校小说尽在知轩藏书下载)\\s*${regex_colon}(${regex_http}(www.)?zxcs(txt|8)?.(com|me|info|zip)${regex_http_end})$)`,
     `^(\\s*((书名)?\\s*${regex_colon}${regex_bracket_left}${bookAndAuthor.bookName}${regex_bracket_right})\\s*$)`,
     `^(\\s*((作者)?\\s*${regex_colon}${bookAndAuthor.author})\\s*$)`,
     `^(\\s*((书名)?\\s*${regex_colon}${regex_bracket_left}${bookAndAuthor.bookName}${regex_bracket_right})\\s*((作者)?\\s*${regex_colon}${bookAndAuthor.author})\\s*$)`,

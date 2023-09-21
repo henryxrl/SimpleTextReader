@@ -212,7 +212,13 @@ var bookshelf = {
         if (progress) {
             bookElm.addClass("read").css("--read-progress", progress);
             if (progress === "100%") {
-                bookElm.find(".progress").html(style.ui_bookFinished).attr("title", progress);
+                // bookElm.find(".progress").html(style.ui_bookFinished).attr("title", progress);
+                // add styling to the text of read
+                let read_text = `<span class="read_text">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 40">
+                    <path d="M27.361,8.986a5.212,5.212,0,0,0-4.347-4.347,72.73,72.73,0,0,0-14.028,0A5.212,5.212,0,0,0,4.639,8.986a72.72,72.72,0,0,0,0,14.027,5.212,5.212,0,0,0,4.347,4.348,72.73,72.73,0,0,0,14.028,0,5.212,5.212,0,0,0,4.347-4.348A72.72,72.72,0,0,0,27.361,8.986Zm-4.194,4.083L16.2,20.922a1.5,1.5,0,0,1-1.114.5h-.008a1.5,1.5,0,0,1-1.111-.492L9.36,15.86a1.5,1.5,0,1,1,2.221-2.015l3.482,3.836,5.861-6.6a1.5,1.5,0,1,1,2.243,1.992Z"/>
+                </svg>${style.ui_bookFinished}</span>`;
+                bookElm.find(".progress").html(read_text);
 
                 // add a badge to the book cover
                 let badge = `<div class="bookFinished_badge">
@@ -226,7 +232,11 @@ var bookshelf = {
             }
         } else {
             bookElm.removeClass("read").css("--read-progress", "");
-            bookElm.find(".progress").html(style.ui_bookNotRead);
+            // bookElm.find(".progress").html(style.ui_bookNotRead);
+
+            // add styling to the text of not read
+            let notRead_text = `<span class="notRead_text">${style.ui_bookNotRead}</span>`;
+            bookElm.find(".progress").html(notRead_text);
         }
     },
 

@@ -132,10 +132,10 @@
     --ui_removeBook_en: Remove Book;
     --ui_bookNotRead: "";
     --ui_bookNotRead_zh: 未读;
-    --ui_bookNotRead_en: NOT READ;
+    --ui_bookNotRead_en: Not Read;
     --ui_bookFinished: "";
-    --ui_bookFinished_zh: 已读;
-    --ui_bookFinished_en: FINISHED;
+    --ui_bookFinished_zh: 读完;
+    --ui_bookFinished_en: Finished;
 
     /* Passage variables */
     --p_lineHeight: 1.5em;

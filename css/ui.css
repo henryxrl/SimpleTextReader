@@ -806,6 +806,27 @@ input[type="color"]:not(:hover) {
 .bookshelf .book .coverContainer .bookFinished_badge svg {
     height: 1.6em;
     width: 1.6em;
-    fill: #eb0d23;
+    fill: #eb620d;
     filter: drop-shadow(1px 1px 2px rgb(0 0 0 / 0.4));
+}
+.bookshelf .book .infoContainer .progress .notRead_text {
+    background: var(--mainColor_inactive);
+    color: var(--bgColor);
+    border-radius: 3px;
+    padding: 0 6px;
+}
+.bookshelf .book .infoContainer .progress .read_text {
+    /* background: #eb620d; */
+    /* color: var(--bgColor); */
+    /* border-radius: 3px; */
+    /* padding: 0 6px; */
+    position: relative;
+    bottom: -4px;
+}
+.bookshelf .book .infoContainer .progress .read_text svg {
+    vertical-align: middle;
+    fill: var(--fontInfoColor);
+    padding-right: 2px;
+    width: 16px;
+    height: 20px;
 }
