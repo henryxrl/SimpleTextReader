@@ -143,6 +143,7 @@ var bookshelf = {
                     resetVars();
                     handleSelectedFile([book]);
                     this.hide(true);
+                    setBookLastReadTimestamp(book.name);
                     return true;
                 } else {
                     // alert("发生错误！");
@@ -330,9 +331,11 @@ var bookshelf = {
             // this.deleteBook(bookInfo.name, () => this.refreshBookList());
             this.deleteBook(bookInfo.name, () => {
                 let b = $(evt.currentTarget).parents(".book");
-                b.fadeOut(300, () => b.remove());
+                b.fadeOut(300, () => {
+                    b.remove();
+                    this.refreshBookList();     // need to refresh booklist every time after delete
+                });
                 // b.animate({width: 0, opacity: 0}, 500, () => b.remove());
-                this.refreshBookList();     // need to refresh booklist every time after delete
             });
         });
 
@@ -350,7 +353,9 @@ var bookshelf = {
             if (book.find(".dot-menu__checkbox").is(':checked')) {
                 let tempBookAuthor = getBookNameAndAuthor(bookInfo.name.replace(/(.txt)$/i, ''));
                 let tempBookTitle = tempBookAuthor.bookName;
-                let tempBookAuthorName = tempBookAuthor.author === "" ? `<span class="bookInfoMenu_item_text">${style.ui_bookInfo_authorUnknown}<span>` : `<span class="bookInfoMenu_item_info">${tempBookAuthor.author}<span>`;
+                let tempBookAuthorName = tempBookAuthor.author === "" ? `<span class="bookInfoMenu_item_text">${style.ui_bookInfo_Unknown}<span>` : `<span class="bookInfoMenu_item_info">${tempBookAuthor.author}<span>`;
+                let tempBookLastOpenedTimestamp = isVariableDefined(bookInfo.lastOpenedTimestamp) && bookInfo.lastOpenedTimestamp !== "" ? `<span class="bookInfoMenu_item_info">${convertUTCTimestampToLocalString(bookInfo.lastOpenedTimestamp)}<span>` : `<span class="bookInfoMenu_item_text">${style.ui_bookInfo_Unknown}<span>`;
+
                 // show popup menu
                 let bookInfoMenu = `
                 <div class="bookInfoMenu" id="bookInfoMenu-${idx}">
@@ -370,6 +375,10 @@ var bookshelf = {
                     <div class="bookInfoMenu_item">
                         <span class="bookInfoMenu_item_text">${style.ui_bookInfo_filesize}</span>
                         <span class="bookInfoMenu_item_info">${formatBytes(bookInfo.size)}</span>
+                    </div>
+                    <div class="bookInfoMenu_item">
+                        <span class="bookInfoMenu_item_text">${style.ui_bookInfo_lastopened}</span>
+                        ${tempBookLastOpenedTimestamp}
                     </div>
                 </div>`;
                 
@@ -462,7 +471,29 @@ var bookshelf = {
                 for (const book of await this.db.getAllBooks()) {
                     booklist.push({name: book.name, size: book.data.size});
                 }
-                booklist.sort((a, b) => (a.name.localeCompare(b.name, "zh")));
+
+                // get all books' last opened timestamp from localStorage
+                for (let book of booklist) {
+                    let lastOpenedTimestamp = localStorage.getItem(`${book.name}_lastopened`);
+                    if (lastOpenedTimestamp) {
+                        book.lastOpenedTimestamp = lastOpenedTimestamp;
+                    }
+                }
+
+                // sort booklist by last opened timestamp
+                // if no last opened timestamp, put it to the end of the list in order of name
+                booklist.sort((a, b) => {
+                    if (a.lastOpenedTimestamp && b.lastOpenedTimestamp) {
+                        return b.lastOpenedTimestamp - a.lastOpenedTimestamp;
+                    } else if (a.lastOpenedTimestamp) {
+                        return -1;
+                    } else if (b.lastOpenedTimestamp) {
+                        return 1;
+                    } else {
+                        return a.name.localeCompare(b.name);
+                    }
+                });
+
                 for (const [idx, bookInfo] of booklist.entries()) {
                     container.append(this.genBookItem(bookInfo, idx));
                 }
@@ -487,12 +518,6 @@ var bookshelf = {
     async show() {
         if (this.enabled) {
             if (isVariableDefined($(".bookshelf")) && $(".bookshelf .booklist").children().length > 0) {
-                if (isVariableDefined(dropZoneText)) {
-                    dropZoneText.setAttribute("style", `top: ${style.ui_dropZoneTextTop_hasBookshelf}; left: ${style.ui_dropZoneTextLeft_hasBookshelf}; font-size: ${style.ui_dropZoneTextSize_hasBookshelf}`);
-                }
-                if (isVariableDefined(dropZoneImg)) {
-                    dropZoneImg.setAttribute("style", `top: ${style.ui_dropZoneImgTop_hasBookshelf}; left: ${style.ui_dropZoneImgLeft_hasBookshelf}; width: ${style.ui_dropZoneImgSize_hasBookshelf}; height: ${style.ui_dropZoneImgSize_hasBookshelf}`);
-                }
                 $(".bookshelf").show();
 
                 $(".booklist").trigger("contentchange");
@@ -600,6 +625,24 @@ var bookshelf = {
             });
 
             $(".booklist").bind("contentchange", function() {
+                // set bookshelf height
+                let bookWidth = $('.book').outerWidth(true);
+                let bookHeight = $('.book').outerHeight(true);
+                let windowHeight = $('#dropZone').outerHeight(true);
+                let numBookshelfRows = Math.ceil($('.book').length / Math.floor(this.offsetWidth / bookWidth));
+                numBookshelfRows = isFinite(numBookshelfRows) ? numBookshelfRows : 0;
+                if (numBookshelfRows > 0) {
+                    let topPx = "";
+                    topPx = `max(calc(${windowHeight - (bookHeight + 24) * numBookshelfRows}px - 2 * var(--ui_booklist_padding)), 25%)`;
+                    $('.bookshelf').css('top', topPx);
+                    let topPxNum = parseInt($('.bookshelf').css('top'));
+                    $('#dropZoneText').css('top', `calc(${topPxNum} / ${windowHeight} * var(--ui_dropZoneTextTop))`);
+                    $('#dropZoneText').css('font-size', `max(calc(1.2 * (${topPxNum} / ${windowHeight}) * var(--ui_dropZoneTextSize)), calc(var(--ui_dropZoneTextSize) / 1.5))`);
+                    $('#dropZoneImg').css('top', `calc(${topPxNum} / ${windowHeight} * var(--ui_dropZoneImgTop))`);
+                    $('#dropZoneImg').css('width', `max(calc(1.2 * (${topPxNum} / ${windowHeight}) * var(--ui_dropZoneImgSize)), calc(var(--ui_dropZoneImgSize) / 1.5)`);
+                    $('#dropZoneImg').css('height', `max(calc(1.2 * (${topPxNum} / ${windowHeight}) * var(--ui_dropZoneImgSize)), calc(var(--ui_dropZoneImgSize) / 1.5)`);
+                }
+
                 if (this.scrollHeight > this.parentNode.clientHeight) {
                     // console.log('overflown', this.scrollTop, this.scrollHeight-this.offsetHeight);
                     defineScrollBtns.call(this);

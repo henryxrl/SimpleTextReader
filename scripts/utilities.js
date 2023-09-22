@@ -68,6 +68,16 @@ function getProgressText(filename, consoleLog=true) {
     return "";
 }
 
+function setBookLastReadTimestamp(filename) {
+    // save current timestamp in UTC to localStorage
+    let now = new Date();
+    localStorage.setItem(`${filename}_lastopened`, Date.UTC(now.getFullYear(),now.getMonth(), now.getDate(), now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds()));
+}
+
+function convertUTCTimestampToLocalString(utcTimestamp) {
+    return new Date(parseInt(utcTimestamp) + new Date().getTimezoneOffset() * 60000).toLocaleString();
+}
+
 function removeAllHistory() {
     localStorage.clear();
 }

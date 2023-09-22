@@ -72,7 +72,8 @@ To Offset the anchor link to clear fixed header
     height: 100%;
     z-index: 999;
     visibility: show;
-    border: 0.5em dashed var(--mainColor_inactive);
+    border: 0.5em dashed;
+    border-color: var(--mainColor_inactive);
     border-radius: 16px;
     box-sizing: border-box;
     -moz-box-sizing: border-box;
@@ -612,7 +613,7 @@ input[type="color"]:not(:hover) {
 /* Book Shelf */
 .bookshelf {
     position: absolute;
-    top: var(--ui_bookShelfTop);
+    /* top: var(--ui_bookShelfTop); */
     bottom: 0;
     left: 0;
     right: 0;
@@ -662,8 +663,8 @@ input[type="color"]:not(:hover) {
 .bookshelf .booklist {
     overflow-y: auto;
     text-align: center;
-    margin: 2px calc(var(--ui_windowLeftRightMargin) * 1%); /* 避开 btn-group */
-    margin-top: 2rem;
+    margin: 2px calc(var(--ui_windowLeftRightMargin) * 1% + 2rem); /* 避开 btn-group */
+    padding: var(--ui_booklist_padding) 0;
     /* border-top: 2px dashed var(--borderColor); */
     position: absolute;
     top: 0;
@@ -865,7 +866,7 @@ input[type="color"]:not(:hover) {
 }
 .bookInfoMenu_item_info {
     display: inline-block;
-    width: 7rem;
+    width: 8rem;
     color: var(--mainColor_active);
     font-size: 1rem;
     /* overflow: overlay; */

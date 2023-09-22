@@ -61,13 +61,6 @@
     --ui_dropZoneImgTop: 50%;
     --ui_dropZoneImgLeft: 50%;
     --ui_dropZoneImgSize: 13em;
-    --ui_dropZoneTextTop_hasBookshelf: 16%;
-    --ui_dropZoneTextLeft_hasBookshelf: 50%;
-    --ui_dropZoneTextSize_hasBookshelf: 4em;
-    --ui_dropZoneImgTop_hasBookshelf: 16%;
-    --ui_dropZoneImgLeft_hasBookshelf: 50%;
-    --ui_dropZoneImgSize_hasBookshelf: 10em;
-    --ui_bookShelfTop: 33%;
     --ui_loadingImgSize: 380px;
     --ui_footnoteImgSize: 12px;
     --ui_paginationBottom: 30px;
@@ -141,23 +134,27 @@
     --ui_bookshadow: 5px 5px 10px -5px black, inset 0px -10px 10px var(--mainColor_active);
     --ui_bookshadow_noAuthor: 5px 5px 10px -5px black, inset 0px -10px 10px var(--mainColor_inactive);
     --ui_bookshadow_hover: 0px 0px 5px 3px var(--mainColor_active), inset 0px -10px 10px var(--mainColor_active);
+    --ui_booklist_padding: 2rem;
 
     /* UI book information strings */
+    --ui_bookInfo_Unknown: "";
+    --ui_bookInfo_Unknown_zh: 无;
+    --ui_bookInfo_Unknown_en: N/A;
     --ui_bookInfo_bookname: "";
     --ui_bookInfo_bookname_zh: 书名;
     --ui_bookInfo_bookname_en: Book Title;
     --ui_bookInfo_author: "";
     --ui_bookInfo_author_zh: 作者;
     --ui_bookInfo_author_en: Author;
-    --ui_bookInfo_authorUnknown: "";
-    --ui_bookInfo_authorUnknown_zh: 无;
-    --ui_bookInfo_authorUnknown_en: N/A;
     --ui_bookInfo_filename: "";
     --ui_bookInfo_filename_zh: 文件名;
     --ui_bookInfo_filename_en: Filename;
     --ui_bookInfo_filesize: "";
     --ui_bookInfo_filesize_zh: 文件大小;
     --ui_bookInfo_filesize_en: Filesize;
+    --ui_bookInfo_lastopened: "";
+    --ui_bookInfo_lastopened_zh: 上次阅读;
+    --ui_bookInfo_lastopened_en: Last Read;
 
     /* Passage variables */
     --p_lineHeight: 1.5em;
@@ -285,9 +282,10 @@
     --ui_bookNotRead: var(--ui_bookNotRead_zh);
     --ui_bookInfo_bookname: var(--ui_bookInfo_bookname_zh);
     --ui_bookInfo_author: var(--ui_bookInfo_author_zh);
-    --ui_bookInfo_authorUnknown: var(--ui_bookInfo_authorUnknown_zh);
+    --ui_bookInfo_Unknown: var(--ui_bookInfo_Unknown_zh);
     --ui_bookInfo_filename: var(--ui_bookInfo_filename_zh);
     --ui_bookInfo_filesize: var(--ui_bookInfo_filesize_zh);
+    --ui_bookInfo_lastopened: var(--ui_bookInfo_lastopened_zh);
 }
 
 [data-lang="en"] {
@@ -322,9 +320,10 @@
     --ui_bookNotRead: var(--ui_bookNotRead_en);
     --ui_bookInfo_bookname: var(--ui_bookInfo_bookname_en);
     --ui_bookInfo_author: var(--ui_bookInfo_author_en);
-    --ui_bookInfo_authorUnknown: var(--ui_bookInfo_authorUnknown_en);
+    --ui_bookInfo_Unknown: var(--ui_bookInfo_Unknown_en);
     --ui_bookInfo_filename: var(--ui_bookInfo_filename_en);
     --ui_bookInfo_filesize: var(--ui_bookInfo_filesize_en);
+    --ui_bookInfo_lastopened: var(--ui_bookInfo_lastopened_en);
 }
 
 #dropZoneText::before {

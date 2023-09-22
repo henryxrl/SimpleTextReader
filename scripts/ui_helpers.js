@@ -174,12 +174,29 @@ function setTOC_onRatio(initial=false) {
 }
 
 function showDropZone(focused=false) {
+    // hide menus
+    if (isVariableDefined(document.getElementById('settings-menu'))) {
+        hideSettingMenu();
+    }
+    if (isVariableDefined($(".dot-menu__checkbox"))) {
+        $(".dot-menu__checkbox").prop("checked", false);
+    }
+    if (isVariableDefined($(".bookInfoMenu"))) {
+        $(".bookInfoMenu").remove();
+    }
+
     if (isVariableDefined(dropZone) && isVariableDefined(dropZoneText) && isVariableDefined(dropZoneImg)) {
-        let c = style.mainColor_inactive;
+        let c = null;
         // let filter = style.mainColor_inactive_filter;
         if (focused) {
             c = style.mainColor_active;
+            dropZone.style.borderColor = c;
             // filter = style.mainColor_active_filter;
+        } else {
+            c = style.mainColor_inactive;
+            // dropZone.style.borderColor = c;
+            $('#dropZone').css('border-color', 'var(--main-color-inactive)');
+            // filter = style.mainColor_inactive_filter;
         }
         let filter = style.toGray_filter;
         dropZone.style.visibility = "visible";

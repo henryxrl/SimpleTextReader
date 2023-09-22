@@ -144,6 +144,7 @@ function handleMultipleFiles(fileList) {
         }
     } else {
         handleSelectedFile(files);
+        setBookLastReadTimestamp(files[0].name);
     }
 }
 
