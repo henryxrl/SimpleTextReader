@@ -204,7 +204,7 @@ function saveSettings(toSetLanguage = false) {
     
     applySettings();
 
-    if (isVariableDefined(bookshelf))
+    if (typeof bookshelf !== "undefined" && isVariableDefined(bookshelf))
         bookshelf.updateAllBookCovers();
 }
 

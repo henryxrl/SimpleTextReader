@@ -144,7 +144,7 @@ function generateCover(settings, ctx) {
         const match = /(?<value>\d+\.?\d*)/;
         const fontSizeIncrement = 5;
 
-        var fontSize = Math.max(parseInt(maxHeight / 10) || 10, 10);
+        var fontSize = str.length > 30 ? 1 : Math.max(parseInt(maxHeight / 10) || 10, 10);
         ctx.font = font.replace(match, fontSize);
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -250,6 +250,31 @@ function generateCover(settings, ctx) {
                 }
             } else {
                 // console.log("has spaces");
+                for (var i = 0; i < texts.length; i++) {
+                    // if there's a long word (length > 20), we will try to split it
+                    // by calculating the longest substring that can fit in the maxWidth
+                    // and add the rest to the next line
+                    if (texts[i].length > 20) {
+                        var sub = texts[i].slice(0, 20);
+                        var sub_w = c.measureText(sub).width;
+                        // console.log(sub, sub_w, maxWidth);
+                        while (sub_w < maxWidth && sub.length < texts[i].length) {
+                            sub = texts[i].slice(0, sub.length + 1);
+                            sub_w = c.measureText(sub).width;
+                            // console.log(sub, sub_w, maxWidth);
+                        }
+                        while (sub_w > maxWidth && sub.length > 0) {
+                            sub = texts[i].slice(0, sub.length - 1);
+                            sub_w = c.measureText(sub).width;
+                            // console.log(sub, sub_w, maxWidth);
+                        }
+                        texts.splice(i, 1, sub, texts[i].slice(sub.length));
+                        // console.log(texts);
+                    }
+                }
+                // console.log(texts);
+
+                // Now we can split the string by spaces
                 for (var i = 0; i < texts.length; i++) {
                     var s = texts
                         .slice(0, i + 1)

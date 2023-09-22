@@ -132,10 +132,32 @@
     --ui_removeBook_en: Remove Book;
     --ui_bookNotRead: "";
     --ui_bookNotRead_zh: 未读;
-    --ui_bookNotRead_en: Not Read;
+    --ui_bookNotRead_en: Unread;
     --ui_bookFinished: "";
     --ui_bookFinished_zh: 读完;
     --ui_bookFinished_en: Finished;
+
+    /* UI bookshelf variables */
+    --ui_bookshadow: 5px 5px 10px -5px black, inset 0px -10px 10px var(--mainColor_active);
+    --ui_bookshadow_noAuthor: 5px 5px 10px -5px black, inset 0px -10px 10px var(--mainColor_inactive);
+    --ui_bookshadow_hover: 0px 0px 5px 3px var(--mainColor_active), inset 0px -10px 10px var(--mainColor_active);
+
+    /* UI book information strings */
+    --ui_bookInfo_bookname: "";
+    --ui_bookInfo_bookname_zh: 书名;
+    --ui_bookInfo_bookname_en: Book Title;
+    --ui_bookInfo_author: "";
+    --ui_bookInfo_author_zh: 作者;
+    --ui_bookInfo_author_en: Author;
+    --ui_bookInfo_authorUnknown: "";
+    --ui_bookInfo_authorUnknown_zh: 无;
+    --ui_bookInfo_authorUnknown_en: N/A;
+    --ui_bookInfo_filename: "";
+    --ui_bookInfo_filename_zh: 文件名;
+    --ui_bookInfo_filename_en: Filename;
+    --ui_bookInfo_filesize: "";
+    --ui_bookInfo_filesize_zh: 文件大小;
+    --ui_bookInfo_filesize_en: Filesize;
 
     /* Passage variables */
     --p_lineHeight: 1.5em;
@@ -261,6 +283,11 @@
     --ui_removeBook: var(--ui_removeBook_zh);
     --ui_bookFinished: var(--ui_bookFinished_zh);
     --ui_bookNotRead: var(--ui_bookNotRead_zh);
+    --ui_bookInfo_bookname: var(--ui_bookInfo_bookname_zh);
+    --ui_bookInfo_author: var(--ui_bookInfo_author_zh);
+    --ui_bookInfo_authorUnknown: var(--ui_bookInfo_authorUnknown_zh);
+    --ui_bookInfo_filename: var(--ui_bookInfo_filename_zh);
+    --ui_bookInfo_filesize: var(--ui_bookInfo_filesize_zh);
 }
 
 [data-lang="en"] {
@@ -293,6 +320,11 @@
     --ui_removeBook: var(--ui_removeBook_en);
     --ui_bookFinished: var(--ui_bookFinished_en);
     --ui_bookNotRead: var(--ui_bookNotRead_en);
+    --ui_bookInfo_bookname: var(--ui_bookInfo_bookname_en);
+    --ui_bookInfo_author: var(--ui_bookInfo_author_en);
+    --ui_bookInfo_authorUnknown: var(--ui_bookInfo_authorUnknown_en);
+    --ui_bookInfo_filename: var(--ui_bookInfo_filename_en);
+    --ui_bookInfo_filesize: var(--ui_bookInfo_filesize_en);
 }
 
 #dropZoneText::before {

@@ -240,10 +240,11 @@ var bookshelf = {
         }
     },
 
-    genBookItem(bookInfo) {
+    genBookItem(bookInfo, idx) {
+        // generate book cover art
         let canvasWidth = getSizePrecise(style.ui_bookCoverWidth);
         let canvasHeight = getSizePrecise(style.ui_bookCoverHeight);
-        currentBookNameAndAuthor = getBookNameAndAuthor(bookInfo.name.replace(/(.txt)$/i, ''));
+        let currentBookNameAndAuthor = getBookNameAndAuthor(bookInfo.name.replace(/(.txt)$/i, ''));
         let book = $(`<div class="book" data-filename="${bookInfo.name}">
             <div class="delete-btn-wrapper">
                 <span class="delete-btn" title="${style.ui_removeBook}">&times;</span>
@@ -254,7 +255,10 @@ var bookshelf = {
             </div>
             <div class="infoContainer">
                 <div class="progress"></div>
-                <div class="size">${formatBytes(bookInfo.size)}</div>
+                <div class="bookInfoMenuBtn" id="bookInfoMenuBtn-${idx}">
+                    <input id="dot-menu-${idx}" type="checkbox" class="dot-menu__checkbox">
+                    <label for="dot-menu-${idx}" class="dot-menu__label"><span></span></label>
+                </div>
             </div>
             </div>`);
         let canvas = book.find(".coverCanvas");
@@ -280,11 +284,47 @@ var bookshelf = {
             "authorName": currentBookNameAndAuthor.author,
         };
         generateCover(coverSettings, ctx);
-            
+        if (currentBookNameAndAuthor.author === "") {
+            book.find(".coverContainer").css('box-shadow', 'var(--ui_bookshadow_noAuthor)');
+        } else {
+            book.find(".coverContainer").css('box-shadow', 'var(--ui_bookshadow)');
+        }
+
+        // add mouseover effect
+        book.find(".coverContainer").mouseover(function() {
+            book.find(".delete-btn-wrapper").css("visibility", "visible");
+            $(this).css('box-shadow', 'var(--ui_bookshadow_hover)');
+        }).mouseout(function(e) {
+            if ((e.offsetX <= 0 || e.offsetX >= $(this).width()) || (e.offsetY <= $(this)[0].offsetTop || e.offsetY >= $(this).height())) {
+                book.find(".delete-btn-wrapper").css("visibility", "hidden");
+                let tempBookAuthor = getBookNameAndAuthor(bookInfo.name.replace(/(.txt)$/i, ''));
+                if (tempBookAuthor.author === "") {
+                    $(this).css('box-shadow', 'var(--ui_bookshadow_noAuthor)');
+                } else {
+                    $(this).css('box-shadow', 'var(--ui_bookshadow)');
+                }
+            }
+        });
+        book.find(".delete-btn-wrapper").mouseover(function() {
+            book.find(".delete-btn-wrapper").css("visibility", "visible");
+            book.find(".coverContainer").css('box-shadow', 'var(--ui_bookshadow_hover)');
+        }).mouseout(function() {
+            book.find(".delete-btn-wrapper").css("visibility", "hidden");
+            let tempBookAuthor = getBookNameAndAuthor(bookInfo.name.replace(/(.txt)$/i, ''));
+            if (tempBookAuthor.author === "") {
+                book.find(".coverContainer").css('box-shadow', 'var(--ui_bookshadow_noAuthor)');
+            } else {
+                book.find(".coverContainer").css('box-shadow', 'var(--ui_bookshadow)');
+            }
+        });
+        
+        // add click event
         book.find(".coverContainer").click((evt) => {
             evt.originalEvent.stopPropagation();
             this.openBook(bookInfo.name);
         });
+
+        // add delete event
         book.find(".delete-btn").click((evt) => {
             evt.originalEvent.stopPropagation();
             // this.deleteBook(bookInfo.name, () => this.refreshBookList());
@@ -295,7 +335,76 @@ var bookshelf = {
                 this.refreshBookList();     // need to refresh booklist every time after delete
             });
         });
+
+        // update book progress info
         this.updateBookProgressInfo(bookInfo.name, book);
+
+        // add a bookInfoMenuBtn
+        book.find(`#bookInfoMenuBtn-${idx}`).click((evt) => {
+            evt.originalEvent.stopPropagation();
+
+            // remove all bookInfoMenu
+            $(".bookInfoMenu").remove();
+
+            // add bookInfoMenu
+            if (book.find(".dot-menu__checkbox").is(':checked')) {
+                let tempBookAuthor = getBookNameAndAuthor(bookInfo.name.replace(/(.txt)$/i, ''));
+                let tempBookTitle = tempBookAuthor.bookName;
+                let tempBookAuthorName = tempBookAuthor.author === "" ? `<span class="bookInfoMenu_item_text">${style.ui_bookInfo_authorUnknown}<span>` : `<span class="bookInfoMenu_item_info">${tempBookAuthor.author}<span>`;
+                // show popup menu
+                let bookInfoMenu = `
+                <div class="bookInfoMenu" id="bookInfoMenu-${idx}">
+                    <div class="bookInfoMenu-clip"></div>
+                    <div class="bookInfoMenu_item">
+                        <span class="bookInfoMenu_item_text">${style.ui_bookInfo_bookname}</span>
+                        <span class="bookInfoMenu_item_info">${tempBookTitle}</span>
+                    </div>
+                    <div class="bookInfoMenu_item">
+                        <span class="bookInfoMenu_item_text">${style.ui_bookInfo_author}</span>
+                        ${tempBookAuthorName}
+                    </div>
+                    <div class="bookInfoMenu_item">
+                        <span class="bookInfoMenu_item_text">${style.ui_bookInfo_filename}</span>
+                        <span class="bookInfoMenu_item_info">${bookInfo.name}</span>
+                    </div>
+                    <div class="bookInfoMenu_item">
+                        <span class="bookInfoMenu_item_text">${style.ui_bookInfo_filesize}</span>
+                        <span class="bookInfoMenu_item_info">${formatBytes(bookInfo.size)}</span>
+                    </div>
+                </div>`;
+                
+                book.find(".infoContainer").append(bookInfoMenu);
+
+                // set bookInfoMenu's position to be right above current element
+                let bookInfoMenuWidth = book.find(`#bookInfoMenu-${idx}`).outerWidth();
+                let bookInfoMenuHeight = book.find(`#bookInfoMenu-${idx}`).outerHeight();
+                book.find(`#bookInfoMenu-${idx}`).css("top", `${evt.currentTarget.getBoundingClientRect().bottom - evt.currentTarget.getBoundingClientRect().height - bookInfoMenuHeight - 15}px`);
+                book.find(`#bookInfoMenu-${idx}`).css("left", `${evt.currentTarget.getBoundingClientRect().left + evt.currentTarget.getBoundingClientRect().width / 2 - bookInfoMenuWidth / 2 + 3}px`);
+
+            } else {
+                // hide popup menu
+                book.find(".bookInfoMenu").remove();
+            }
+
+            // hide popup menu when clicked outside
+            document.addEventListener('click', function(event) {  
+                const settingsMenu = book.find(`#bookInfoMenu-${idx}`);
+                // if (!settingsMenu) return;
+                if ($(event.target).closest(settingsMenu).length) {
+                    // clicked inside menu
+                } else {
+                    book.find(".dot-menu__checkbox").prop("checked", false);
+                    book.find(".bookInfoMenu").remove();
+                }
+            });
+
+            // reset all book cover art when mouseover the bookInfoMenu
+            book.find(".bookInfoMenu").mouseover(function() {
+                $(".delete-btn-wrapper").css("visibility", "hidden");
+                $(".coverContainer").css('box-shadow', 'var(--ui_bookshadow)');
+            });
+        });
+
         return book;
     },
 
@@ -305,7 +414,7 @@ var bookshelf = {
             let book_cover = book.getElementsByTagName("canvas")[0];
             let canvasWidth = book_cover.width;
             let canvasHeight = book_cover.height;
-            currentBookNameAndAuthor = getBookNameAndAuthor(book_filename.replace(/(.txt)$/i, ''));
+            let currentBookNameAndAuthor = getBookNameAndAuthor(book_filename.replace(/(.txt)$/i, ''));
             let ctx = book_cover.getContext("2d");
             let coverSettings = {
                 "width": canvasWidth,
@@ -354,8 +463,8 @@ var bookshelf = {
                     booklist.push({name: book.name, size: book.data.size});
                 }
                 booklist.sort((a, b) => (a.name.localeCompare(b.name, "zh")));
-                for (const bookInfo of booklist) {
-                    container.append(this.genBookItem(bookInfo));
+                for (const [idx, bookInfo] of booklist.entries()) {
+                    container.append(this.genBookItem(bookInfo, idx));
                 }
                 container.trigger("contentchange");
             } catch (e) {
@@ -377,7 +486,6 @@ var bookshelf = {
 
     async show() {
         if (this.enabled) {
-            // console.log($(".bookshelf .booklist").children().length);
             if (isVariableDefined($(".bookshelf")) && $(".bookshelf .booklist").children().length > 0) {
                 if (isVariableDefined(dropZoneText)) {
                     dropZoneText.setAttribute("style", `top: ${style.ui_dropZoneTextTop_hasBookshelf}; left: ${style.ui_dropZoneTextLeft_hasBookshelf}; font-size: ${style.ui_dropZoneTextSize_hasBookshelf}`);
@@ -462,7 +570,6 @@ var bookshelf = {
             .appendTo("#dropZone");
 
             function defineScrollBtns() {
-                // console.log(this.scrollTop, this.scrollHeight-this.offsetHeight);
                 if (this.scrollTop > 0) {
                     $("#scrollTop-btn")
                     .css("visibility", "visible")
@@ -478,7 +585,6 @@ var bookshelf = {
                     $("#scrollBottom-btn")
                     .css("visibility", "visible")
                     .click(() => {
-                        // this.scrollTop = this.scrollHeight-this.offsetHeight;
                         $(this).stop(true, false);
                         $(this).animate({scrollTop: this.scrollHeight-this.offsetHeight}, this.scrollHeight / 10);
                     });
@@ -487,7 +593,11 @@ var bookshelf = {
                 }
             };
 
-            $(".booklist").on("scroll", defineScrollBtns);
+            $(".booklist").on("scroll", function() {
+                defineScrollBtns.call(this);
+                $(".dot-menu__checkbox").prop("checked", false);
+                $(".bookInfoMenu").remove();
+            });
 
             $(".booklist").bind("contentchange", function() {
                 if (this.scrollHeight > this.parentNode.clientHeight) {
@@ -502,6 +612,21 @@ var bookshelf = {
 
             $(window).on("resize", function() {
                 $(".booklist").trigger("contentchange");
+                $(".dot-menu__checkbox").prop("checked", false);
+                $(".bookInfoMenu").remove();
+            });
+
+            // capable of scrolling booklist within the entire bookshelf
+            document.getElementsByClassName('bookshelf')[0].addEventListener('wheel', function(e){
+                // prevent scrolling booklist when mouse is hovering on bookInfoMenu
+                if ($(".bookInfoMenu").length > 0) {
+                    if ($(".bookInfoMenu").is(":hover")) {
+                        return;
+                    }
+                }
+
+                // scroll booklist accordingly
+                document.getElementsByClassName('booklist')[0].scrollTop += e.deltaY;
             });
 
             // console.log("Module <Bookshelf> enabled.");
