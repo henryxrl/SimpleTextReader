@@ -477,20 +477,30 @@ var bookshelf = {
                     let lastOpenedTimestamp = localStorage.getItem(`${book.name}_lastopened`);
                     if (lastOpenedTimestamp) {
                         book.lastOpenedTimestamp = lastOpenedTimestamp;
+                        book.progress = getProgressText(book.name, false);
                     }
                 }
 
-                // sort booklist by last opened timestamp
-                // if no last opened timestamp, put it to the end of the list in order of name
+                // sort booklist by:
+                // 1. if progress is 100%, then put to the end of the list
+                // and sort by last opened timestamp;
+                // 2. if progress is not 100%, then sort by last opened timestamp
+                // 3. if last opened timestamp is not available, then sort by filename
                 booklist.sort((a, b) => {
-                    if (a.lastOpenedTimestamp && b.lastOpenedTimestamp) {
-                        return b.lastOpenedTimestamp - a.lastOpenedTimestamp;
-                    } else if (a.lastOpenedTimestamp) {
-                        return -1;
-                    } else if (b.lastOpenedTimestamp) {
+                    if (a.progress === "100%" && b.progress !== "100%") {
                         return 1;
+                    } else if (a.progress !== "100%" && b.progress === "100%") {
+                        return -1;
                     } else {
-                        return a.name.localeCompare(b.name);
+                        if (!a.lastOpenedTimestamp && !b.lastOpenedTimestamp) {
+                            return a.name.localeCompare(b.name, "zh");
+                        } else if (a.lastOpenedTimestamp && !b.lastOpenedTimestamp) {
+                            return -1;
+                        } else if (!a.lastOpenedTimestamp && b.lastOpenedTimestamp) {
+                            return 1;
+                        } else {
+                            return b.lastOpenedTimestamp - a.lastOpenedTimestamp;
+                        }
                     }
                 });
 
