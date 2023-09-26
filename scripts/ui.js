@@ -139,12 +139,22 @@ function handleMultipleFiles(fileList) {
     var files = Array.from(fileList).filter(file => file.type === "text/plain");
     if (files.length > 1) {
         if (isVariableDefined(bookshelf)) {
-            for (const [i, file] of files.entries())
-                bookshelf.saveBook(file, (i === files.length - 1));
+            if (bookshelf.enabled) {
+                for (const [i, file] of files.entries())
+                    bookshelf.saveBook(file, (i === files.length - 1));
+            } else {
+                console.log("Multiple files selected, only the first one will be loaded since bookshelf is disabled.");
+                handleSelectedFile([files[0]]);
+                setBookLastReadTimestamp(files[0].name);
+            }
         }
-    } else {
+    } else if (files.length === 1) {
+        console.log(files);
         handleSelectedFile(files);
         setBookLastReadTimestamp(files[0].name);
+    } else {
+        console.log("No valid file selected.");
+        resetUI();
     }
 }
 

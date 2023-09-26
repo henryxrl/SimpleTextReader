@@ -353,8 +353,8 @@ function createSelectorItem(id, values, texts) {
     let settingItemText = document.createElement('span');
     settingItemText.setAttribute('class', 'settingItem-span');
     settingItemText.setAttribute('id', `settingLabel-${id}`);
-    settingItemText.setAttribute('onselectstart', 'return false;');
-    settingItemText.setAttribute('onmousedown', 'return false;');
+    settingItemText.onselectstart = function() { return false; };
+    settingItemText.onmousedown = function() { return false; };
     let settingItemInput = document.createElement('select');
     settingItemInput.setAttribute('id', id);
     values.forEach(function(value, i) {
@@ -382,8 +382,8 @@ function createRangeItem(id, value, min, max, step, unit='') {
     let settingItemText = document.createElement('span');
     settingItemText.setAttribute('class', 'settingItem-span');
     settingItemText.setAttribute('id', `settingLabel-${id}`);
-    settingItemText.setAttribute('onselectstart', 'return false;');
-    settingItemText.setAttribute('onmousedown', 'return false;');
+    settingItemText.onselectstart = function() { return false; };
+    settingItemText.onmousedown = function() { return false; };
     let settingItemInput = document.createElement('div');
     settingItemInput.setAttribute('class', 'range-slider');
     settingItemInput.setAttribute('style', '--min:' + min + '; --max:' + max + '; --step:' + step + '; --value:' + value + '; --text-value:"' + JSON.stringify(value) + '"; --suffix:"' + unit + '";--ticks-color:' + style.bgColor + ';');
@@ -430,8 +430,8 @@ function createColorItem(id, value, savedValues=[]) {
     let settingItemText = document.createElement('span');
     settingItemText.setAttribute('class', 'settingItem-span');
     settingItemText.setAttribute('id', `settingLabel-${id}`);
-    settingItemText.setAttribute('onselectstart', 'return false;');
-    settingItemText.setAttribute('onmousedown', 'return false;');
+    settingItemText.onselectstart = function() { return false; };
+    settingItemText.onmousedown = function() { return false; };
     let settingItemInput = document.createElement('input');
     settingItemInput.setAttribute('id', id);
     settingItemInput.setAttribute('class', 'myColor');       // use yaireo's color picker; at the moment, it doesn't work with the oninput event.

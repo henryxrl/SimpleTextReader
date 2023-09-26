@@ -3,7 +3,8 @@ class BookshelfDB {
 
     connect() {
         return new Promise((resolve, reject) => {
-            const req = window.indexedDB.open('SimpleTextReader', 1);
+            const indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+            const req = indexedDB.open('SimpleTextReader', 1);
             req.onupgradeneeded = function (evt) {
                 let db = evt.target.result;
                 console.log(`Upgrading to version ${db.version}`);
@@ -18,6 +19,8 @@ class BookshelfDB {
             };
             req.onerror = function (evt) {
                 console.log("openDB.onError");
+                bookshelf.disable();
+                console.log(bookshelf.enabled);
                 reject(evt.target.error);
             };
         });
@@ -555,8 +558,12 @@ var bookshelf = {
         return this;
     },
 
-    hideTriggerBtn() {
-        $("#STRe-bookshelf-btn").hide();
+    hideTriggerBtn(doNotRemove = true) {
+        if (!doNotRemove) {
+            $("#STRe-bookshelf-btn").remove();
+        } else {
+            $("#STRe-bookshelf-btn").hide();
+        }
     },
 
     showTriggerBtn() {
@@ -691,10 +698,11 @@ var bookshelf = {
     disable() {
         if (this.enabled) {
             fileloadCallback.unregBefore(this.saveBook);
-            this.hide();
+            this.hide(false);
+            this.hideTriggerBtn(false);
             this.db = null;
             this.enabled = false;
-            // console.log("Module <Bookshelf> disabled.");
+            console.log("Module <Bookshelf> disabled.");
         }
         return this;
     },

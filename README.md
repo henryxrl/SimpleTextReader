@@ -2,7 +2,7 @@
 
 中文 / [English](README_EN.md)
 
-![主界面](assets/1_ui.png)
+![主界面](assets/4_bookshelf1.png)
 
 易笺是一款简单纯粹的文本文件阅读器（Web App）。
 
@@ -17,6 +17,8 @@
 
     `《书名》作者：作者名.txt`
 
+    `书名.[作者].txt`
+
     `Bookname by author.txt`
 
 3. 中英文标题正则自动识别 —— 自信的说，标题抓取几乎很少有超过易笺的了，看官们可以自行和别的阅读器对比
@@ -25,7 +27,8 @@
 6. 自动去除文字中的一些广告，目前只对塞班和知轩藏书的小说进行了优化
 7. 自动制作扉页，显示识别出的标题名和作者名，再戳上一个藏书章（中英文藏书章是不同的哦！）
 8. 自动储存阅读进度，精确到每一行！
-9. 颜值高，颜值高，颜值高
+9. 书架功能，自动生成书籍封面
+10. 颜值高，颜值高，颜值高
 
 ## 重大更新
 
@@ -55,17 +58,54 @@
 </div>
 支持行高，字体大小，主题颜色等参数的自定义
 
+### v1.4
+
+1. 新增本地缓存书架 —— 特别鸣谢 [cataerogong](https://github.com/cataerogong) 的技术支持！
+
+    [1] 支持同时选择/拖拽多个 txt 文档加入书架；
+
+    [2] 自动生成书籍封面；封面颜色根据用户设置的主题颜色变化；
+
+    [3] 书籍排列顺序：
+
+        a. 阅读中书籍按阅读时间顺序排列
+
+        b. 未读书籍按书籍名称排列
+
+        c. 已读完书籍按阅读时间顺序排列
+
+    [4] 在书架中显示每本书的进度以及其他详细信息；
+
+    [5] 书架高度由书籍数量而定；
+
+    [6] 阅读时点击右下角的书架（或者按 Esc 键）图标返回书架界面。
+
+2. 界面语言默认为浏览器语言 —— 如果浏览器语言中包括中文，界面则用中文；反之则默认英文界面
+
+    [1] 当阅读书籍时界面语言为书籍语言以获得更好的用户体验
+
+3. 其他稳定性更新若干
+
+***注意：书架无法在火狐隐私浏览模式下启动，会被自动禁用。***
+
+<div float="left">
+    <img src="assets/4_bookshelf1.png" width="44%" />
+    <img src="assets/4_bookshelf2.png" width="44%" />
+    <img src="assets/4_bookshelf3.png" width="44%" />
+    <img src="assets/4_bookshelf4_zh.png" width="44%" />
+</div>
+
 ## 使用
 
 火狐插件：
 
-1. [易笺正常版 (v1.3)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
+1. [易笺正常版 (v1.4)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
 
 2. [易笺无界面版 (v1.2.3)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian_nogui/)
 
 Chrome插件：
 
-1. [易笺正常版 (v1.3)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
+1. [易笺正常版 (v1.4)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
 
 2. [易笺无界面版 (v1.2.3)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo?hl=en&authuser=0)
 
