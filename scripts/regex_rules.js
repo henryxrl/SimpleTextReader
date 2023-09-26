@@ -62,6 +62,10 @@ const regex_bracket_left_nospace = "[\\[［\\(（\\{《「『﹁﹃【]?";
 const regex_bracket_left = `\\s*${regex_bracket_left_nospace}\\s*`;
 const regex_bracket_right_nospace = "[\\]］\\)）\\}》」』﹂﹄】]?";
 const regex_bracket_right = `\\s*${regex_bracket_right_nospace}\\s*`;
+const regex_bracket_bookname_left_nospace = "[\\[［《「『﹁﹃【]?";
+const regex_bracket_bookname_left = `\\s*${regex_bracket_bookname_left_nospace}\\s*`;
+const regex_bracket_bookname_right_nospace = "[\\]］》」』﹂﹄】]?";
+const regex_bracket_bookname_right = `\\s*${regex_bracket_bookname_right_nospace}\\s*`;
 var rules_symbols = regex_weird_symbols;
 
 // 知轩藏书 patterns

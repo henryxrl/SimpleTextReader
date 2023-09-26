@@ -173,7 +173,7 @@ function safeREStr(str) {
 
 function getBookNameAndAuthor(str) {
     let current = str.trim();
-    const reg_filename_ad = new RegExp(`${regex_bracket_left_nospace}((文字精校版)|(校对版全本)|(精校版全本))${regex_bracket_right_nospace}`);
+    const reg_filename_ad = new RegExp(`${regex_bracket_bookname_left_nospace}((文字精校版)|(校对版全本)|(精校版全本))${regex_bracket_bookname_right_nospace}`);
     current = current.replace(reg_filename_ad, "");
 
     let bookInfo = {
@@ -186,8 +186,8 @@ function getBookNameAndAuthor(str) {
     const reg_bookname_ad1 = new RegExp(`^(\\s*(书名(${regex_colon})+)?)`);
     // const reg_bookname_ad2 = new RegExp(`${regex_bracket_left_nospace}${regex_bracket_right_nospace}`, 'g');
     // const reg_bookname_ad3 = new RegExp(`${regex_colon_nospace}`, 'g');
-    const reg_bookname_ad2 = new RegExp(`^${regex_bracket_left_nospace}`, '');
-    const reg_bookname_ad3 = new RegExp(`${regex_bracket_right_nospace}$`, '');
+    const reg_bookname_ad2 = new RegExp(`^${regex_bracket_bookname_left_nospace}`, '');
+    const reg_bookname_ad3 = new RegExp(`${regex_bracket_bookname_right_nospace}$`, '');
     const reg_bookname_ad4 = new RegExp(`^${regex_colon_nospace}`);
     
     // 增加书籍文件命名规则：书名.[作者].txt
