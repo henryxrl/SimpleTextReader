@@ -79,6 +79,9 @@
     --ui_titlePage: "";
     --ui_titlePage_zh: 扉页;
     --ui_titlePage_en: TITLE PAGE;
+    --ui_endPage: "";
+    --ui_endPage_zh: 终;
+    --ui_endPage_en: THE END;
 
     /* UI settings variables */
     --ui_settingMenuFontSize_zh: 1.2em;
@@ -253,6 +256,7 @@
 [data-lang="zh"] {
     --ui_title: var(--ui_title_zh);
     --ui_titlePage: var(--ui_titlePage_zh);
+    --ui_endPage: var(--ui_endPage_zh);
     --ui_dropZoneText: var(--ui_dropZoneText_zh);
     --fontFamily_title: var(--fontFamily_title_zh);
     --fontFamily_body: var(--fontFamily_body_zh);
@@ -291,6 +295,7 @@
 [data-lang="en"] {
     --ui_title: var(--ui_title_en);
     --ui_titlePage: var(--ui_titlePage_en);
+    --ui_endPage: var(--ui_endPage_en);
     --ui_dropZoneText: var(--ui_dropZoneText_en);
     --fontFamily_title: var(--fontFamily_title_en);
     --fontFamily_body: var(--fontFamily_body_en);

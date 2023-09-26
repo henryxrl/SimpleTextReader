@@ -46,10 +46,10 @@ function process_batch(str) {
 }
 
 // Process text content line by line
-function process(str, lineNumber, to_drop_cap) {
-    if (lineNumber < titlePageLineNumberOffset) {
+function process(str, lineNumber, totalLines, to_drop_cap) {
+    if (lineNumber < titlePageLineNumberOffset || lineNumber === totalLines-1) {
         current = str.trim();
-        if (current.slice(1, 3) === "h1") {
+        if (current.slice(1, 3) === "h1" || current.slice(1, 5) === "span") {
             let wrapper= document.createElement('div');
             wrapper.innerHTML = current;
             let tempElement = wrapper.firstElementChild;
@@ -166,10 +166,22 @@ function getTitle(str) {
     }
 }
 
+
+function safeREStr(str) {
+    return str.replaceAll(/(.)/g, "\\$1");
+}
+
 function getBookNameAndAuthor(str) {
     let current = str.trim();
     const reg_filename_ad = new RegExp(`${regex_bracket_left_nospace}((文字精校版)|(校对版全本)|(精校版全本))${regex_bracket_right_nospace}`);
     current = current.replace(reg_filename_ad, "");
+
+    let bookInfo = {
+        bookName: current,
+        author: "",
+        bookNameRE: current,
+        authorRE: "",
+    };
     
     const reg_bookname_ad1 = new RegExp(`^(\\s*(书名(${regex_colon})+)?)`);
     // const reg_bookname_ad2 = new RegExp(`${regex_bracket_left_nospace}${regex_bracket_right_nospace}`, 'g');
@@ -178,50 +190,48 @@ function getBookNameAndAuthor(str) {
     const reg_bookname_ad3 = new RegExp(`${regex_bracket_right_nospace}$`, '');
     const reg_bookname_ad4 = new RegExp(`^${regex_colon_nospace}`);
     
-    if (regex_isEastern.test(current)) {
+    // 增加书籍文件命名规则：书名.[作者].txt
+    let m = current.match(/^(?<name>.+)\.\[(?<author>.+)\]$/i);
+	if (m) {
+		bookInfo.bookName = m.groups["name"];
+		bookInfo.author = m.groups["author"];
+	} else if (regex_isEastern.test(current)) {
         let pos = current.toLowerCase().lastIndexOf("作者");
         if (pos !== -1) {
             // console.log(current.slice(0, pos).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim());
             // console.log(current.slice(pos + 2).replace(reg_bookname_ad4, "").replace(reg_bookname_ad3, "").replace(reg_bookname_ad2, "").trim());
-            return {
-                "bookName": current.slice(0, pos).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim(),
-                "author": current.slice(pos + 2).replace(reg_bookname_ad4, "").trim()
-            };
+            bookInfo.bookName = current.slice(0, pos).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim();
+            bookInfo.author = current.slice(pos + 2).replace(reg_bookname_ad4, "").trim();
         } else {
             let pos2 = current.toLowerCase().lastIndexOf(" by ");
             if (pos2 !== -1) {
                 // console.log(current.slice(0, pos2).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim());
                 // console.log(current.slice(pos2 + 4).replace(reg_bookname_ad4, "").replace(reg_bookname_ad3, "").replace(reg_bookname_ad2, "").trim());
-                return {
-                    "bookName": current.slice(0, pos2).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim(),
-                    "author": current.slice(pos2 + 4).replace(reg_bookname_ad4, "").trim()
-                };
+                bookInfo.bookName = current.slice(0, pos2).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim();
+                bookInfo.author = current.slice(pos2 + 4).replace(reg_bookname_ad4, "").trim();
             }
             // No complete book name and author info
             // Treat file name as book name and application name as author
-            return {
-                "bookName": current,
-                "author": ""
-            };
+            bookInfo.bookName = current;
+            bookInfo.author = ""
         }
     } else {
         let pos = current.toLowerCase().lastIndexOf(" by ");
         if (pos !== -1) {
             // console.log(current.slice(0, pos).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim());
             // console.log(ccurrent.slice(pos + 4).replace(reg_bookname_ad4, "").replace(reg_bookname_ad3, "").replace(reg_bookname_ad2, "").trim());
-            return {
-                "bookName": current.slice(0, pos).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim(),
-                "author": current.slice(pos + 4).replace(reg_bookname_ad4, "").trim()
-            };
+            bookInfo.bookName = current.slice(0, pos).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim();
+            bookInfo.author = current.slice(pos + 4).replace(reg_bookname_ad4, "").trim();
         } else {
             // No complete book name and author info
             // Treat file name as book name and application name as author
-            return {
-                "bookName": current,
-                "author": ""
-            };
+            bookInfo.bookName = current;
+            bookInfo.author = ""
         }
     }
+    bookInfo.bookNameRE = safeREStr(bookInfo.bookName);
+    bookInfo.authorRE = safeREStr(bookInfo.author);
+    return bookInfo;
 }
 
 function makeFootNote(str) {

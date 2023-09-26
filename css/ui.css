@@ -320,12 +320,19 @@ div.seal {
     margin: 6em 0 6em 0;
     overflow: hidden;
 }
-img#seal {
+img#seal_front {
     content: var(--seal_url);
     width: var(--seal_width);
     height: auto;
     left: calc(var(--seal_left) * (100% - var(--seal_width)));
     transform: rotate(var(--seal_rotate));
+    position: relative;
+}
+img#seal_end {
+    content: var(--seal_url);
+    width: calc(var(--seal_width) / 2);
+    height: auto;
+    left: calc(100% - var(--seal_width) / 2);
     position: relative;
 }
 

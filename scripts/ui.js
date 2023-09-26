@@ -294,16 +294,13 @@ async function handleSelectedFile(fileList) {
                 }
             }
             // console.log(allTitles);
-            // tocContainer.innerHTML = processTOC_bak();
-            processTOC();
-            // setMainContentUI();
 
             // Add title page
             style.seal_rotate_en = `${randomFloatFromInterval(-50, 80)}deg`;
             style.seal_left = randomFloatFromInterval(0, 1);
             fileContentChunks.unshift(`
                 <div id=line${(titlePageLineNumberOffset - 1)} class='prevent-select seal'>
-                    <img id='seal'></img>
+                    <img id='seal_front'></img>
                 </div>`
             );
             if (bookAndAuthor.author !== "") {
@@ -315,6 +312,18 @@ async function handleSelectedFile(fileList) {
 
             // Update the title of webpage
             setTitle(bookAndAuthor.bookName);
+
+            // Add end page
+            // let endPageNum = fileContentChunks.length + titlePageLineNumberOffset;
+            let endPageNum = fileContentChunks.length;
+            allTitles.push([style.ui_endPage, endPageNum]);
+            fileContentChunks.push(`
+                <div id=line${(endPageNum)} class='prevent-select seal'>
+                    <img id='seal_end'></img>
+                </div>`
+            );
+            processTOC();
+            // setMainContentUI();
 
             // Show content
             init = false;
@@ -374,7 +383,7 @@ function showCurrentPageContent() {
     // process line by line - fast
     for (var j = startIndex; j < endIndex && j < fileContentChunks.length; j++) {
         if (fileContentChunks[j].trim() !== '') {
-            let processedResult = process(fileContentChunks[j], j, to_drop_cap);
+            let processedResult = process(fileContentChunks[j], j, fileContentChunks.length, to_drop_cap);
             to_drop_cap = processedResult[1] === 'h' ? true : false;
             // contentContainer.innerHTML += processedResult[0];
             contentContainer.appendChild(processedResult[0]);
@@ -661,33 +670,43 @@ function GetScrollPositions(toSetHistory=true) {
     let curLineNumber = getTopLineNumber();
     // console.log("Current line: ", curLineNumber);
 
+    // If the last line is visible, set the last title as active
+    let isLastLineVisible = false;
+    if (isInViewport(document.getElementById(`line${fileContentChunks.length-1}`))) {
+        isLastLineVisible = true;
+    }
+
     if (!gotoTitle_Clicked) {
         // Remember the line number in history
         if (toSetHistory) {
             setHistory(filename, curLineNumber);
         }
 
-        // Get the title the detectected line belongs to
-        let curTitleID = 0;
-        for (var i = 0; i < allTitles.length; i++) {
-            if (i < allTitles.length - 1) {
-                if (curLineNumber >= allTitles[i][1] && curLineNumber < allTitles[i+1][1]) {
-                    // console.log("Current title: ", allTitles[i][0]);
-                    curTitleID = allTitles[i][1];
-                    break;
-                }
-            } else {
-                if (curLineNumber >= allTitles[i][1] && curLineNumber < fileContentChunks.length) {
-                    // console.log("Current title: ", allTitles[i][0]);
-                    curTitleID = allTitles[i][1];
-                    break;
+        if (!isLastLineVisible) {
+            // Get the title the detectected line belongs to
+            let curTitleID = 0;
+            for (var i = 0; i < allTitles.length; i++) {
+                if (i < allTitles.length - 1) {
+                    if (curLineNumber >= allTitles[i][1] && curLineNumber < allTitles[i+1][1]) {
+                        // console.log("Current title: ", allTitles[i][0]);
+                        curTitleID = allTitles[i][1];
+                        break;
+                    }
+                } else {
+                    if (curLineNumber >= allTitles[i][1] && curLineNumber < fileContentChunks.length) {
+                        // console.log("Current title: ", allTitles[i][0]);
+                        curTitleID = allTitles[i][1];
+                        break;
+                    }
                 }
             }
-        }
-        // console.log("Current title ID: ", curTitleID);
+            // console.log("Current title ID: ", curTitleID);
 
-        // Set the current title in the TOC as active
-        setTitleActive(curTitleID);
+            // Set the current title in the TOC as active
+            setTitleActive(curTitleID);
+        } else {
+            setTitleActive(fileContentChunks.length-1);
+        }
     }
 
     let pastPageLines = (currentPage - 1) * itemsPerPage;

@@ -4,11 +4,11 @@ Title extraction rules
 // const regex_number = "——\\-——一二两三四五六七八九十○零百千壹贰叁肆伍陆柒捌玖拾佰仟0-9０-９";
 const regex_number = "一二两三四五六七八九十○零百千壹贰叁肆伍陆柒捌玖拾佰仟0-9０-９";
 const regex_titles_chinese_pre_1 = "[第序终終卷【]\\s*([";
-const regex_titles_chinese_post_1 = "\\s/\\、、]*)\\s*[章节節回集卷部篇季】]";
+const regex_titles_chinese_post_1 = "\\s/\\.、]*)\\s*[章节節回集卷部篇季】]";
 const regex_titles_chinese_1 = regex_titles_chinese_pre_1 + regex_number + regex_titles_chinese_post_1;
 
-const regex_titles_chinese_pre_2 = "[序终終卷]\\s*([";
-const regex_titles_chinese_post_2 = "\\s/\\、、]*)\\s*";
+const regex_titles_chinese_pre_2 = "([序终終卷])\\s*([";
+const regex_titles_chinese_post_2 = "\\s/\\.、]*)\\s*";
 const regex_titles_chinese_2 = regex_titles_chinese_pre_2 + regex_number + regex_titles_chinese_post_2;
 
 const regex_other_titles = "内容简介|內容簡介|内容介绍|內容介紹|内容梗概|内容大意|小说简介|小說簡介|小说介绍|小說介紹|小说大意|小說大意|书籍简介|書籍簡介|书籍介绍|書籍介紹|书籍大意|書籍大意|作品简介|作品簡介|作品介绍|作品介紹|作品大意|作品相关|作者简介|作者簡介|作者介绍|作者介紹|作品相關|简介|簡介|介绍|介紹|大意|梗概|序|代序|自序|序言|序章|序幕|前言|楔子|引言|引子|终章|終章|大结局|结局|结尾|尾声|尾聲|后记|後記|完本|完本感言|完结|完结感言|出版后记|出版後記|谢辞|謝辭|番外|番外篇|编辑推荐|編輯推薦|书籍相关|書籍相關|作者声明|作者聲明|译者序|譯者序|外篇|附錄|附录|短篇|创作背景|創作背景|作品原文|白话译文|白話譯文|献言|獻言|编辑评价|編輯評價|作品简评|作品簡評|文案|外传|外傳|写作杂谈|寫作雜談|写作感言|寫作感言";
@@ -16,15 +16,15 @@ const regex_other_titles = "内容简介|內容簡介|内容介绍|內容介紹|
 const regex_titles_english = "chapter|part|appendix|appendices|preface|Foreword|Introduction|Prologue|Epigraph|Table of contents|Epilogue|Afterword|Conclusion|Glossary|Acknowledgments|Bibliography|Index|Errata|Colophon|Copyright";
 
 var rules_titles = [
-    `^(\\s*(正文\\s*)?[${regex_number.slice(0, -6)}]*\\s*$)|(\\s*([【])(正文\\s*)?[${regex_number.slice(0, -6)}]*([】])\\s*$)`,
-    `^(\\s*(正文\\s*)?${regex_titles_chinese_1}\\s*$)|^(\\s*([【])(正文\\s*)?${regex_titles_chinese_1}([】])\\s*$)`,
-    `^(\\s*(正文\\s*)?${regex_titles_chinese_1}\\s+.{1,50}$)|^(\\s*([【])(正文\\s*)?${regex_titles_chinese_1}\\s+.{1,50}([】])$)`,
-    `^(\\s*(正文\\s*)?${regex_titles_chinese_2}\\s*$)|^(\\s*([【])(正文\\s*)?${regex_titles_chinese_2}([】])\\s*$)`,
-    `^(\\s*(正文\\s*)?${regex_titles_chinese_2}\\s+.{1,50}$)|^(\\s*([【])(正文\\s*)?${regex_titles_chinese_2}\\s+.{1,50}([】])\\s*$)`,
-    `^(\\s*(${regex_other_titles})[:：]?\\s*$)|^(\\s*([【])(${regex_other_titles})([】])[:：]?\\s*$)`,
-    `^(\\s*(${regex_other_titles})\\s+.{0,50}?\\s*$)|(\\s*([【])(${regex_other_titles})\\s+.{0,50}?([】])\\s*$)`,
+    `^(\\s*(正文\\s*)?[${regex_number.slice(0, -6)}]*\\s*$)|(\\s*([\\[【])(正文\\s*)?[${regex_number.slice(0, -6)}]*([\\]】])\\s*$)`,
+    `^(\\s*(正文\\s*)?${regex_titles_chinese_1}\\s*$)|^(\\s*([\\[【])(正文\\s*)?${regex_titles_chinese_1}([\\]】])\\s*$)`,
+    `^(\\s*(正文\\s*)?${regex_titles_chinese_1}[:：\\s]\\s*.{1,50}$)|^(\\s*([\\[【])(正文\\s*)?${regex_titles_chinese_1}[:：\\s]\\s*.{1,50}([\\]】])$)`,
+    `^(\\s*(正文\\s*)?${regex_titles_chinese_2}\\s*$)|^(\\s*([\\[【])(正文\\s*)?${regex_titles_chinese_2}([\\]】])\\s*$)`,
+    `^(\\s*(正文\\s*)?${regex_titles_chinese_2}[:：\\s]\\s*.{1,50}$)|^(\\s*([\\[【])(正文\\s*)?${regex_titles_chinese_2}[:：\\s]\\s*.{1,50}([\\]】])\\s*$)`,
+    `^(\\s*(${regex_other_titles})[:：]?\\s*$)|^(\\s*([\\[【])(${regex_other_titles})([\\]】])[:：]?\\s*$)`,
+    `^(\\s*(${regex_other_titles})[:：\\s]\\s*.{0,50}?\\s*$)|(\\s*([\\[【])(${regex_other_titles})[:：\\s]\\s*.{0,50}?([\\]】])\\s*$)`,
     `^(\\s*(${regex_titles_english})\\s*$)`,
-    `^(\\s*(${regex_titles_english})\\s+.{0,50}?$)`
+    `^(\\s*(${regex_titles_english})[:\\s]?\\s*.{0,50}?$)`
 ]
 
 
@@ -69,11 +69,11 @@ var rules_zxcs = () => [
     `^(\\s*(${regex_http}www.zxcs.(me|info)${regex_http_end})\\s*)$`,
     "^(\\s*[=]+\\s*$)",
     `^(\\s*(更多精校小说尽在知轩藏书下载)\\s*${regex_colon}(${regex_http}(www.)?zxcs(txt|8)?.(com|me|info|zip)${regex_http_end})$)`,
-    `^(\\s*((书名)?\\s*${regex_colon}${regex_bracket_left}${bookAndAuthor.bookName}${regex_bracket_right})\\s*$)`,
-    `^(\\s*((作者)?\\s*${regex_colon}${bookAndAuthor.author})\\s*$)`,
-    `^(\\s*((书名)?\\s*${regex_colon}${regex_bracket_left}${bookAndAuthor.bookName}${regex_bracket_right})\\s*((作者)?\\s*${regex_colon}${bookAndAuthor.author})\\s*$)`,
-    `^(\\s*((书名)?\\s*${regex_colon}${regex_bracket_left}${bookAndAuthor.bookName}${regex_bracket_right})\\s*([\\(（)]?)((文字精校版)|(校对版全本)|(精校版全本))([)）]?)\\s*((作者)?\\s*${regex_colon}${bookAndAuthor.author})\\s*$)`,
-    `^(\\s*((作者)?\\s*${regex_colon}${bookAndAuthor.author})\\s*((书名)?\\s*${regex_colon}${regex_bracket_left}${bookAndAuthor.bookName}${regex_bracket_right})\\s*$)`,
+    `^(\\s*((书名)?\\s*${regex_colon}${regex_bracket_left}${bookAndAuthor.bookNameRE}${regex_bracket_right})\\s*$)`,
+    `^(\\s*((作者)?\\s*${regex_colon}${bookAndAuthor.authorRE})\\s*$)`,
+    `^(\\s*((书名)?\\s*${regex_colon}${regex_bracket_left}${bookAndAuthor.bookNameRE}${regex_bracket_right})\\s*((作者)?\\s*${regex_colon}${bookAndAuthor.authorRE})\\s*$)`,
+    `^(\\s*((书名)?\\s*${regex_colon}${regex_bracket_left}${bookAndAuthor.bookNameRE}${regex_bracket_right})\\s*([\\(（)]?)((文字精校版)|(校对版全本)|(精校版全本))([)）]?)\\s*((作者)?\\s*${regex_colon}${bookAndAuthor.authorRE})\\s*$)`,
+    `^(\\s*((作者)?\\s*${regex_colon}${bookAndAuthor.authorRE})\\s*((书名)?\\s*${regex_colon}${regex_bracket_left}${bookAndAuthor.bookNameRE}${regex_bracket_right})\\s*$)`,
     `^(\\s*(本书由本站书友从网络收集整理并上传分享)${regex_punc}(版权归原作者和出版社所有)${regex_punc}\\s*$)`,
     `^(\\s*${regex_bracket_left}(4020电子书)${regex_bracket_right}(${regex_http}(www.)?4020book.com${regex_http_end})${regex_punc}\\s*$)`
 ]
@@ -91,7 +91,7 @@ var rules_sb = () => [
     `^(\\s*(版权归原作者所有)${regex_punc}(请勿用于一切商业用途)${regex_punc}\\s*$)`,
     `^(\\s*(版权归原作者所有)${regex_punc}(文本仅供试读)${regex_punc}(请勿用于一切商业用途)${regex_punc}\\s*$)`,
     `^(\\s*(${regex_http}bbs.dospy.com${regex_http_end})\\s*)$`,
-    `^(\\s*(\\[)?${bookAndAuthor.bookName}\\s*(\\/)?\\s*${bookAndAuthor.author}\\s*(著)?\\s*(\\])?\\s*$)`,
+    `^(\\s*(\\[)?${bookAndAuthor.bookNameRE}\\s*(\\/)?\\s*${bookAndAuthor.authorRE}\\s*(著)?\\s*(\\])?\\s*$)`,
     "^(\\s*[-※★☆◎…━┏┓┗┛]+\\s*$)",
     `^(\\s*(本电子书由)${regex_someStrings}(整理制作)${regex_punc}$)`,
     `^(\\s*(本书由)${regex_someStrings}(整理制作)${regex_punc}$)`,
@@ -123,7 +123,7 @@ var rules_99 = () => [
 
 // 阡陌居 patterns
 var rules_qmj = () => [
-    `^(\\s*${regex_bracket_left}${bookAndAuthor.bookName}${regex_bracket_right}\\s*(由)\\s*(阡陌居)\\s*(会员)${regex_someStrings}(校对排版)${regex_punc}$)`,
+    `^(\\s*${regex_bracket_left}${bookAndAuthor.bookNameRE}${regex_bracket_right}\\s*(由)\\s*(阡陌居)\\s*(会员)${regex_someStrings}(校对排版)${regex_punc}$)`,
     `^(\\s*(更多校对精校书籍请访问)${regex_colon}$)`,
     `^(\\s*(阡陌居)${regex_colon}(${regex_http}www.1000qm.com${regex_http_end})\\s*$)`
 ]
