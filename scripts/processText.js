@@ -166,7 +166,6 @@ function getTitle(str) {
     }
 }
 
-
 function safeREStr(str) {
     return str.replaceAll(/(.)/g, "\\$1");
 }
@@ -200,15 +199,23 @@ function getBookNameAndAuthor(str) {
         if (pos !== -1) {
             // console.log(current.slice(0, pos).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim());
             // console.log(current.slice(pos + 2).replace(reg_bookname_ad4, "").replace(reg_bookname_ad3, "").replace(reg_bookname_ad2, "").trim());
-            bookInfo.bookName = current.slice(0, pos).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim();
-            bookInfo.author = current.slice(pos + 2).replace(reg_bookname_ad4, "").trim();
+            const bookName = current.slice(0, pos).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim();
+            const author = current.slice(pos + 2).replace(reg_bookname_ad4, "").trim();
+
+            // Remove imbalanced brackets and their content
+            bookInfo.bookName = ignoreContentFromUnbalancedBracketIndex(bookName);
+            bookInfo.author = ignoreContentFromUnbalancedBracketIndex(author);
         } else {
             let pos2 = current.toLowerCase().lastIndexOf(" by ");
             if (pos2 !== -1) {
                 // console.log(current.slice(0, pos2).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim());
                 // console.log(current.slice(pos2 + 4).replace(reg_bookname_ad4, "").replace(reg_bookname_ad3, "").replace(reg_bookname_ad2, "").trim());
-                bookInfo.bookName = current.slice(0, pos2).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim();
-                bookInfo.author = current.slice(pos2 + 4).replace(reg_bookname_ad4, "").trim();
+                const bookName = current.slice(0, pos2).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim();
+                const author = current.slice(pos2 + 4).replace(reg_bookname_ad4, "").trim();
+
+                // Remove imbalanced brackets and their content
+                bookInfo.bookName = ignoreContentFromUnbalancedBracketIndex(bookName);
+                bookInfo.author = ignoreContentFromUnbalancedBracketIndex(author);
             }
             // No complete book name and author info
             // Treat file name as book name and application name as author
@@ -220,8 +227,12 @@ function getBookNameAndAuthor(str) {
         if (pos !== -1) {
             // console.log(current.slice(0, pos).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim());
             // console.log(ccurrent.slice(pos + 4).replace(reg_bookname_ad4, "").replace(reg_bookname_ad3, "").replace(reg_bookname_ad2, "").trim());
-            bookInfo.bookName = current.slice(0, pos).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim();
-            bookInfo.author = current.slice(pos + 4).replace(reg_bookname_ad4, "").trim();
+            const bookName = current.slice(0, pos).replace(reg_bookname_ad1, "").replace(reg_bookname_ad2, "").replace(reg_bookname_ad3, "").trim();
+            const author = current.slice(pos + 4).replace(reg_bookname_ad4, "").trim();
+
+            // Remove imbalanced brackets and their content
+            bookInfo.bookName = ignoreContentFromUnbalancedBracketIndex(bookName);
+            bookInfo.author = ignoreContentFromUnbalancedBracketIndex(author);
         } else {
             // No complete book name and author info
             // Treat file name as book name and application name as author

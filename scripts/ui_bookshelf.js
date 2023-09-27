@@ -20,7 +20,6 @@ class BookshelfDB {
             req.onerror = function (evt) {
                 console.log("openDB.onError");
                 bookshelf.disable();
-                console.log(bookshelf.enabled);
                 reject(evt.target.error);
             };
         });
@@ -225,11 +224,36 @@ var bookshelf = {
                 bookElm.find(".progress").html(read_text);
 
                 // add a badge to the book cover
+                // let badge = `<div class="bookFinished_badge">
+                //     <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 800 800" style="enable-background:new 0 0 800 800;">
+                //         <style type="text/css">
+                //             .svg-st0{fill:#FFC54D;}
+                //             .svg-st1{fill:#EDB24A;}
+                //             .svg-st2{fill:#EF4D4D;}
+                //             .svg-st3{fill:#EF4D4D;}
+                //             .svg-st4{fill:#FFF0BA;}
+                //         </style>
+                //         <circle class="svg-st0" cx="400" cy="558" r="155.3"/>
+                //         <circle class="svg-st1" cx="400" cy="558" r="124.7"/>
+                //         <path class="svg-st0" d="M400,362.7c-14.7,0-26.7,12-26.7,26.7c0,14.7,12,26.7,26.7,26.7c14.7,0,26.7-12,26.7-26.7 C426.7,374.7,414.7,362.7,400,362.7z M400,407.3c-10,0-17.3-8-17.3-17.3s8-17.3,17.3-17.3s17.3,8,17.3,17.3S410,407.3,400,407.3z"/>
+                //         <path class="svg-st2" d="M548,104.7v208c0,6-4,12-10.7,15.3L458,365.3l-46.7,21.3c-6.7,3.3-15.3,3.3-22,0l-46-22L264,327.3 c-6.7-3.3-10.7-9.3-10.7-15.3V104.7c0-10,10-18,22-18h251.3C538,86.7,548,94.7,548,104.7z"/>
+                //         <path class="svg-st3" d="M457.3,86.7v278.7l-46,21.3c-6.7,3.3-15.3,3.3-22,0l-46-22v-278H457.3z"/>
+                //         <path class="svg-st4" d="M406.9,467.7l22.7,45.3c1.3,2,3.3,4,5.3,4l50,7.3c6,1.3,8.7,8,4,12.7l-36,36c-1.3,1.3-2.7,4-2,6.7l8.7,50 c1.3,6-5.3,10.7-10.7,7.3l-44.7-23.3c-2-1.3-4.7-1.3-6.7,0L352.2,637c-5.3,2.7-12-1.3-10.7-7.3l8.7-50c0.7-2-0.7-4.7-2-6.7l-36-35.3 c-4-4-2-12,4-12.7l50-7.3c2-0.7,4-1.3,5.3-4l22.7-45.3C396.2,462.3,404.2,462.3,406.9,467.7z"/>
+                //         </svg>
+                // </div>`;
                 let badge = `<div class="bookFinished_badge">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
-                            <path d="M0 48V487.7C0 501.1 10.9 512 24.3 512c5 0 9.9-1.5 14-4.4L192 400 345.7 507.6c4.1 2.9 9 4.4 14 4.4c13.4 0 24.3-10.9 24.3-24.3V48c0-26.5-21.5-48-48-48H48C21.5 0 0 21.5 0 48z" />
-                        </svg>
-                    </div>`;
+                    <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                    viewBox="0 0 800 800" style="enable-background:new 0 0 800 800;" xml:space="preserve">
+                    <style type="text/css">
+                    .svg-st0{fill:#FFC54D;}
+                    .svg-st1{fill:#EF4D4D;}
+                    .svg-st2{fill:#EF4D4D;}
+                    </style>
+                    <path class="svg-st0" d="M574.7,568.7l-37.3-37.3c-3.3-3.3-5.4-12.7-5.4-12.7V466c0,0-7.9-17.3-17.2-18H462c-4.7,0.7-9.3-1.3-12.7-4.6 L418,412c12.7-6.7,21.3-20,21.3-35.3c0-22-18-39.3-39.3-39.3s-39.3,18-39.3,39.3c0,15.3,8.7,28.7,21.3,35.3l-31.3,31.3 c-3.3,3.3-12.7,5.7-12.7,5.7h-52.7c-9.5,0-17.3,7.8-17.3,17.3v52.5c0,4.7-2,9.3-5.3,12.7l-37.2,37.2c-6.8,6.8-6.8,17.9,0,24.7 l37.2,37.2c3.3,3.3,5.3,8,5.3,12.7v52.5c0,9.5,7.8,17.3,17.3,17.3H338c0,0,9.3,2.3,12.7,5.6L388,756c6.7,6.7,18,6.7,24.7,0 l37.3-37.3c3.3-3.3,8-5.3,12.7-4.7h52.7c9.3-0.6,17.3-8.6,17.6-17.9v-52.7c-0.3-4.7,1.7-9.3,5-12.7l37.3-37.3 C581.3,586.7,581.3,576,574.7,568.7z M400,354c13.3,0,23.3,10.7,23.3,23.3c0,13.3-10.7,23.3-23.3,23.3c-12.7,0-23.3-10.7-23.3-23.3 S386.7,354,400,354z"/>
+                    <path class="svg-st1" d="M547,98v208c0,6-4,12-10.7,15.3l-79.4,37.3l-46.7,21.3c-6.7,3.3-15.3,3.3-22,0l-46-22l-79.4-37.3 c-6.7-3.3-10.7-9.3-10.7-15.3V98c0-10,10-18,22-18h251.7C537,80,547,88,547,98z"/>
+                    <path class="svg-st2" d="M457,80v278.7L411,380c-6.7,3.3-15.3,3.3-22,0l-46-22V80L457,80L457,80z"/>
+                    </svg>
+                </div>`;
                 bookElm.find(".coverContainer").append(badge);
             } else {
                 bookElm.find(".progress").html(progress).attr("title", progress);
@@ -241,6 +265,18 @@ var bookshelf = {
             // add styling to the text of not read
             let notRead_text = `<span class="notRead_text">${style.ui_bookNotRead}</span>`;
             bookElm.find(".progress").html(notRead_text);
+
+            // add a badge to the book cover
+            let badge = `<div class="bookNotRead_badge">
+                <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 200 200" style="enable-background:new 0 0 200 200;">
+                <style type="text/css">.svg-shadow{fill:#CC3432;}.svg-ribbon{fill:#EF4D4D;}</style>
+                <g id="SVGRepo_bgCarrier"></g>
+                <g id="SVGRepo_tracerCarrier"></g>
+                <path class="svg-shadow" d="M199.3,90.5L109.8,0.8c-0.1,0-7.5,4.1-7.6,4.2h8.8l84,84.2V98L199.3,90.5z"/>
+                <polygon class="svg-ribbon" points="156,1 109.4,1 199,90.7 199,44.1 "/>
+                </svg>
+            </div>`;
+            bookElm.find(".coverContainer").append(badge);
         }
     },
 
@@ -250,16 +286,20 @@ var bookshelf = {
         let canvasHeight = getSizePrecise(style.ui_bookCoverHeight);
         let currentBookNameAndAuthor = getBookNameAndAuthor(bookInfo.name.replace(/(.txt)$/i, ''));
         let book = $(`<div class="book" data-filename="${bookInfo.name}">
-            <div class="delete-btn-wrapper">
-                <span class="delete-btn" title="${style.ui_removeBook}">&times;</span>
-            </div>
             <div class="coverContainer">
                 <span class="coverText">${bookInfo.name}</span>
                 <canvas class="coverCanvas" width="${canvasWidth}" height="${canvasHeight}"></canvas>
             </div>
             <div class="infoContainer">
                 <div class="progress"></div>
-                <div class="bookInfoMenuBtn" id="bookInfoMenuBtn-${idx}">
+                <div class="delete-btn-wrapper">
+                    <span class="delete-btn" title="${style.ui_removeBook}">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 7V18C6 19.1046 6.89543 20 8 20H16C17.1046 20 18 19.1046 18 18V7M6 7H5M6 7H8M18 7H19M18 7H16M10 11V16M14 11V16M8 7V5C8 3.89543 8.89543 3 10 3H14C15.1046 3 16 3.89543 16 5V7M8 7H16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    </span>
+                </div>
+                <div class="bookInfoMenuBtn" id="bookInfoMenuBtn-${idx}" title="${style.ui_bookInfo}">
                     <input id="dot-menu-${idx}" type="checkbox" class="dot-menu__checkbox">
                     <label for="dot-menu-${idx}" class="dot-menu__label"><span></span></label>
                 </div>
@@ -296,11 +336,11 @@ var bookshelf = {
 
         // add mouseover effect
         book.find(".coverContainer").mouseover(function() {
-            book.find(".delete-btn-wrapper").css("visibility", "visible");
+            book.find(".delete-btn-wrapper").css("opacity", "1");
             $(this).css('box-shadow', 'var(--ui_bookshadow_hover)');
         }).mouseout(function(e) {
             if ((e.offsetX <= 0 || e.offsetX >= $(this).width()) || (e.offsetY <= $(this)[0].offsetTop || e.offsetY >= $(this).height())) {
-                book.find(".delete-btn-wrapper").css("visibility", "hidden");
+                book.find(".delete-btn-wrapper").css("opacity", "0");
                 let tempBookAuthor = getBookNameAndAuthor(bookInfo.name.replace(/(.txt)$/i, ''));
                 if (tempBookAuthor.author === "") {
                     $(this).css('box-shadow', 'var(--ui_bookshadow_noAuthor)');
@@ -309,18 +349,21 @@ var bookshelf = {
                 }
             }
         });
-        book.find(".delete-btn-wrapper").mouseover(function() {
-            book.find(".delete-btn-wrapper").css("visibility", "visible");
-            book.find(".coverContainer").css('box-shadow', 'var(--ui_bookshadow_hover)');
+        book.find(".infoContainer").mouseover(function() {
+            book.find(".delete-btn-wrapper").css("opacity", "1");
         }).mouseout(function() {
-            book.find(".delete-btn-wrapper").css("visibility", "hidden");
-            let tempBookAuthor = getBookNameAndAuthor(bookInfo.name.replace(/(.txt)$/i, ''));
-            if (tempBookAuthor.author === "") {
-                book.find(".coverContainer").css('box-shadow', 'var(--ui_bookshadow_noAuthor)');
-            } else {
-                book.find(".coverContainer").css('box-shadow', 'var(--ui_bookshadow)');
-            }
+            book.find(".delete-btn-wrapper").css("opacity", "0");
         });
+        // book.find(".delete-btn-wrapper").mouseover(function() {
+        //     book.find(".coverContainer").css('box-shadow', 'var(--ui_bookshadow_hover)');
+        // }).mouseout(function() {
+        //     let tempBookAuthor = getBookNameAndAuthor(bookInfo.name.replace(/(.txt)$/i, ''));
+        //     if (tempBookAuthor.author === "") {
+        //         book.find(".coverContainer").css('box-shadow', 'var(--ui_bookshadow_noAuthor)');
+        //     } else {
+        //         book.find(".coverContainer").css('box-shadow', 'var(--ui_bookshadow)');
+        //     }
+        // });
         
         // add click event
         book.find(".coverContainer").click((evt) => {
@@ -412,7 +455,7 @@ var bookshelf = {
 
             // reset all book cover art when mouseover the bookInfoMenu
             book.find(".bookInfoMenu").mouseover(function() {
-                $(".delete-btn-wrapper").css("visibility", "hidden");
+                // $(".delete-btn-wrapper").css("visibility", "hidden");
                 $(".coverContainer").css('box-shadow', 'var(--ui_bookshadow)');
             });
         });

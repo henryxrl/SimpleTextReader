@@ -126,6 +126,9 @@
     --ui_removeBook: "";
     --ui_removeBook_zh: 删除书籍;
     --ui_removeBook_en: Remove Book;
+    --ui_bookInfo: "";
+    --ui_bookInfo_zh: 书籍信息;
+    --ui_bookInfo_en: Book Info;
     --ui_bookNotRead: "";
     --ui_bookNotRead_zh: 未读;
     --ui_bookNotRead_en: Unread;
@@ -282,6 +285,7 @@
     --ui_settingMenuFontSize: var(--ui_settingMenuFontSize_zh);
     --ui_settingMenuWidth: var(--ui_settingMenuWidth_zh);
     --ui_removeBook: var(--ui_removeBook_zh);
+    --ui_bookInfo: var(--ui_bookInfo_zh);
     --ui_bookFinished: var(--ui_bookFinished_zh);
     --ui_bookNotRead: var(--ui_bookNotRead_zh);
     --ui_bookInfo_bookname: var(--ui_bookInfo_bookname_zh);
@@ -321,6 +325,7 @@
     --ui_settingMenuFontSize: var(--ui_settingMenuFontSize_en);
     --ui_settingMenuWidth: var(--ui_settingMenuWidth_en);
     --ui_removeBook: var(--ui_removeBook_en);
+    --ui_bookInfo: var(--ui_bookInfo_en);
     --ui_bookFinished: var(--ui_bookFinished_en);
     --ui_bookNotRead: var(--ui_bookNotRead_en);
     --ui_bookInfo_bookname: var(--ui_bookInfo_bookname_en);

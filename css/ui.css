@@ -690,34 +690,9 @@ input[type="color"]:not(:hover) {
     margin: 2.5vw;
     overflow: visible;
 }
-.bookshelf .book .delete-btn-wrapper {
-    font-size: 0.9rem;
-    font-family: var(--fontFamily_ui);
-    text-align: right;
-    background-color: rgba(255, 255, 255, 0.1);
-    position: absolute;
-    width: var(--ui_bookCoverWidth);
-    height: 2rem;
-    visibility: hidden;
-    z-index: 5;
-}
 /* .bookshelf .book:hover > .infoContainer .dot-menu__label {
     visibility: visible;
 } */
-.bookshelf .book .delete-btn {
-    font-family: var(--fontFamily_ui);
-    position:absolute;
-    right:0;
-    top:0;
-    display: block;
-    float: right;
-    cursor: pointer;
-    font-size: 1.5rem;
-    line-height: 1.2rem;
-    padding: 6px 8px;
-    z-index: 2;
-    color: var(--bgColor);
-}
 .bookshelf .book .coverContainer {
     position: relative;
     width: var(--ui_bookCoverWidth);
@@ -783,6 +758,7 @@ input[type="color"]:not(:hover) {
     text-indent: 0em;
     position: absolute;
     right: 0px;
+    top: -1px;
 }
 .bookshelf .book .bookInfoMenuBtn .dot-menu__label::before, .bookshelf .book .dot-menu__label::after {
     content: "";
@@ -908,33 +884,24 @@ input[type="color"]:not(:hover) {
     display: flex;
     align-items: end;
 }
+.bookshelf .book .infoContainer:hover > .delete-btn-wrapper {
+    /* visibility: visible; */
+    opacity: 1;
+    transition: 0.2s;
+}
 .bookshelf .book .coverContainer .bookFinished_badge {
+    top: -7px;
+    right: -7px;
     position: absolute;
-    left: 0.8em;
-    top: 0;
     z-index: 1;
-    height: 2em;
-    width: 2em;
 }
 .bookshelf .book .coverContainer .bookFinished_badge svg {
-    height: 1.6em;
-    width: 1.6em;
-    fill: #eb620d;
+    height: 2.75em;
+    width: 2.75em;
+    /* fill: #eb620d; */
     filter: drop-shadow(1px 1px 2px rgb(0 0 0 / 0.4));
-    /* fill: var(--mainColor_active);
-    filter: invert(1) drop-shadow(1px 1px 2px rgb(0 0 0 / 0.4)); */
-}
-.bookshelf .book .infoContainer .progress .notRead_text {
-    background: var(--mainColor_inactive);
-    color: var(--bgColor);
-    border-radius: 3px;
-    padding: 0 6px;
 }
 .bookshelf .book .infoContainer .progress .read_text {
-    /* background: #eb620d; */
-    /* color: var(--bgColor); */
-    /* border-radius: 3px; */
-    /* padding: 0 6px; */
     position: relative;
     bottom: -4px;
 }
@@ -944,4 +911,53 @@ input[type="color"]:not(:hover) {
     padding-right: 2px;
     width: 16px;
     height: 20px;
+}
+.bookshelf .book .coverContainer .bookNotRead_badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    z-index: 1;
+}
+.bookshelf .book .coverContainer .bookNotRead_badge svg {
+    height: 5em;
+    width: 5em;
+    filter: drop-shadow(1px 1px 2px rgb(0 0 0 / 0.4));
+}
+.bookshelf .book .infoContainer .progress .notRead_text {
+    background: var(--mainColor_inactive);
+    color: var(--bgColor);
+    border-radius: 3px;
+    padding: 0 6px;
+}
+.bookshelf .book .delete-btn-wrapper {
+    font-size: 0.9rem;
+    font-family: var(--fontFamily_ui);
+    text-align: right;
+    position: absolute;
+    right: 28px;
+    top: 12px;
+    z-index: 5;
+    /* visibility: hidden; */
+    opacity: 0;
+    transition: 0.2s;
+}
+.bookshelf .book .delete-btn {
+    font-family: var(--fontFamily_ui);
+    position:relative;
+    display: block;
+    float: right;
+    cursor: pointer;
+    font-size: 1.5rem;
+    /* padding: 6px 8px; */
+    z-index: 2;
+    color: var(--fontInfoColor);
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.bookshelf .book .delete-btn svg {
+    /* fill: var(--fontInfoColor); */
+    stroke: var(--fontInfoColor);
+    height: 1.2rem;
+    width: 1.2rem;
 }

@@ -458,3 +458,49 @@ function formatBytes(pBytes, pUnits = 'si') {
         return result.toFixed(2) + ' ' + abbreviations[i];
     }
 }
+
+// Credit: https://stackoverflow.com/questions/14334740/missing-parentheses-with-regex
+function checkBalancedBrackets(str) {
+    var s;
+    str = str.replace( /[^{}[\]()（）《》「」『』﹁﹂﹃﹄【】]/g, '' );
+    while ( s != str ) { 
+        s = str;
+        str = str.replace( /{}|\[]|\(\)|（）|《》|「」|『』|﹁﹂|﹃﹄|【】/g, '' )
+    }
+    return [!str, str];
+}
+
+// Credit: https://stackoverflow.com/questions/30771362/check-if-string-contains-the-substrings-sequence-of-characters-in-order-but-no
+function getFirstUnbalancedBracketIndex(orig_str, unbalanced_brackets_str) {
+    // Keep track of our position in the orig_str.
+    let index = 0;
+    let indices = [];
+
+    // Iterate through all of the characters in the unbalanced_brackets_str.
+    for (const character of unbalanced_brackets_str) {
+        // Find the current character starting from the last character we stopped on.
+        index = orig_str.indexOf(character, index+1);
+        indices.push(index);
+        // If the method returned -1, the character was not found, so the result is false.
+        if (index === -1) {
+            return -1;
+        }
+    }
+
+    // If we reach this point, that means all characters were found, so the result is true.
+    return indices[0];
+}
+
+function ignoreContentFromUnbalancedBracketIndex(orig_str) {
+    const res = checkBalancedBrackets(orig_str);
+    if (!res[0]) {
+        const idx = getFirstUnbalancedBracketIndex(orig_str, res[1]);
+        if (idx !== -1) {
+            return orig_str.slice(0, idx);
+        } else {
+            return orig_str;
+        }
+    } else {
+        return orig_str;
+    }
+}
