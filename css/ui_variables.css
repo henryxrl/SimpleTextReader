@@ -193,17 +193,16 @@
 
     /* Color variables */
     --logoColor1: #314874;
-    --logoColor2: #32323b;
-    --logoColor3: #fdf3df;
+    --logoColor2: #32323B;
+    --logoColor3: #F4EAD7;
+    /* --mainColor_active: #2C5268;
+    --mainColor_inactive: #427B9C; */
     --mainColor_active: #314874;
-    --mainColor_inactive: #6096bb;
+    --mainColor_inactive: #4A6DAE;
 
-    /* --mainColor_inactive_filter: invert(52%) sepia(93%) saturate(187%) hue-rotate(166deg) brightness(92%) contrast(82%); */
-    /* --mainColor_active_filter: invert(22%) sepia(47%) saturate(1327%) hue-rotate(180deg) brightness(91%) contrast(80%); */
     --toGray_filter: invert(53%) sepia(0%) saturate(76%) hue-rotate(158deg) brightness(95%) contrast(82%);
 
-    /* --bgColor: #fdf5e8; */
-    --bgColor: #fdf3df;
+    --bgColor: #F4EAD7;
     --borderColor: lightgray;
     --shadowColor: rgba(0, 0, 0, 0.12);
     --paginationFontColor: black;
@@ -228,25 +227,21 @@
     --darkMode_color: var(--mainColor_inactive);
     --lightMode_color: var(--mainColor_active);
 
-    --darkMode_mainColor_active: #6096bb;
-    --darkMode_mainColor_inactive: #314874;
-    /* --darkMode_mainColor_inactive_filter: invert(22%) sepia(47%) saturate(1327%) hue-rotate(180deg) brightness(91%) contrast(80%); */
-    /* --darkMode_mainColor_active_filter: invert(52%) sepia(93%) saturate(187%) hue-rotate(166deg) brightness(92%) contrast(82%); */
-    --darkMode_bgColor: #0d1018;
+    --darkMode_mainColor_active: #6096BB;
+    --darkMode_mainColor_inactive: #2A4D63;
+    --darkMode_bgColor: #121621;
     --darkMode_borderColor: gray;
     --darkMode_shadowColor: rgba(0, 0, 0, 0.12);
     --darkMode_paginationFontColor: lightgray;
     --darkMode_paginationActiveFontColor: lightgray;
     --darkMode_fontInfoColor: gray;
-    --darkMode_fontColor: #f2e6ce;
+    --darkMode_fontColor: #FFE9BD;
 }
 
 [data-theme="dark"] {
     --ui_Mode: dark;
     --mainColor_active: var(--darkMode_mainColor_active);
     --mainColor_inactive: var(--darkMode_mainColor_inactive);
-    /* --mainColor_inactive_filter: var(--darkMode_mainColor_inactive_filter); */
-    /* --mainColor_active_filter: var(--darkMode_mainColor_active_filter); */
     --bgColor: var(--darkMode_bgColor);
     --borderColor: var(--darkMode_borderColor);
     --shadowColor: var(--darkMode_shadowColor);

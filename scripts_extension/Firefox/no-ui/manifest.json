@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "易笺（无界面版）",
     "description": "txt（小说）阅读器：支持本地和云端的所有txt文件，自动排版，自动分页，自动生成目录，记录阅读进度。",
-    "version": "1.2.3",
+    "version": "1.2.4",
     "permissions": [],
     "content_scripts": [
         {
@@ -57,6 +57,7 @@
     "homepage_url": "https://github.com/henryxrl/SimpleTextReader",
     "icons": {
         "24": "images/icon24.png",
-        "64": "images/icon64.png"
+        "64": "images/icon64.png",
+        "128": "images/icon128.png"
     }
 }

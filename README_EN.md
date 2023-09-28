@@ -2,7 +2,6 @@
 
 English / [中文](README.md)
 
-<!-- ![Main UI](assets/1_ui.png) -->
 ![Main UI](assets/4_bookshelf1.png)
 
 SimpleTextReader is the online text reader that simulates the result of SimpleEpub2, providing a web-based reading experience.
@@ -104,21 +103,27 @@ Support for customized settings such as font size, line height, theme colors and
 
 2. Updated regex for book title / author extraction by eliminating content enclosed in unbalanced brackets.
 
+#### v1.4.2
+
+1. New icon
+
+2. Updated theme colors
+
 ## Usage
 
 ### Download from online stores
 
 Firefox:
 
-1. [Regular (v1.4.1)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
+1. [Regular (v1.4.2)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
 
-2. [No-UI (v1.2.3)](https://addons.mozilla.org/en-US/firefox/addon/yijian_nogui/)
+2. [No-UI (v1.2.4)](https://addons.mozilla.org/en-US/firefox/addon/yijian_nogui/)
 
 Chrome:
 
-1. [Regular (v1.4.1)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
+1. [Regular (v1.4.2)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
 
-2. [No-UI (v1.2.3)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo?hl=en&authuser=0)
+2. [No-UI (v1.2.4)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo?hl=en&authuser=0)
 
 ---
 

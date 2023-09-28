@@ -149,7 +149,6 @@ function handleMultipleFiles(fileList) {
             }
         }
     } else if (files.length === 1) {
-        console.log(files);
         handleSelectedFile(files);
         setBookLastReadTimestamp(files[0].name);
     } else {
