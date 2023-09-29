@@ -18,9 +18,9 @@ const regex_titles_english = "chapter|part|appendix|appendices|preface|Foreword|
 var rules_titles = [
     `^(\\s*(正文\\s*)?[${regex_number.slice(0, -6)}]*\\s*$)|(\\s*([\\[【])(正文\\s*)?[${regex_number.slice(0, -6)}]*([\\]】])\\s*$)`,
     `^(\\s*(正文\\s*)?${regex_titles_chinese_1}\\s*$)|^(\\s*([\\[【])(正文\\s*)?${regex_titles_chinese_1}([\\]】])\\s*$)`,
-    `^(\\s*(正文\\s*)?${regex_titles_chinese_1}[:：\\s]\\s*.{1,50}$)|^(\\s*([\\[【])(正文\\s*)?${regex_titles_chinese_1}[:：\\s]\\s*.{1,50}([\\]】])$)`,
+    `^(\\s*(正文\\s*)?${regex_titles_chinese_1}[:：\\s]\\s*.{1,20}$)|^(\\s*([\\[【])(正文\\s*)?${regex_titles_chinese_1}[:：\\s]\\s*.{1,20}([\\]】])$)`,
     `^(\\s*(正文\\s*)?${regex_titles_chinese_2}\\s*$)|^(\\s*([\\[【])(正文\\s*)?${regex_titles_chinese_2}([\\]】])\\s*$)`,
-    `^(\\s*(正文\\s*)?${regex_titles_chinese_2}[:：\\s]\\s*.{1,50}$)|^(\\s*([\\[【])(正文\\s*)?${regex_titles_chinese_2}[:：\\s]\\s*.{1,50}([\\]】])\\s*$)`,
+    `^(\\s*(正文\\s*)?${regex_titles_chinese_2}[:：\\s]\\s*.{1,20}$)|^(\\s*([\\[【])(正文\\s*)?${regex_titles_chinese_2}[:：\\s]\\s*.{1,20}([\\]】])\\s*$)`,
     `^(\\s*(${regex_other_titles})[:：]?\\s*$)|^(\\s*([\\[【])(${regex_other_titles})([\\]】])[:：]?\\s*$)`,
     `^(\\s*(${regex_other_titles})[:：\\s]\\s*.{0,50}?\\s*$)|(\\s*([\\[【])(${regex_other_titles})[:：\\s]\\s*.{0,50}?([\\]】])\\s*$)`,
     `^(\\s*(${regex_titles_english})\\s*$)`,

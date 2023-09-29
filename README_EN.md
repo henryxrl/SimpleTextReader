@@ -1,6 +1,14 @@
-# SimpleTextReader - 易笺
+<div align="center">
+<img width="200" src="assets/0_icon.png" />
+<br/>
+<h1>SimpleTextReader - 易笺</h1>
+</div>
 
-English / [中文](README.md)
+<div align="center">
+<br/>
+<a href="README.md">中文</a> | English
+<br/><br/>
+</div>
 
 ![Main UI](assets/4_bookshelf1.png)
 
@@ -89,17 +97,17 @@ Support for customized settings such as font size, line height, theme colors and
 ***NOTE: The bookshelf feature is incompatible with Firefox's private browsing mode and will be automatically deactivated.***
 
 <div float="left">
-    <img src="assets/4_bookshelf1.png" width="44%" />
-    <img src="assets/4_bookshelf2.png" width="44%" />
-    <img src="assets/4_bookshelf3.png" width="44%" />
-    <img src="assets/4_bookshelf4_en.png" width="44%" />
+    <img src="assets/4_bookshelf1.png" width="49%" />
+    <img src="assets/4_bookshelf2.png" width="49%" />
+    <img src="assets/4_bookshelf3.png" width="49%" />
+    <img src="assets/4_bookshelf4_en.png" width="49%" />
 </div>
 
 #### v1.4.1
 
 1. Updated stylings of book covers for both unread books and finished books; moved the remove button away from the book cover.
 
-    ![Darkmode](assets/4_new_cover_en.gif)
+    <img src="assets/4_new_cover_en.gif" alt="Darkmode" height="200" />
 
 2. Updated regex for book title / author extraction by eliminating content enclosed in unbalanced brackets.
 
@@ -115,13 +123,13 @@ Support for customized settings such as font size, line height, theme colors and
 
 Firefox:
 
-1. [Regular (v1.4.2)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
+1. [Regular (v1.4.3)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
 
 2. [No-UI (v1.2.4)](https://addons.mozilla.org/en-US/firefox/addon/yijian_nogui/)
 
 Chrome:
 
-1. [Regular (v1.4.2)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
+1. [Regular (v1.4.3)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
 
 2. [No-UI (v1.2.4)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo?hl=en&authuser=0)
 
