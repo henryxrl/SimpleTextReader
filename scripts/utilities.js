@@ -514,3 +514,7 @@ function ignoreContentFromUnbalancedBracketIndex(orig_str) {
         return orig_str;
     }
 }
+
+function isEllipsisActive($jQueryObject, tolerance=1) {
+    return ($jQueryObject.outerWidth() + tolerance < $jQueryObject[0].scrollWidth);
+}

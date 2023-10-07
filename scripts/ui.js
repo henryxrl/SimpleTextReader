@@ -70,6 +70,15 @@ document.onkeydown = function(event) {
     }
 };
 
+$('body:not(:empty)').on('mouseover', 'a', function(e) {
+    if (isEllipsisActive($(e.target))) {
+        // console.log("isEllipsisActive");
+        $(e.target).attr('title', $(e.target).text());
+    } else {
+        $(e.target).removeAttr('title');
+    }
+});
+
 function openFileSelector(event) {
     event.preventDefault();
     var fileSelector = document.createElement("input");

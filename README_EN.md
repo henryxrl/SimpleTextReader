@@ -46,7 +46,9 @@ Now SimpleTextReader is also available as a Chrome/Firefox extension with two di
 
 1. Regular version: Upon clicking the icon from the extension list, the full UI appears, providing the same functionality as the complete SimpleTextReader web app.
 
-2. No-UI version: Once activated, any URL ending in ".txt" (including local text files that were dragged and dropped in the browser, `file://*.txt`) will be automatically opened using SimpleTextReader. However, please be aware that this version might have slower performance when opening large text files. The delay is due to the browser's default behavior of loading the entire file at once, which cannot be modified.
+2. No-UI version: Once activated, <s>any URL ending in ".txt" (including local text files that were dragged and dropped in the browser, `file://*.txt`) will be automatically opened using SimpleTextReader.</s> However, please be aware that this version might have slower performance when opening large text files. The delay is due to the browser's default behavior of loading the entire file at once, which cannot be modified.
+
+    **NOTE: Starting from v1.2.6, No-UI version only opens local txt files, i.e., `file://*.txt`.**
 
 ### v1.1
 
@@ -111,15 +113,15 @@ Support for customized settings such as font size, line height, theme colors and
 
 Firefox:
 
-1. [Regular (v1.4.5)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
+1. [Regular (v1.4.6)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
 
-2. [No-UI (v1.2.5)](https://addons.mozilla.org/en-US/firefox/addon/yijian_nogui/)
+2. [No-UI (v1.2.6)](https://addons.mozilla.org/en-US/firefox/addon/yijian_nogui/)
 
 Chrome:
 
-1. [Regular (v1.4.5)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
+1. [Regular (v1.4.6)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
 
-2. [No-UI (v1.2.5)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo?hl=en&authuser=0)
+2. [No-UI (v1.2.6)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo?hl=en&authuser=0)
 
 ---
 

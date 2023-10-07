@@ -46,7 +46,9 @@
 
 1. 正常版：点击插件图标即可召唤完整的易笺界面。将文本文件拖入界面后，即可进行阅读。
 
-2. 无界面版本：无界面版的易笺会检测 URL，任何以 “.txt” 结尾的 URL （包括拖拽进浏览器的本地文件，`file://*.txt`）都会自动在易笺中打开。值得注意的是，无界面版本打开文件的速度会相对较慢，因为浏览器会先加载完整的文件再传给易笺渲染。
+2. 无界面版本：无界面版的易笺会检测 URL，<s>任何以 “.txt” 结尾的 URL （包括拖拽进浏览器的本地文件，`file://*.txt`）都会自动在易笺中打开。</s>值得注意的是，无界面版本打开文件的速度会相对较慢，因为浏览器会先加载完整的文件再传给易笺渲染。
+
+    **注：自 v1.2.6 开始，无界面版本只会打开本地txt文件，即 `file://*.txt`。**
 
 ### v1.1
 
@@ -109,15 +111,15 @@
 
 火狐插件：
 
-1. [易笺正常版 (v1.4.5)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
+1. [易笺正常版 (v1.4.6)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
 
-2. [易笺无界面版 (v1.2.5)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian_nogui/)
+2. [易笺无界面版 (v1.2.6)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian_nogui/)
 
 Chrome插件：
 
-1. [易笺正常版 (v1.4.5)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
+1. [易笺正常版 (v1.4.6)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
 
-2. [易笺无界面版 (v1.2.5)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo?hl=en&authuser=0)
+2. [易笺无界面版 (v1.2.6)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo?hl=en&authuser=0)
 
 ---
 
