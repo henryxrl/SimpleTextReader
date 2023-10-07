@@ -72,6 +72,9 @@
     --ui_title: "";
     --ui_title_zh: 易笺;
     --ui_title_en: SimpleTextReader;
+    --ui_tooltip_dropZone: "";
+    --ui_tooltip_dropZone_zh: 拖拽或双击此处选择 txt 书籍;
+    --ui_tooltip_dropZone_en: Drag & drop or double click to select txt files;
     --ui_dropZoneText_zh: "txt";
     --ui_dropZoneText_en: "txt";
     --ui_readingProgress_zh: "阅读进度：";
@@ -82,6 +85,15 @@
     --ui_endPage: "";
     --ui_endPage_zh: 终;
     --ui_endPage_en: THE END;
+    --ui_tooltip_goToLibrary: "";
+    --ui_tooltip_goToLibrary_zh: 前往书架;
+    --ui_tooltip_goToLibrary_en: Go to Library;
+    --ui_tooltip_modeToggle: "";
+    --ui_tooltip_modeToggle_zh: 切换浅色、深色主题;
+    --ui_tooltip_modeToggle_en: Toggle Light/Dark Mode;
+    --ui_tooltip_settings: "";
+    --ui_tooltip_settings_zh: 设置;
+    --ui_tooltip_settings_en: Settings;
 
     /* UI settings variables */
     --ui_settingMenuFontSize_zh: 1.2em;
@@ -123,18 +135,24 @@
     --ui_pagination_opacity_en: "Pagination Opacity";
 
     /* UI bookshelf strings */
-    --ui_removeBook: "";
-    --ui_removeBook_zh: 删除书籍;
-    --ui_removeBook_en: Remove Book;
-    --ui_bookInfo: "";
-    --ui_bookInfo_zh: 书籍信息;
-    --ui_bookInfo_en: Book Info;
+    --ui_tooltip_removeBook: "";
+    --ui_tooltip_removeBook_zh: 删除书籍;
+    --ui_tooltip_removeBook_en: Remove Book;
+    --ui_tooltip_bookInfo: "";
+    --ui_tooltip_bookInfo_zh: 书籍信息;
+    --ui_tooltip_bookInfo_en: Book Info;
     --ui_bookNotRead: "";
     --ui_bookNotRead_zh: 未读;
     --ui_bookNotRead_en: Unread;
     --ui_bookFinished: "";
     --ui_bookFinished_zh: 读完;
     --ui_bookFinished_en: Finished;
+    --ui_tooltip_bookshelf_scrollTop: "";
+    --ui_tooltip_bookshelf_scrollTop_zh: 书架顶部;
+    --ui_tooltip_bookshelf_scrollTop_en: To Top;
+    --ui_tooltip_bookshelf_scrollBottom: "";
+    --ui_tooltip_bookshelf_scrollBottom_zh: 书架底部;
+    --ui_tooltip_bookshelf_scrollBottom_en: To Bottom;
 
     /* UI bookshelf variables */
     --ui_bookshadow: 5px 5px 10px -5px black, inset 0px -10px 10px var(--mainColor_active);
@@ -253,6 +271,7 @@
 
 [data-lang="zh"] {
     --ui_title: var(--ui_title_zh);
+    --ui_tooltip_dropZone: var(--ui_tooltip_dropZone_zh);
     --ui_titlePage: var(--ui_titlePage_zh);
     --ui_endPage: var(--ui_endPage_zh);
     --ui_dropZoneText: var(--ui_dropZoneText_zh);
@@ -279,8 +298,8 @@
     --ui_pagination_opacity: var(--ui_pagination_opacity_zh);
     --ui_settingMenuFontSize: var(--ui_settingMenuFontSize_zh);
     --ui_settingMenuWidth: var(--ui_settingMenuWidth_zh);
-    --ui_removeBook: var(--ui_removeBook_zh);
-    --ui_bookInfo: var(--ui_bookInfo_zh);
+    --ui_tooltip_removeBook: var(--ui_tooltip_removeBook_zh);
+    --ui_tooltip_bookInfo: var(--ui_tooltip_bookInfo_zh);
     --ui_bookFinished: var(--ui_bookFinished_zh);
     --ui_bookNotRead: var(--ui_bookNotRead_zh);
     --ui_bookInfo_bookname: var(--ui_bookInfo_bookname_zh);
@@ -289,10 +308,16 @@
     --ui_bookInfo_filename: var(--ui_bookInfo_filename_zh);
     --ui_bookInfo_filesize: var(--ui_bookInfo_filesize_zh);
     --ui_bookInfo_lastopened: var(--ui_bookInfo_lastopened_zh);
+    --ui_tooltip_bookshelf_scrollTop: var(--ui_tooltip_bookshelf_scrollTop_zh);
+    --ui_tooltip_bookshelf_scrollBottom: var(--ui_tooltip_bookshelf_scrollBottom_zh);
+    --ui_tooltip_goToLibrary: var(--ui_tooltip_goToLibrary_zh);
+    --ui_tooltip_modeToggle: var(--ui_tooltip_modeToggle_zh);
+    --ui_tooltip_settings: var(--ui_tooltip_settings_zh);
 }
 
 [data-lang="en"] {
     --ui_title: var(--ui_title_en);
+    --ui_tooltip_dropZone: var(--ui_tooltip_dropZone_en);
     --ui_titlePage: var(--ui_titlePage_en);
     --ui_endPage: var(--ui_endPage_en);
     --ui_dropZoneText: var(--ui_dropZoneText_en);
@@ -319,8 +344,8 @@
     --ui_pagination_opacity: var(--ui_pagination_opacity_en);
     --ui_settingMenuFontSize: var(--ui_settingMenuFontSize_en);
     --ui_settingMenuWidth: var(--ui_settingMenuWidth_en);
-    --ui_removeBook: var(--ui_removeBook_en);
-    --ui_bookInfo: var(--ui_bookInfo_en);
+    --ui_tooltip_removeBook: var(--ui_tooltip_removeBook_en);
+    --ui_tooltip_bookInfo: var(--ui_tooltip_bookInfo_en);
     --ui_bookFinished: var(--ui_bookFinished_en);
     --ui_bookNotRead: var(--ui_bookNotRead_en);
     --ui_bookInfo_bookname: var(--ui_bookInfo_bookname_en);
@@ -329,6 +354,11 @@
     --ui_bookInfo_filename: var(--ui_bookInfo_filename_en);
     --ui_bookInfo_filesize: var(--ui_bookInfo_filesize_en);
     --ui_bookInfo_lastopened: var(--ui_bookInfo_lastopened_en);
+    --ui_tooltip_bookshelf_scrollTop: var(--ui_tooltip_bookshelf_scrollTop_en);
+    --ui_tooltip_bookshelf_scrollBottom: var(--ui_tooltip_bookshelf_scrollBottom_en);
+    --ui_tooltip_goToLibrary: var(--ui_tooltip_goToLibrary_en);
+    --ui_tooltip_modeToggle: var(--ui_tooltip_modeToggle_en);
+    --ui_tooltip_settings: var(--ui_tooltip_settings_en);
 }
 
 #dropZoneText::before {

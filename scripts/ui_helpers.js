@@ -18,7 +18,8 @@ function setMainContentUI() {
     setUIMode(!darkModeToggle.checked);
     style.ui_Mode = (!darkModeToggle.checked ? "light" : "dark");
     // console.log(style.ui_Mode);
-    // darkModeActualButton.style.setProperty("visibility", "visible");
+    dropZoneTextImgWrapper.title = style.ui_tooltip_dropZone;
+    darkModeActualButton.title = style.ui_tooltip_modeToggle;
     setTimeout(function() {
         style.darkMode_animation = style.darkMode_default_animation;
     }, 1000);

@@ -82,7 +82,9 @@
 
         c. 已读完书籍按阅读时间顺序排列
 
-    [4] 在书架中显示每本书的进度以及其他详细信息；
+    [4] 在书架中显示每本书的进度以及其他详细信息；增加未读和读完书籍封面的样式；
+
+    <img src="assets/4_new_cover_zh.gif" alt="Darkmode" height="200" />
 
     [5] 书架高度由书籍数量而定；
 
@@ -103,31 +105,17 @@
     <img src="assets/4_bookshelf4_zh.png" width="49%" />
 </div>
 
-#### v1.4.1
-
-1. 更新未读和读完书籍封面的样式；重新规划删除按键的位置
-
-    <img src="assets/4_new_cover_zh.gif" alt="Darkmode" height="200" />
-
-2. 更新提取书籍名称和作者的正则表达式，删除所有括号不匹配的内容
-
-#### v1.4.2
-
-1. 新图标
-
-2. 更新主题颜色
-
 ## 使用
 
 火狐插件：
 
-1. [易笺正常版 (v1.4.3)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
+1. [易笺正常版 (v1.4.4)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
 
 2. [易笺无界面版 (v1.2.4)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian_nogui/)
 
 Chrome插件：
 
-1. [易笺正常版 (v1.4.3)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
+1. [易笺正常版 (v1.4.4)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
 
 2. [易笺无界面版 (v1.2.4)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo?hl=en&authuser=0)
 

@@ -41,7 +41,7 @@ let isColorPickerOpen = [false, false];
 
 
 // Initialiize settings button
-$(`<div id="STRe-setting-btn" class="btn-icon">
+$(`<div id="STRe-setting-btn" class="btn-icon hasTitle" title="${style.ui_tooltip_settings}">
     <svg class="icon-nofill" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
     <path class="tofill" fill-rule="evenodd" clip-rule="evenodd" d="M11.567 9.8895C12.2495 8.90124 12.114 7.5637 11.247 6.7325C10.3679 5.88806 9.02339 5.75928 7.99998 6.4215C7.57983 6.69308 7.25013 7.0837 7.05298 7.5435C6.85867 7.99881 6.80774 8.50252 6.90698 8.9875C7.00665 9.47472 7.25054 9.92071 7.60698 10.2675C7.97021 10.6186 8.42786 10.8563 8.92398 10.9515C9.42353 11.049 9.94062 11.0001 10.413 10.8105C10.8798 10.6237 11.2812 10.3033 11.567 9.8895Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     <path class="tofill" fill-rule="evenodd" clip-rule="evenodd" d="M12.433 17.8895C11.7504 16.9012 11.886 15.5637 12.753 14.7325C13.6321 13.8881 14.9766 13.7593 16 14.4215C16.4202 14.6931 16.7498 15.0837 16.947 15.5435C17.1413 15.9988 17.1922 16.5025 17.093 16.9875C16.9933 17.4747 16.7494 17.9207 16.393 18.2675C16.0298 18.6186 15.5721 18.8563 15.076 18.9515C14.5773 19.0481 14.0614 18.9988 13.59 18.8095C13.1222 18.6234 12.7197 18.3034 12.433 17.8895V17.8895Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>

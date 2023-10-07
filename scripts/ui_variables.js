@@ -25,6 +25,7 @@ var dropZone = document.getElementById('dropZone');
 var loadingScreen = document.getElementById('loading');
 // loadingScreen.style.visibility = "visible"; // For debugging the loading screen
 
+var dropZoneTextImgWrapper = document.getElementById("dropZoneTextImgWrapper");
 var dropZoneText = document.getElementById("dropZoneText");
 var dropZoneImg = document.getElementById("dropZoneImg");
 var contentContainer = document.getElementById("content");
@@ -36,5 +37,5 @@ var progressTitle = document.getElementById("progress-title");
 var progressContent = document.getElementById("progress-content");
 var footNoteContainer = document.getElementById("footnote-content");
 
-var darkModeActualButton = document.getElementById("switch-btn");   // just for set visibility
-var darkModeToggle = document.getElementById("switch");
+var darkModeActualButton = document.getElementById("toggle-btn");   // just for set title
+var darkModeToggle = document.getElementById("toggle");

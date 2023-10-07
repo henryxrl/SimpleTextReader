@@ -293,13 +293,13 @@ var bookshelf = {
             <div class="infoContainer">
                 <div class="progress"></div>
                 <div class="delete-btn-wrapper">
-                    <span class="delete-btn" title="${style.ui_removeBook}">
+                    <span class="delete-btn hasTitle" title="${style.ui_tooltip_removeBook}">
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M6 7V18C6 19.1046 6.89543 20 8 20H16C17.1046 20 18 19.1046 18 18V7M6 7H5M6 7H8M18 7H19M18 7H16M10 11V16M14 11V16M8 7V5C8 3.89543 8.89543 3 10 3H14C15.1046 3 16 3.89543 16 5V7M8 7H16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     </span>
                 </div>
-                <div class="bookInfoMenuBtn" id="bookInfoMenuBtn-${idx}" title="${style.ui_bookInfo}">
+                <div id="bookInfoMenuBtn-${idx}" class="bookInfoMenuBtn hasTitle" title="${style.ui_tooltip_bookInfo}">
                     <input id="dot-menu-${idx}" type="checkbox" class="dot-menu__checkbox">
                     <label for="dot-menu-${idx}" class="dot-menu__label"><span></span></label>
                 </div>
@@ -632,14 +632,14 @@ var bookshelf = {
             <div class="sub-title">【提示】书籍保存在浏览器缓存空间内，可能会被系统自动清除。<br/>
                 <span id="bookshelfUsageText">已用空间：<span id="bookshelfUsagePct"></span>% (<span id="bookshelfUsage"></span> / <span id="bookshelfQuota"></span>)</span></div></div>
             <div class="booklist"></div>
-            <div class="scroll-btn-group">
-                <div class="btn-icon" id="scrollTop-btn" style="visibility:hidden">
+            <div class="bookshelf-btn-group">
+                <div id="scrollTop-btn" class="btn-icon hasTitle" title="${style.ui_tooltip_bookshelf_scrollTop}" style="visibility:hidden">
                     <svg class="icon" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 125">
                         <path class="tofill" d="M15.1,65.7c-3.6,0-7.2-1.5-9.7-4.5C0.9,55.8,1.7,47.9,7,43.4l34.9-29.1c4.7-3.9,11.5-3.9,16.2,0L93,43.4 c5.4,4.5,6.1,12.4,1.6,17.8c-4.5,5.4-12.4,6.1-17.8,1.6L50,40.5L23.2,62.8C20.8,64.8,18,65.7,15.1,65.7z" opacity="1"/>
                         <path class="tofill" d="M15.1,113.6c-3.6,0-7.2-1.5-9.7-4.5C0.9,103.6,1.7,95.8,7,91.3l34.9-29.1c4.7-3.9,11.5-3.9,16.2,0L93,91.3 c5.4,4.5,6.1,12.4,1.6,17.8c-4.5,5.4-12.4,6.1-17.8,1.6L50,88.3l-26.8,22.3C20.8,112.6,18,113.6,15.1,113.6z" opacity="0.5"/>
                     </svg>
                 </div>
-                <div class="btn-icon" id="scrollBottom-btn" style="visibility:hidden">
+                <div id="scrollBottom-btn" class="btn-icon hasTitle" title="${style.ui_tooltip_bookshelf_scrollBottom}" style="visibility:hidden">
                     <svg class="icon" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 125">
                         <path class="tofill" d="M84.9,59.3c3.6,0,7.2,1.5,9.7,4.5c4.5,5.4,3.7,13.3-1.6,17.8l-34.9,29.1c-4.7,3.9-11.5,3.9-16.2,0L7,81.6 c-5.4-4.5-6.1-12.4-1.6-17.8s12.4-6.1,17.8-1.6L50,84.5l26.8-22.3C79.2,60.2,82,59.3,84.9,59.3z" opacity="1"/>
                         <path class="tofill" d="M84.9,11.4c3.6,0,7.2,1.5,9.7,4.5c4.5,5.5,3.7,13.3-1.6,17.8L58.1,62.8c-4.7,3.9-11.5,3.9-16.2,0L7,33.7 c-5.4-4.5-6.1-12.4-1.6-17.8s12.4-6.1,17.8-1.6L50,36.7l26.8-22.3C79.2,12.4,82,11.4,84.9,11.4z" opacity="0.5"/>
@@ -751,7 +751,7 @@ var bookshelf = {
     },
 
     init() {
-        $(`<div id="STRe-bookshelf-btn" class="btn-icon">
+        $(`<div id="STRe-bookshelf-btn" class="btn-icon hasTitle" title="${style.ui_tooltip_goToLibrary}">
         <svg class="icon" viewBox="0 0 800 800" id="Flat" xmlns="http://www.w3.org/2000/svg">
         <path class="tofill" d="M730,611.2l-129.4-483c-7.2-26.7-34.6-42.5-61.2-35.4l-96.6,25.9c-1.1,0.3-2.1,0.7-3.1,1c-9.4-12.4-24.1-19.7-39.7-19.7H300
         c-8.8,0-17.4,2.3-25,6.8c-7.6-4.4-16.2-6.8-25-6.8H150c-27.6,0-50,22.4-50,50v500c0,27.6,22.4,50,50,50h100c8.8,0,17.4-2.3,25-6.8

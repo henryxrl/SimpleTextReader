@@ -13,6 +13,16 @@ function setLanguage(lang, saveToLocalStorage = true) {
     if (document.title === style.ui_title_zh || document.title === style.ui_title_en) {
         setTitle();
     }
+
+    // reset all tooltips
+    // document.querySelectorAll(".hasTitle").forEach((el) => {
+    //     console.log(el);
+    // });
+    // only reset visible tooltips
+    darkModeActualButton.title = style.ui_tooltip_modeToggle;
+    document.getElementById("STRe-bookshelf-btn").title = style.ui_tooltip_goToLibrary;
+    document.getElementById("STRe-setting-btn").title = style.ui_tooltip_settings;
+
     console.log(`Language set to "${lang}".`);
 }
 

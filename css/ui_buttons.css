@@ -1,8 +1,8 @@
-#switch {
+#toggle {
     display: none;
 }
 
-#switch-btn label {
+#toggle-btn label {
     width: 2rem;
     height: 2rem;
     display: flex;
@@ -52,22 +52,22 @@ svg.icon {
     overflow-y: unset;
 }
 
-#switch:checked ~ #switch-btn {
+#toggle:checked ~ #toggle-btn {
     transition: var(--darkMode_animation);
 }
 
-#switch:checked ~ #switch-btn label .icons {
+#toggle:checked ~ #toggle-btn label .icons {
     transform: translateX(calc(-1 * var(--ui_btnSize)));
 }
 
-#switch:hover ~ #switch-btn label .icons .tofill,
+#toggle:hover ~ #toggle-btn label .icons .tofill,
 .btn-icon:hover:not(:focus) svg .tofill {
     fill: var(--mainColor_inactive);
     stroke: var(--mainColor_inactive);
     opacity: 1;
 }
 
-#switch:hover ~ #switch-btn label .icons .tofill-inverse,
+#toggle:hover ~ #toggle-btn label .icons .tofill-inverse,
 .btn-icon:hover:not(:focus) svg .tofill-inverse {
     fill: var(--bgColor);
     /* stroke: var(--bgColor); */
@@ -82,7 +82,7 @@ svg.icon {
     stroke: var(--bgColor);
 }
 
-#switch:hover ~ #switch-btn label,
+#toggle:hover ~ #toggle-btn label,
 .btn-icon:hover:not(:focus) {
     /* light mode */
     background: rgba(125, 125, 125, 0.1);
@@ -98,7 +98,7 @@ svg.icon {
     z-index: 1005;
 }
 
-.scroll-btn-group {
+.bookshelf-btn-group {
     display: flex;
     flex-flow: column;
     gap: var(--ui_btnGap);
