@@ -1,3 +1,4 @@
+@charset "UTF-8";
 .color-picker .range {
     --tickEvery: 400;
     --primaryColor: #000;
