@@ -19,6 +19,7 @@ setMainContentUI();
 // setMainContentUI_onRatio();
 // setTOC_onRatio(initial=true);
 let emInPx = getSizePrecise('1em', contentContainer);
+let allBooksInfo = {};
 
 
 
@@ -56,14 +57,16 @@ window.onscroll = function(event) {
 document.onkeydown = function(event) {
     switch (event.key) {
         case 'ArrowLeft':
-            jumpToPage(currentPage-1);
+            if (isVariableDefined(dropZone) && dropZone.style.visibility === "hidden")
+                jumpToPage(currentPage-1);
         break;
         case 'ArrowRight':
-            jumpToPage(currentPage+1);
+            if (isVariableDefined(dropZone) && dropZone.style.visibility === "hidden")
+                jumpToPage(currentPage+1);
         break;
         case 'Escape':
             // console.log("Escape pressed");
-            if (isVariableDefined(dropZone)) {
+            if (isVariableDefined(dropZone) && dropZone.style.visibility === "hidden") {
                 resetUI();
             }
         break;
@@ -144,25 +147,171 @@ function handleDrop(event) {
     handleMultipleFiles(event.dataTransfer.files);
 }
 
-function handleMultipleFiles(fileList) {
-    var files = Array.from(fileList).filter(file => file.type === "text/plain");
+async function handleMultipleFiles(fileList, isFromLocal = true, isOnServer = false, num_load_batch = 100) {    
+    var files = Array.prototype.slice.call(fileList).filter(file => file.type === "text/plain");
+    // console.log("files: ", files);
     if (files.length > 1) {
         if (isVariableDefined(bookshelf)) {
             if (bookshelf.enabled) {
-                for (const [i, file] of files.entries())
-                    bookshelf.saveBook(file, (i === files.length - 1));
+                showLoadingScreen();
+                for (const [i, file] of files.entries()) {
+                    let final_isFromLocal = getIsFromLocal(file.name) || isFromLocal;
+                    let final_isOnServer = getIsOnServer(file.name) || isOnServer;
+                    setIsFromLocal(file.name, final_isFromLocal);
+                    setIsOnServer(file.name, final_isOnServer);
+                    // console.log(`Loading file ${i+1} of ${files.length}; ${(i === files.length - 1)}`);
+                    await bookshelf.saveBook(file, final_isFromLocal, final_isOnServer, (i === files.length - 1), false, (i === files.length - 1));
+                }
+
+                // // Since we use loading screen, we don't need the following code
+                // // The previous code load the entire array of files at once and set the second parameter of saveBook to true when processing the last file of the array, which is not ideal for large array of files.
+                // // The following code load ten files at a time. After processing the last file of the ten, set the second parameter of saveBook to true.
+                // let i = 0;
+                // while (i < files.length) {
+                //     let j = i + num_load_batch;
+                //     if (j > files.length) {
+                //         j = files.length;
+                //     }
+
+                //     // console.log(`Loading file ${i+1} to ${j} of ${files.length}.`);
+                //     for (let k = i; k < j; k++) {
+                //         // console.log(`Loading file ${k+1} of ${files.length}; ${k}, ${i}, ${j}, ${(k === j - 1)}`);
+                //         // console.log(k, j, files[k].name);
+                //         let final_isFromLocal = getIsFromLocal(files[k].name) || isFromLocal;
+                //         let final_isOnServer = getIsOnServer(files[k].name) || isOnServer;
+                //         setIsFromLocal(files[k].name, final_isFromLocal);
+                //         setIsOnServer(files[k].name, final_isOnServer);
+                //         // console.log(`${files[k].name}, final_isFromLocal: ${final_isFromLocal}, final_isOnServer: ${final_isOnServer}, refresh: ${(k === j - 1)}, sort: ${(k === files.length - 1)}, k=${k}, j=${j}`);
+
+                //         // console.log(`${files[k].name}, refresh: ${(k === j - 1)}, sort: ${(k === files.length - 1)}, k=${k}, j=${j}`);
+                //         // await bookshelf.saveBook(files[k], final_isFromLocal, final_isOnServer, i === 0 ? true : (k === j - 1), false, (k === files.length - 1));
+
+                //         // console.log(`${files[k].name}, refresh: ${i === 0 ? true : (k === files.length - 1)}, sort: ${(k === files.length - 1)}, k=${k}, j=${j}`);
+                //         await bookshelf.saveBook(files[k], final_isFromLocal, final_isOnServer, (k === files.length - 1), false, (k === files.length - 1));
+                //     }
+                //     // console.log('Loading finished.');
+                //     i = j;
+                // }
+                hideLoadingScreen();
             } else {
                 console.log("Multiple files selected, only the first one will be loaded since bookshelf is disabled.");
-                handleSelectedFile([files[0]]);
+                setIsFromLocal(files[0].name, getIsFromLocal(files[0].name) || isFromLocal);
+                setIsOnServer(files[0].name, getIsOnServer(files[0].name) || isOnServer);
                 setBookLastReadTimestamp(files[0].name);
+                handleSelectedFile([files[0]]);
             }
         }
     } else if (files.length === 1) {
-        handleSelectedFile(files);
+        setIsFromLocal(files[0].name, getIsFromLocal(files[0].name) || isFromLocal);
+        setIsOnServer(files[0].name, getIsOnServer(files[0].name) || isOnServer);
         setBookLastReadTimestamp(files[0].name);
+        handleSelectedFile(files);
     } else {
         console.log("No valid file selected.");
         resetUI();
+    }
+}
+
+async function handleMultipleFilesWitoutLoading(fileList, isFromLocal = true, isOnServer = false) {
+    if (isVariableDefined(bookshelf)) {
+        if (bookshelf.enabled) {
+            showLoadingScreen();
+            allBooksInfo = {};
+
+            try {
+                // Get all input books
+                for (const [i, file] of fileList.entries()) {
+                    let final_isFromLocal = getIsFromLocal(file.name) || isFromLocal;
+                    let final_isOnServer = getIsOnServer(file.name) || isOnServer;
+                    setIsFromLocal(file.name, final_isFromLocal);
+                    setIsOnServer(file.name, final_isOnServer);
+                    // await bookshelf.saveBook(file, final_isFromLocal, final_isOnServer, (i === files.length - 1), false);
+                    file.isFromLocal = final_isFromLocal;
+                    file.isOnServer = final_isOnServer;
+
+                    let lastOpenedTimestamp = localStorage.getItem(`${file.name}_lastopened`);
+                    if (lastOpenedTimestamp) {
+                        file.lastOpenedTimestamp = lastOpenedTimestamp;
+                        file.progress = getProgressText(file.name, false);
+                    }
+                    // allBooksInfo.push(file);
+                    allBooksInfo[file.name] = file;
+                }
+
+                // Get all existing books
+                for (const book of await bookshelf.db.getAllBooks()) {
+                    let final_isFromLocal = book.isFromLocal || false;
+                    let final_isOnServer = book.isOnServer || false;
+                    let new_file = {name: book.name, size: book.data.size, isFromLocal: final_isFromLocal, isOnServer: final_isOnServer};
+                    
+                    let lastOpenedTimestamp = localStorage.getItem(`${new_file.name}_lastopened`);
+                    if (lastOpenedTimestamp) {
+                        new_file.lastOpenedTimestamp = lastOpenedTimestamp;
+                        new_file.progress = getProgressText(new_file.name, false);
+                    }
+
+                    // allBooksInfo = allBooksInfo.filter(f => f.name !== new_file.name).concat([new_file]);
+                    allBooksInfo[new_file.name] = new_file;
+                }
+
+                // sort allBooksInfo by:
+                // 1. if progress is 100%, then put to the end of the list
+                // and sort by last opened timestamp;
+                // 2. if progress is not 100%, then sort by last opened timestamp
+                // 3. if last opened timestamp is not available, then sort by filename
+                let allBooksInfo_names = Object.keys(allBooksInfo);
+                allBooksInfo_names.sort((a, b) => {
+                    if (allBooksInfo[a].progress === "100%" && allBooksInfo[b].progress !== "100%") {
+                        return 1;
+                    } else if (allBooksInfo[a].progress !== "100%" && allBooksInfo[b].progress === "100%") {
+                        return -1;
+                    } else {
+                        if (!allBooksInfo[a].lastOpenedTimestamp && !allBooksInfo[b].lastOpenedTimestamp) {
+                            return allBooksInfo[a].name.localeCompare(allBooksInfo[b].name, "zh");
+                        } else if (allBooksInfo[a].lastOpenedTimestamp && !allBooksInfo[b].lastOpenedTimestamp) {
+                            return -1;
+                        } else if (!allBooksInfo[a].lastOpenedTimestamp && allBooksInfo[b].lastOpenedTimestamp) {
+                            return 1;
+                        } else {
+                            return allBooksInfo[b].lastOpenedTimestamp - allBooksInfo[a].lastOpenedTimestamp;
+                        }
+                    }
+                });
+
+                // console.log("allBooksInfo", allBooksInfo_names);
+                // console.log(allBooksInfo.length);
+
+                let container = $(".bookshelf .booklist");
+                container.html("");
+                for (const [idx, bookname] of allBooksInfo_names.entries()) {
+                    let bookInfo = allBooksInfo[bookname];
+                    // console.log(idx, bookInfo);
+                    // container.append(bookshelf.genBookItem(bookInfo, idx));
+                    
+                    // Show book one by one
+                    // bookshelf.genBookItem(bookInfo, idx).hide().delay(idx*50).fadeIn(50).appendTo(container);
+
+                    // Show book all at once
+                    bookshelf.genBookItem(bookInfo, idx).hide().fadeIn(300).appendTo(container);
+                }
+                container.trigger("contentchange");
+            } catch (e) {
+                console.log("Error in handleMultipleFilesWitoutLoading:", e);
+            }
+
+            // If there is no book in bookshelf, hide the bookshelf
+            // Otherwise, show the bookshelf, but not the bookshelf trigger button
+            // Only show the bookshelf trigger button when a book is opened
+            if (Object.keys(allBooksInfo).length <= 0) {
+                bookshelf.hide();
+                bookshelf.hideTriggerBtn();
+            } else {
+                bookshelf.show();
+                // bookshelf.showTriggerBtn();
+            }
+
+            hideLoadingScreen();
+        }
     }
 }
 
@@ -399,12 +548,14 @@ function showCurrentPageContent() {
     let to_drop_cap = false;
 
     // process line by line - fast
-    for (var j = startIndex; j < endIndex && j < fileContentChunks.length; j++) {
-        if (fileContentChunks[j].trim() !== '') {
-            let processedResult = process(fileContentChunks[j], j, fileContentChunks.length, to_drop_cap);
-            to_drop_cap = processedResult[1] === 'h' ? true : false;
-            // contentContainer.innerHTML += processedResult[0];
-            contentContainer.appendChild(processedResult[0]);
+    if (fileContentChunks.length > 0) {
+        for (var j = startIndex; j < endIndex && j < fileContentChunks.length; j++) {
+            if (fileContentChunks[j].trim() !== '') {
+                let processedResult = process(fileContentChunks[j], j, fileContentChunks.length, to_drop_cap);
+                to_drop_cap = processedResult[1] === 'h' ? true : false;
+                // contentContainer.innerHTML += processedResult[0];
+                contentContainer.appendChild(processedResult[0]);
+            }
         }
     }
 
@@ -739,7 +890,7 @@ function GetScrollPositions(toSetHistory=true) {
 
     progressTitle.innerText = bookAndAuthor.bookName;
     progressContent.innerText = `${totalPercentage.toFixed(1).replace(".0", "")}%`;
-    saveProgressText(filename, `${totalPercentage.toFixed(1).replace(".0", "")}%`);
+    setProgressText(filename, `${totalPercentage.toFixed(1).replace(".0", "")}%`);
 
     gotoTitle_Clicked = false;
 }

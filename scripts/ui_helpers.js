@@ -268,11 +268,14 @@ function hideContent() {
     progressContainer.style.visibility = "hidden";
 }
 
-function resetUI() {
-    setLanguage(webLANG);
+async function resetUI(refreshBookshelf = true, hardRefresh = true, sortBookshelf = true) {
     if (isVariableDefined(bookshelf)) {
-        bookshelf.refreshBookList();
+        // console.log(`refreshBookshelf: ${refreshBookshelf}, HardRefresh: ${hardRefresh}`);
+        if (refreshBookshelf) {
+            await bookshelf.refreshBookList(hardRefresh, sortBookshelf);
+        }
     }
+    setLanguage(webLANG);
     resetVars();
     showDropZone();
     hideLoadingScreen();

@@ -55,6 +55,8 @@ class BookshelfDB {
         try {
             if (!this.#db) {
                 this.#db = await this.connect();
+                // await this.removeAllBooks();
+                await this.removeAllCloudBooks();
             }
             return true;
         } catch (e) {
@@ -63,12 +65,12 @@ class BookshelfDB {
         }
     }
 
-    async putBook(name, data) {
+    async putBook(name, data, isFromLocal = true, isOnServer = false) {
         if (!await this.init()) {
             throw new Error("Init local db error!");
         }
         let tbl = this.getObjectStore("bookfiles", "readwrite");
-        return await this.exec(tbl.put({ name: name, data: data }));
+        return await this.exec(tbl.put({ name: name, data: data, isFromLocal: isFromLocal, isOnServer: isOnServer }));
     }
 
     async getBook(name) {
@@ -78,7 +80,7 @@ class BookshelfDB {
         let tbl = this.getObjectStore("bookfiles");
         let result = await this.exec(tbl.get(name));
         if (result) {
-            return result.data;
+            return [result.data, result.isOnServer];
         } else {
             return null;
         }
@@ -93,6 +95,15 @@ class BookshelfDB {
         return result;
     }
 
+    async getAllCloudBooks() {
+        if (!await this.init()) {
+            throw new Error("Init local db error!");
+        }
+        let tbl = this.getObjectStore("bookfiles");
+        let result = await this.exec(tbl.getAll());
+        return result.filter(book => book.isOnServer);
+    }
+
     async isBookExist(name) {
         if (!await this.init()) {
             throw new Error("Init local db error!");
@@ -102,12 +113,35 @@ class BookshelfDB {
         return !!result;
     }
 
-    async deleteBook(name) {
+    async removeBook(name) {
         if (!await this.init()) {
             throw new Error("Init local db error!");
         }
         let tbl = this.getObjectStore("bookfiles", "readwrite");
         await this.exec(tbl.delete(name));
+    }
+
+    async removeAllBooks() {
+        if (!await this.init()) {
+            throw new Error("Init local db error!");
+        }
+        let tbl = this.getObjectStore("bookfiles", "readwrite");
+        await this.exec(tbl.clear());
+    }
+
+    async removeAllCloudBooks() {
+        if (!await this.init()) {
+            throw new Error("Init local db error!");
+        }
+        let tbl = this.getObjectStore("bookfiles", "readwrite");
+        let books = await this.exec(tbl.getAll());
+        // books = books.filter(book => book.isOnServer);
+        await Promise.all(books.map(async (book) => {
+            if (book.isOnServer && !book.isFromLocal) {
+                // console.log(book);
+                await this.exec(tbl.delete(book.name));
+            }
+        }));
     }
 }
 
@@ -138,7 +172,28 @@ var bookshelf = {
             // console.log("Open book from cache: " + fname);
             showLoadingScreen();
             try {
-                let book = await this.db.getBook(fname);
+                // check if the book exists in db
+                if (!await this.isBookExist(fname)) {
+                    // search book in allBooksInfo
+                    // let toProcessBookInfo = allBooksInfo.find(x => x.name === fname);
+                    let toProcessBookInfo = allBooksInfo[fname];
+                    // console.log(toProcessBookInfo);
+
+                    if (toProcessBookInfo) {
+                        try {
+                            let toProcessBookFileObj = await URLToFileObject(toProcessBookInfo.path, toProcessBookInfo.name);
+                            await this.saveBook(toProcessBookFileObj, toProcessBookInfo.isFromLocal, toProcessBookInfo.isOnServer, false, false, false);
+                        } catch (e) {
+                            // alert("发生错误！");
+                            throw new Error(`openBook error: "${fname}"`);
+                        }
+                    } else {
+                        // alert("发生错误！");
+                        throw new Error(`openBook error: "${fname}"`);
+                    }
+                }
+                let [book, book_isOnServer] = await this.db.getBook(fname);
+                book_isOnServer = book_isOnServer || false;
                 if (book) {
                     book.name = fname;
                     book[this._CACHE_FLAG_] = true;
@@ -158,7 +213,7 @@ var bookshelf = {
         }
     },
 
-    async saveBook(file, refreshNow = true) {
+    async saveBook(file, isFromLocal = true, isOnServer = false, refreshBookshelf = true, hardRefresh = true, sortBookshelf = true) {
         if (bookshelf.enabled) {
             if (file.type === "text/plain") {
                 if (file[bookshelf._CACHE_FLAG_]) {
@@ -167,16 +222,23 @@ var bookshelf = {
                     // console.log("saveBook: ", file.name);
                     // 先把文件保存到缓存db中
                     try {
-                        await bookshelf.db.putBook(file.name, file);
+                        // if (await bookshelf.db.isBookExist(file.name)) {
+                        //     console.log("Book already exists in cache: " + file.name);
+                        //     return file;
+                        // }
+
+                        await bookshelf.db.putBook(file.name, file, isFromLocal, isOnServer);
                         if (!await bookshelf.db.isBookExist(file.name)) {
                             // alert("保存到本地书架失败（缓存空间可能已满）");
                             throw new Error(`saveBook error (localStorage full): "${file.name}"`);
-                        } 
+                        }
 
                         // 刷新 Bookshelf in DropZone
                         // await bookshelf.refreshBookList();
-                        if (refreshNow)
-                            await resetUI();
+                        // console.log(`refreshBookshelf: ${refreshBookshelf}, HardRefresh: ${hardRefresh}`);
+                        if (refreshBookshelf)
+                            await resetUI(refreshBookshelf, hardRefresh, sortBookshelf);
+
                     } catch (e) {
                         console.log(e);
                     }
@@ -194,9 +256,9 @@ var bookshelf = {
         }
     },
 
-    async deleteBook(fname, onSucc = null) {
+    async removeBook(fname, onSucc = null) {
         if (this.enabled) {
-            this.db.deleteBook(fname).then(() => {
+            this.db.removeBook(fname).then(() => {
                 if (onSucc) onSucc();
             });
         }
@@ -292,6 +354,11 @@ var bookshelf = {
             </div>
             <div class="infoContainer">
                 <div class="progress"></div>
+                <div class="isOnServer">
+                    ${(bookInfo.isOnServer && !bookInfo.isFromLocal) ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 40">
+                    <path d="M24.7793,25.30225H7.2207A6.02924,6.02924,0,0,1,1.84375,22.0708c-1.99856-3.83755.74946-8.94738,5.2832-8.8418a9.30623,9.30623,0,0,1,17.74121-.0249A6.04953,6.04953,0,0,1,24.7793,25.30225ZM7.25781,15.22754c-3.1607-.153-4.95556,3.33035-3.62493,5.94832a4.01435,4.01435,0,0,0,3.63079,2.12736l17.5166-.001A4.05253,4.05253,0,1,0,22.11722,16.202a1.00012,1.00012,0,0,1-1.41312-.05653c-1.00583-1.32476,1.17841-2.28273,2.15235-2.65332A7.30425,7.30425,0,0,0,8.8623,14.4779C8.70326,15.24838,7.89656,15.30989,7.25781,15.22754Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>` : ""}
+                </div>
                 <div class="delete-btn-wrapper">
                     <span class="delete-btn hasTitle" title="${style.ui_tooltip_removeBook}">
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -374,12 +441,18 @@ var bookshelf = {
         // add delete event
         book.find(".delete-btn").click((evt) => {
             evt.originalEvent.stopPropagation();
-            // this.deleteBook(bookInfo.name, () => this.refreshBookList());
-            this.deleteBook(bookInfo.name, () => {
+            this.removeBook(bookInfo.name, () => {
                 let b = $(evt.currentTarget).parents(".book");
                 b.fadeOut(300, () => {
                     b.remove();
-                    this.refreshBookList();     // need to refresh booklist every time after delete
+                    delete allBooksInfo[bookInfo.name];
+                    // console.log(allBooksInfo);
+                    // this.refreshBookList();     // does't need to refresh booklist every time after delete
+
+                    $(".booklist").trigger("contentchange");    // recalculate booklist height
+
+                    // change isFromLocal to false
+                    setIsFromLocal(bookInfo.name, false);
                 });
                 // b.animate({width: 0, opacity: 0}, 500, () => b.remove());
             });
@@ -408,22 +481,22 @@ var bookshelf = {
                     <div class="bookInfoMenu-clip"></div>
                     <div class="bookInfoMenu_item">
                         <span class="bookInfoMenu_item_text">${style.ui_bookInfo_bookname}</span>
-                        <span class="bookInfoMenu_item_info">${tempBookTitle}</span>
+                        <span class="bookInfoMenu_item_info bookInfoMenu_item_info_title">${tempBookTitle}</span>
                     </div>
                     <div class="bookInfoMenu_item">
                         <span class="bookInfoMenu_item_text">${style.ui_bookInfo_author}</span>
-                        ${tempBookAuthorName}
+                        <span class="bookInfoMenu_item_info bookInfoMenu_item_info_author">${tempBookAuthorName}</span>
                     </div>
                     <div class="bookInfoMenu_item">
                         <span class="bookInfoMenu_item_text">${style.ui_bookInfo_filename}</span>
-                        <span class="bookInfoMenu_item_info">${bookInfo.name}</span>
+                        <span class="bookInfoMenu_item_info bookInfoMenu_item_info_filename">${bookInfo.name}</span>
                     </div>
                     <div class="bookInfoMenu_item">
                         <span class="bookInfoMenu_item_text">${style.ui_bookInfo_filesize}</span>
-                        <span class="bookInfoMenu_item_info">${formatBytes(bookInfo.size)}</span>
+                        <span class="bookInfoMenu_item_info bookInfoMenu_item_info_filesize">${formatBytes(bookInfo.size)}</span>
                     </div>
                     <div class="bookInfoMenu_item">
-                        <span class="bookInfoMenu_item_text">${style.ui_bookInfo_lastopened}</span>
+                        <span class="bookInfoMenu_item_text bookInfoMenu_item_info_timestamp">${style.ui_bookInfo_lastopened}</span>
                         ${tempBookLastOpenedTimestamp}
                     </div>
                 </div>`;
@@ -464,7 +537,7 @@ var bookshelf = {
     },
 
     async updateAllBookCovers() {
-        Array.from(document.getElementsByClassName("book")).forEach(book => {
+        Array.prototype.slice.call(document.getElementsByClassName("book")).forEach(book => {
             let book_filename = book.getAttribute("data-filename");
             let book_cover = book.getElementsByTagName("canvas")[0];
             let canvasWidth = book_cover.width;
@@ -495,63 +568,81 @@ var bookshelf = {
         });
     },
 
-    async refreshBookList() {
+    async refreshBookList(hardRefresh = false, sortBookshelf = true) {
         if (this.enabled) {
-            let container = $(".bookshelf .booklist");
-            container.html("");
-            let storageInfo = null;
-            try {
-                storageInfo = await navigator.storage.estimate();
-            } catch (e) {
-                console.log(e);
-            }
-            if (storageInfo) {
-                $("#bookshelfUsagePct").html((storageInfo.usage/storageInfo.quota*100).toFixed(1));
-                $("#bookshelfUsage").html(formatBytes(storageInfo.usage));
-                $("#bookshelfQuota").html(formatBytes(storageInfo.quota));
+            if (navigator.storage) {
+                let storageInfo = await navigator.storage.estimate();
+                if (storageInfo) {
+                    $("#bookshelfUsagePct").html((storageInfo.usage/storageInfo.quota*100).toFixed(1));
+                    $("#bookshelfUsage").html(formatBytes(storageInfo.usage));
+                    $("#bookshelfQuota").html(formatBytes(storageInfo.quota));
+                }
             } else {
+                // navigator.storage is not supported
                 $("#bookshelfUsageText").hide();
             }
-            let booklist = [];
             try {
                 for (const book of await this.db.getAllBooks()) {
-                    booklist.push({name: book.name, size: book.data.size});
-                }
+                    let final_isFromLocal = book.isFromLocal || false;
+                    let final_isOnServer = book.isOnServer || false;
+                    let new_book = {name: book.name, size: book.data.size, isFromLocal: final_isFromLocal, isOnServer: final_isOnServer};
 
-                // get all books' last opened timestamp from localStorage
-                for (let book of booklist) {
-                    let lastOpenedTimestamp = localStorage.getItem(`${book.name}_lastopened`);
+                    let lastOpenedTimestamp = localStorage.getItem(`${new_book.name}_lastopened`);
                     if (lastOpenedTimestamp) {
-                        book.lastOpenedTimestamp = lastOpenedTimestamp;
-                        book.progress = getProgressText(book.name, false);
+                        new_book.lastOpenedTimestamp = lastOpenedTimestamp;
+                        new_book.progress = getProgressText(new_book.name, false);
                     }
+
+                    // allBooksInfo = allBooksInfo.filter(f => f.name !== new_book.name).concat([new_book]);
+                    allBooksInfo[new_book.name] = new_book;
                 }
 
-                // sort booklist by:
-                // 1. if progress is 100%, then put to the end of the list
-                // and sort by last opened timestamp;
-                // 2. if progress is not 100%, then sort by last opened timestamp
-                // 3. if last opened timestamp is not available, then sort by filename
-                booklist.sort((a, b) => {
-                    if (a.progress === "100%" && b.progress !== "100%") {
-                        return 1;
-                    } else if (a.progress !== "100%" && b.progress === "100%") {
-                        return -1;
-                    } else {
-                        if (!a.lastOpenedTimestamp && !b.lastOpenedTimestamp) {
-                            return a.name.localeCompare(b.name, "zh");
-                        } else if (a.lastOpenedTimestamp && !b.lastOpenedTimestamp) {
-                            return -1;
-                        } else if (!a.lastOpenedTimestamp && b.lastOpenedTimestamp) {
+                let allBooksInfo_names = Object.keys(allBooksInfo);
+                if (sortBookshelf) {
+                    // sort allBooksInfo by:
+                    // 1. if progress is 100%, then put to the end of the list
+                    // and sort by last opened timestamp;
+                    // 2. if progress is not 100%, then sort by last opened timestamp
+                    // 3. if last opened timestamp is not available, then sort by filename
+                    allBooksInfo_names.sort((a, b) => {
+                        if (allBooksInfo[a].progress === "100%" && allBooksInfo[b].progress !== "100%") {
                             return 1;
+                        } else if (allBooksInfo[a].progress !== "100%" && allBooksInfo[b].progress === "100%") {
+                            return -1;
                         } else {
-                            return b.lastOpenedTimestamp - a.lastOpenedTimestamp;
+                            if (!allBooksInfo[a].lastOpenedTimestamp && !allBooksInfo[b].lastOpenedTimestamp) {
+                                return allBooksInfo[a].name.localeCompare(allBooksInfo[b].name, "zh");
+                            } else if (allBooksInfo[a].lastOpenedTimestamp && !allBooksInfo[b].lastOpenedTimestamp) {
+                                return -1;
+                            } else if (!allBooksInfo[a].lastOpenedTimestamp && allBooksInfo[b].lastOpenedTimestamp) {
+                                return 1;
+                            } else {
+                                return allBooksInfo[b].lastOpenedTimestamp - allBooksInfo[a].lastOpenedTimestamp;
+                            }
+                        }
+                    });
+                }
+
+                // console.log("allBooksInfo", allBooksInfo);
+                // console.log(allBooksInfo.length);
+
+                let container = $(".bookshelf .booklist");
+                if (hardRefresh)
+                    container.html("");
+                for (const [idx, bookname] of allBooksInfo_names.entries()) {
+                    let bookInfo = allBooksInfo[bookname];
+                    if (!hardRefresh && container.children().length > 0) {
+                        // try to find the book in container.children()
+                        // if container already contains the book, remove the book first
+                        // otherwise, add the book to the bookshelf
+                        let bookIndex = Array.prototype.slice.call(container.children()).findIndex(book => book.getAttribute("data-filename") === bookInfo.name);
+                        if (bookIndex !== -1) {
+                            // console.log(`Book ${bookInfo.name} is already in bookshelf at index=${bookIndex}. Removing it first.`);
+                            container.children().eq(bookIndex).remove();
                         }
                     }
-                });
-
-                for (const [idx, bookInfo] of booklist.entries()) {
                     container.append(this.genBookItem(bookInfo, idx));
+                    // this.genBookItem(bookInfo, idx).hide().appendTo(container).fadeIn(300);
                 }
                 container.trigger("contentchange");
             } catch (e) {
@@ -561,7 +652,7 @@ var bookshelf = {
             // If there is no book in bookshelf, hide the bookshelf
             // Otherwise, show the bookshelf, but not the bookshelf trigger button
             // Only show the bookshelf trigger button when a book is opened
-            if (booklist.length <= 0) {
+            if (Object.keys(allBooksInfo).length <= 0) {
                 this.hide();
                 this.hideTriggerBtn();
             } else {
@@ -575,9 +666,7 @@ var bookshelf = {
         if (this.enabled) {
             if (isVariableDefined($(".bookshelf")) && $(".bookshelf .booklist").children().length > 0) {
                 $(".bookshelf").show();
-
                 $(".booklist").trigger("contentchange");
-
                 return;
             }
         }
@@ -701,6 +790,15 @@ var bookshelf = {
                     $('#dropZoneImg').css('top', `calc(${topPxNum} / ${windowHeight} * var(--ui_dropZoneImgTop))`);
                     $('#dropZoneImg').css('width', `max(calc(1.2 * (${topPxNum} / ${windowHeight}) * var(--ui_dropZoneImgSize)), calc(var(--ui_dropZoneImgSize) / 1.5)`);
                     $('#dropZoneImg').css('height', `max(calc(1.2 * (${topPxNum} / ${windowHeight}) * var(--ui_dropZoneImgSize)), calc(var(--ui_dropZoneImgSize) / 1.5)`);
+                } else {
+                    // return to default values
+                    $('.bookshelf').css('display', 'none');
+                    $('.bookshelf').css('top', '');
+                    $('#dropZoneText').css('top', 'var(--ui_dropZoneTextTop)');
+                    $('#dropZoneText').css('font-size', 'var(--ui_dropZoneTextSize)');
+                    $('#dropZoneImg').css('top', 'var(--ui_dropZoneImgTop)');
+                    $('#dropZoneImg').css('width', 'var(--ui_dropZoneImgSize)');
+                    $('#dropZoneImg').css('height', 'var(--ui_dropZoneImgSize)');
                 }
 
                 if (this.scrollHeight > this.parentNode.clientHeight) {
@@ -772,6 +870,7 @@ var bookshelf = {
 if (!location.search.includes("no-bookshelf")) { // 地址后面加 "?no-bookshelf" 停用 bookshelf 功能
     bookshelf.init();
     bookshelf.enable();
+
     bookshelf.refreshBookList();    // Now whether or not to show bookshelf depends on whether there is a book in bookshelf
 
     // 启动时打开上次阅读书籍

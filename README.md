@@ -111,13 +111,13 @@
 
 火狐插件：
 
-1. [易笺正常版 (v1.4.6)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
+1. [易笺正常版 (v1.4.7)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
 
 2. [易笺无界面版 (v1.2.6)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian_nogui/)
 
 Chrome插件：
 
-1. [易笺正常版 (v1.4.6)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
+1. [易笺正常版 (v1.4.7)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
 
 2. [易笺无界面版 (v1.2.6)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo?hl=en&authuser=0)
 

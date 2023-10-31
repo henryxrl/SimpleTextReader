@@ -1,3 +1,8 @@
+// Language
+respectUserLangSetting = (document.documentElement.getAttribute("respectUserLangSetting") === "true");
+webLANG = document.documentElement.getAttribute("webLANG");
+console.log(`App language is "${webLANG}". Respect user language setting is ${respectUserLangSetting}.`);
+
 // Get css variables
 style = new CSSGlobalVariables();
 // console.log('Style loaded.')

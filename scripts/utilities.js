@@ -1,7 +1,3 @@
-respectUserLangSetting = (document.documentElement.getAttribute("respectUserLangSetting") === "true");
-webLANG = document.documentElement.getAttribute("webLANG");
-console.log(`App language is "${webLANG}". Respect user language setting is ${respectUserLangSetting}.`);
-
 function setLanguage(lang, saveToLocalStorage = true) {
     if (saveToLocalStorage) {
         webLANG = lang;
@@ -19,9 +15,13 @@ function setLanguage(lang, saveToLocalStorage = true) {
     //     console.log(el);
     // });
     // only reset visible tooltips
-    darkModeActualButton.title = style.ui_tooltip_modeToggle;
-    document.getElementById("STRe-bookshelf-btn").title = style.ui_tooltip_goToLibrary;
-    document.getElementById("STRe-setting-btn").title = style.ui_tooltip_settings;
+    if (isVariableDefined(darkModeActualButton))
+        darkModeActualButton.title = style.ui_tooltip_modeToggle;
+    let bookshelfButton = document.getElementById("STRe-bookshelf-btn");
+    if (isVariableDefined(bookshelfButton))
+        bookshelfButton.title = style.ui_tooltip_goToLibrary;
+    if (isVariableDefined(settingsButton))
+        settingsButton.title = style.ui_tooltip_settings;
 
     console.log(`Language set to "${lang}".`);
 }
@@ -63,7 +63,7 @@ function getHistory(filename, consoleLog=true) {
     return 0;
 }
 
-function saveProgressText(filename, progressText) {
+function setProgressText(filename, progressText) {
     localStorage.setItem(filename + "_progressText", progressText);
 }
 
@@ -84,8 +84,39 @@ function setBookLastReadTimestamp(filename) {
     localStorage.setItem(`${filename}_lastopened`, Date.UTC(now.getFullYear(),now.getMonth(), now.getDate(), now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds()));
 }
 
+function getBookLastReadTimestamp(filename) {
+    if (localStorage.getItem(`${filename}_lastopened`)) {
+        return localStorage.getItem(`${filename}_lastopened`);
+    }
+    return "";
+}
+
 function convertUTCTimestampToLocalString(utcTimestamp) {
     return new Date(parseInt(utcTimestamp) + new Date().getTimezoneOffset() * 60000).toLocaleString();
+}
+
+function setIsOnServer(filename, isOnserver) {
+    let final_isOnServer = isOnserver || false;
+    localStorage.setItem(`${filename}_isOnServer`, final_isOnServer);
+}
+
+function getIsOnServer(filename) {
+    if (localStorage.getItem(`${filename}_isOnServer`)) {
+        return localStorage.getItem(`${filename}_isOnServer`).toLowerCase() === "true";
+    }
+    return false;
+}
+
+function setIsFromLocal(filename, isFromLocal) {
+    let final_isFromLocal = isFromLocal || false;
+    localStorage.setItem(`${filename}_isFromLocal`, final_isFromLocal);
+}
+
+function getIsFromLocal(filename) {
+    if (localStorage.getItem(`${filename}_isFromLocal`)) {
+        return localStorage.getItem(`${filename}_isFromLocal`).toLowerCase() === "true";
+    }
+    return false;
 }
 
 function removeAllHistory() {
@@ -517,4 +548,10 @@ function ignoreContentFromUnbalancedBracketIndex(orig_str) {
 
 function isEllipsisActive($jQueryObject, tolerance=1) {
     return ($jQueryObject.outerWidth() + tolerance < $jQueryObject[0].scrollWidth);
+}
+
+async function URLToFileObject(url, filename) {
+    const response = await fetch(url);
+    const data = await response.blob();
+    return new File([data], filename, { type: data.type });
 }

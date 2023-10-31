@@ -39,3 +39,4 @@ var footNoteContainer = document.getElementById("footnote-content");
 
 var darkModeActualButton = document.getElementById("toggle-btn");   // just for set title
 var darkModeToggle = document.getElementById("toggle");
+var settingsButton = document.getElementById("STRe-setting-btn");

@@ -877,7 +877,8 @@ input[type="color"]:not(:hover) {
     /* padding-left: 10px; */
     /* display: inline; */
     left: 5px;
-    position: absolute;
+    /* position: absolute; */
+    position: relative;
 }
 .bookshelf .book .infoContainer {
     text-align: justify;
@@ -909,6 +910,7 @@ input[type="color"]:not(:hover) {
 .bookshelf .book .infoContainer .progress .read_text svg {
     vertical-align: middle;
     fill: var(--fontInfoColor);
+    padding-top: 2px;
     padding-right: 2px;
     width: 16px;
     height: 20px;
@@ -955,10 +957,30 @@ input[type="color"]:not(:hover) {
     width: 1.25rem;
     height: 1.25rem;
 }
-
 .bookshelf .book .delete-btn svg {
     /* fill: var(--fontInfoColor); */
     stroke: var(--fontInfoColor);
     height: 1.2rem;
     width: 1.2rem;
+}
+.bookshelf .book .isOnServer {
+    font-family: var(--fontFamily_ui);
+    position:relative;
+    display: block;
+    float: left;
+    cursor: pointer;
+    font-size: 1.5rem;
+    /* padding: 6px 8px; */
+    z-index: 2;
+    color: var(--fontInfoColor);
+    width: 1.25rem;
+    height: 1.25rem;
+    left: 15px;
+    top: 3px;
+}
+.bookshelf .book .isOnServer svg {
+    fill: var(--fontInfoColor);
+    stroke: var(--fontInfoColor);
+    height: 1.4rem;
+    width: 1.4rem;
 }
