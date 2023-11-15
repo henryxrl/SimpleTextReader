@@ -77,9 +77,9 @@ var Footnotes = {
         var actual_width = div.width();
         var left = position.left;
         if (left + (margins + actual_width)  > jQuery(window).width() + jQuery(window).scrollLeft()) {
-            left = jQuery(window).width() - (margins + actual_width) + jQuery(window).scrollLeft();
-            left = (jQuery(window).width() - actual_width) / 2.0;
-            left -= singleMargin;
+            left = jQuery(window).width() - (margins + actual_width) + jQuery(window).scrollLeft() - 12;
+            // left = (jQuery(window).width() - actual_width) / 2.0;
+            // left -= singleMargin;
         }
         var top = position.top + margins;
         if (top + div.height() > jQuery(window).height() + jQuery(window).scrollTop()) {
@@ -90,7 +90,8 @@ var Footnotes = {
         left -= bodyOffset.left;
         div.css({
             left:left,
-            top:top
+            top:top,
+            zIndex:9000,
         });
     },
     footnoteoout: function() {
@@ -103,7 +104,7 @@ var Footnotes = {
         },100);*/
         Footnotes.footnotetimeout = setTimeout(function() {
             jQuery('#footnotediv').remove();
-        }, 400);
+        }, 500);
     },
     divover: function() {
         clearTimeout(Footnotes.footnotetimeout);
