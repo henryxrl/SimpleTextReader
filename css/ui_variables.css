@@ -18,7 +18,7 @@
 }
 @font-face {
     font-family:"body";
-    src:local("方正宋刻本秀楷_GBK"), local("FZSongKeBenXiuKai-R-GBK"), local("FZSongKeBenXiuKaiJF"),
+    src:local("方正宋刻本秀楷_GBK"), local("FZSongKeBenXiuKai-R-GBK"), local("FZSongKeBenXiuKaiJF"), local("FZSongKeBenXiuKaiS-R-JF"),
     url(../fonts/FZSKBXKK.woff2) format('woff2');
     font-display: swap;
 }
