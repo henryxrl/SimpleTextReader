@@ -25,11 +25,17 @@ function setMainContentUI() {
     }, 1000);
 
     // UI calculations
+    // var maxWidth = sh(100)/9*16;
+    const maxWidth = sh(100)*2;
+    style.ui_maxWidth = `${maxWidth}px`;
     // windowWith = windowLeftRightMargin + tocWidth + gapWidth + contentWidth + windowLeftRightMargin;
     style.ui_contentMarginLeft = (100 - parseInt(style.ui_contentWidth) - parseInt(style.ui_windowLeftRightMargin)).toString();
     // console.log("IN SETMAINCONTENTUI: style.ui_contentMarginLeft: " + style.ui_contentMarginLeft);
     style.ui_tocWidth = (100 - parseInt(style.ui_contentWidth) - parseInt(style.ui_windowLeftRightMargin) * 2 - parseInt(style.ui_gapWidth)).toString();
-    style.ui_paginationCenter = (parseInt(style.ui_contentWidth) / 2 + parseInt(style.ui_contentMarginLeft)).toString();
+
+    const paginationLeftPercent = parseInt(style.ui_contentWidth) / 2 + parseInt(style.ui_contentMarginLeft);
+    const paginationLeft = vw(100) <= maxWidth ? paginationLeftPercent : (paginationLeftPercent * maxWidth / 100 + (vw(100) - maxWidth) / 2) / vw(100) * 100;
+    style.ui_paginationCenter = paginationLeft.toString();
     
     // Main content
     if (isVariableDefined(contentContainer)) {
@@ -41,17 +47,13 @@ function setMainContentUI() {
     }
 
     // TOC
-    if (isVariableDefined(tocWrapper)) {
-        tocWrapper.style.width = style.ui_tocWidth + '%';
-        tocWrapper.style.height = style.ui_tocHeight + '%';
-        tocWrapper.style.marginTop = '0px';
-        tocWrapper.style.marginRight = '0px';
-        tocWrapper.style.marginBottom = '0px';
-        tocWrapper.style.marginLeft = style.ui_windowLeftRightMargin + '%';
-    }
     if (isVariableDefined(tocContainer)) {
         tocContainer.style.width = style.ui_tocWidth + '%';
-        tocContainer.style.height = 'auto';
+        tocContainer.style.height = style.ui_tocHeight + '%';
+        tocContainer.style.marginTop = '0px';
+        tocContainer.style.marginRight = '0px';
+        tocContainer.style.marginBottom = '0px';
+        tocContainer.style.marginLeft = style.ui_windowLeftRightMargin + '%';
     }
 
     // Pagination
@@ -71,11 +73,8 @@ function setMainContentUI() {
 }
 
 function updateTOCUI(isIncreasing) {
-    if (isVariableDefined(tocWrapper)) {
-        tocWrapper.style.height = style.ui_tocHeight + '%';
-    }
     if (isVariableDefined(tocContainer)) {
-        tocContainer.style.height = 'auto';
+        tocContainer.style.height = style.ui_tocHeight + '%';
         if (tocContainer.scrollHeight > (window.innerHeight * 0.5)) {
             tocContainer.style.height = '50%';
         }
@@ -95,6 +94,12 @@ function updateTOCUI(isIncreasing) {
                 generatePagination();
             }
         }
+
+        const maxWidth = parseFloat(style.ui_maxWidth);
+        const paginationLeftPercent = parseInt(style.ui_contentWidth) / 2 + parseInt(style.ui_contentMarginLeft);
+        const paginationLeft = vw(100) <= maxWidth ? paginationLeftPercent : (paginationLeftPercent * maxWidth / 100 + (vw(100) - maxWidth) / 2) / vw(100) * 100;
+        style.ui_paginationCenter = paginationLeft.toString();
+        paginationContainer.style.left = style.ui_paginationCenter + '%';
     }
 }
 

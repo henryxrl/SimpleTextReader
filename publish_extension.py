@@ -12,7 +12,7 @@ def get_version(unqiue_combinations):
         if version == 'no-ui':
             # no-ui version doesn't receive updates any more
             continue
-        with open(f'manifests/{browser}/{version}/manifest.json') as f:
+        with open(f'manifests/{browser}/{version}/manifest.json', encoding='utf-8') as f:
             manifest = json.load(f)
             version_strs.append(manifest['version'])
     assert all(x == version_strs[0] for x in version_strs), 'Version numbers are not the same across all browsers and versions. Please fix this before publishing.'
@@ -65,7 +65,7 @@ if __name__ == '__main__':
             continue
         
         # modify the version field of manifest.json file
-        with open(f'manifests/{browser}/{version}/manifest.json', 'r+') as f:
+        with open(f'manifests/{browser}/{version}/manifest.json', 'r+', encoding='utf-8') as f:
             data = json.load(f)
             data['version'] = new_version_str
             f.seek(0)

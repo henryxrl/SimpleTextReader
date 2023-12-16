@@ -1,6 +1,11 @@
 @charset "UTF-8";
 /* General UI */
+html {
+    margin: 0 auto;
+    max-width: var(--ui_maxWidth);
+}
 body {
+    min-width: 500px;
     font-size: 100% !important;
     background-color: var(--bgColor) !important;
     scrollbar-color: var(--fontInfoColor) var(--bgColor) !important;
@@ -191,9 +196,11 @@ To Offset the anchor link to clear fixed header
     border-radius: 5px;
 }
 .jumpInput {
+    text-align: center;
     color: black;
+    font-family: var(--fontFamily_ui);
     border:0;
-    /* outline:0; */
+    outline:0;
     background-color: var(--bgColor) !important;
 }
 .disabledbutton {
@@ -203,11 +210,6 @@ To Offset the anchor link to clear fixed header
 
 
 /* TOC */
-#tocWrapper {
-    position: relative;
-    /* width: 16%; */
-    /* height: 50%; */
-}
 #tocContent {
     /* border: var(--mainColor_active) solid 1px; */
     /* width: 16%; */
@@ -218,7 +220,7 @@ To Offset the anchor link to clear fixed header
     transform: translate(0%, -50%);
     -webkit-transform: translate(0%, -50%);
     line-height: 1em;
-    font-size: 1em;
+    font-size: 1.2em;
     overflow-x: hidden;
     overflow-y: auto;
     font-family:var(--fontFamily_title);
@@ -295,7 +297,7 @@ a.toc-active::before {
     /* margin: 0 0 0 3%; */
     color: var(--fontInfoColor);
     /* top: 75%; */
-    font-size: 0.8em;
+    font-size: 0.9em;
     z-index: 101;
 }
 

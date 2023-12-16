@@ -96,7 +96,9 @@ Support for customized settings such as font size, line height, theme colors and
 
     [1] When reading, the UI language is set to match the language of the book for better reading experience.
 
-3. Other stability bug fixes.
+3. Optimized for ultrawide monitors.
+
+4. Other stability bug fixes.
 
 ***NOTE: The bookshelf feature is incompatible with Firefox's private browsing mode and will be automatically deactivated.***
 
@@ -113,15 +115,15 @@ Support for customized settings such as font size, line height, theme colors and
 
 Firefox:
 
-1. [Regular (v1.4.8.2)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
+1. [Regular (v1.4.9)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
 
-2. [No-UI (v1.2.6)](https://addons.mozilla.org/en-US/firefox/addon/yijian_nogui/)
+2. [No-UI (v1.2.8)](https://addons.mozilla.org/en-US/firefox/addon/yijian_nogui/)
 
 Chrome:
 
-1. [Regular (v1.4.8.2)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
+1. [Regular (v1.4.9)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
 
-2. [No-UI (v1.2.6)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo?hl=en&authuser=0)
+2. [No-UI (v1.2.8)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo?hl=en&authuser=0)
 
 ---
 

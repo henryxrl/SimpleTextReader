@@ -38,10 +38,10 @@ var observer = new MutationObserver(function (mutations) {
             loading.appendChild(loading_img);
             document.body.appendChild(loading);
 
-            let tocWrapper = document.createElement('div');
-            tocWrapper.setAttribute('id', 'tocWrapper');
-            tocWrapper.innerHTML = "<div id='tocContent'></div>";
-            document.body.appendChild(tocWrapper);
+            let tocContainer = document.createElement('div');
+            tocContainer.setAttribute('id', 'tocContent');
+            tocContainer.innerHTML = "<div id='tocContent'></div>";
+            document.body.appendChild(tocContainer);
 
             let progress = document.createElement('div');
             progress.setAttribute('id', 'progress');

@@ -31,7 +31,6 @@ var loadingScreen = document.getElementById('loading');
 var dropZoneText = document.getElementById("dropZoneText");
 var dropZoneImg = document.getElementById("dropZoneImg");
 var contentContainer = document.getElementById("content");
-var tocWrapper = document.getElementById("tocWrapper");
 var tocContainer = document.getElementById("tocContent");
 var paginationContainer = document.getElementById("pagination");
 var progressContainer = document.getElementById("progress");

@@ -1,5 +1,9 @@
 @charset "UTF-8";
 /* General UI */
+html {
+    margin: 0 auto;
+    max-width: var(--ui_maxWidth);
+}
 body {
     min-width: 500px;
     font-size: 100% !important;
@@ -193,6 +197,7 @@ To Offset the anchor link to clear fixed header
     opacity: 1;
 }
 .jumpInput {
+    text-align: center;
     color: var(--paginationFontColor);
     font-family: var(--fontFamily_ui);
     border: 0;
@@ -206,11 +211,6 @@ To Offset the anchor link to clear fixed header
 
 
 /* TOC */
-#tocWrapper {
-    position: relative;
-    /* width: 16%; */
-    /* height: 50%; */
-}
 #tocContent {
     /* border: var(--mainColor_active) solid 1px; */
     /* width: 16%; */
@@ -221,7 +221,7 @@ To Offset the anchor link to clear fixed header
     transform: translate(0%, -50%);
     -webkit-transform: translate(0%, -50%);
     line-height: 1em;
-    font-size: 1em;
+    font-size: 1.2em;
     overflow-x: hidden;
     overflow-y: auto;
     font-family:var(--fontFamily_title);
@@ -298,7 +298,7 @@ a.toc-active::before {
     /* margin: 0 0 0 3%; */
     color: var(--fontInfoColor);
     /* top: 75%; */
-    font-size: 0.8em;
+    font-size: 0.9em;
     z-index: 101;
 }
 
@@ -688,7 +688,8 @@ input[type="color"]:not(:hover) {
     width: var(--ui_bookCoverWidth);
     height: var(--ui_bookContainerHeight);
     color: var(--fontColor);
-    margin: 2.5vw;
+    /* margin: 2.5vw; */
+    margin: 3em;
     overflow: visible;
 }
 /* .bookshelf .book:hover > .infoContainer .dot-menu__label {
@@ -950,8 +951,9 @@ input[type="color"]:not(:hover) {
     display: block;
     float: right;
     cursor: pointer;
-    font-size: 1.5rem;
+    /* font-size: 1.5rem; */
     /* padding: 6px 8px; */
+    padding: 2px 0px;
     z-index: 2;
     color: var(--fontInfoColor);
     width: 1.25rem;

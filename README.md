@@ -96,7 +96,9 @@
 
     [1] 当阅读书籍时界面语言为书籍语言以获得更好的用户体验
 
-3. 其他稳定性更新若干
+3. 针对超宽屏优化
+
+4. 其他稳定性更新若干
 
 ***注意：书架无法在火狐隐私浏览模式下启动，会被自动禁用。***
 
@@ -111,15 +113,15 @@
 
 火狐插件：
 
-1. [易笺正常版 (v1.4.8.2)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
+1. [易笺正常版 (v1.4.9)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
 
-2. [易笺无界面版 (v1.2.6)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian_nogui/)
+2. [易笺无界面版 (v1.2.8)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian_nogui/)
 
 Chrome插件：
 
-1. [易笺正常版 (v1.4.8.2)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
+1. [易笺正常版 (v1.4.9)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
 
-2. [易笺无界面版 (v1.2.6)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo?hl=en&authuser=0)
+2. [易笺无界面版 (v1.2.8)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo?hl=en&authuser=0)
 
 ---
 

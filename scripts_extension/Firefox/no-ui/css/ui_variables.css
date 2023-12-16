@@ -18,8 +18,9 @@
 }
 @font-face {
     font-family:"body";
-    src:local("方正宋刻本秀楷_GBK"), local("FZSongKeBenXiuKai-R-GBK"), local("FZSongKeBenXiuKaiJF"),
-    url(../fonts/FZSKBXKK.woff2) format('woff2');
+    src:local("方正宋刻本秀楷简体"), local("方正宋刻本秀楷简繁"), local("方正宋刻本秀楷_GBK"), local("FZSongKeBenXiuKai-R-GBK"), local("FZSongKeBenXiuKaiJF"), local("FZSongKeBenXiuKaiS-R-JF"), local("FZSongKeBenXiuKaiS-R-GB"), local("FZSongKeBenXiuKaiF"),
+    url(../fonts/FZSKBXKK.woff2) format('woff2'),
+    url(../fonts/FZKTK.woff2) format('woff2');  /* Fallback */
     font-display: swap;
 }
 /* @font-face {
@@ -39,6 +40,7 @@
 
 :root {
     /* UI variables */
+    --ui_maxWidth: 0px;
     --ui_Mode: light;
     --ui_LANG: CN;
     --ui_title_CN: 易笺;
