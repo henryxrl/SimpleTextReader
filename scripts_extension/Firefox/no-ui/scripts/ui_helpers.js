@@ -18,14 +18,18 @@ function setMainContentUI() {
     }
     
     // UI calculations
-    // var maxWidth = sh(100)/9*16;
-    const maxWidth = sh(100)*2;
+    const maxWidth = sh(100) / 9 * 16;
+    // const maxWidth = sh(100) * 2;
     style.ui_maxWidth = `${maxWidth}px`;
+
     // windowWith = windowLeftRightMargin + tocWidth + gapWidth + contentWidth + windowLeftRightMargin;
     style.ui_contentMarginLeft = (100 - parseInt(style.ui_contentWidth) - parseInt(style.ui_windowLeftRightMargin)).toString();
     // console.log("IN SETMAINCONTENTUI: style.ui_contentMarginLeft: " + style.ui_contentMarginLeft);
-    style.ui_tocWidth = (100 - parseInt(style.ui_contentWidth) - parseInt(style.ui_windowLeftRightMargin) * 2 - parseInt(style.ui_gapWidth)).toString();
-    
+
+    const tocWidthPercent = 100 - parseInt(style.ui_contentWidth) - parseInt(style.ui_windowLeftRightMargin) * 2 - parseInt(style.ui_gapWidth);
+    const tocWidth = vw(100) <= maxWidth ? tocWidthPercent : tocWidthPercent * maxWidth / vw(100);
+    style.ui_tocWidth = tocWidth.toString();
+
     const paginationLeftPercent = parseInt(style.ui_contentWidth) / 2 + parseInt(style.ui_contentMarginLeft);
     const paginationLeft = vw(100) <= maxWidth ? paginationLeftPercent : (paginationLeftPercent * maxWidth / 100 + (vw(100) - maxWidth) / 2) / vw(100) * 100;
     style.ui_paginationCenter = paginationLeft.toString();
@@ -47,6 +51,8 @@ function setMainContentUI() {
         tocContainer.style.marginRight = '0px';
         tocContainer.style.marginBottom = '0px';
         tocContainer.style.marginLeft = style.ui_windowLeftRightMargin + '%';
+
+        tocContainer.style.left = `calc(${contentContainer.getBoundingClientRect().x}px - ${tocContainer.getBoundingClientRect().width}px - ${style.ui_gapWidth}% - ${style.ui_windowLeftRightMargin}%)`;
     }
 
     // Pagination
@@ -62,15 +68,30 @@ function setMainContentUI() {
         progressContainer.style.marginBottom = '2.5em';
         progressContainer.style.marginLeft = style.ui_windowLeftRightMargin + '%';
         progressContainer.style.top = '75%';
+
+        progressContainer.style.left = `calc(${contentContainer.getBoundingClientRect().x}px - ${tocContainer.getBoundingClientRect().width}px - ${style.ui_gapWidth}% - ${style.ui_windowLeftRightMargin}%)`;
     }
 }
 
 function updateTOCUI(isIncreasing) {
+    const maxWidth = parseFloat(style.ui_maxWidth);
+    const tocWidthPercent = 100 - parseInt(style.ui_contentWidth) - parseInt(style.ui_windowLeftRightMargin) * 2 - parseInt(style.ui_gapWidth);
+    const tocWidth = vw(100) <= maxWidth ? tocWidthPercent : tocWidthPercent * maxWidth / vw(100);
+    style.ui_tocWidth = tocWidth.toString();
+
     if (isVariableDefined(tocContainer)) {
+        tocContainer.style.width = style.ui_tocWidth + '%';
         tocContainer.style.height = style.ui_tocHeight + '%';
         if (tocContainer.scrollHeight > (window.innerHeight * 0.5)) {
             tocContainer.style.height = '50%';
         }
+
+        tocContainer.style.left = `calc(${contentContainer.getBoundingClientRect().x}px - ${tocContainer.getBoundingClientRect().width}px - ${style.ui_gapWidth}% - ${style.ui_windowLeftRightMargin}%)`;
+    }
+
+    if (isVariableDefined(progressContainer)) {
+        progressContainer.style.width = style.ui_tocWidth + '%';
+        progressContainer.style.left = `calc(${contentContainer.getBoundingClientRect().x}px - ${tocContainer.getBoundingClientRect().width}px - ${style.ui_gapWidth}% - ${style.ui_windowLeftRightMargin}%)`;
     }
 
     if (isVariableDefined(paginationContainer)) {
@@ -88,7 +109,6 @@ function updateTOCUI(isIncreasing) {
             }
         }
 
-        const maxWidth = parseFloat(style.ui_maxWidth);
         const paginationLeftPercent = parseInt(style.ui_contentWidth) / 2 + parseInt(style.ui_contentMarginLeft);
         const paginationLeft = vw(100) <= maxWidth ? paginationLeftPercent : (paginationLeftPercent * maxWidth / 100 + (vw(100) - maxWidth) / 2) / vw(100) * 100;
         style.ui_paginationCenter = paginationLeft.toString();
