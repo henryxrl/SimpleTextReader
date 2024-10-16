@@ -3,6 +3,7 @@
 **/KX_47043_14.woff
 **/dist/
 # **/publish_extension.py
+.vscode/
 
 # Ignore Mac DS_Store files
 **/.DS_Store

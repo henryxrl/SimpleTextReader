@@ -23,19 +23,18 @@
     url(../fonts/FZKTK.woff2) format('woff2');  /* Fallback */
     font-display: swap;
 }
+@font-face {
+    font-family:"fzkai";
+    src:local("方正楷体"), local("FZKai"), local("FZKaiTi"), local("FZKai-Z03S"),
+    url(../fonts/FZKTK.woff2) format('woff2');
+    font-display: swap;
+}
 /* @font-face {
     font-family:"康熙字典體傳承版";
     src:local("康熙字典體傳承版"),
     url(../fonts/KX_47043_14.woff) format('woff');
     font-display: swap;
 } */
-/* @font-face {
-    font-family:"方正宋刻本秀楷_GBK";
-    src:local("方正宋刻本秀楷_GBK"),
-    url(../fonts/FZSKBXKK.woff2) format('woff2');
-    font-display: swap;
-} */
-
 
 
 :root {
@@ -131,10 +130,31 @@
     --ui_darkMode_fontColor_en: "Dark Mode Font Color";
     --ui_darkMode_bgColor_zh: "夜间背景颜色";
     --ui_darkMode_bgColor_en: "Dark Mode BG Color";
+    --ui_title_font_zh: "标题字体";
+    --ui_title_font_en: "Title Font";
+    --ui_body_font_zh: "正文字体";
+    --ui_body_font_en: "Body Font";
     --ui_pagination2pageBottom_dist_zh: "分页条与底部距离";
     --ui_pagination2pageBottom_dist_en: "Pagination-Bottom Distance";
     --ui_pagination_opacity_zh: "分页条透明度";
     --ui_pagination_opacity_en: "Pagination Opacity";
+
+    /* UI font settings strings */
+    --ui_font_group_system: "";
+    --ui_font_group_system_zh: 系统字体;
+    --ui_font_group_system_en: OS Font;
+    --ui_font_group_custom: "";
+    --ui_font_group_custom_zh: 易笺字体;
+    --ui_font_group_custom_en: WebApp Font;
+    --ui_font_ui_label: "";
+    --ui_font_ui_label_zh: 霞鹜文楷;
+    --ui_font_ui_label_en: LXGW WenKai;
+    --ui_font_title_label: "";
+    --ui_font_title_label_zh: 黄令东齐伋复刻体;
+    --ui_font_title_label_en: QIJIC;
+    --ui_font_body_label: "";
+    --ui_font_body_label_zh: 方正宋刻本秀楷;
+    --ui_font_body_label_en: FZSongKeBenXiuKai;
 
     /* UI bookshelf strings */
     --ui_tooltip_removeBook: "";
@@ -233,12 +253,14 @@
 
     /* Font variables */
     --fontFamily_title: "";
-    --fontFamily_title_zh: title, ui;
+    --fontFamily_title_zh: title;
     --fontFamily_title_en: ui;
     --fontFamily_body: "";
-    --fontFamily_body_zh: body, ui;
+    --fontFamily_body_zh: body;
     --fontFamily_body_en: ui;
     --fontFamily_ui: ui, Arial, Helvetica, sans-serif;
+    --title_font: title;
+    --body_font: body;
 
     /* Dark mode variables */
     --darkMode_init_animation: all 0s ease;
@@ -296,6 +318,13 @@
     --ui_darkMode_mainColor: var(--ui_darkMode_mainColor_zh);
     --ui_darkMode_fontColor: var(--ui_darkMode_fontColor_zh);
     --ui_darkMode_bgColor: var(--ui_darkMode_bgColor_zh);
+    --ui_title_font: var(--ui_title_font_zh);
+    --ui_body_font: var(--ui_body_font_zh);
+    --ui_font_group_system: var(--ui_font_group_system_zh);
+    --ui_font_group_custom: var(--ui_font_group_custom_zh);
+    --ui_font_ui_label: var(--ui_font_ui_label_zh);
+    --ui_font_title_label: var(--ui_font_title_label_zh);
+    --ui_font_body_label: var(--ui_font_body_label_zh);
     --ui_pagination2pageBottom_dist: var(--ui_pagination2pageBottom_dist_zh);
     --ui_pagination_opacity: var(--ui_pagination_opacity_zh);
     --ui_settingMenuFontSize: var(--ui_settingMenuFontSize_zh);
@@ -342,6 +371,13 @@
     --ui_darkMode_mainColor: var(--ui_darkMode_mainColor_en);
     --ui_darkMode_fontColor: var(--ui_darkMode_fontColor_en);
     --ui_darkMode_bgColor: var(--ui_darkMode_bgColor_en);
+    --ui_title_font: var(--ui_title_font_en);
+    --ui_body_font: var(--ui_body_font_en);
+    --ui_font_group_system: var(--ui_font_group_system_en);
+    --ui_font_group_custom: var(--ui_font_group_custom_en);
+    --ui_font_ui_label: var(--ui_font_ui_label_en);
+    --ui_font_title_label: var(--ui_font_title_label_en);
+    --ui_font_body_label: var(--ui_font_body_label_en);
     --ui_pagination2pageBottom_dist: var(--ui_pagination2pageBottom_dist_en);
     --ui_pagination_opacity: var(--ui_pagination_opacity_en);
     --ui_settingMenuFontSize: var(--ui_settingMenuFontSize_en);
@@ -398,6 +434,27 @@
 }
 #settingLabel-setting_dark_bgColor::before {
     content: var(--ui_darkMode_bgColor);
+}
+#settingLabel-setting_title_font::before {
+    content: var(--ui_title_font);
+}
+#settingLabel-setting_body_font::before {
+    content: var(--ui_body_font);
+}
+#settingLabel-setting_font_group_system::before {
+    content: var(--ui_font_group_system);
+}
+#settingLabel-setting_font_group_custom::before {
+    content: var(--ui_font_group_custom);
+}
+#settingLabel-setting_font_ui_label::before {
+    content: var(--ui_font_ui_label);
+}
+#settingLabel-setting_font_title_label::before {
+    content: var(--ui_font_title_label);
+}
+#settingLabel-setting_font_body_label::before {
+    content: var(--ui_font_body_label);
 }
 #settingLabel-setting_pagination_bottom::before {
     content: var(--ui_pagination2pageBottom_dist);

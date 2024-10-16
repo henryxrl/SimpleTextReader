@@ -436,8 +436,10 @@ async function handleSelectedFile(fileList) {
             // Detect language
             isEasternLan = getLanguage(fileContentChunks.slice(0, 50).join("\n"));
             console.log("isEasternLan: ", isEasternLan);
-            // Change UI language based on detected language
-            setLanguage((isEasternLan ? "zh" : "en"), false);
+            // Change UI language based on detected language... or not?
+            respectUserLangSetting = (document.documentElement.getAttribute("respectUserLangSetting") === "true");
+            if (!respectUserLangSetting)
+                setLanguage((isEasternLan ? "zh" : "en"), false);
 
             // Get book name and author
             filename = fileList[0].name;
