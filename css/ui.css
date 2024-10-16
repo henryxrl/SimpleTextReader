@@ -458,7 +458,7 @@ dialog::backdrop {
     padding: 10px 0px;
     overflow-y: unset !important;
     display: flex;
-    justify-content: center; /* Align horizontal */
+    /* justify-content: center; /* Align horizontal */
     align-items: center; /* Align vertical */
 }
 .settingItem-span {
@@ -598,15 +598,19 @@ input[type="color"]:not(:hover) {
     border-radius: 5px;
     -webkit-box-shadow: var(--shadowColor) 0 0 5px;
     -moz-box-shadow: 0 0 5px var(--shadowColor);
+    max-height: 150px;
+    overflow-y: auto;
 }
 .select-options li {
     margin: 0;
-    padding: 10px 0;
+    /* padding: 10px 0; */
+    padding: 8px 10px;
     /* text-indent: 15px; */
     background-color: color-mix(in srgb,var(--bgColor),#000 0%);
     transition: all 0.15s ease-in;
     border-radius: 5px;
-    text-align: center;
+    /* text-align: center; */
+    font-size: 0.95rem;
 }
 .select-options li:hover,
 .select-options li .is-selected {
@@ -615,6 +619,23 @@ input[type="color"]:not(:hover) {
 }
 .select-options li[rel="hide"] {
     display: none;
+}
+/* Style the optgroup labels differently */
+.optgroup-label {
+    color: var(--fontInfoColor);
+    font-size: 0.8rem !important;
+    padding: 0;
+    margin: 0;
+    /* font-weight: bold; */
+    cursor: default;
+    /* padding: 8px 15px; */
+    /* background-color: #f0f0f0; */
+    /* margin-top: 5px; */
+    pointer-events: none;
+}
+.optgroup-option {
+    /* padding-left: 20px; */
+    cursor: pointer;
 }
 
 

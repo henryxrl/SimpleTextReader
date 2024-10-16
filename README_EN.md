@@ -21,6 +21,7 @@ Big thanks to [Manjusaka](https://github.com/Zheaoli) for his amazing help and h
 ## Highlights
 
 1. Open large text files in a split second; automatic detection of text encoding
+
 2. Auto detection of file name:
 
     `《书名》作者：作者名.txt`
@@ -30,12 +31,19 @@ Big thanks to [Manjusaka](https://github.com/Zheaoli) for his amazing help and h
     `Bookname by author.txt`
 
 3. Auto detection of chapter titles using Regular Expressions
+
 4. Auto styling of footnotes
+
 5. UI language depends on the text file opened in SimpleTextReader (English vs. Chinese)
+
 6. Auto detection and removal of text ads in the file
+
 7. Auto generation of book seal stamps for fun
+
 8. Auto save reading process
+
 9. Auto generation of book cover arts in the bookshelf
+
 10. Modern-looking UI design
 
 ## Important Updates
@@ -56,17 +64,19 @@ Now SimpleTextReader can be installed as a PWA in supported browsers (Chromium-b
 
 ### v1.2
 
-![Darkmode](assets/2_darkmode.png)
 Enable dark mode.
 
+![Darkmode](assets/2_darkmode.png)
+
 ### v1.3
+
+Support for customized settings such as font size, line height, theme colors and much more.
 
 <div float="left">
     <img src="assets/3_settings5.png" width="31%" />
     <img src="assets/3_settings4.png" width="34%" />
     <img src="assets/3_settings6.png" width="31%" />
 </div>
-Support for customized settings such as font size, line height, theme colors and much more.
 
 ### v1.4
 
@@ -109,21 +119,27 @@ Support for customized settings such as font size, line height, theme colors and
     <img src="assets/4_bookshelf4_en.png" width="49%" />
 </div>
 
+### v1.5
+
+1. Support customizing fonts for book title and body.
+
+2. Removed the character limitation for detecting chapter titles.
+
 ## Usage
 
 ### Download from online stores
 
 Firefox:
 
-1. [Regular (v1.4.9.1)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
+1. [Regular (v1.5)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
 
-2. [No-UI (v1.2.8.1)](https://addons.mozilla.org/en-US/firefox/addon/yijian_nogui/)
+2. [No-UI (v1.2.9)](https://addons.mozilla.org/en-US/firefox/addon/yijian_nogui/)
 
 Chrome:
 
-1. [Regular (v1.4.9.1)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
+1. [Regular (v1.5)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
 
-2. [No-UI (v1.2.8.1)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo?hl=en&authuser=0)
+2. [No-UI (v1.2.9)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo?hl=en&authuser=0)
 
 ---
 
