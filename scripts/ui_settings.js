@@ -65,7 +65,8 @@ const custom_fonts = [
     { en: 'title', zh: 'title', label_zh: style.ui_font_title_label_zh, label_en: style.ui_font_title_label_en },
     { en: 'body', zh: 'body', label_zh: style.ui_font_body_label_zh, label_en: style.ui_font_body_label_en },
     { en: 'fzkai', zh: 'fzkai', label_zh: '方正楷体', label_en: 'FZKaiTi' },
-    { en: 'ui', zh: 'ui', label_zh: style.ui_font_ui_label_zh, label_en: style.ui_font_ui_label_en }
+    { en: 'ui', zh: 'ui', label_zh: style.ui_font_ui_label_zh, label_en: style.ui_font_ui_label_en },
+    { en: 'kinghwa', zh: 'kinghwa', label_zh: '京華老宋体', label_en: 'KingHwa_OldSong' }
 ];
 const fallback_fonts = ['ui', 'serif', 'sans-serif', 'monospace'];
 let filtered_font_names = [];

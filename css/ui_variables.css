@@ -29,6 +29,13 @@
     url(../fonts/FZKTK.woff2) format('woff2');
     font-display: swap;
 }
+@font-face {
+    font-family:"kinghwa";
+    src:local("京華老宋体"), local("京华老宋体"), local("KingHwa"), local("KingHwa_OldSong"),
+    url(../fonts/KingHwa_OldSong.woff) format('woff');
+    font-display: swap;
+    size-adjust: 95%;
+}
 /* @font-face {
     font-family:"康熙字典體傳承版";
     src:local("康熙字典體傳承版"),

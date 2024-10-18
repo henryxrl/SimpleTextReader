@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "易笺（无界面版）",
     "description": "txt（小说）阅读器：支持本地和云端的所有txt文件，自动排版，自动分页，自动生成目录，记录阅读进度。",
-    "version": "1.2.9.1",
+    "version": "1.2.9.2",
     "permissions": [],
     "content_scripts": [
         {
