@@ -437,7 +437,7 @@ async function handleSelectedFile(fileList) {
             isEasternLan = getLanguage(fileContentChunks.slice(0, 50).join("\n"));
             console.log("isEasternLan: ", isEasternLan);
             // Change UI language based on detected language... or not?
-            respectUserLangSetting = (document.documentElement.getAttribute("respectUserLangSetting") === "true");
+            // respectUserLangSetting = (document.documentElement.getAttribute("respectUserLangSetting") === "true");
             if (!respectUserLangSetting)
                 setLanguage((isEasternLan ? "zh" : "en"), false);
 

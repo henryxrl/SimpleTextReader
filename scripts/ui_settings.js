@@ -105,8 +105,9 @@ initiateSettingMenu();
 // Main functions
 //
 function loadSettings() {
-    if (respectUserLangSetting)
+    if (respectUserLangSetting) {
         ui_language = localStorage.getItem("UILang") || ui_language_default;
+    }
     p_lineHeight = localStorage.getItem("p_lineHeight") || p_lineHeight_default;
     p_fontSize = localStorage.getItem("p_fontSize") || p_fontSize_default;
     light_mainColor_active = localStorage.getItem("light_mainColor_active") || light_mainColor_active_default;
@@ -173,8 +174,9 @@ function loadDefaultSettings() {
     pagination_bottom = pagination_bottom_default;
     pagination_opacity = pagination_opacity_default;
 
-    if (respectUserLangSetting)
+    if (respectUserLangSetting) {
         setSelectorValue("setting_uilanguage", Object.keys(ui_language_mapping).indexOf(ui_language));
+    }
     setRangeValue("setting_p_lineHeight", p_lineHeight);
     setRangeValue("setting_p_fontSize", p_fontSize);
     setColorValue("setting_light_mainColor_active", light_mainColor_active);
@@ -190,8 +192,9 @@ function loadDefaultSettings() {
 }
 
 function applySettings() {
-    if (respectUserLangSetting)
+    if (respectUserLangSetting) {
         style.ui_LANG = ui_language;
+    }
     style.p_lineHeight = p_lineHeight;
     style.p_fontSize = p_fontSize;
     style.mainColor_active = light_mainColor_active;
@@ -218,8 +221,9 @@ function applySettings() {
 }
 
 function saveSettings(toSetLanguage = false, forceSetLanguage = false) {
-    if (respectUserLangSetting)
+    if (respectUserLangSetting) {
         ui_language = $("#setting_uilanguage").closest(".select").children(".select-options").children(".is-selected").attr("rel") || ui_language_default;
+    }
     p_lineHeight = $("#setting_p_lineHeight").val() + 'em' || p_lineHeight_default;
     p_fontSize = $("#setting_p_fontSize").val() + 'em' || p_fontSize_default;
     light_mainColor_active = $("#setting_light_mainColor_active").val() || light_mainColor_active_default;
@@ -244,8 +248,9 @@ function saveSettings(toSetLanguage = false, forceSetLanguage = false) {
         changeFontSelectorItemLanguage($("#setting_body_font"), lang);
     }
 
-    if (respectUserLangSetting)
+    if (respectUserLangSetting) {
         localStorage.setItem("UILang", ui_language);
+    }
     localStorage.setItem("p_lineHeight", p_lineHeight);
     localStorage.setItem("p_fontSize", p_fontSize);
     localStorage.setItem("light_mainColor_active", light_mainColor_active);
@@ -263,8 +268,9 @@ function saveSettings(toSetLanguage = false, forceSetLanguage = false) {
     
     applySettings();
 
-    if (typeof bookshelf !== "undefined" && isVariableDefined(bookshelf))
+    if (typeof bookshelf !== "undefined" && isVariableDefined(bookshelf)) {
         bookshelf.updateAllBookCovers();
+    }
 }
 
 function initiateSettingMenu() {
@@ -312,8 +318,9 @@ function initiateSettingMenu() {
     });
     
     let settingUILanguage = null;
-    if (respectUserLangSetting)
+    if (respectUserLangSetting) {
         settingUILanguage = createSelectorItem("setting_uilanguage", Object.keys(ui_language_mapping), Object.values(ui_language_mapping));
+    }
     let settingLineHeight = createRangeItem("setting_p_lineHeight", parseFloat(p_lineHeight), 1, 3, 0.5, unit='em');
     let settingFontSize = createRangeItem("setting_p_fontSize", parseFloat(p_fontSize), 1, 3, 0.5, unit='em');
     let settingLightMainColorActive = createColorItem("setting_light_mainColor_active", light_mainColor_active, savedValues=["#2F5086"]);
@@ -331,8 +338,9 @@ function initiateSettingMenu() {
     let settingPaginationBottom = createRangeItem("setting_pagination_bottom", parseFloat(pagination_bottom), 1, 30, 1, unit='px');
     let settingPaginationOpacity = createRangeItem("setting_pagination_opacity", parseFloat(pagination_opacity), 0, 1, 0.1, unit='');
 
-    if (respectUserLangSetting)
+    if (respectUserLangSetting) {
         settingsMenu.appendChild(settingUILanguage);
+    }
     settingsMenu.appendChild(settingLineHeight);
     settingsMenu.appendChild(settingFontSize);
     settingsMenu.appendChild(settingLightMainColorActive);
@@ -484,7 +492,7 @@ function createSelectorItem(id, values, texts) {
     return settingItem;
 }
 
-function createSelectorWithGroupItem(id, values, texts, groups) {
+function createSelectorWithGroupItem(id, values, texts, groups, isFont=false) {
     let settingItem = document.createElement('div');
     settingItem.setAttribute('class', 'settingItem-wrapper');
     let settingItemText = document.createElement('span');
@@ -501,6 +509,9 @@ function createSelectorWithGroupItem(id, values, texts, groups) {
             let option = document.createElement('option');
             option.setAttribute('value', value);
             option.innerText = texts[i][j];
+            if (isFont) {
+                option.style.fontFamily = value;
+            }
             optgroup.appendChild(option);
         });
         settingItemInput.appendChild(optgroup);
@@ -637,8 +648,8 @@ function createFontSelectorItem(id) {
     font_groups_zh = [style.ui_font_group_custom_zh, style.ui_font_group_system_zh];
 
     // Create the font selector element
-    let fontSelector = createSelectorWithGroupItem(id, filtered_font_names, filtered_font_labels, font_groups);
-    let fontSelector_zh = createSelectorWithGroupItem(id, filtered_font_names, filtered_font_labels_zh, font_groups_zh);
+    let fontSelector = createSelectorWithGroupItem(id, filtered_font_names, filtered_font_labels, font_groups, isFont=true);
+    let fontSelector_zh = createSelectorWithGroupItem(id, filtered_font_names, filtered_font_labels_zh, font_groups_zh, isFont=true);
 
     return [fontSelector, fontSelector_zh];
 }

@@ -26,6 +26,7 @@ function selector_init($selectElement, defaultIdx, EventListenerFunc, EventListe
 
     // Show the default select option in the styled div
     $styledSelect.text(allOptions.eq(defaultIdx).text());
+    $styledSelect.attr('style', allOptions.eq(defaultIdx).attr('style'));
 
     // Insert an unordered list after the styled div and also cache the list
     var $list = $('<ul />', {
@@ -47,14 +48,16 @@ function selector_init($selectElement, defaultIdx, EventListenerFunc, EventListe
                 $('<li />', {
                     text: $(this).text(),
                     rel: $(this).val(),
-                    class: 'optgroup-option'
+                    class: 'optgroup-option',
+                    style: $(this).attr('style')
                 }).appendTo($list);
             });
         } else {
             // If the current element is a regular option, add it directly
             $('<li />', {
                 text: $(this).text(),
-                rel: $(this).val()
+                rel: $(this).val(),
+                style: $(this).attr('style')
             }).appendTo($list);
         }
     });
@@ -76,6 +79,7 @@ function selector_init($selectElement, defaultIdx, EventListenerFunc, EventListe
     $listItems.click(function(e) {
         e.stopPropagation();
         $styledSelect.text($(this).text()).removeClass('active');
+        $styledSelect.attr('style', $(this).attr('style'));
         $this.val($(this).attr('rel'));
         $list.find('li.is-selected').removeClass('is-selected');
         $list.find('li[rel="' + $(this).attr('rel') + '"]').addClass('is-selected');
