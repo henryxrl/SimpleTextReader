@@ -21,12 +21,12 @@ body {
     background-clip: padding-box;
     border-radius: 10px;
     background: var(--fontInfoColor) !important;
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
     /* transition: var(--darkMode_animation); */
 }
 div {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
     overflow-y: scroll;
 }
 div::-webkit-scrollbar {
@@ -48,11 +48,11 @@ div::-webkit-scrollbar {
     color: var(--mainColor_inactive);
 }
 .prevent-select {
-    -webkit-touch-callout : none;     /* iOS Safari */
-    -webkit-user-select   : none;     /* Chrome/Safari/Opera */
-    -khtml-user-select    : none;     /* Konqueror */
-    -moz-user-select      : none;     /* Firefox */
-    -ms-user-select       : none;     /* Internet Explorer/Edge */
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Chrome/Safari/Opera */
+    -khtml-user-select: none; /* Konqueror */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
     user-select: none; /* Standard syntax */
 }
 /* 
@@ -63,9 +63,8 @@ To Offset the anchor link to clear fixed header
     content: "";
     display: block;
     height: var(--ui_anchorTargetBefore);
-    margin: calc(-1*var(--ui_anchorTargetBefore)) 0 0;
+    margin: calc(-1 * var(--ui_anchorTargetBefore)) 0 0;
 }
-
 
 /* Drop Zone */
 #dropZone {
@@ -116,7 +115,6 @@ To Offset the anchor link to clear fixed header
     filter: var(--toGray_filter);
 }
 
-
 /* Loading screen */
 #loading {
     background: var(--bgColor);
@@ -139,7 +137,6 @@ To Offset the anchor link to clear fixed header
     filter: var(--toGray_filter);
 }
 
-
 /* Pagination */
 #pagination {
     opacity: var(--ui_paginationOpacity);
@@ -148,21 +145,15 @@ To Offset the anchor link to clear fixed header
     background-color: var(--bgColor);
     border: 1px dashed var(--borderColor);
     border-radius: 8px;
-    box-shadow: 0 1px 1px var(--shadowColor), 
-              0 2px 2px var(--shadowColor), 
-              0 4px 4px var(--shadowColor), 
-              0 8px 8px var(--shadowColor),
-              0 16px 16px var(--shadowColor);
-    -webkit-box-shadow: var(--shadowColor) 0 1px 1px, 
-    var(--shadowColor) 0 2px 2px, 
-    var(--shadowColor) 0 4px 4px, 
-    var(--shadowColor) 0 8px 8px,
-    var(--shadowColor) 0 16px 16px;
-    -moz-box-shadow: 0 1px 1px var(--shadowColor), 
-    0 2px 2px var(--shadowColor), 
-    0 4px 4px var(--shadowColor), 
-    0 8px 8px var(--shadowColor),
-    0 16px 16px var(--shadowColor);
+    box-shadow: 0 1px 1px var(--shadowColor), 0 2px 2px var(--shadowColor),
+        0 4px 4px var(--shadowColor), 0 8px 8px var(--shadowColor),
+        0 16px 16px var(--shadowColor);
+    -webkit-box-shadow: var(--shadowColor) 0 1px 1px,
+        var(--shadowColor) 0 2px 2px, var(--shadowColor) 0 4px 4px,
+        var(--shadowColor) 0 8px 8px, var(--shadowColor) 0 16px 16px;
+    -moz-box-shadow: 0 1px 1px var(--shadowColor), 0 2px 2px var(--shadowColor),
+        0 4px 4px var(--shadowColor), 0 8px 8px var(--shadowColor),
+        0 16px 16px var(--shadowColor);
     transform: translate(-50%);
     -webkit-transform: translate(-50%);
     font-size: 0.9em;
@@ -201,14 +192,13 @@ To Offset the anchor link to clear fixed header
     color: var(--paginationFontColor);
     font-family: var(--fontFamily_ui);
     border: 0;
-    outline:0;
+    outline: 0;
     background-color: var(--bgColor) !important;
 }
 .disabledbutton {
     pointer-events: none;
     opacity: 0.4;
 }
-
 
 /* TOC */
 #tocContent {
@@ -224,11 +214,25 @@ To Offset the anchor link to clear fixed header
     font-size: 1.2em;
     overflow-x: hidden;
     overflow-y: auto;
-    font-family:var(--fontFamily_title);
+    font-family: var(--fontFamily_title);
     z-index: 100;
 }
 /* Credit: https://stackoverflow.com/questions/3874602/elements-to-look-like-a-bullet-point-list-inside-an-anchor-link */
+.chapter-title-container {
+    position: relative;
+    width: 100%;
+    height: auto;
+    display: block;
+    margin-bottom: 1em;
+}
+.chapter-title-container:hover:not(.active) > .toc-bullet {
+    background-color: var(--mainColor_inactive);
+}
+.chapter-title-container:hover:not(.active) > .toc-text {
+    color: var(--mainColor_inactive);
+}
 .toc-bullet {
+    /* position: absolute; */
     background-color: var(--fontInfoColor);
     border-radius: 1em;
     content: " ";
@@ -238,37 +242,55 @@ To Offset the anchor link to clear fixed header
     height: 0.3em;
     visibility: visible !important;
     opacity: 1 !important;
-    margin-bottom: 1.6em;
+    margin-top: 0.65em;
+    margin-bottom: 0.65em;
 }
 .toc-text {
+    position: absolute;
+    top: 0;
     display: inline-block;
-    width: calc(100% - 0.9em - 1em);      /* 100% - width of .toc-bullet - margin-left of <a>*/
-    transition: visibility 5s, opacity 1s;
-    visibility: hidden;
+    width: calc(
+        100% - 0.9em - 1em
+    ); /* 100% - width of .toc-bullet - margin-left of <a>*/
+    transition: opacity 1s;
     opacity: 0;
     text-decoration: none;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow-x: hidden;
     overflow-y: hidden;
+    z-index: 1;
+}
+.toc-text.hidden {
+    opacity: 0 !important; /* Hide when toggling */
+    z-index: -1;
 }
 /* Credit: https://www.taccgl.org/blog/css-transition-visibility.html */
-#tocContent:hover > .toc-text {
+#tocContent:hover > .chapter-title-container > .toc-text {
     visibility: visible;
     opacity: 1;
 }
-a, a:link, a:visited, a:hover, a:active {
+a,
+a:link,
+a:visited,
+a:hover,
+a:active {
     text-decoration: none;
 }
-a.title, a.title:link, a.title:visited {
+a.title,
+a.title:link,
+a.title:visited {
     color: var(--mainColor_active);
 }
-a.toc-text, a.toc-text:link, a.toc-text:visited {
+a.toc-text:hidden {
+    opacity: 0;
+    pointer-events: none; /* Prevents interactions while fading out */
+}
+a.toc-text,
+a.toc-text:link,
+a.toc-text:visited {
     color: var(--fontInfoColor);
     margin: 0.3em 0 1.3em 1em;
-}
-a.toc-text:hover:not(.active) {
-    color: var(--mainColor_inactive);
 }
 a.toc-text:active {
     color: var(--mainColor_active);
@@ -286,7 +308,6 @@ a.toc-active::before {
     background-color: var(--mainColor_active) !important;
 }
 
-
 /* Progress */
 #progress {
     position: fixed;
@@ -302,7 +323,6 @@ a.toc-active::before {
     z-index: 101;
 }
 
-
 /* Footnote */
 img.footnote_img {
     content: var(--footnote_img_url);
@@ -314,7 +334,6 @@ ol#footnote-content {
     visibility: hidden;
     display: none;
 }
-
 
 /* Seal */
 div.seal {
@@ -336,7 +355,6 @@ img#seal_end {
     left: calc(100% - var(--seal_width) / 2);
     position: relative;
 }
-
 
 /* Settings dialog */
 dialog {
@@ -408,8 +426,8 @@ dialog {
     background-color: var(--bgColor);
 }
 .dlg-body input[type="checkbox"] {
-   width: 1rem;
-   height: 1rem;
+    width: 1rem;
+    height: 1rem;
 }
 input:invalid {
     background-color: pink;
@@ -435,12 +453,13 @@ dialog::backdrop {
     backdrop-filter: blur(5px);
 }
 
-
 /* Settings menu */
 #settings-menu {
     font-size: var(--ui_settingMenuFontSize);
     position: fixed;
-    right: calc(var(--ui_btnGap) + var(--ui_scrollBarWidth) + var(--ui_btnOffset));
+    right: calc(
+        var(--ui_btnGap) + var(--ui_scrollBarWidth) + var(--ui_btnOffset)
+    );
     bottom: calc(2 * (var(--ui_btnGap) + var(--ui_btnSize)));
     z-index: 1004;
     background-color: var(--bgColor);
@@ -513,7 +532,7 @@ input[type="color"]:hover,
 input[type="color"]:focus {
     /* box-shadow: 0 0 1px 1px var(--shadowColor) !important; */
     cursor: grab;
-    outline:none;
+    outline: none;
 }
 input[type="color"]:not(:hover) {
     cursor: initial;
@@ -527,7 +546,7 @@ input[type="color"]:not(:hover) {
     border-radius: 8px;
     padding: 5px 20px;
     margin-top: 20px;
-    cursor: pointer
+    cursor: pointer;
 }
 #setting-reset-btn:hover {
     background-color: var(--mainColor_inactive);
@@ -540,8 +559,8 @@ input[type="color"]:not(:hover) {
     display: inline-block;
     position: relative;
     /* font-size: var(--ui_settingMenuFontSize); */
-    color:  var(--mainColor_active);
-    width:  var(--ui_settingContentWidth);
+    color: var(--mainColor_active);
+    width: var(--ui_settingContentWidth);
     height: calc(var(--ui_settingContentHeight) * 1.2);
 }
 .select-hidden {
@@ -550,7 +569,7 @@ input[type="color"]:not(:hover) {
     padding-right: 10px;
 }
 .select-styled {
-    position: absolute; 
+    position: absolute;
     top: 0;
     right: 0;
     bottom: 0;
@@ -561,7 +580,7 @@ input[type="color"]:not(:hover) {
     /* font-size: var(--ui_settingMenuFontSize); */
 }
 .select-styled:after {
-    content:"";
+    content: "";
     width: 0;
     height: 0;
     border: 0.4em solid transparent;
@@ -572,18 +591,20 @@ input[type="color"]:not(:hover) {
     transition: all 0.15s ease;
 }
 .select-styled:hover {
-    background-color: color-mix(in srgb,var(--bgColor),#000 0%);
+    background-color: color-mix(in srgb, var(--bgColor), #000 0%);
 }
-.select-styled:active, .select-styled.active {
-    background-color: color-mix(in srgb,var(--bgColor),#000 0%);
+.select-styled:active,
+.select-styled.active {
+    background-color: color-mix(in srgb, var(--bgColor), #000 0%);
 }
-.select-styled:active:after, .select-styled.active:after {
+.select-styled:active:after,
+.select-styled.active:after {
     top: 0em;
     border-color: transparent transparent var(--mainColor_active) transparent;
     transition: all 0.15s ease;
 }
 .select-options {
-    display: none; 
+    display: none;
     position: absolute;
     top: 120%;
     right: 0;
@@ -592,7 +613,7 @@ input[type="color"]:not(:hover) {
     margin: 0;
     padding: 0;
     list-style: none;
-    background-color: color-mix(in srgb,var(--bgColor),#000 0%);
+    background-color: color-mix(in srgb, var(--bgColor), #000 0%);
     border: 1px solid var(--borderColor);
     box-shadow: 0 0 5px var(--shadowColor);
     border-radius: 5px;
@@ -606,7 +627,7 @@ input[type="color"]:not(:hover) {
     /* padding: 10px 0; */
     padding: 8px 10px;
     /* text-indent: 15px; */
-    background-color: color-mix(in srgb,var(--bgColor),#000 0%);
+    background-color: color-mix(in srgb, var(--bgColor), #000 0%);
     transition: all 0.15s ease-in;
     border-radius: 5px;
     /* text-align: center; */
@@ -637,7 +658,6 @@ input[type="color"]:not(:hover) {
     /* padding-left: 20px; */
     cursor: pointer;
 }
-
 
 /* Book Shelf */
 .bookshelf {
@@ -737,16 +757,26 @@ input[type="color"]:not(:hover) {
 }
 .bookshelf .book .coverContainer::after {
     /* the book bend */
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     width: var(--ui_bookCoverWidth);
     height: var(--ui_bookCoverHeight);
     background-repeat: no-repeat;
-    background-image: linear-gradient(to right, transparent 2%, rgba(0,0,0,0.1) 3%, rgba(0,0,0,0.1) 4%, transparent 5%), linear-gradient(-50deg, rgba(0,0,0,0.1) 20%, transparent 100%), linear-gradient(-50deg, rgba(0,0,0,0.2) 20%, transparent 100%), linear-gradient(to bottom, rgba(0,0,0,0.1) 20%, transparent 100%), linear-gradient(to bottom, rgba(0,0,0,0.1) 20%, transparent 100%);
+    background-image: linear-gradient(
+            to right,
+            transparent 2%,
+            rgba(0, 0, 0, 0.1) 3%,
+            rgba(0, 0, 0, 0.1) 4%,
+            transparent 5%
+        ),
+        linear-gradient(-50deg, rgba(0, 0, 0, 0.1) 20%, transparent 100%),
+        linear-gradient(-50deg, rgba(0, 0, 0, 0.2) 20%, transparent 100%),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 20%, transparent 100%),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 20%, transparent 100%);
     background-size: 100% 100%, 2% 20%, 1% 20%, 2% 20%, 1% 20%;
     background-position: 0 0, 2.2% 100%, 3% 100%, 2.2% 0, 3% 0;
-    
+
     /* another implementation - not as good */
     /* content: '';
     position: absolute;
@@ -756,7 +786,8 @@ input[type="color"]:not(:hover) {
     background-color: rgba(0, 0, 0, 0.25);
     box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.4); */
 }
-.bookshelf .book .coverContainer .coverCanvas, .coverText {
+.bookshelf .book .coverContainer .coverCanvas,
+.coverText {
     position: absolute;
     overflow: hidden;
     width: var(--ui_bookCoverWidth);
@@ -783,7 +814,8 @@ input[type="color"]:not(:hover) {
     right: 0px;
     top: -1px;
 }
-.bookshelf .book .bookInfoMenuBtn .dot-menu__label::before, .bookshelf .book .dot-menu__label::after {
+.bookshelf .book .bookInfoMenuBtn .dot-menu__label::before,
+.bookshelf .book .dot-menu__label::after {
     content: "";
     position: absolute;
     width: 3px;
@@ -791,7 +823,7 @@ input[type="color"]:not(:hover) {
     border-radius: 3px;
     background-color: var(--fontInfoColor);
     transition: 0.2s;
-    top: calc((100% - 3px)/2);
+    top: calc((100% - 3px) / 2);
     transition: 0.2s;
 }
 .bookshelf .book .bookInfoMenuBtn .dot-menu__label:after {
@@ -809,7 +841,7 @@ input[type="color"]:not(:hover) {
     background-color: var(--fontInfoColor);
     transition: 0.2s;
     right: 11px;
-    top: calc((100% - 3px)/2);
+    top: calc((100% - 3px) / 2);
 }
 .bookshelf .book .bookInfoMenuBtn .dot-menu__checkbox {
     display: none;
@@ -830,7 +862,7 @@ input[type="color"]:not(:hover) {
     overflow: unset;
 }
 .bookInfoMenu::before {
-    content:'';
+    content: "";
     position: absolute;
     bottom: -10px;
     left: 0;
@@ -968,7 +1000,7 @@ input[type="color"]:not(:hover) {
 }
 .bookshelf .book .delete-btn {
     font-family: var(--fontFamily_ui);
-    position:relative;
+    position: relative;
     display: block;
     float: right;
     cursor: pointer;
@@ -988,7 +1020,7 @@ input[type="color"]:not(:hover) {
 }
 .bookshelf .book .isOnServer {
     font-family: var(--fontFamily_ui);
-    position:relative;
+    position: relative;
     display: block;
     float: left;
     cursor: pointer;

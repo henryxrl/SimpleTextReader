@@ -46,6 +46,35 @@ Big thanks to [Manjusaka](https://github.com/Zheaoli) for his amazing help and h
 
 10. Modern-looking UI design
 
+## Usage
+
+Firefox:
+
+1. [Regular (v1.5.3)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
+
+2. [No-UI (v1.2.9.2)](https://addons.mozilla.org/en-US/firefox/addon/yijian_nogui/)
+
+Chrome:
+
+1. [Regular (v1.5.3)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
+
+2. [No-UI (v1.2.9.2)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo?hl=en&authuser=0)
+
+Edge:
+
+1. [Regular (v1.5.3)](https://microsoftedge.microsoft.com/addons/detail/%E6%98%93%E7%AC%BA/pabihehbdhldbdliffaddllmjlknmpak)
+
+2. 易笺无界面版 (v1.2.9.2)
+
+Docker:
+
+```
+docker run -d --name simpletextreader \
+  -p 8866:8866 \
+  --restart unless-stopped \
+  henryxrl/simpletextreader:latest
+```
+
 ## Important Updates
 
 ### v1.0
@@ -125,21 +154,7 @@ Support for customized settings such as font size, line height, theme colors and
 
 2. Removed the character limitation for detecting chapter titles.
 
-## Usage
-
-### Download from online stores
-
-Firefox:
-
-1. [Regular (v1.5.2)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
-
-2. [No-UI (v1.2.9.2)](https://addons.mozilla.org/en-US/firefox/addon/yijian_nogui/)
-
-Chrome:
-
-1. [Regular (v1.5.2)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
-
-2. [No-UI (v1.2.9.2)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo?hl=en&authuser=0)
+3. Optimized the table of contents section.
 
 ---
 

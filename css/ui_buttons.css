@@ -95,7 +95,9 @@ svg.icon {
     gap: var(--ui_btnGap);
     position: fixed;
     bottom: calc(var(--ui_btnGap) + var(--ui_scrollBarWidth));
-    right: calc(var(--ui_btnGap) + var(--ui_scrollBarWidth) + var(--ui_btnOffset));
+    right: calc(
+        var(--ui_btnGap) + var(--ui_scrollBarWidth) + var(--ui_btnOffset)
+    );
     z-index: 1005;
 }
 
@@ -105,6 +107,8 @@ svg.icon {
     gap: var(--ui_btnGap);
     position: fixed;
     bottom: calc(var(--ui_btnGap) + var(--ui_scrollBarWidth));
-    left: calc(var(--ui_btnGap) + var(--ui_scrollBarWidth) + var(--ui_btnOffset));
+    left: calc(
+        var(--ui_btnGap) + var(--ui_scrollBarWidth) + var(--ui_btnOffset)
+    );
     z-index: 1005;
 }

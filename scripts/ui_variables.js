@@ -21,8 +21,8 @@ var storePrevWindowWidth = window.innerWidth;
 var titlePageLineNumberOffset = 0;
 
 setTitle();
-var dropZone = document.getElementById('dropZone');
-var loadingScreen = document.getElementById('loading');
+var dropZone = document.getElementById("dropZone");
+var loadingScreen = document.getElementById("loading");
 // loadingScreen.style.visibility = "visible"; // For debugging the loading screen
 
 var dropZoneTextImgWrapper = document.getElementById("dropZoneTextImgWrapper");
@@ -36,6 +36,6 @@ var progressTitle = document.getElementById("progress-title");
 var progressContent = document.getElementById("progress-content");
 var footNoteContainer = document.getElementById("footnote-content");
 
-var darkModeActualButton = document.getElementById("toggle-btn");   // just for set title
+var darkModeActualButton = document.getElementById("toggle-btn"); // just for set title
 var darkModeToggle = document.getElementById("toggle");
 var settingsButton = document.getElementById("STRe-setting-btn");

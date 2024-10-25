@@ -1,38 +1,38 @@
 @charset "UTF-8";
 @font-face {
-    font-family:"ui";
-    src:
-    local("霞鹜文楷"),
-    local("LXGW WenKai"),
-    url(../fonts/LXGWWenKai-Regular.woff2) format('woff2');
+    font-family: "ui";
+    src: local("霞鹜文楷"), local("LXGW WenKai"),
+        url(../fonts/LXGWWenKai-Regular.woff2) format("woff2");
     font-display: swap;
 }
 @font-face {
-    font-family:"title";
-    src:
-    local("黄令东齐伋复刻体"),
-    local("QIJIC"),
-    url(../fonts/qiji-combo.woff) format('woff');
+    font-family: "title";
+    src: local("黄令东齐伋复刻体"), local("QIJIC"),
+        url(../fonts/qiji-combo.woff) format("woff");
     font-display: swap;
     size-adjust: 125%;
 }
 @font-face {
-    font-family:"body";
-    src:local("方正宋刻本秀楷简体"), local("方正宋刻本秀楷简繁"), local("方正宋刻本秀楷_GBK"), local("FZSongKeBenXiuKai-R-GBK"), local("FZSongKeBenXiuKaiJF"), local("FZSongKeBenXiuKaiS-R-JF"), local("FZSongKeBenXiuKaiS-R-GB"), local("FZSongKeBenXiuKaiF"),
-    url(../fonts/FZSKBXKK.woff2) format('woff2'),
-    url(../fonts/FZKTK.woff2) format('woff2');  /* Fallback */
+    font-family: "body";
+    src: local("方正宋刻本秀楷简体"), local("方正宋刻本秀楷简繁"),
+        local("方正宋刻本秀楷_GBK"), local("FZSongKeBenXiuKai-R-GBK"),
+        local("FZSongKeBenXiuKaiJF"), local("FZSongKeBenXiuKaiS-R-JF"),
+        local("FZSongKeBenXiuKaiS-R-GB"), local("FZSongKeBenXiuKaiF"),
+        url(../fonts/FZSKBXKK.woff2) format("woff2"),
+        url(../fonts/FZKTK.woff2) format("woff2"); /* Fallback */
     font-display: swap;
 }
 @font-face {
-    font-family:"fzkai";
-    src:local("方正楷体"), local("FZKai"), local("FZKaiTi"), local("FZKai-Z03S"),
-    url(../fonts/FZKTK.woff2) format('woff2');
+    font-family: "fzkai";
+    src: local("方正楷体"), local("FZKai"), local("FZKaiTi"),
+        local("FZKai-Z03S"), url(../fonts/FZKTK.woff2) format("woff2");
     font-display: swap;
 }
 @font-face {
-    font-family:"kinghwa";
-    src:local("京華老宋体"), local("京华老宋体"), local("KingHwa"), local("KingHwa_OldSong"),
-    url(../fonts/KingHwa_OldSong.woff) format('woff');
+    font-family: "kinghwa";
+    src: local("京華老宋体"), local("京华老宋体"), local("KingHwa"),
+        local("KingHwa_OldSong"),
+        url(../fonts/KingHwa_OldSong.woff) format("woff");
     font-display: swap;
     size-adjust: 95%;
 }
@@ -42,7 +42,6 @@
     url(../fonts/KX_47043_14.woff) format('woff');
     font-display: swap;
 } */
-
 
 :root {
     /* UI variables */
@@ -86,7 +85,7 @@
     --ui_dropZoneText_zh: "txt";
     --ui_dropZoneText_en: "txt";
     --ui_readingProgress_zh: "阅读进度：";
-    --ui_readingProgress_en: "Progress: ";   /* Have to use chinese colon and replace it later */
+    --ui_readingProgress_en: "Progress: "; /* Have to use chinese colon and replace it later */
     --ui_titlePage: "";
     --ui_titlePage_zh: 扉页;
     --ui_titlePage_en: TITLE PAGE;
@@ -184,9 +183,12 @@
     --ui_tooltip_bookshelf_scrollBottom_en: To Bottom;
 
     /* UI bookshelf variables */
-    --ui_bookshadow: 5px 5px 10px -5px black, inset 0px -10px 10px var(--mainColor_active);
-    --ui_bookshadow_noAuthor: 5px 5px 10px -5px black, inset 0px -10px 10px var(--mainColor_inactive);
-    --ui_bookshadow_hover: 0px 0px 5px 3px var(--mainColor_active), inset 0px -10px 10px var(--mainColor_active);
+    --ui_bookshadow: 5px 5px 10px -5px black,
+        inset 0px -10px 10px var(--mainColor_active);
+    --ui_bookshadow_noAuthor: 5px 5px 10px -5px black,
+        inset 0px -10px 10px var(--mainColor_inactive);
+    --ui_bookshadow_hover: 0px 0px 5px 3px var(--mainColor_active),
+        inset 0px -10px 10px var(--mainColor_active);
     --ui_booklist_padding: 2rem;
 
     /* UI book information strings */
@@ -240,16 +242,17 @@
 
     /* Color variables */
     --logoColor1: #314874;
-    --logoColor2: #32323B;
-    --logoColor3: #F4EAD7;
+    --logoColor2: #32323b;
+    --logoColor3: #f4ead7;
     /* --mainColor_active: #2C5268;
     --mainColor_inactive: #427B9C; */
     --mainColor_active: #314874;
-    --mainColor_inactive: #4A6DAE;
+    --mainColor_inactive: #4a6dae;
 
-    --toGray_filter: invert(53%) sepia(0%) saturate(76%) hue-rotate(158deg) brightness(95%) contrast(82%);
+    --toGray_filter: invert(53%) sepia(0%) saturate(76%) hue-rotate(158deg)
+        brightness(95%) contrast(82%);
 
-    --bgColor: #F4EAD7;
+    --bgColor: #f4ead7;
     --borderColor: lightgray;
     --shadowColor: rgba(0, 0, 0, 0.12);
     --paginationFontColor: black;
@@ -276,15 +279,15 @@
     --darkMode_color: var(--mainColor_inactive);
     --lightMode_color: var(--mainColor_active);
 
-    --darkMode_mainColor_active: #6096BB;
-    --darkMode_mainColor_inactive: #2A4D63;
+    --darkMode_mainColor_active: #6096bb;
+    --darkMode_mainColor_inactive: #2a4d63;
     --darkMode_bgColor: #121621;
     --darkMode_borderColor: gray;
     --darkMode_shadowColor: rgba(0, 0, 0, 0.12);
     --darkMode_paginationFontColor: lightgray;
     --darkMode_paginationActiveFontColor: lightgray;
     --darkMode_fontInfoColor: gray;
-    --darkMode_fontColor: #FFE9BD;
+    --darkMode_fontColor: #ffe9bd;
 }
 
 [data-theme="dark"] {
@@ -347,7 +350,9 @@
     --ui_bookInfo_filesize: var(--ui_bookInfo_filesize_zh);
     --ui_bookInfo_lastopened: var(--ui_bookInfo_lastopened_zh);
     --ui_tooltip_bookshelf_scrollTop: var(--ui_tooltip_bookshelf_scrollTop_zh);
-    --ui_tooltip_bookshelf_scrollBottom: var(--ui_tooltip_bookshelf_scrollBottom_zh);
+    --ui_tooltip_bookshelf_scrollBottom: var(
+        --ui_tooltip_bookshelf_scrollBottom_zh
+    );
     --ui_tooltip_goToLibrary: var(--ui_tooltip_goToLibrary_zh);
     --ui_tooltip_modeToggle: var(--ui_tooltip_modeToggle_zh);
     --ui_tooltip_settings: var(--ui_tooltip_settings_zh);
@@ -400,7 +405,9 @@
     --ui_bookInfo_filesize: var(--ui_bookInfo_filesize_en);
     --ui_bookInfo_lastopened: var(--ui_bookInfo_lastopened_en);
     --ui_tooltip_bookshelf_scrollTop: var(--ui_tooltip_bookshelf_scrollTop_en);
-    --ui_tooltip_bookshelf_scrollBottom: var(--ui_tooltip_bookshelf_scrollBottom_en);
+    --ui_tooltip_bookshelf_scrollBottom: var(
+        --ui_tooltip_bookshelf_scrollBottom_en
+    );
     --ui_tooltip_goToLibrary: var(--ui_tooltip_goToLibrary_en);
     --ui_tooltip_modeToggle: var(--ui_tooltip_modeToggle_en);
     --ui_tooltip_settings: var(--ui_tooltip_settings_en);

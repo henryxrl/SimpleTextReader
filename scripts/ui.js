@@ -82,6 +82,25 @@ $('body:not(:empty)').on('mouseover', 'a', function(e) {
     }
 });
 
+let isMouseInsideTocContent = false; // Flag to track if the mouse is inside
+tocContent.addEventListener('mouseenter', function(event) {
+    isMouseInsideTocContent = true;
+    let allActiveTitles = tocContainer.querySelectorAll(".chapter-title-container.toc-active");
+    for (let i = 0; i < allActiveTitles.length; i++) {
+        // console.log("2-showOriginalTitle: ", allActiveTitles[i].id);
+        showOriginalTitle(allActiveTitles[i]);
+    }
+});
+
+tocContent.addEventListener('mouseleave', function(event) {
+    isMouseInsideTocContent = false;
+    let allActiveTitles = tocContainer.querySelectorAll(".chapter-title-container.toc-active");
+    for (let i = 0; i < allActiveTitles.length; i++) {
+        // console.log("2-showShortenedTitle: ", allActiveTitles[i].id);
+        showShortenedTitle(allActiveTitles[i], 2000);
+    }
+});
+
 function openFileSelector(event) {
     event.preventDefault();
     var fileSelector = document.createElement("input");
@@ -448,14 +467,14 @@ async function handleSelectedFile(fileList) {
             console.log("Author: ", bookAndAuthor.author);
 
             // Get all titles and process all footnotes
-            allTitles.push([style.ui_titlePage, 0]);
+            allTitles.push([style.ui_titlePage, 0, style.ui_titlePage]);
             titlePageLineNumberOffset = (bookAndAuthor.author !== "") ? 3 : 2;
             for (var i in fileContentChunks) {
                 if (fileContentChunks[i].trim() !== '') {
                     // get all titles
-                    tempTitle = getTitle(fileContentChunks[i]);
+                    [tempTitle, tempTitleGroup] = getTitle(fileContentChunks[i]);
                     if (tempTitle !== "") {
-                        allTitles.push([tempTitle, (parseInt(i) + titlePageLineNumberOffset)]);
+                        allTitles.push([tempTitle, (parseInt(i) + titlePageLineNumberOffset), tempTitleGroup[tempTitleGroup.length - 3]]);
                     }
 
                     // process all footnotes
@@ -485,7 +504,7 @@ async function handleSelectedFile(fileList) {
             // Add end page
             // let endPageNum = fileContentChunks.length + titlePageLineNumberOffset;
             let endPageNum = fileContentChunks.length;
-            allTitles.push([style.ui_endPage, endPageNum]);
+            allTitles.push([style.ui_endPage, endPageNum, style.ui_endPage]);
             fileContentChunks.push(`
                 <div id=line${(endPageNum)} class='prevent-select seal'>
                     <img id='seal_end'></img>
@@ -596,7 +615,7 @@ function generatePagination() {
             tempItem.href = "#";
             tempItem.addEventListener('click', function(event) {
                 event.preventDefault();
-                gotoPage((currentPage-1));
+                gotoPage((currentPage-1), 'bottom');
             });
             tempItem.classList.add("prevent-select");
             tempItem.classList.add("page");
@@ -690,6 +709,10 @@ function processTOC_bak() {
 
 function processTOC() {
     for (var i in allTitles) {
+        let tempTitleContainer = document.createElement("div");
+        tempTitleContainer.classList.add("chapter-title-container");
+        tempTitleContainer.id = `title_${allTitles[i][1]}`;
+
         let tempBullet = document.createElement("a");
         tempBullet.id = `a${allTitles[i][1]}_bull`;
         tempBullet.href = `#line${allTitles[i][1]}`;
@@ -706,13 +729,14 @@ function processTOC() {
             // console.log("top: ", top, "top_margin: ", top_margin);
             window.scrollTo(0, (top - top_margin), {behavior: 'instant'});
         });
-        tocContainer.appendChild(tempBullet);
+        tempTitleContainer.appendChild(tempBullet);
 
         let tempText = document.createElement("a");
         tempText.id = `a${allTitles[i][1]}`;
         tempText.href = `#line${allTitles[i][1]}`;
         tempText.classList.add("prevent-select");
         tempText.classList.add("toc-text");
+        tempText.classList.add("title-original");
         // tempText.innerHTML = allTitles[i][0];
         tempText.innerText = allTitles[i][0];
         tempText.addEventListener('click', function(event) {
@@ -726,7 +750,31 @@ function processTOC() {
             // console.log("top: ", top, "top_margin: ", top_margin);
             window.scrollTo(0, (top - top_margin), {behavior: 'instant'});
         });
-        tocContainer.appendChild(tempText);
+        tempTitleContainer.appendChild(tempText);
+
+        let tempTextAlt = document.createElement("a");
+        tempTextAlt.id = `a${allTitles[i][1]}_alt`;
+        tempTextAlt.href = `#line${allTitles[i][1]}`;
+        tempTextAlt.classList.add("prevent-select");
+        tempTextAlt.classList.add("toc-text");
+        tempTextAlt.classList.add("title-shortened");
+        tempTextAlt.classList.add("hidden");
+        // tempTextAlt.innerHTML = allTitles[i][0];
+        tempTextAlt.innerText = allTitles[i][2];
+        tempTextAlt.addEventListener('click', function(event) {
+            event.preventDefault();
+            // console.log("gotoLine: ", parseInt(event.target.id.replace(/(a)/g, '')));
+            gotoLine(parseInt(event.target.id.replace(/(a)/g, '')));
+            let line = document.getElementById(`line${parseInt(event.target.id.replace(/(a)/g, ''))}`);
+            let top = line.offsetTop;
+            let style = line.currentStyle || window.getComputedStyle(line);
+            let top_margin = parseFloat(style.marginTop);
+            // console.log("top: ", top, "top_margin: ", top_margin);
+            window.scrollTo(0, (top - top_margin), {behavior: 'instant'});
+        });
+        tempTitleContainer.appendChild(tempTextAlt);
+
+        tocContainer.appendChild(tempTitleContainer);
     }
 }
 
@@ -774,14 +822,19 @@ function jumpToPageInputField(event, scrolltoTop=true) {
     }
 }
 
-function gotoPage(page, scrolltoTop=true) {
+function gotoPage(page, scrollTo = 'top') {
     currentPage = page;
     showCurrentPageContent();
     generatePagination();
 
-    if (scrolltoTop) {
-        window.scrollTo(0, 0, {behavior: 'instant'});
-    }
+    // if (scrolltoTop) {
+    //     window.scrollTo(0, 0, {behavior: 'instant'});
+    // }
+    if (scrollTo === 'top') {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+    } else if (scrollTo === 'bottom') {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' });
+    } 
     GetScrollPositions();
 }
 
@@ -899,24 +952,30 @@ function GetScrollPositions(toSetHistory=true) {
 
 function setTitleActive(titleID) {
     // Remove all active titles
-    let allActiveTitles = tocContainer.getElementsByClassName("toc-active");
-    while (allActiveTitles.length) {
-        allActiveTitles[0].classList.remove("toc-active");
+    let allActiveTitles = tocContainer.querySelectorAll(".chapter-title-container.toc-active");
+    for (i = 0; i < allActiveTitles.length; i++) {
+        if (allActiveTitles[i] && allActiveTitles[i].id.split("_").pop() != titleID && allActiveTitles[i].classList.contains("toc-active")) {
+            // console.log(`Previous active title: ${allActiveTitles[i].id}; Current title: ${titleID}`);
+            // console.log("Remove active title: ", allActiveTitles[i].id);
+            allActiveTitles[i].classList.remove("toc-active");
+            for (j in allActiveTitles[i].children) {
+                if (allActiveTitles[i].children[j].classList) {
+                    allActiveTitles[i].children[j].classList.remove("toc-active");
+                }
+            }
+            // console.log("1-Show original title: ", allActiveTitles[i].id);
+            showOriginalTitle(allActiveTitles[i]);
+        }
     }
     try {
         // Set the selected title in the TOC as active
-        let selectedTitle = document.getElementById(`a${titleID}`);
-        selectedTitle.classList.add("toc-active");
-        for (i in selectedTitle.children) {
-            if (selectedTitle.children[i].classList) {
-                selectedTitle.children[i].classList.add("toc-active");
-            }
-        }
-        let selectedTitleBull = document.getElementById(`a${titleID}_bull`);
-        selectedTitleBull.classList.add("toc-active");
-        for (i in selectedTitleBull.children) {
-            if (selectedTitleBull.children[i].classList) {
-                selectedTitleBull.children[i].classList.add("toc-active");
+        let selectedTitle = document.getElementById(`title_${titleID}`);
+        if (selectedTitle && selectedTitle.id.split("_").pop() == titleID && !selectedTitle.classList.contains("toc-active")) {
+            selectedTitle.classList.add("toc-active");
+            for (i in selectedTitle.children) {
+                if (selectedTitle.children[i].classList) {
+                    selectedTitle.children[i].classList.add("toc-active");
+                }
             }
         }
         // Move the selected title to the center of the TOC
@@ -950,8 +1009,56 @@ function setTitleActive(titleID) {
                     style.ui_anchorTargetBefore = style.h2_margin;
             }
         }
+        // console.log("1-Show shortened title: ", selectedTitle.id);
+        if (!isMouseInsideTocContent) {
+            showShortenedTitle(selectedTitle, 2000);
+        }
     } catch (error) {
         console.log(`Error: No title with ID ${titleID} found.`);
+    }
+}
+
+let timeoutId; // A global variable to store the current timeout
+let accumulatedDelay = 0; // Store the accumulated delay
+function showOriginalTitle(container) {
+    // Clear any existing timeout to stop the shortened title timer
+    clearTimeout(timeoutId);
+    accumulatedDelay = 0; // Reset the accumulated delay since we're showing the original title
+    timeoutId = null; // Ensure timeoutId is reset after clearing
+
+    const original = container.querySelector('.title-original');
+    const shortened = container.querySelector('.title-shortened');
+
+    // Check if the original and shortened titles are the same
+    if (original.textContent.trim() === shortened.textContent.trim()) {
+        return; // Exit if they are the same, no need to switch
+    }
+
+    shortened.classList.add('hidden'); // Hide shortened
+    original.classList.remove('hidden'); // Show original
+}
+
+function showShortenedTitle(container, delay = 2000) {
+    // Accumulate delay if function is called multiple times in a row
+    accumulatedDelay += delay;
+
+    const original = container.querySelector('.title-original');
+    const shortened = container.querySelector('.title-shortened');
+
+    // Check if the original and shortened titles are the same
+    if (original.textContent.trim() === shortened.textContent.trim()) {
+        return; // Exit if they are the same, no need to switch
+    }
+
+    // If no previous timeout exists, start a new one
+    if (!timeoutId) {
+        timeoutId = setTimeout(() => {
+            original.classList.add('hidden'); // Hide original
+            shortened.classList.remove('hidden'); // Show shortened
+
+            accumulatedDelay = 0; // Reset after showing the shortened title
+            timeoutId = null; // Reset the timeout ID after the execution
+        }, accumulatedDelay);
     }
 }
 

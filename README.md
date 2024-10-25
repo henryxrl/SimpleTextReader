@@ -46,6 +46,35 @@
 
 10. 颜值高，颜值高，颜值高
 
+## 使用
+
+火狐插件：
+
+1. [易笺正常版 (v1.5.3)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
+
+2. [易笺无界面版 (v1.2.9.2)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian_nogui/)
+
+Chrome插件：
+
+1. [易笺正常版 (v1.5.3)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
+
+2. [易笺无界面版 (v1.2.9.2)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo?hl=en&authuser=0)
+
+Edge插件：
+
+1. [易笺正常版 (v1.5.3)](https://microsoftedge.microsoft.com/addons/detail/%E6%98%93%E7%AC%BA/pabihehbdhldbdliffaddllmjlknmpak)
+
+2. 易笺无界面版 (v1.2.9.2)
+
+Docker：
+
+```
+docker run -d --name simpletextreader \
+  -p 8866:8866 \
+  --restart unless-stopped \
+  henryxrl/simpletextreader:latest
+```
+
 ## 重大更新
 
 ### v1.0
@@ -125,19 +154,7 @@
 
 2. 移除了检测章节标题的字符限制
 
-## 使用
-
-火狐插件：
-
-1. [易笺正常版 (v1.5.2)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
-
-2. [易笺无界面版 (v1.2.9.2)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian_nogui/)
-
-Chrome插件：
-
-1. [易笺正常版 (v1.5.2)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
-
-2. [易笺无界面版 (v1.2.9.2)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo?hl=en&authuser=0)
+3. 更优雅的目录
 
 ---
 

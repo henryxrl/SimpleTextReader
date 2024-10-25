@@ -7,7 +7,7 @@
 
 #footnotediv {
     background-color: var(--bgColor);
-    font-size: 1.0em;
+    font-size: 1em;
     color: var(--mainColor_active);
     padding: 5px 12px;
     border: 1px solid var(--borderColor);
@@ -15,7 +15,7 @@
     box-shadow: 0 0 5px var(--mainColor_inactive);
     -webkit-box-shadow: var(--mainColor_inactive) 0 0 5px;
     -moz-box-shadow: 0 0 5px var(--mainColor_inactive);
-    font-family:var(--fontFamily_ui) !important;
+    font-family: var(--fontFamily_ui) !important;
 }
 
 #footnotediv p {
@@ -39,7 +39,7 @@ a.footnotebacklink img {
     text-align: right;
     margin: 0;
     padding: 0 5px;
-    font-size: 1.0em;
+    font-size: 1em;
     position: absolute;
     float: right;
     top: 0;

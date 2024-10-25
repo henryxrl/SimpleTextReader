@@ -105,7 +105,9 @@ function generateCover(settings, ctx) {
                 coverStyle.background[1].color = coverStyle.background[0].color;
                 rect1Height += rect2Height;
                 textHeightRect1 = rect1Height - 2 * settings.padding;
-                coverStyle.text[0].pos = `${settings.width / 2}, ${rect1Height / 2}`;
+                coverStyle.text[0].pos = `${settings.width / 2}, ${
+                    rect1Height / 2
+                }`;
             }
             var json = JSON.parse(JSON.stringify(coverStyle));
             drawAll(json);
@@ -144,7 +146,8 @@ function generateCover(settings, ctx) {
         const match = /(?<value>\d+\.?\d*)/;
         const fontSizeIncrement = 5;
 
-        var fontSize = str.length > 30 ? 1 : Math.max(parseInt(maxHeight / 10) || 10, 10);
+        var fontSize =
+            str.length > 30 ? 1 : Math.max(parseInt(maxHeight / 10) || 10, 10);
         ctx.font = font.replace(match, fontSize);
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -166,8 +169,11 @@ function generateCover(settings, ctx) {
             ctx.font = ctx.font.replace(match, fontSize);
             var res = fittingString(ctx, str, maxWidth);
             width = res[1];
-            contineTrying = ((width <= maxWidth) || (height <= maxHeight / 4));
-            height = fontSize * (res[0].length + (res[0].length - 1) * (lineHeightMultiplier - 1));
+            contineTrying = width <= maxWidth || height <= maxHeight / 4;
+            height =
+                fontSize *
+                (res[0].length +
+                    (res[0].length - 1) * (lineHeightMultiplier - 1));
             // console.log(`fontSize: ${fontSize}; height: ${height}; maxHeight: ${maxHeight}; width: ${width}; maxWidth: ${maxWidth}`);
             savedLines.push(res[0]);
             if (savedLines.length > 2) {
@@ -217,11 +223,14 @@ function generateCover(settings, ctx) {
                             s = str.substring(idx, i).trim();
                             // console.log(s);
                         }
-                        if (regex_isPunctuation.test(str.substring(i, i + 1).trim())) {
+                        if (
+                            regex_isPunctuation.test(
+                                str.substring(i, i + 1).trim()
+                            )
+                        ) {
                             // console.log("next character is punctuation");
                             i += 2;
-                            if (i > str.length)
-                                i = str.length;
+                            if (i > str.length) i = str.length;
                             s = str.substring(idx, i).trim();
                             // console.log(s);
                         }
@@ -258,7 +267,10 @@ function generateCover(settings, ctx) {
                         var sub = texts[i].slice(0, 20);
                         var sub_w = c.measureText(sub).width;
                         // console.log(sub, sub_w, maxWidth);
-                        while (sub_w < maxWidth && sub.length < texts[i].length) {
+                        while (
+                            sub_w < maxWidth &&
+                            sub.length < texts[i].length
+                        ) {
                             sub = texts[i].slice(0, sub.length + 1);
                             sub_w = c.measureText(sub).width;
                             // console.log(sub, sub_w, maxWidth);

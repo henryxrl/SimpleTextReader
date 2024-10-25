@@ -3,8 +3,12 @@ class BookshelfDB {
 
     connect() {
         return new Promise((resolve, reject) => {
-            const indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
-            const req = indexedDB.open('SimpleTextReader', 1);
+            const indexedDB =
+                window.indexedDB ||
+                window.mozIndexedDB ||
+                window.webkitIndexedDB ||
+                window.msIndexedDB;
+            const req = indexedDB.open("SimpleTextReader", 1);
             req.onupgradeneeded = function (evt) {
                 let db = evt.target.result;
                 console.log(`Upgrading to version ${db.version}`);
@@ -66,15 +70,22 @@ class BookshelfDB {
     }
 
     async putBook(name, data, isFromLocal = true, isOnServer = false) {
-        if (!await this.init()) {
+        if (!(await this.init())) {
             throw new Error("Init local db error!");
         }
         let tbl = this.getObjectStore("bookfiles", "readwrite");
-        return await this.exec(tbl.put({ name: name, data: data, isFromLocal: isFromLocal, isOnServer: isOnServer }));
+        return await this.exec(
+            tbl.put({
+                name: name,
+                data: data,
+                isFromLocal: isFromLocal,
+                isOnServer: isOnServer,
+            })
+        );
     }
 
     async getBook(name) {
-        if (!await this.init()) {
+        if (!(await this.init())) {
             throw new Error("Init local db error!");
         }
         let tbl = this.getObjectStore("bookfiles");
@@ -87,7 +98,7 @@ class BookshelfDB {
     }
 
     async getAllBooks() {
-        if (!await this.init()) {
+        if (!(await this.init())) {
             throw new Error("Init local db error!");
         }
         let tbl = this.getObjectStore("bookfiles");
@@ -96,16 +107,16 @@ class BookshelfDB {
     }
 
     async getAllCloudBooks() {
-        if (!await this.init()) {
+        if (!(await this.init())) {
             throw new Error("Init local db error!");
         }
         let tbl = this.getObjectStore("bookfiles");
         let result = await this.exec(tbl.getAll());
-        return result.filter(book => book.isOnServer);
+        return result.filter((book) => book.isOnServer);
     }
 
     async isBookExist(name) {
-        if (!await this.init()) {
+        if (!(await this.init())) {
             throw new Error("Init local db error!");
         }
         let tbl = this.getObjectStore("bookfiles");
@@ -114,7 +125,7 @@ class BookshelfDB {
     }
 
     async removeBook(name) {
-        if (!await this.init()) {
+        if (!(await this.init())) {
             throw new Error("Init local db error!");
         }
         let tbl = this.getObjectStore("bookfiles", "readwrite");
@@ -122,7 +133,7 @@ class BookshelfDB {
     }
 
     async removeAllBooks() {
-        if (!await this.init()) {
+        if (!(await this.init())) {
             throw new Error("Init local db error!");
         }
         let tbl = this.getObjectStore("bookfiles", "readwrite");
@@ -130,24 +141,24 @@ class BookshelfDB {
     }
 
     async removeAllCloudBooks() {
-        if (!await this.init()) {
+        if (!(await this.init())) {
             throw new Error("Init local db error!");
         }
         let tbl = this.getObjectStore("bookfiles", "readwrite");
         let books = await this.exec(tbl.getAll());
         // books = books.filter(book => book.isOnServer);
-        await Promise.all(books.map(async (book) => {
-            if (book.isOnServer && !book.isFromLocal) {
-                // console.log(book);
-                await this.exec(tbl.delete(book.name));
-            }
-        }));
+        await Promise.all(
+            books.map(async (book) => {
+                if (book.isOnServer && !book.isFromLocal) {
+                    // console.log(book);
+                    await this.exec(tbl.delete(book.name));
+                }
+            })
+        );
     }
 }
 
-
 var bookshelf = {
-
     enabled: false,
     db: null,
 
@@ -173,7 +184,7 @@ var bookshelf = {
             showLoadingScreen();
             try {
                 // check if the book exists in db
-                if (!await this.isBookExist(fname)) {
+                if (!(await this.isBookExist(fname))) {
                     // search book in allBooksInfo
                     // let toProcessBookInfo = allBooksInfo.find(x => x.name === fname);
                     let toProcessBookInfo = allBooksInfo[fname];
@@ -181,8 +192,18 @@ var bookshelf = {
 
                     if (toProcessBookInfo) {
                         try {
-                            let toProcessBookFileObj = await URLToFileObject(toProcessBookInfo.path, toProcessBookInfo.name);
-                            await this.saveBook(toProcessBookFileObj, toProcessBookInfo.isFromLocal, toProcessBookInfo.isOnServer, false, false, false);
+                            let toProcessBookFileObj = await URLToFileObject(
+                                toProcessBookInfo.path,
+                                toProcessBookInfo.name
+                            );
+                            await this.saveBook(
+                                toProcessBookFileObj,
+                                toProcessBookInfo.isFromLocal,
+                                toProcessBookInfo.isOnServer,
+                                false,
+                                false,
+                                false
+                            );
                         } catch (e) {
                             // alert("发生错误！");
                             throw new Error(`openBook error: "${fname}"`);
@@ -213,7 +234,14 @@ var bookshelf = {
         }
     },
 
-    async saveBook(file, isFromLocal = true, isOnServer = false, refreshBookshelf = true, hardRefresh = true, sortBookshelf = true) {
+    async saveBook(
+        file,
+        isFromLocal = true,
+        isOnServer = false,
+        refreshBookshelf = true,
+        hardRefresh = true,
+        sortBookshelf = true
+    ) {
         if (bookshelf.enabled) {
             if (file.type === "text/plain") {
                 if (file[bookshelf._CACHE_FLAG_]) {
@@ -227,18 +255,28 @@ var bookshelf = {
                         //     return file;
                         // }
 
-                        await bookshelf.db.putBook(file.name, file, isFromLocal, isOnServer);
-                        if (!await bookshelf.db.isBookExist(file.name)) {
+                        await bookshelf.db.putBook(
+                            file.name,
+                            file,
+                            isFromLocal,
+                            isOnServer
+                        );
+                        if (!(await bookshelf.db.isBookExist(file.name))) {
                             // alert("保存到本地书架失败（缓存空间可能已满）");
-                            throw new Error(`saveBook error (localStorage full): "${file.name}"`);
+                            throw new Error(
+                                `saveBook error (localStorage full): "${file.name}"`
+                            );
                         }
 
                         // 刷新 Bookshelf in DropZone
                         // await bookshelf.refreshBookList();
                         // console.log(`refreshBookshelf: ${refreshBookshelf}, HardRefresh: ${hardRefresh}`);
                         if (refreshBookshelf)
-                            await resetUI(refreshBookshelf, hardRefresh, sortBookshelf);
-
+                            await resetUI(
+                                refreshBookshelf,
+                                hardRefresh,
+                                sortBookshelf
+                            );
                     } catch (e) {
                         console.log(e);
                     }
@@ -318,7 +356,10 @@ var bookshelf = {
                 </div>`;
                 bookElm.find(".coverContainer").append(badge);
             } else {
-                bookElm.find(".progress").html(progress).attr("title", progress);
+                bookElm
+                    .find(".progress")
+                    .html(progress)
+                    .attr("title", progress);
             }
         } else {
             bookElm.removeClass("read").css("--read-progress", "");
@@ -346,7 +387,9 @@ var bookshelf = {
         // generate book cover art
         let canvasWidth = getSizePrecise(style.ui_bookCoverWidth);
         let canvasHeight = getSizePrecise(style.ui_bookCoverHeight);
-        let currentBookNameAndAuthor = getBookNameAndAuthor(bookInfo.name.replace(/(.txt)$/i, ''));
+        let currentBookNameAndAuthor = getBookNameAndAuthor(
+            bookInfo.name.replace(/(.txt)$/i, "")
+        );
         let book = $(`<div class="book" data-filename="${bookInfo.name}">
             <div class="coverContainer">
                 <span class="coverText">${bookInfo.name}</span>
@@ -355,18 +398,26 @@ var bookshelf = {
             <div class="infoContainer">
                 <div class="progress"></div>
                 <div class="isOnServer">
-                    ${(bookInfo.isOnServer && !bookInfo.isFromLocal) ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 40">
+                    ${
+                        bookInfo.isOnServer && !bookInfo.isFromLocal
+                            ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 40">
                     <path d="M24.7793,25.30225H7.2207A6.02924,6.02924,0,0,1,1.84375,22.0708c-1.99856-3.83755.74946-8.94738,5.2832-8.8418a9.30623,9.30623,0,0,1,17.74121-.0249A6.04953,6.04953,0,0,1,24.7793,25.30225ZM7.25781,15.22754c-3.1607-.153-4.95556,3.33035-3.62493,5.94832a4.01435,4.01435,0,0,0,3.63079,2.12736l17.5166-.001A4.05253,4.05253,0,1,0,22.11722,16.202a1.00012,1.00012,0,0,1-1.41312-.05653c-1.00583-1.32476,1.17841-2.28273,2.15235-2.65332A7.30425,7.30425,0,0,0,8.8623,14.4779C8.70326,15.24838,7.89656,15.30989,7.25781,15.22754Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>` : ""}
+                    </svg>`
+                            : ""
+                    }
                 </div>
                 <div class="delete-btn-wrapper">
-                    <span class="delete-btn hasTitle" title="${style.ui_tooltip_removeBook}">
+                    <span class="delete-btn hasTitle" title="${
+                        style.ui_tooltip_removeBook
+                    }">
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M6 7V18C6 19.1046 6.89543 20 8 20H16C17.1046 20 18 19.1046 18 18V7M6 7H5M6 7H8M18 7H19M18 7H16M10 11V16M14 11V16M8 7V5C8 3.89543 8.89543 3 10 3H14C15.1046 3 16 3.89543 16 5V7M8 7H16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     </span>
                 </div>
-                <div id="bookInfoMenuBtn-${idx}" class="bookInfoMenuBtn hasTitle" title="${style.ui_tooltip_bookInfo}">
+                <div id="bookInfoMenuBtn-${idx}" class="bookInfoMenuBtn hasTitle" title="${
+            style.ui_tooltip_bookInfo
+        }">
                     <input id="dot-menu-${idx}" type="checkbox" class="dot-menu__checkbox">
                     <label for="dot-menu-${idx}" class="dot-menu__label"><span></span></label>
                 </div>
@@ -375,52 +426,72 @@ var bookshelf = {
         let canvas = book.find(".coverCanvas");
         let ctx = canvas[0].getContext("2d");
         let coverSettings = {
-            "width": canvasWidth,
-            "height": canvasHeight,
-            "padding": canvasWidth / 8,
-            "bottomRectHeightRatio": 0.3,
-            "coverColor1": style.mainColor_inactive,
-            "coverColor2": style.mainColor_active,
-            "textColor1": style.bgColor,
-            "textColor2": style.bgColor,
+            width: canvasWidth,
+            height: canvasHeight,
+            padding: canvasWidth / 8,
+            bottomRectHeightRatio: 0.3,
+            coverColor1: style.mainColor_inactive,
+            coverColor2: style.mainColor_active,
+            textColor1: style.bgColor,
+            textColor2: style.bgColor,
             // "coverColor1": style.logoColor1,
             // "coverColor2": style.logoColor2,
             // "textColor1": style.logoColor3,
             // "textColor2": style.logoColor3,
-            "font1": style.fontFamily_title_zh,
-            "font2": style.fontFamily_body_zh,
+            font1: style.fontFamily_title_zh,
+            font2: style.fontFamily_body_zh,
             // "font1": "HiraKakuProN-W6",
             // "font2": "HiraKakuProN-W3",
-            "bookTitle": currentBookNameAndAuthor.bookName,
-            "authorName": currentBookNameAndAuthor.author,
+            bookTitle: currentBookNameAndAuthor.bookName,
+            authorName: currentBookNameAndAuthor.author,
         };
         generateCover(coverSettings, ctx);
         if (currentBookNameAndAuthor.author === "") {
-            book.find(".coverContainer").css('box-shadow', 'var(--ui_bookshadow_noAuthor)');
+            book.find(".coverContainer").css(
+                "box-shadow",
+                "var(--ui_bookshadow_noAuthor)"
+            );
         } else {
-            book.find(".coverContainer").css('box-shadow', 'var(--ui_bookshadow)');
+            book.find(".coverContainer").css(
+                "box-shadow",
+                "var(--ui_bookshadow)"
+            );
         }
 
         // add mouseover effect
-        book.find(".coverContainer").mouseover(function() {
-            book.find(".delete-btn-wrapper").css("opacity", "1");
-            $(this).css('box-shadow', 'var(--ui_bookshadow_hover)');
-        }).mouseout(function(e) {
-            if ((e.offsetX <= 0 || e.offsetX >= $(this).width()) || (e.offsetY <= $(this)[0].offsetTop || e.offsetY >= $(this).height())) {
-                book.find(".delete-btn-wrapper").css("opacity", "0");
-                let tempBookAuthor = getBookNameAndAuthor(bookInfo.name.replace(/(.txt)$/i, ''));
-                if (tempBookAuthor.author === "") {
-                    $(this).css('box-shadow', 'var(--ui_bookshadow_noAuthor)');
-                } else {
-                    $(this).css('box-shadow', 'var(--ui_bookshadow)');
+        book.find(".coverContainer")
+            .mouseover(function () {
+                book.find(".delete-btn-wrapper").css("opacity", "1");
+                $(this).css("box-shadow", "var(--ui_bookshadow_hover)");
+            })
+            .mouseout(function (e) {
+                if (
+                    e.offsetX <= 0 ||
+                    e.offsetX >= $(this).width() ||
+                    e.offsetY <= $(this)[0].offsetTop ||
+                    e.offsetY >= $(this).height()
+                ) {
+                    book.find(".delete-btn-wrapper").css("opacity", "0");
+                    let tempBookAuthor = getBookNameAndAuthor(
+                        bookInfo.name.replace(/(.txt)$/i, "")
+                    );
+                    if (tempBookAuthor.author === "") {
+                        $(this).css(
+                            "box-shadow",
+                            "var(--ui_bookshadow_noAuthor)"
+                        );
+                    } else {
+                        $(this).css("box-shadow", "var(--ui_bookshadow)");
+                    }
                 }
-            }
-        });
-        book.find(".infoContainer").mouseover(function() {
-            book.find(".delete-btn-wrapper").css("opacity", "1");
-        }).mouseout(function() {
-            book.find(".delete-btn-wrapper").css("opacity", "0");
-        });
+            });
+        book.find(".infoContainer")
+            .mouseover(function () {
+                book.find(".delete-btn-wrapper").css("opacity", "1");
+            })
+            .mouseout(function () {
+                book.find(".delete-btn-wrapper").css("opacity", "0");
+            });
         // book.find(".delete-btn-wrapper").mouseover(function() {
         //     book.find(".coverContainer").css('box-shadow', 'var(--ui_bookshadow_hover)');
         // }).mouseout(function() {
@@ -431,7 +502,7 @@ var bookshelf = {
         //         book.find(".coverContainer").css('box-shadow', 'var(--ui_bookshadow)');
         //     }
         // });
-        
+
         // add click event
         book.find(".coverContainer").click((evt) => {
             evt.originalEvent.stopPropagation();
@@ -449,7 +520,7 @@ var bookshelf = {
                     // console.log(allBooksInfo);
                     // this.refreshBookList();     // does't need to refresh booklist every time after delete
 
-                    $(".booklist").trigger("contentchange");    // recalculate booklist height
+                    $(".booklist").trigger("contentchange"); // recalculate booklist height
 
                     // change isFromLocal to false
                     setIsFromLocal(bookInfo.name, false);
@@ -469,53 +540,97 @@ var bookshelf = {
             $(".bookInfoMenu").remove();
 
             // add bookInfoMenu
-            if (book.find(".dot-menu__checkbox").is(':checked')) {
-                let tempBookAuthor = getBookNameAndAuthor(bookInfo.name.replace(/(.txt)$/i, ''));
+            if (book.find(".dot-menu__checkbox").is(":checked")) {
+                let tempBookAuthor = getBookNameAndAuthor(
+                    bookInfo.name.replace(/(.txt)$/i, "")
+                );
                 let tempBookTitle = tempBookAuthor.bookName;
-                let tempBookAuthorName = tempBookAuthor.author === "" ? `<span class="bookInfoMenu_item_text">${style.ui_bookInfo_Unknown}<span>` : `<span class="bookInfoMenu_item_info">${tempBookAuthor.author}<span>`;
-                let tempBookLastOpenedTimestamp = isVariableDefined(bookInfo.lastOpenedTimestamp) && bookInfo.lastOpenedTimestamp !== "" ? `<span class="bookInfoMenu_item_info">${convertUTCTimestampToLocalString(bookInfo.lastOpenedTimestamp)}<span>` : `<span class="bookInfoMenu_item_text">${style.ui_bookInfo_Unknown}<span>`;
+                let tempBookAuthorName =
+                    tempBookAuthor.author === ""
+                        ? `<span class="bookInfoMenu_item_text">${style.ui_bookInfo_Unknown}<span>`
+                        : `<span class="bookInfoMenu_item_info">${tempBookAuthor.author}<span>`;
+                let tempBookLastOpenedTimestamp =
+                    isVariableDefined(bookInfo.lastOpenedTimestamp) &&
+                    bookInfo.lastOpenedTimestamp !== ""
+                        ? `<span class="bookInfoMenu_item_info">${convertUTCTimestampToLocalString(
+                              bookInfo.lastOpenedTimestamp
+                          )}<span>`
+                        : `<span class="bookInfoMenu_item_text">${style.ui_bookInfo_Unknown}<span>`;
 
                 // show popup menu
                 let bookInfoMenu = `
                 <div class="bookInfoMenu" id="bookInfoMenu-${idx}">
                     <div class="bookInfoMenu-clip"></div>
                     <div class="bookInfoMenu_item">
-                        <span class="bookInfoMenu_item_text">${style.ui_bookInfo_bookname}</span>
+                        <span class="bookInfoMenu_item_text">${
+                            style.ui_bookInfo_bookname
+                        }</span>
                         <span class="bookInfoMenu_item_info bookInfoMenu_item_info_title">${tempBookTitle}</span>
                     </div>
                     <div class="bookInfoMenu_item">
-                        <span class="bookInfoMenu_item_text">${style.ui_bookInfo_author}</span>
+                        <span class="bookInfoMenu_item_text">${
+                            style.ui_bookInfo_author
+                        }</span>
                         <span class="bookInfoMenu_item_info bookInfoMenu_item_info_author">${tempBookAuthorName}</span>
                     </div>
                     <div class="bookInfoMenu_item">
-                        <span class="bookInfoMenu_item_text">${style.ui_bookInfo_filename}</span>
-                        <span class="bookInfoMenu_item_info bookInfoMenu_item_info_filename">${bookInfo.name}</span>
+                        <span class="bookInfoMenu_item_text">${
+                            style.ui_bookInfo_filename
+                        }</span>
+                        <span class="bookInfoMenu_item_info bookInfoMenu_item_info_filename">${
+                            bookInfo.name
+                        }</span>
                     </div>
                     <div class="bookInfoMenu_item">
-                        <span class="bookInfoMenu_item_text">${style.ui_bookInfo_filesize}</span>
-                        <span class="bookInfoMenu_item_info bookInfoMenu_item_info_filesize">${formatBytes(bookInfo.size)}</span>
+                        <span class="bookInfoMenu_item_text">${
+                            style.ui_bookInfo_filesize
+                        }</span>
+                        <span class="bookInfoMenu_item_info bookInfoMenu_item_info_filesize">${formatBytes(
+                            bookInfo.size
+                        )}</span>
                     </div>
                     <div class="bookInfoMenu_item">
-                        <span class="bookInfoMenu_item_text bookInfoMenu_item_info_timestamp">${style.ui_bookInfo_lastopened}</span>
+                        <span class="bookInfoMenu_item_text bookInfoMenu_item_info_timestamp">${
+                            style.ui_bookInfo_lastopened
+                        }</span>
                         ${tempBookLastOpenedTimestamp}
                     </div>
                 </div>`;
-                
+
                 book.find(".infoContainer").append(bookInfoMenu);
 
                 // set bookInfoMenu's position to be right above current element
-                let bookInfoMenuWidth = book.find(`#bookInfoMenu-${idx}`).outerWidth();
-                let bookInfoMenuHeight = book.find(`#bookInfoMenu-${idx}`).outerHeight();
-                book.find(`#bookInfoMenu-${idx}`).css("top", `${evt.currentTarget.getBoundingClientRect().bottom - evt.currentTarget.getBoundingClientRect().height - bookInfoMenuHeight - 15}px`);
-                book.find(`#bookInfoMenu-${idx}`).css("left", `${evt.currentTarget.getBoundingClientRect().left + evt.currentTarget.getBoundingClientRect().width / 2 - bookInfoMenuWidth / 2 + 3}px`);
-
+                let bookInfoMenuWidth = book
+                    .find(`#bookInfoMenu-${idx}`)
+                    .outerWidth();
+                let bookInfoMenuHeight = book
+                    .find(`#bookInfoMenu-${idx}`)
+                    .outerHeight();
+                book.find(`#bookInfoMenu-${idx}`).css(
+                    "top",
+                    `${
+                        evt.currentTarget.getBoundingClientRect().bottom -
+                        evt.currentTarget.getBoundingClientRect().height -
+                        bookInfoMenuHeight -
+                        15
+                    }px`
+                );
+                book.find(`#bookInfoMenu-${idx}`).css(
+                    "left",
+                    `${
+                        evt.currentTarget.getBoundingClientRect().left +
+                        evt.currentTarget.getBoundingClientRect().width / 2 -
+                        bookInfoMenuWidth / 2 +
+                        3
+                    }px`
+                );
             } else {
                 // hide popup menu
                 book.find(".bookInfoMenu").remove();
             }
 
             // hide popup menu when clicked outside
-            document.addEventListener('click', function(event) {  
+            document.addEventListener("click", function (event) {
                 const settingsMenu = book.find(`#bookInfoMenu-${idx}`);
                 // if (!settingsMenu) return;
                 if ($(event.target).closest(settingsMenu).length) {
@@ -527,9 +642,9 @@ var bookshelf = {
             });
 
             // reset all book cover art when mouseover the bookInfoMenu
-            book.find(".bookInfoMenu").mouseover(function() {
+            book.find(".bookInfoMenu").mouseover(function () {
                 // $(".delete-btn-wrapper").css("visibility", "hidden");
-                $(".coverContainer").css('box-shadow', 'var(--ui_bookshadow)');
+                $(".coverContainer").css("box-shadow", "var(--ui_bookshadow)");
             });
         });
 
@@ -537,35 +652,39 @@ var bookshelf = {
     },
 
     async updateAllBookCovers() {
-        Array.prototype.slice.call(document.getElementsByClassName("book")).forEach(book => {
-            let book_filename = book.getAttribute("data-filename");
-            let book_cover = book.getElementsByTagName("canvas")[0];
-            let canvasWidth = book_cover.width;
-            let canvasHeight = book_cover.height;
-            let currentBookNameAndAuthor = getBookNameAndAuthor(book_filename.replace(/(.txt)$/i, ''));
-            let ctx = book_cover.getContext("2d");
-            let coverSettings = {
-                "width": canvasWidth,
-                "height": canvasHeight,
-                "padding": canvasWidth / 8,
-                "bottomRectHeightRatio": 0.3,
-                "coverColor1": style.mainColor_inactive,
-                "coverColor2": style.mainColor_active,
-                "textColor1": style.bgColor,
-                "textColor2": style.bgColor,
-                // "coverColor1": style.logoColor1,
-                // "coverColor2": style.logoColor2,
-                // "textColor1": style.logoColor3,
-                // "textColor2": style.logoColor3,
-                "font1": style.fontFamily_title_zh,
-                "font2": style.fontFamily_body_zh,
-                // "font1": "HiraKakuProN-W6",
-                // "font2": "HiraKakuProN-W3",
-                "bookTitle": currentBookNameAndAuthor.bookName,
-                "authorName": currentBookNameAndAuthor.author,
-            };
-            generateCover(coverSettings, ctx);
-        });
+        Array.prototype.slice
+            .call(document.getElementsByClassName("book"))
+            .forEach((book) => {
+                let book_filename = book.getAttribute("data-filename");
+                let book_cover = book.getElementsByTagName("canvas")[0];
+                let canvasWidth = book_cover.width;
+                let canvasHeight = book_cover.height;
+                let currentBookNameAndAuthor = getBookNameAndAuthor(
+                    book_filename.replace(/(.txt)$/i, "")
+                );
+                let ctx = book_cover.getContext("2d");
+                let coverSettings = {
+                    width: canvasWidth,
+                    height: canvasHeight,
+                    padding: canvasWidth / 8,
+                    bottomRectHeightRatio: 0.3,
+                    coverColor1: style.mainColor_inactive,
+                    coverColor2: style.mainColor_active,
+                    textColor1: style.bgColor,
+                    textColor2: style.bgColor,
+                    // "coverColor1": style.logoColor1,
+                    // "coverColor2": style.logoColor2,
+                    // "textColor1": style.logoColor3,
+                    // "textColor2": style.logoColor3,
+                    font1: style.fontFamily_title_zh,
+                    font2: style.fontFamily_body_zh,
+                    // "font1": "HiraKakuProN-W6",
+                    // "font2": "HiraKakuProN-W3",
+                    bookTitle: currentBookNameAndAuthor.bookName,
+                    authorName: currentBookNameAndAuthor.author,
+                };
+                generateCover(coverSettings, ctx);
+            });
     },
 
     async refreshBookList(hardRefresh = false, sortBookshelf = true) {
@@ -573,7 +692,11 @@ var bookshelf = {
             if (navigator.storage) {
                 let storageInfo = await navigator.storage.estimate();
                 if (storageInfo) {
-                    $("#bookshelfUsagePct").html((storageInfo.usage/storageInfo.quota*100).toFixed(1));
+                    $("#bookshelfUsagePct").html(
+                        ((storageInfo.usage / storageInfo.quota) * 100).toFixed(
+                            1
+                        )
+                    );
                     $("#bookshelfUsage").html(formatBytes(storageInfo.usage));
                     $("#bookshelfQuota").html(formatBytes(storageInfo.quota));
                 }
@@ -585,12 +708,22 @@ var bookshelf = {
                 for (const book of await this.db.getAllBooks()) {
                     let final_isFromLocal = book.isFromLocal || false;
                     let final_isOnServer = book.isOnServer || false;
-                    let new_book = {name: book.name, size: book.data.size, isFromLocal: final_isFromLocal, isOnServer: final_isOnServer};
+                    let new_book = {
+                        name: book.name,
+                        size: book.data.size,
+                        isFromLocal: final_isFromLocal,
+                        isOnServer: final_isOnServer,
+                    };
 
-                    let lastOpenedTimestamp = localStorage.getItem(`${new_book.name}_lastopened`);
+                    let lastOpenedTimestamp = localStorage.getItem(
+                        `${new_book.name}_lastopened`
+                    );
                     if (lastOpenedTimestamp) {
                         new_book.lastOpenedTimestamp = lastOpenedTimestamp;
-                        new_book.progress = getProgressText(new_book.name, false);
+                        new_book.progress = getProgressText(
+                            new_book.name,
+                            false
+                        );
                     }
 
                     // allBooksInfo = allBooksInfo.filter(f => f.name !== new_book.name).concat([new_book]);
@@ -605,19 +738,40 @@ var bookshelf = {
                     // 2. if progress is not 100%, then sort by last opened timestamp
                     // 3. if last opened timestamp is not available, then sort by filename
                     allBooksInfo_names.sort((a, b) => {
-                        if (allBooksInfo[a].progress === "100%" && allBooksInfo[b].progress !== "100%") {
+                        if (
+                            allBooksInfo[a].progress === "100%" &&
+                            allBooksInfo[b].progress !== "100%"
+                        ) {
                             return 1;
-                        } else if (allBooksInfo[a].progress !== "100%" && allBooksInfo[b].progress === "100%") {
+                        } else if (
+                            allBooksInfo[a].progress !== "100%" &&
+                            allBooksInfo[b].progress === "100%"
+                        ) {
                             return -1;
                         } else {
-                            if (!allBooksInfo[a].lastOpenedTimestamp && !allBooksInfo[b].lastOpenedTimestamp) {
-                                return allBooksInfo[a].name.localeCompare(allBooksInfo[b].name, "zh");
-                            } else if (allBooksInfo[a].lastOpenedTimestamp && !allBooksInfo[b].lastOpenedTimestamp) {
+                            if (
+                                !allBooksInfo[a].lastOpenedTimestamp &&
+                                !allBooksInfo[b].lastOpenedTimestamp
+                            ) {
+                                return allBooksInfo[a].name.localeCompare(
+                                    allBooksInfo[b].name,
+                                    "zh"
+                                );
+                            } else if (
+                                allBooksInfo[a].lastOpenedTimestamp &&
+                                !allBooksInfo[b].lastOpenedTimestamp
+                            ) {
                                 return -1;
-                            } else if (!allBooksInfo[a].lastOpenedTimestamp && allBooksInfo[b].lastOpenedTimestamp) {
+                            } else if (
+                                !allBooksInfo[a].lastOpenedTimestamp &&
+                                allBooksInfo[b].lastOpenedTimestamp
+                            ) {
                                 return 1;
                             } else {
-                                return allBooksInfo[b].lastOpenedTimestamp - allBooksInfo[a].lastOpenedTimestamp;
+                                return (
+                                    allBooksInfo[b].lastOpenedTimestamp -
+                                    allBooksInfo[a].lastOpenedTimestamp
+                                );
                             }
                         }
                     });
@@ -627,15 +781,20 @@ var bookshelf = {
                 // console.log(allBooksInfo.length);
 
                 let container = $(".bookshelf .booklist");
-                if (hardRefresh)
-                    container.html("");
+                if (hardRefresh) container.html("");
                 for (const [idx, bookname] of allBooksInfo_names.entries()) {
                     let bookInfo = allBooksInfo[bookname];
                     if (!hardRefresh && container.children().length > 0) {
                         // try to find the book in container.children()
                         // if container already contains the book, remove the book first
                         // otherwise, add the book to the bookshelf
-                        let bookIndex = Array.prototype.slice.call(container.children()).findIndex(book => book.getAttribute("data-filename") === bookInfo.name);
+                        let bookIndex = Array.prototype.slice
+                            .call(container.children())
+                            .findIndex(
+                                (book) =>
+                                    book.getAttribute("data-filename") ===
+                                    bookInfo.name
+                            );
                         if (bookIndex !== -1) {
                             // console.log(`Book ${bookInfo.name} is already in bookshelf at index=${bookIndex}. Removing it first.`);
                             container.children().eq(bookIndex).remove();
@@ -664,7 +823,10 @@ var bookshelf = {
 
     async show() {
         if (this.enabled) {
-            if (isVariableDefined($(".bookshelf")) && $(".bookshelf .booklist").children().length > 0) {
+            if (
+                isVariableDefined($(".bookshelf")) &&
+                $(".bookshelf .booklist").children().length > 0
+            ) {
                 $(".bookshelf").show();
                 $(".booklist").trigger("contentchange");
                 return;
@@ -676,10 +838,16 @@ var bookshelf = {
     async hide(doNotRemove = true) {
         if (this.enabled) {
             if (isVariableDefined(dropZoneText)) {
-                dropZoneText.setAttribute("style", `top: ${style.ui_dropZoneTextTop}; left: ${style.ui_dropZoneTextLeft}; font-size: ${style.ui_dropZoneTextSize}`);
+                dropZoneText.setAttribute(
+                    "style",
+                    `top: ${style.ui_dropZoneTextTop}; left: ${style.ui_dropZoneTextLeft}; font-size: ${style.ui_dropZoneTextSize}`
+                );
             }
             if (isVariableDefined(dropZoneImg)) {
-                dropZoneImg.setAttribute("style", `top: ${style.ui_dropZoneImgTop}; left: ${style.ui_dropZoneImgLeft}; width: ${style.ui_dropZoneImgSize}; height: ${style.ui_dropZoneImgSize}`);
+                dropZoneImg.setAttribute(
+                    "style",
+                    `top: ${style.ui_dropZoneImgTop}; left: ${style.ui_dropZoneImgLeft}; width: ${style.ui_dropZoneImgSize}; height: ${style.ui_dropZoneImgSize}`
+                );
             }
             if (!doNotRemove) {
                 $(".bookshelf").remove();
@@ -736,69 +904,108 @@ var bookshelf = {
                 </div>
             </div>
             </div>`)
-            .hide()
-            .on("dblclick", function(event) {
-                // disable double click event inside bookshelf
-                event.stopPropagation();
-            })
-            .appendTo("#dropZone");
+                .hide()
+                .on("dblclick", function (event) {
+                    // disable double click event inside bookshelf
+                    event.stopPropagation();
+                })
+                .appendTo("#dropZone");
 
             function defineScrollBtns() {
                 if (this.scrollTop > 0) {
                     $("#scrollTop-btn")
-                    .css("visibility", "visible")
-                    .click(() => {
-                        // this.scrollTop = 0;
-                        $(this).stop(true, false);
-                        $(this).animate({scrollTop: 0}, this.scrollHeight / 10);
-                    });
+                        .css("visibility", "visible")
+                        .click(() => {
+                            // this.scrollTop = 0;
+                            $(this).stop(true, false);
+                            $(this).animate(
+                                { scrollTop: 0 },
+                                this.scrollHeight / 10
+                            );
+                        });
                 } else {
                     $("#scrollTop-btn").css("visibility", "hidden");
                 }
-                if (this.scrollHeight-this.offsetHeight - this.scrollTop > 1) {
+                if (
+                    this.scrollHeight - this.offsetHeight - this.scrollTop >
+                    1
+                ) {
                     $("#scrollBottom-btn")
-                    .css("visibility", "visible")
-                    .click(() => {
-                        $(this).stop(true, false);
-                        $(this).animate({scrollTop: this.scrollHeight-this.offsetHeight}, this.scrollHeight / 10);
-                    });
+                        .css("visibility", "visible")
+                        .click(() => {
+                            $(this).stop(true, false);
+                            $(this).animate(
+                                {
+                                    scrollTop:
+                                        this.scrollHeight - this.offsetHeight,
+                                },
+                                this.scrollHeight / 10
+                            );
+                        });
                 } else {
                     $("#scrollBottom-btn").css("visibility", "hidden");
                 }
-            };
+            }
 
-            $(".booklist").on("scroll", function() {
+            $(".booklist").on("scroll", function () {
                 defineScrollBtns.call(this);
                 $(".dot-menu__checkbox").prop("checked", false);
                 $(".bookInfoMenu").remove();
             });
 
-            $(".booklist").bind("contentchange", function() {
+            $(".booklist").bind("contentchange", function () {
                 // set bookshelf height
-                let bookWidth = $('.book').outerWidth(true);
-                let bookHeight = $('.book').outerHeight(true);
-                let windowHeight = $('#dropZone').outerHeight(true);
-                let numBookshelfRows = Math.ceil($('.book').length / Math.floor(this.offsetWidth / bookWidth));
-                numBookshelfRows = isFinite(numBookshelfRows) ? numBookshelfRows : 0;
+                let bookWidth = $(".book").outerWidth(true);
+                let bookHeight = $(".book").outerHeight(true);
+                let windowHeight = $("#dropZone").outerHeight(true);
+                let numBookshelfRows = Math.ceil(
+                    $(".book").length / Math.floor(this.offsetWidth / bookWidth)
+                );
+                numBookshelfRows = isFinite(numBookshelfRows)
+                    ? numBookshelfRows
+                    : 0;
                 if (numBookshelfRows > 0) {
                     let topPx = "";
-                    topPx = `max(calc(${windowHeight - (bookHeight + 24) * numBookshelfRows}px - 2 * var(--ui_booklist_padding)), 25%)`;
-                    $('.bookshelf').css('top', topPx);
-                    let topPxNum = parseInt($('.bookshelf').css('top'));
-                    $('#dropZoneText').css('top', `calc(${topPxNum} / ${windowHeight} * var(--ui_dropZoneTextTop))`);
-                    $('#dropZoneText').css('font-size', `max(calc(1.2 * (${topPxNum} / ${windowHeight}) * var(--ui_dropZoneTextSize)), calc(var(--ui_dropZoneTextSize) / 1.5))`);
-                    $('#dropZoneImg').css('top', `calc(${topPxNum} / ${windowHeight} * var(--ui_dropZoneImgTop))`);
-                    $('#dropZoneImg').css('width', `max(calc(1.2 * (${topPxNum} / ${windowHeight}) * var(--ui_dropZoneImgSize)), calc(var(--ui_dropZoneImgSize) / 1.5)`);
-                    $('#dropZoneImg').css('height', `max(calc(1.2 * (${topPxNum} / ${windowHeight}) * var(--ui_dropZoneImgSize)), calc(var(--ui_dropZoneImgSize) / 1.5)`);
+                    topPx = `max(calc(${
+                        windowHeight - (bookHeight + 24) * numBookshelfRows
+                    }px - 2 * var(--ui_booklist_padding)), 25%)`;
+                    $(".bookshelf").css("top", topPx);
+                    let topPxNum = parseInt($(".bookshelf").css("top"));
+                    $("#dropZoneText").css(
+                        "top",
+                        `calc(${topPxNum} / ${windowHeight} * var(--ui_dropZoneTextTop))`
+                    );
+                    $("#dropZoneText").css(
+                        "font-size",
+                        `max(calc(1.2 * (${topPxNum} / ${windowHeight}) * var(--ui_dropZoneTextSize)), calc(var(--ui_dropZoneTextSize) / 1.5))`
+                    );
+                    $("#dropZoneImg").css(
+                        "top",
+                        `calc(${topPxNum} / ${windowHeight} * var(--ui_dropZoneImgTop))`
+                    );
+                    $("#dropZoneImg").css(
+                        "width",
+                        `max(calc(1.2 * (${topPxNum} / ${windowHeight}) * var(--ui_dropZoneImgSize)), calc(var(--ui_dropZoneImgSize) / 1.5)`
+                    );
+                    $("#dropZoneImg").css(
+                        "height",
+                        `max(calc(1.2 * (${topPxNum} / ${windowHeight}) * var(--ui_dropZoneImgSize)), calc(var(--ui_dropZoneImgSize) / 1.5)`
+                    );
                 } else {
                     // return to default values
-                    $('.bookshelf').css('display', 'none');
-                    $('.bookshelf').css('top', '');
-                    $('#dropZoneText').css('top', 'var(--ui_dropZoneTextTop)');
-                    $('#dropZoneText').css('font-size', 'var(--ui_dropZoneTextSize)');
-                    $('#dropZoneImg').css('top', 'var(--ui_dropZoneImgTop)');
-                    $('#dropZoneImg').css('width', 'var(--ui_dropZoneImgSize)');
-                    $('#dropZoneImg').css('height', 'var(--ui_dropZoneImgSize)');
+                    $(".bookshelf").css("display", "none");
+                    $(".bookshelf").css("top", "");
+                    $("#dropZoneText").css("top", "var(--ui_dropZoneTextTop)");
+                    $("#dropZoneText").css(
+                        "font-size",
+                        "var(--ui_dropZoneTextSize)"
+                    );
+                    $("#dropZoneImg").css("top", "var(--ui_dropZoneImgTop)");
+                    $("#dropZoneImg").css("width", "var(--ui_dropZoneImgSize)");
+                    $("#dropZoneImg").css(
+                        "height",
+                        "var(--ui_dropZoneImgSize)"
+                    );
                 }
 
                 if (this.scrollHeight > this.parentNode.clientHeight) {
@@ -811,24 +1018,27 @@ var bookshelf = {
                 }
             });
 
-            $(window).on("resize", function() {
+            $(window).on("resize", function () {
                 $(".booklist").trigger("contentchange");
                 $(".dot-menu__checkbox").prop("checked", false);
                 $(".bookInfoMenu").remove();
             });
 
             // capable of scrolling booklist within the entire bookshelf
-            document.getElementsByClassName('bookshelf')[0].addEventListener('wheel', function(e){
-                // prevent scrolling booklist when mouse is hovering on bookInfoMenu
-                if ($(".bookInfoMenu").length > 0) {
-                    if ($(".bookInfoMenu").is(":hover")) {
-                        return;
+            document
+                .getElementsByClassName("bookshelf")[0]
+                .addEventListener("wheel", function (e) {
+                    // prevent scrolling booklist when mouse is hovering on bookInfoMenu
+                    if ($(".bookInfoMenu").length > 0) {
+                        if ($(".bookInfoMenu").is(":hover")) {
+                            return;
+                        }
                     }
-                }
 
-                // scroll booklist accordingly
-                document.getElementsByClassName('booklist')[0].scrollTop += e.deltaY;
-            });
+                    // scroll booklist accordingly
+                    document.getElementsByClassName("booklist")[0].scrollTop +=
+                        e.deltaY;
+                });
 
             // console.log("Module <Bookshelf> enabled.");
             setTimeout(() => this.loop(), 1000);
@@ -858,20 +1068,21 @@ var bookshelf = {
         L455.7,167L552.3,141.1z M400,150l0,375H300V150H400z M250,150v75H150v-75H250z M150,650V275h100v375H150z M400,650H300v-75h100
         L400,650L400,650z M681.8,624.1L585.2,650l-19.4-72.4l96.6-25.9L681.8,624.1L681.8,624.1z"/>
         <path class="tofill" d="M665.9,513.9l-122.7,32.8l-70.7-263.3l122.7-32.8L665.9,513.9z M262,262H136v400h126V262z" opacity="0.3" /></div>`)
-        .click(() => {
-            resetUI();
-        })
-        .prependTo($("#btnWrapper"))
-        .hide();
+            .click(() => {
+                resetUI();
+            })
+            .prependTo($("#btnWrapper"))
+            .hide();
     },
 };
 
 // 启用 bookshelf 功能
-if (!location.search.includes("no-bookshelf")) { // 地址后面加 "?no-bookshelf" 停用 bookshelf 功能
+if (!location.search.includes("no-bookshelf")) {
+    // 地址后面加 "?no-bookshelf" 停用 bookshelf 功能
     bookshelf.init();
     bookshelf.enable();
 
-    bookshelf.refreshBookList();    // Now whether or not to show bookshelf depends on whether there is a book in bookshelf
+    bookshelf.refreshBookList(); // Now whether or not to show bookshelf depends on whether there is a book in bookshelf
 
     // 启动时打开上次阅读书籍
     bookshelf.reopenBook();
