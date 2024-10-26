@@ -50,19 +50,19 @@ Big thanks to [Manjusaka](https://github.com/Zheaoli) for his amazing help and h
 
 Firefox:
 
-1. [Regular (v1.5.3)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
+1. [Regular (v1.5.3.1)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
 
 2. [No-UI (v1.2.9.2)](https://addons.mozilla.org/en-US/firefox/addon/yijian_nogui/)
 
 Chrome:
 
-1. [Regular (v1.5.3)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
+1. [Regular (v1.5.3.1)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
 
 2. [No-UI (v1.2.9.2)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo?hl=en&authuser=0)
 
 Edge:
 
-1. [Regular (v1.5.3)](https://microsoftedge.microsoft.com/addons/detail/%E6%98%93%E7%AC%BA/pabihehbdhldbdliffaddllmjlknmpak)
+1. [Regular (v1.5.3.1)](https://microsoftedge.microsoft.com/addons/detail/%E6%98%93%E7%AC%BA/pabihehbdhldbdliffaddllmjlknmpak)
 
 2. 易笺无界面版 (v1.2.9.2)
 

@@ -1085,6 +1085,7 @@ function setSelectorValue(id, selectedIndex) {
     $select.selectedIndex = selectedIndex;
     const selectedValue = $options[selectedIndex].value;
     const selectedText = $options[selectedIndex].text;
+    const selectedAttr = $options[selectedIndex].getAttribute("style");
 
     // Get the custom dropdown elements
     const $customSelect = $select.closest(".select");
@@ -1101,6 +1102,7 @@ function setSelectorValue(id, selectedIndex) {
 
     // Update the visible styled select text
     $styledSelect.textContent = selectedText;
+    $styledSelect.setAttribute("style", selectedAttr);
 
     // Remove 'is-selected' from all custom options and set it on the correct one
     $customOptions.forEach(($li, index) => {
