@@ -125,6 +125,10 @@ To Offset the anchor link to clear fixed header
     height: 100%;
     z-index: 999;
     visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 #loading img {
     position: absolute;
@@ -136,6 +140,28 @@ To Offset the anchor link to clear fixed header
     /* filter: var(--mainColor_inactive_filter); */
     filter: var(--toGray_filter);
 }
+#loading .loader {
+    width: fit-content;
+    font-size: 6em;
+    line-height: 1.5;
+    font-family: var(--fontFamily_ui);
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #0000;
+    -webkit-text-stroke: 1px var(--fontInfoColor);
+    background: radial-gradient(1.13em at 50% 1.6em, var(--fontInfoColor) 99%, #0000 101%) calc(50% - 1.6em) 0/3.2em
+            100% text,
+        radial-gradient(1.13em at 50% -0.8em, #0000 99%, var(--fontInfoColor) 101%) 50% 0.8em/3.2em 100% repeat-x text;
+    animation: l9 2s linear infinite;
+}
+.loader:before {
+    content: var(--ui_loading_text);
+}
+@keyframes l9 {
+    to {
+        background-position: calc(50% + 1.6em) 0, calc(50% + 3.2em) 0.8em;
+    }
+}
 
 /* Pagination */
 #pagination {
@@ -145,15 +171,12 @@ To Offset the anchor link to clear fixed header
     background-color: var(--bgColor);
     border: 1px dashed var(--borderColor);
     border-radius: 8px;
-    box-shadow: 0 1px 1px var(--shadowColor), 0 2px 2px var(--shadowColor),
-        0 4px 4px var(--shadowColor), 0 8px 8px var(--shadowColor),
-        0 16px 16px var(--shadowColor);
-    -webkit-box-shadow: var(--shadowColor) 0 1px 1px,
-        var(--shadowColor) 0 2px 2px, var(--shadowColor) 0 4px 4px,
+    box-shadow: 0 1px 1px var(--shadowColor), 0 2px 2px var(--shadowColor), 0 4px 4px var(--shadowColor),
+        0 8px 8px var(--shadowColor), 0 16px 16px var(--shadowColor);
+    -webkit-box-shadow: var(--shadowColor) 0 1px 1px, var(--shadowColor) 0 2px 2px, var(--shadowColor) 0 4px 4px,
         var(--shadowColor) 0 8px 8px, var(--shadowColor) 0 16px 16px;
-    -moz-box-shadow: 0 1px 1px var(--shadowColor), 0 2px 2px var(--shadowColor),
-        0 4px 4px var(--shadowColor), 0 8px 8px var(--shadowColor),
-        0 16px 16px var(--shadowColor);
+    -moz-box-shadow: 0 1px 1px var(--shadowColor), 0 2px 2px var(--shadowColor), 0 4px 4px var(--shadowColor),
+        0 8px 8px var(--shadowColor), 0 16px 16px var(--shadowColor);
     transform: translate(-50%);
     -webkit-transform: translate(-50%);
     font-size: 0.9em;
@@ -199,6 +222,16 @@ To Offset the anchor link to clear fixed header
     pointer-events: none;
     opacity: 0.4;
 }
+.pagination-processing {
+    text-align: center;
+    color: var(--bgColor);
+    font-family: var(--fontFamily_ui);
+    border-radius: 5px;
+    background-color: var(--mainColor_active) !important;
+    float: left;
+    padding: 8px 32px;
+    text-decoration: none;
+}
 
 /* TOC */
 #tocContent {
@@ -206,6 +239,8 @@ To Offset the anchor link to clear fixed header
     /* width: 16%; */
     /* height: 50%; */
     /* margin: 0 0 0 3%; */
+    padding-right: 0;
+    transition: padding-right 0.3s ease;
     position: fixed;
     top: 50%;
     transform: translate(0%, -50%);
@@ -249,10 +284,8 @@ To Offset the anchor link to clear fixed header
     position: absolute;
     top: 0;
     display: inline-block;
-    width: calc(
-        100% - 0.9em - 1em
-    ); /* 100% - width of .toc-bullet - margin-left of <a>*/
-    transition: opacity 1s;
+    width: calc(100% - 0.9em - 1em); /* 100% - width of .toc-bullet - margin-left of <a>*/
+    /* transition: opacity 1s; */
     opacity: 0;
     text-decoration: none;
     white-space: nowrap;
@@ -266,9 +299,16 @@ To Offset the anchor link to clear fixed header
     z-index: -1;
 }
 /* Credit: https://www.taccgl.org/blog/css-transition-visibility.html */
-#tocContent:hover > .chapter-title-container > .toc-text {
+/* #tocContent:hover > .chapter-title-container > .toc-text {
     visibility: visible;
     opacity: 1;
+} */
+#tocContent:hover {
+    padding-right: 1em; /* 为文本留出空间 */
+    .chapter-title-container .toc-text {
+        opacity: 1;
+        /* transition: opacity 0.3s ease; */
+    }
 }
 a,
 a:link,
@@ -457,9 +497,7 @@ dialog::backdrop {
 #settings-menu {
     font-size: var(--ui_settingMenuFontSize);
     position: fixed;
-    right: calc(
-        var(--ui_btnGap) + var(--ui_scrollBarWidth) + var(--ui_btnOffset)
-    );
+    right: calc(var(--ui_btnGap) + var(--ui_scrollBarWidth) + var(--ui_btnOffset));
     bottom: calc(2 * (var(--ui_btnGap) + var(--ui_btnSize)));
     z-index: 1004;
     background-color: var(--bgColor);
@@ -985,6 +1023,12 @@ input[type="color"]:not(:hover) {
     color: var(--bgColor);
     border-radius: 3px;
     padding: 0 6px;
+}
+.bookshelf .book .infoContainer .progress .almostDone_text {
+    color: var(--mainColor_inactive);
+    font-style: italic;
+    border-radius: 3px;
+    padding: 0 9px;
 }
 .bookshelf .book .delete-btn-wrapper {
     font-size: 0.9rem;

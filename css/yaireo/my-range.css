@@ -34,7 +34,7 @@ label[dir="rtl"] .range-slider {
     left: 0px;
 }
 
-.range-slider > input:hover+output {
+.range-slider > input:hover + output {
     top: 10px;
     border-radius: 8px !important;
     padding: 2px;

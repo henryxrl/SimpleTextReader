@@ -1,21 +1,34 @@
 <!DOCTYPE html>
 <html data-lang="zh">
     <head>
+        <!-- Meta -->
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title></title>
-        <link rel="preload" href="./fonts/qiji-combo.woff" as="font" type="font/woff" crossorigin="anonymous" />
-        <link rel="preload" href="./fonts/FZSKBXKK.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
-        <link rel="preload" href="./fonts/LXGWWenKai-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
-        <link rel="preload" href="./fonts/FZKTK.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
-        <link rel="preload" href="./fonts/KingHwa_OldSong.woff" as="font" type="font/woff" crossorigin="anonymous" />
+
+        <!-- Fonts -->
+        <link
+            rel="preload"
+            href="./fonts/LXGWWenKai-Regular.woff2"
+            as="font"
+            type="font/woff2"
+            crossorigin="anonymous"
+        />
+        <link rel="prefetch" href="./fonts/qiji-combo.woff" as="font" type="font/woff" crossorigin="anonymous" />
+        <link rel="prefetch" href="./fonts/FZSKBXKK.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+        <link rel="prefetch" href="./fonts/FZKTK.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+        <link rel="prefetch" href="./fonts/KingHwa_OldSong.woff" as="font" type="font/woff" crossorigin="anonymous" />
+
+        <!-- Images -->
         <link rel="preload" href="./images/drop.png" as="image" type="image/png" />
         <link rel="preload" href="./images/loading_geometry.gif" as="image" type="image/gif" />
-        <link rel="preload" href="./images/seal_zh.png" as="image" type="image/png" />
-        <link rel="preload" href="./images/seal_en.png" as="image" type="image/png" />
-        <link rel="preload" href="./images/note_zh.png" as="image" type="image/png" />
-        <link rel="preload" href="./images/note_en.png" as="image" type="image/png" />
+        <link rel="prefetch" href="./images/seal_zh.png" as="image" type="image/png" />
+        <link rel="prefetch" href="./images/seal_en.png" as="image" type="image/png" />
+        <link rel="prefetch" href="./images/note_zh.png" as="image" type="image/png" />
+        <link rel="prefetch" href="./images/note_en.png" as="image" type="image/png" />
         <link rel="icon" type="image/png" href="./images/icon.png" />
+
+        <!-- CSS -->
         <link rel="stylesheet" type="text/css" href="./css/yaireo/ui-range.css" crossorigin="anonymous" />
         <link rel="stylesheet" type="text/css" href="./css/yaireo/my-range.css" crossorigin="anonymous" />
         <link rel="stylesheet" type="text/css" href="./css/yaireo/color-picker.css" crossorigin="anonymous" />
@@ -26,11 +39,15 @@
         <link rel="stylesheet" type="text/css" href="./css/reader.css" crossorigin="anonymous" />
         <link rel="stylesheet" type="text/css" href="./css/footnotes.css" crossorigin="anonymous" />
 
+        <!-- Manifest -->
         <link rel="manifest" href="./manifests/PWA/manifest.json" />
 
-        <script type="text/javascript" src="./scripts/ui_language.js"></script>
+        <!-- Scripts -->
+        <script type="text/javascript" src="./scripts/modules/ui/init-lang.js"></script>
     </head>
+
     <body>
+        <!-- Drop zone -->
         <div id="dropZone" class="uifont prevent-select">
             <div id="dropZoneTextImgWrapper" class="hasTitle">
                 <h3 id="dropZoneText" class="uifont prevent-select"></h3>
@@ -45,29 +62,59 @@
 
         <!-- Table of contents -->
         <div id="tocContent"></div>
+
+        <!-- Reading progress -->
         <div id="progress" class="uifont prevent-select">
             <span id="progress-title"></span>
             <br />
             <span id="progress-content"></span>
         </div>
 
+        <!-- Button group -->
         <div id="btnWrapper" class="btn-group">
             <!-- Dark mode toggle -->
             <input type="checkbox" id="toggle" />
             <div id="toggle-btn" class="btn-icon hasTitle">
                 <label for="toggle">
                     <div class="icons">
-                        <svg version="1.1" class="icon sun" viewBox="0 0 24 24" style="fill:none;" xmlns="http://www.w3.org/2000/svg">
-                            <path class="tofill" d="M12 3V4M12 20V21M4 12H3M6.31412 6.31412L5.5 5.5M17.6859 6.31412L18.5 5.5M6.31412 17.69L5.5 18.5001M17.6859 17.69L18.5 18.5001M21 12H20M16 12C16 14.2091 14.2091 16 12 16C9.79086 16 8 14.2091 8 12C8 9.79086 9.79086 8 12 8C14.2091 8 16 9.79086 16 12Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <svg
+                            version="1.1"
+                            class="icon sun"
+                            viewBox="0 0 24 24"
+                            style="fill: none"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                class="tofill"
+                                d="M12 3V4M12 20V21M4 12H3M6.31412 6.31412L5.5 5.5M17.6859 6.31412L18.5 5.5M6.31412 17.69L5.5 18.5001M17.6859 17.69L18.5 18.5001M21 12H20M16 12C16 14.2091 14.2091 16 12 16C9.79086 16 8 14.2091 8 12C8 9.79086 9.79086 8 12 8C14.2091 8 16 9.79086 16 12Z"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            />
                         </svg>
-                        <svg version="1.1" class="icon moon" viewBox="0 0 24 24" style="fill:none;" xmlns="http://www.w3.org/2000/svg">
-                            <path class="tofill" d="M3.32031 11.6835C3.32031 16.6541 7.34975 20.6835 12.3203 20.6835C16.1075 20.6835 19.3483 18.3443 20.6768 15.032C19.6402 15.4486 18.5059 15.6834 17.3203 15.6834C12.3497 15.6834 8.32031 11.654 8.32031 6.68342C8.32031 5.50338 8.55165 4.36259 8.96453 3.32996C5.65605 4.66028 3.32031 7.89912 3.32031 11.6835Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <svg
+                            version="1.1"
+                            class="icon moon"
+                            viewBox="0 0 24 24"
+                            style="fill: none"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                class="tofill"
+                                d="M3.32031 11.6835C3.32031 16.6541 7.34975 20.6835 12.3203 20.6835C16.1075 20.6835 19.3483 18.3443 20.6768 15.032C19.6402 15.4486 18.5059 15.6834 17.3203 15.6834C12.3497 15.6834 8.32031 11.654 8.32031 6.68342C8.32031 5.50338 8.55165 4.36259 8.96453 3.32996C5.65605 4.66028 3.32031 7.89912 3.32031 11.6835Z"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            />
                         </svg>
                     </div>
                 </label>
             </div>
+
+            <!-- Settings button -->
+            <!-- Library button -->
         </div>
-    
+
         <!-- Main text -->
         <div id="content"></div>
 
@@ -77,23 +124,14 @@
         <!-- Footnotes -->
         <ol id="footnote-content"></ol>
 
-        <script type="text/javascript" src="./scripts/jquery.min.js"></script>
-        <script type="text/javascript" src="./scripts/jschardet.min.js"></script>
-        <script type="text/javascript" src="./scripts/css-global-variables.js"></script>
-        <!-- <script type="text/javascript" src="./scripts/yaireo/knobs.min.js"></script> -->
-        <script type="text/javascript" src="./scripts/yaireo/position.js"></script>
-        <script type="text/javascript" src="./scripts/yaireo/color-picker.js"></script>
-        <script type="text/javascript" src="./scripts/yaireo/my-color.js"></script>
-        <script type="text/javascript" src="./scripts/selector.js"></script>
-        <script type="text/javascript" src="./scripts/regex_rules.js"></script>
-        <script type="text/javascript" src="./scripts/utilities.js"></script>
-        <script type="text/javascript" src="./scripts/ui_settings.js"></script>
-        <script type="text/javascript" src="./scripts/footnotes.js"></script>
-        <script type="text/javascript" src="./scripts/ui_variables.js"></script>
-        <script type="text/javascript" src="./scripts/processText.js"></script>
-        <script type="text/javascript" src="./scripts/ui_helpers.js"></script>
-        <script type="text/javascript" src="./scripts/ui.js"></script>
-        <script type="text/javascript" src="./scripts/bookcover-gen.js"></script>
-        <script type="text/javascript" src="./scripts/ui_bookshelf.js"></script>
+        <!-- Import dependencies -->
+        <script type="text/javascript" src="./scripts/lib/jquery.min.js"></script>
+        <script type="text/javascript" src="./scripts/lib/jschardet.min.js"></script>
+        <script type="text/javascript" src="./scripts/lib/yaireo/position.js"></script>
+        <script type="text/javascript" src="./scripts/lib/yaireo/color-picker.js"></script>
+        <script type="text/javascript" src="./scripts/lib/hyperlist.js"></script>
+
+        <!-- Main script -->
+        <script type="module" src="./scripts/main.js"></script>
     </body>
 </html>

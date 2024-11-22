@@ -1,37 +1,32 @@
 @charset "UTF-8";
 @font-face {
     font-family: "ui";
-    src: local("霞鹜文楷"), local("LXGW WenKai"),
-        url(../fonts/LXGWWenKai-Regular.woff2) format("woff2");
+    src: local("霞鹜文楷"), local("LXGW WenKai"), url(../fonts/LXGWWenKai-Regular.woff2) format("woff2");
     font-display: swap;
 }
 @font-face {
     font-family: "title";
-    src: local("黄令东齐伋复刻体"), local("QIJIC"),
-        url(../fonts/qiji-combo.woff) format("woff");
+    src: local("黄令东齐伋复刻体"), local("QIJIC"), url(../fonts/qiji-combo.woff) format("woff");
     font-display: swap;
     size-adjust: 125%;
 }
 @font-face {
     font-family: "body";
-    src: local("方正宋刻本秀楷简体"), local("方正宋刻本秀楷简繁"),
-        local("方正宋刻本秀楷_GBK"), local("FZSongKeBenXiuKai-R-GBK"),
-        local("FZSongKeBenXiuKaiJF"), local("FZSongKeBenXiuKaiS-R-JF"),
-        local("FZSongKeBenXiuKaiS-R-GB"), local("FZSongKeBenXiuKaiF"),
-        url(../fonts/FZSKBXKK.woff2) format("woff2"),
+    src: local("方正宋刻本秀楷简体"), local("方正宋刻本秀楷简繁"), local("方正宋刻本秀楷_GBK"),
+        local("FZSongKeBenXiuKai-R-GBK"), local("FZSongKeBenXiuKaiJF"), local("FZSongKeBenXiuKaiS-R-JF"),
+        local("FZSongKeBenXiuKaiS-R-GB"), local("FZSongKeBenXiuKaiF"), url(../fonts/FZSKBXKK.woff2) format("woff2"),
         url(../fonts/FZKTK.woff2) format("woff2"); /* Fallback */
     font-display: swap;
 }
 @font-face {
     font-family: "fzkai";
-    src: local("方正楷体"), local("FZKai"), local("FZKaiTi"),
-        local("FZKai-Z03S"), url(../fonts/FZKTK.woff2) format("woff2");
+    src: local("方正楷体"), local("FZKai"), local("FZKaiTi"), local("FZKai-Z03S"),
+        url(../fonts/FZKTK.woff2) format("woff2");
     font-display: swap;
 }
 @font-face {
     font-family: "kinghwa";
-    src: local("京華老宋体"), local("京华老宋体"), local("KingHwa"),
-        local("KingHwa_OldSong"),
+    src: local("京華老宋体"), local("京华老宋体"), local("KingHwa"), local("KingHwa_OldSong"),
         url(../fonts/KingHwa_OldSong.woff) format("woff");
     font-display: swap;
     size-adjust: 95%;
@@ -76,6 +71,9 @@
     /* UI strings */
     --ui_Mode: light;
     --ui_LANG: zh;
+    --ui_loading_text: "";
+    --ui_loading_text_zh: "Loading...";
+    --ui_loading_text_en: "Loading...";
     --ui_title: "";
     --ui_title_zh: 易笺;
     --ui_title_en: SimpleTextReader;
@@ -101,6 +99,9 @@
     --ui_tooltip_settings: "";
     --ui_tooltip_settings_zh: 设置;
     --ui_tooltip_settings_en: Settings;
+    --ui_pagination_processing: "";
+    --ui_pagination_processing_zh: 正在分页...;
+    --ui_pagination_processing_en: Paginating...;
 
     /* UI settings variables */
     --ui_settingMenuFontSize_zh: 1.2em;
@@ -172,9 +173,21 @@
     --ui_bookNotRead: "";
     --ui_bookNotRead_zh: 未读;
     --ui_bookNotRead_en: Unread;
+    --ui_bookAlmostDone: "";
+    --ui_bookAlmostDone_zh: 快读完;
+    --ui_bookAlmostDone_en: Finishing;
     --ui_bookFinished: "";
-    --ui_bookFinished_zh: 读完;
+    --ui_bookFinished_zh: 已读完;
     --ui_bookFinished_en: Finished;
+    --ui_bookshelfCachedStorage: "";
+    --ui_bookshelfCachedStorage_zh: 缓存书架;
+    --ui_bookshelfCachedStorage_en: Cached Library;
+    --ui_bookshelfCachedStorage_subTitle: "";
+    --ui_bookshelfCachedStorage_subTitle_zh: 【提示】书籍保存在浏览器缓存空间内，可能会被自动清除。;
+    --ui_bookshelfCachedStorage_subTitle_en: [Note] Books are stored in browser cache and may be automatically removed.;
+    --ui_bookshelfCachedStorage_usage: "";
+    --ui_bookshelfCachedStorage_usage_zh: 已用空间：;
+    --ui_bookshelfCachedStorage_usage_en: Used Space:;
     --ui_tooltip_bookshelf_scrollTop: "";
     --ui_tooltip_bookshelf_scrollTop_zh: 书架顶部;
     --ui_tooltip_bookshelf_scrollTop_en: To Top;
@@ -183,12 +196,9 @@
     --ui_tooltip_bookshelf_scrollBottom_en: To Bottom;
 
     /* UI bookshelf variables */
-    --ui_bookshadow: 5px 5px 10px -5px black,
-        inset 0px -10px 10px var(--mainColor_active);
-    --ui_bookshadow_noAuthor: 5px 5px 10px -5px black,
-        inset 0px -10px 10px var(--mainColor_inactive);
-    --ui_bookshadow_hover: 0px 0px 5px 3px var(--mainColor_active),
-        inset 0px -10px 10px var(--mainColor_active);
+    --ui_bookshadow: 5px 5px 10px -5px black, inset 0px -10px 10px var(--mainColor_active);
+    --ui_bookshadow_noAuthor: 5px 5px 10px -5px black, inset 0px -10px 10px var(--mainColor_inactive);
+    --ui_bookshadow_hover: 0px 0px 5px 3px var(--mainColor_active), inset 0px -10px 10px var(--mainColor_active);
     --ui_booklist_padding: 2rem;
 
     /* UI book information strings */
@@ -249,8 +259,7 @@
     --mainColor_active: #314874;
     --mainColor_inactive: #4a6dae;
 
-    --toGray_filter: invert(53%) sepia(0%) saturate(76%) hue-rotate(158deg)
-        brightness(95%) contrast(82%);
+    --toGray_filter: invert(53%) sepia(0%) saturate(76%) hue-rotate(158deg) brightness(95%) contrast(82%);
 
     --bgColor: #f4ead7;
     --borderColor: lightgray;
@@ -266,11 +275,11 @@
     --fontFamily_title_zh: title;
     --fontFamily_title_en: ui;
     --fontFamily_body: "";
-    --fontFamily_body_zh: body;
-    --fontFamily_body_en: ui;
+    --fontFamily_body_zh: body, Arial, Helvetica, sans-serif;
+    --fontFamily_body_en: ui, Arial, Helvetica, sans-serif;
     --fontFamily_ui: ui, Arial, Helvetica, sans-serif;
-    --title_font: title;
-    --body_font: body;
+    --title_font: title, Arial, Helvetica, sans-serif;
+    --body_font: body, Arial, Helvetica, sans-serif;
 
     /* Dark mode variables */
     --darkMode_init_animation: all 0s ease;
@@ -304,6 +313,7 @@
 }
 
 [data-lang="zh"] {
+    --ui_loading_text: var(--ui_loading_text_zh);
     --ui_title: var(--ui_title_zh);
     --ui_tooltip_dropZone: var(--ui_tooltip_dropZone_zh);
     --ui_titlePage: var(--ui_titlePage_zh);
@@ -342,7 +352,11 @@
     --ui_tooltip_removeBook: var(--ui_tooltip_removeBook_zh);
     --ui_tooltip_bookInfo: var(--ui_tooltip_bookInfo_zh);
     --ui_bookFinished: var(--ui_bookFinished_zh);
+    --ui_bookshelfCachedStorage: var(--ui_bookshelfCachedStorage_zh);
+    --ui_bookshelfCachedStorage_subTitle: var(--ui_bookshelfCachedStorage_subTitle_zh);
+    --ui_bookshelfCachedStorage_usage: var(--ui_bookshelfCachedStorage_usage_zh);
     --ui_bookNotRead: var(--ui_bookNotRead_zh);
+    --ui_bookAlmostDone: var(--ui_bookAlmostDone_zh);
     --ui_bookInfo_bookname: var(--ui_bookInfo_bookname_zh);
     --ui_bookInfo_author: var(--ui_bookInfo_author_zh);
     --ui_bookInfo_Unknown: var(--ui_bookInfo_Unknown_zh);
@@ -350,15 +364,15 @@
     --ui_bookInfo_filesize: var(--ui_bookInfo_filesize_zh);
     --ui_bookInfo_lastopened: var(--ui_bookInfo_lastopened_zh);
     --ui_tooltip_bookshelf_scrollTop: var(--ui_tooltip_bookshelf_scrollTop_zh);
-    --ui_tooltip_bookshelf_scrollBottom: var(
-        --ui_tooltip_bookshelf_scrollBottom_zh
-    );
+    --ui_tooltip_bookshelf_scrollBottom: var(--ui_tooltip_bookshelf_scrollBottom_zh);
     --ui_tooltip_goToLibrary: var(--ui_tooltip_goToLibrary_zh);
     --ui_tooltip_modeToggle: var(--ui_tooltip_modeToggle_zh);
     --ui_tooltip_settings: var(--ui_tooltip_settings_zh);
+    --ui_pagination_processing: var(--ui_pagination_processing_zh);
 }
 
 [data-lang="en"] {
+    --ui_loading_text: var(--ui_loading_text_en);
     --ui_title: var(--ui_title_en);
     --ui_tooltip_dropZone: var(--ui_tooltip_dropZone_en);
     --ui_titlePage: var(--ui_titlePage_en);
@@ -397,7 +411,11 @@
     --ui_tooltip_removeBook: var(--ui_tooltip_removeBook_en);
     --ui_tooltip_bookInfo: var(--ui_tooltip_bookInfo_en);
     --ui_bookFinished: var(--ui_bookFinished_en);
+    --ui_bookshelfCachedStorage: var(--ui_bookshelfCachedStorage_en);
+    --ui_bookshelfCachedStorage_subTitle: var(--ui_bookshelfCachedStorage_subTitle_en);
+    --ui_bookshelfCachedStorage_usage: var(--ui_bookshelfCachedStorage_usage_en);
     --ui_bookNotRead: var(--ui_bookNotRead_en);
+    --ui_bookAlmostDone: var(--ui_bookAlmostDone_en);
     --ui_bookInfo_bookname: var(--ui_bookInfo_bookname_en);
     --ui_bookInfo_author: var(--ui_bookInfo_author_en);
     --ui_bookInfo_Unknown: var(--ui_bookInfo_Unknown_en);
@@ -405,12 +423,11 @@
     --ui_bookInfo_filesize: var(--ui_bookInfo_filesize_en);
     --ui_bookInfo_lastopened: var(--ui_bookInfo_lastopened_en);
     --ui_tooltip_bookshelf_scrollTop: var(--ui_tooltip_bookshelf_scrollTop_en);
-    --ui_tooltip_bookshelf_scrollBottom: var(
-        --ui_tooltip_bookshelf_scrollBottom_en
-    );
+    --ui_tooltip_bookshelf_scrollBottom: var(--ui_tooltip_bookshelf_scrollBottom_en);
     --ui_tooltip_goToLibrary: var(--ui_tooltip_goToLibrary_en);
     --ui_tooltip_modeToggle: var(--ui_tooltip_modeToggle_en);
     --ui_tooltip_settings: var(--ui_tooltip_settings_en);
+    --ui_pagination_processing: var(--ui_pagination_processing_en);
 }
 
 #dropZoneText::before {

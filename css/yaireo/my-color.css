@@ -37,10 +37,7 @@
     top: 0;
     left: 0;
     animation: 0.15s reveal-picker ease-out forwards;
-    transform: translate(
-        calc(var(--x) * 1px),
-        calc(var(--y) * 1px)
-    );
+    transform: translate(calc(var(--x) * 1px), calc(var(--y) * 1px));
 
     @media only screen and (max-device-width: 640px) {
         max-width: 70%;

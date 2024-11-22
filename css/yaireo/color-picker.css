@@ -12,9 +12,7 @@
     --track-height: calc(var(--thumb-size) / 1.5);
     --thumb-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
     --step: 1;
-    --completed: calc(
-        (var(--value) - var(--min)) / (var(--max) - var(--min)) * 100
-    );
+    --completed: calc((var(--value) - var(--min)) / (var(--max) - var(--min)) * 100);
     --show-min-max: none;
     --LTR: 1;
     display: inline-block;
@@ -88,9 +86,7 @@
 }
 .color-picker .range > output {
     --x-offset: calc(var(--completed) * -1% * var(--LTR));
-    --pos: calc(
-        ((var(--value) - var(--min)) / (var(--max) - var(--min))) * 100%
-    );
+    --pos: calc(((var(--value) - var(--min)) / (var(--max) - var(--min))) * 100%);
     opacity: 0;
     pointer-events: none;
     position: absolute;
@@ -132,10 +128,7 @@
     --a: calc(var(--alpha) * 1%);
     --color: hsla(var(--hue), var(--s), var(--l), var(--a));
     --checkboard-color: #ddd;
-    --checkboard-base-gradient: repeating-conic-gradient(
-        var(--checkboard-color) 0% 25%,
-        transparent 0% 50%
-    );
+    --checkboard-base-gradient: repeating-conic-gradient(var(--checkboard-color) 0% 25%, transparent 0% 50%);
     --width: 320;
     --width-units: 1px;
     display: flex;
@@ -149,24 +142,11 @@
 }
 .color-picker__hue.range {
     grid-area: hue;
-    --fill-color: linear-gradient(
-        to right,
-        red 0%,
-        #ff0 16.6%,
-        lime 33.3%,
-        cyan 50%,
-        blue 66.6%,
-        #f0f 83.3%,
-        red 100%
-    );
+    --fill-color: linear-gradient(to right, red 0%, #ff0 16.6%, lime 33.3%, cyan 50%, blue 66.6%, #f0f 83.3%, red 100%);
 }
 .color-picker__saturation.range {
     grid-area: saturation;
-    --fill-color: linear-gradient(
-        to right,
-        white,
-        hsl(var(--hue), var(--s), 50%)
-    );
+    --fill-color: linear-gradient(to right, white, hsl(var(--hue), var(--s), 50%));
 }
 .color-picker__lightness.range {
     grid-area: lightness;
@@ -176,13 +156,8 @@
 .color-picker__alpha.range {
     grid-area: alpha;
     --checkboard-size: 8px;
-    --fill-color: linear-gradient(
-            to right,
-            transparent,
-            hsl(var(--hue), var(--s), var(--l))
-        ),
-        var(--checkboard-base-gradient) 0 / var(--checkboard-size)
-            var(--checkboard-size);
+    --fill-color: linear-gradient(to right, transparent, hsl(var(--hue), var(--s), var(--l))),
+        var(--checkboard-base-gradient) 0 / var(--checkboard-size) var(--checkboard-size);
 }
 .color-picker button {
     cursor: pointer;
@@ -199,11 +174,7 @@
     left: 0;
     right: 0;
     border-radius: inherit;
-    background: repeating-conic-gradient(
-            var(--checkboard-color) 0% 25%,
-            transparent 0% 50%
-        )
-        0/12px 12px;
+    background: repeating-conic-gradient(var(--checkboard-color) 0% 25%, transparent 0% 50%) 0/12px 12px;
 }
 .color-picker > output {
     grid-area: color;
@@ -222,17 +193,10 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: repeating-conic-gradient(
-            var(--checkboard-color) 0% 25%,
-            transparent 0% 50%
-        )
-        0/12px 12px;
+    background: repeating-conic-gradient(var(--checkboard-color) 0% 25%, transparent 0% 50%) 0/12px 12px;
 }
 .color-picker__value {
-    --isLightColor: Min(
-        1,
-        Max(50 - var(--lightness) - (100 - var(--alpha)), 0)
-    );
+    --isLightColor: Min(1, Max(50 - var(--lightness) - (100 - var(--alpha)), 0));
     grid-area: value;
     position: relative;
     display: inline-flex;

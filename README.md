@@ -1,5 +1,6 @@
+<!-- markdownlint-disable MD033 MD041 -->
 <div align="center">
-<img width="200" src="assets/0_icon.png" />
+<img width="200" src="assets/0_icon.png" alt="SimpleTextReader Logo" />
 <br/>
 <h1>SimpleTextReader - 易笺</h1>
 </div>
@@ -16,7 +17,7 @@
 
 官网: [https://reader.yijian.app](https://reader.yijian.app)
 
-非常感谢 [Manjusaka](https://github.com/Zheaoli) 大佬帮忙大佬的热心帮助以及帮忙host易笺！鞠躬！
+非常感谢 [Manjusaka](https://github.com/Zheaoli) 大佬帮忙大佬的热心帮助以及帮忙 host 易笺！鞠躬！
 
 ## 特性
 
@@ -50,25 +51,25 @@
 
 火狐插件：
 
-1. [易笺正常版 (v1.5.3.1)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
+1. [易笺正常版 (v1.6)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
 
 2. [易笺无界面版 (v1.2.9.2)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian_nogui/)
 
-Chrome插件：
+Chrome 插件：
 
-1. [易笺正常版 (v1.5.3.1)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf?hl=en&authuser=0)
+1. [易笺正常版 (v1.6)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
 
-2. [易笺无界面版 (v1.2.9.2)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo?hl=en&authuser=0)
+2. [易笺无界面版 (v1.2.9.2)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo)
 
-Edge插件：
+Edge 插件：
 
-1. [易笺正常版 (v1.5.3.1)](https://microsoftedge.microsoft.com/addons/detail/%E6%98%93%E7%AC%BA/pabihehbdhldbdliffaddllmjlknmpak)
+1. [易笺正常版 (v1.6)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
 
-2. 易笺无界面版 (v1.2.9.2)
+2. [易笺无界面版 (v1.2.9.2)](https://microsoftedge.microsoft.com/addons/detail/mdjajbjcppnghhcajjodfcbhebnifcnm)
 
 Docker：
 
-```
+```bash
 docker run -d --name simpletextreader \
   -p 8866:8866 \
   --restart unless-stopped \
@@ -77,35 +78,41 @@ docker run -d --name simpletextreader \
 
 ## 重大更新
 
-### v1.0
+### v1.6
 
-易笺上线火狐 / Chrome 插件商店啦！插件一共有两个版本：
+1. 代码全面重构，提升整体性能和可维护性
 
-1. 正常版：点击插件图标即可召唤完整的易笺界面。将文本文件拖入界面后，即可进行阅读。
+2. 性能显著提升
 
-2. 无界面版本：无界面版的易笺会检测 URL，<s>任何以 “.txt” 结尾的 URL （包括拖拽进浏览器的本地文件，`file://*.txt`）都会自动在易笺中打开。</s>值得注意的是，无界面版本打开文件的速度会相对较慢，因为浏览器会先加载完整的文件再传给易笺渲染。
+    [1] 大文件打开速度显著提升，做到 1 秒以内
 
-    **注：自 v1.2.6 开始，无界面版本只会打开本地txt文件，即 `file://*.txt`。**
+    [2] 文件在首次处理后，下次打开无需再次处理，加载速度更快
 
-### v1.1
+    [3] 界面无任何卡顿现象
 
-易笺可以在任何基于 Chromium 内核的浏览器里安装为 PWA 应用
+3. 全新的分页逻辑
 
-### v1.2
+4. 新增“快读完”的阅读进度提示
 
-支持暗黑模式
+5. 优化书籍封面生成逻辑
 
-![黑暗模式](assets/2_darkmode.png)
+6. 更流畅的界面语言切换
 
-### v1.3
+7. 修复若干 Bug，提升了稳定性和用户体验
 
-支持行高，字体大小，主题颜色等参数的自定义
+### v1.5
 
-<div float="left">
-    <img src="assets/3_settings1.png" width="30%" />
-    <img src="assets/3_settings2.png" width="37.4%" />
-    <img src="assets/3_settings3.png" width="30%" />
-</div>
+1. 支持设置书籍的标题字体和正文字体
+
+2. 移除了检测章节标题的字符限制
+
+3. 优化英文章节标题的正则
+
+4. 更优雅的目录
+
+5. 重写分页逻辑。如需用回老版本分页逻辑，请在 URL 最后加上`?no-pagebreak-on-title`参数。
+
+6. 上架 Edge 插件商店
 
 ### v1.4
 
@@ -117,11 +124,13 @@ docker run -d --name simpletextreader \
 
     [3] 书籍排列顺序：
 
+    ```text
         a. 阅读中书籍按阅读时间顺序排列
 
         b. 未读书籍按书籍名称排列
 
         c. 已读完书籍按阅读时间顺序排列
+    ```
 
     [4] 在书架中显示每本书的进度以及其他详细信息；增加未读和读完书籍封面的样式；
 
@@ -131,6 +140,8 @@ docker run -d --name simpletextreader \
 
     [6] 阅读时点击右下角的书架（或者按 Esc 键）图标返回书架界面。
 
+    [7] 如需取消书架，请在 URL 最后加上`?no-bookshelf`参数。
+
 2. 界面语言默认为浏览器语言 —— 如果浏览器语言中包括中文，界面则用中文；反之则默认英文界面
 
     [1] 当阅读书籍时界面语言为书籍语言以获得更好的用户体验
@@ -139,23 +150,47 @@ docker run -d --name simpletextreader \
 
 4. 其他稳定性更新若干
 
-***注意：书架无法在火狐隐私浏览模式下启动，会被自动禁用。***
+**_注意：书架无法在隐私浏览模式下启动，会被自动禁用。_**
 
 <div float="left">
-    <img src="assets/4_bookshelf1.png" width="49%" />
-    <img src="assets/4_bookshelf2.png" width="49%" />
-    <img src="assets/4_bookshelf3.png" width="49%" />
-    <img src="assets/4_bookshelf4_zh.png" width="49%" />
+    <img src="assets/4_bookshelf1.png" width="49%" alt="Bookshelf1" />
+    <img src="assets/4_bookshelf2.png" width="49%" alt="Bookshelf2" />
+    <img src="assets/4_bookshelf3.png" width="49%" alt="Bookshelf3" />
+    <img src="assets/4_bookshelf4_zh.png" width="49%" alt="Bookshelf4" />
 </div>
 
-### v1.5
+### v1.3
 
-1. 支持设置书籍的标题字体和正文字体
+支持行高，字体大小，主题颜色等参数的自定义
 
-2. 移除了检测章节标题的字符限制
+<div float="left">
+    <img src="assets/3_settings1.png" width="30%" alt="Settings1" />
+    <img src="assets/3_settings2.png" width="37.4%" alt="Settings2" />
+    <img src="assets/3_settings3.png" width="30%" alt="Settings3" />
+</div>
 
-3. 更优雅的目录
+如需取消设置界面，请在 URL 最后加上`?no-settings`参数
+
+### v1.2
+
+支持暗黑模式
+
+![黑暗模式](assets/2_darkmode.png)
+
+### v1.1
+
+易笺可以在任何基于 Chromium 内核的浏览器里安装为 PWA 应用
+
+### v1.0
+
+易笺上线火狐 / Chrome 插件商店啦！插件一共有两个版本：
+
+1. 正常版：点击插件图标即可召唤完整的易笺界面。将文本文件拖入界面后，即可进行阅读。
+
+2. 无界面版本：无界面版的易笺会检测 URL，<s>任何以 “.txt” 结尾的 URL （包括拖拽进浏览器的本地文件，`file://*.txt`）都会自动在易笺中打开。</s>值得注意的是，无界面版本打开文件的速度会相对较慢，因为浏览器会先加载完整的文件再传给易笺渲染。
+
+    **注：自 v1.2.6 开始，无界面版本只会打开本地 txt 文件，即 `file://*.txt`。**
 
 ---
 
-### 本项目仅用于学习交流使用，请勿用于商业用途。
+### 本项目仅用于学习交流使用，请勿用于商业用途
