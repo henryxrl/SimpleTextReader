@@ -68,3 +68,101 @@ export const CONST_UI = Object.freeze({
         en: "English",
     },
 });
+
+/**
+ * Font-related constants
+ * @type {Object}
+ * @property {Array} SYSTEM_FONTS - System fonts
+ * @property {Array} CUSTOM_FONTS - Custom fonts
+ * @property {Array} FALLBACK_FONTS - Fallback fonts
+ * @property {Object} FONT_MAPPING - Mapping of font names to CSS font family names
+ * @readonly
+ */
+export const CONST_FONT = Object.freeze({
+    SYSTEM_FONTS: [
+        { en: "Helvetica", zh: "Helvetica" },
+        {
+            en: "Noto Sans",
+            zh: "Noto Sans",
+            linuxVariant: "Noto Sans CJK",
+            label_en: "Noto Sans",
+        },
+        { en: "Roboto", zh: "Roboto" },
+        { en: "Times New Roman", zh: "Times New Roman" },
+        { en: "Consolas", zh: "Consolas" },
+        {
+            en: "Microsoft YaHei",
+            zh: "微软雅黑",
+            macVariant: "PingFang SC",
+            linuxVariant: "WenQuanYi Zen Hei",
+            label_zh: "微软雅黑",
+        },
+        {
+            en: "SimSun",
+            zh: "宋体",
+            macVariant: "SongTi SC",
+            linuxVariant: "AR PL UMing CN",
+            label_zh: "宋体",
+        },
+        {
+            en: "Source Han Sans",
+            zh: "思源黑体",
+            linuxVariant: "Source Han Sans CN",
+            label_zh: "思源黑体",
+        },
+        {
+            en: "KaiTi",
+            zh: "楷体",
+            macVariant: "KaiTi SC",
+            linuxVariant: "WenQuanYi Zen Hei Sharp",
+            label_zh: "楷体",
+        },
+        {
+            en: "HeiTi",
+            zh: "黑体",
+            macVariant: "Heiti SC",
+            linuxVariant: "Noto Sans CJK",
+            label_zh: "黑体",
+        },
+        {
+            en: "FangSong",
+            zh: "仿宋",
+            macVariant: "FangSong SC",
+            linuxVariant: "AR PL UKai CN",
+            label_zh: "仿宋",
+        },
+    ],
+    CUSTOM_FONTS: [
+        {
+            en: "kinghwa",
+            zh: "kinghwa",
+            label_zh: "京華老宋体",
+            label_en: "KingHwa_OldSong",
+        },
+        {
+            en: "qiji",
+            zh: "qiji",
+            label_zh: "黄令东齐伋复刻体",
+            label_en: "QIJIC",
+        },
+        {
+            en: "fzskbxk",
+            zh: "fzskbxk",
+            label_zh: "方正宋刻本秀楷",
+            label_en: "FZSongKeBenXiuKai",
+        },
+        { en: "fzkai", zh: "fzkai", label_zh: "方正楷体", label_en: "FZKaiTi" },
+        {
+            en: "wenkai",
+            zh: "wenkai",
+            label_zh: "霞鹜文楷",
+            label_en: "LXGW WenKai",
+        },
+    ],
+    FALLBACK_FONTS: ["ui", "serif", "sans-serif", "monospace"],
+    FONT_MAPPING: {
+        ui: "wenkai",
+        title: "kinghwa",
+        body: "kinghwa",
+    },
+});

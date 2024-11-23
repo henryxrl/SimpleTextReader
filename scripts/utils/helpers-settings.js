@@ -16,6 +16,13 @@ import * as CONFIG from "../config/index.js";
 import { findStringIndex, isVariableDefined, simulateClick } from "./base.js";
 
 /**
+ * Cache for loaded fonts
+ * @type {Map<string, boolean>}
+ * @private
+ */
+const fontCache = new Map();
+
+/**
  * Gets CSS property value for a specific selector
  * @param {string} sel - CSS selector
  * @param {string} prop - CSS property name
@@ -134,121 +141,115 @@ function createSelectorWithGroupItem(id, values, texts, groups, isFont = false) 
 }
 
 /**
- * Gets the font configurations
- * @returns {Object} Font configurations
- * @returns {Array<Object>} system_fonts - System fonts
- * @returns {Array<Object>} custom_fonts - Custom fonts
- * @returns {Array<string>} fallback_fonts - Fallback fonts
- * @private
- */
-function getFontConfigs() {
-    return {
-        system_fonts: [
-            { en: "Helvetica", zh: "Helvetica" },
-            {
-                en: "Noto Sans",
-                zh: "Noto Sans",
-                linuxVariant: "Noto Sans CJK",
-                label_en: "Noto Sans",
-            },
-            { en: "Roboto", zh: "Roboto" },
-            { en: "Times New Roman", zh: "Times New Roman" },
-            { en: "Consolas", zh: "Consolas" },
-            {
-                en: "Microsoft YaHei",
-                zh: "微软雅黑",
-                macVariant: "PingFang SC",
-                linuxVariant: "WenQuanYi Zen Hei",
-                label_zh: "微软雅黑",
-            },
-            {
-                en: "SimSun",
-                zh: "宋体",
-                macVariant: "SongTi SC",
-                linuxVariant: "AR PL UMing CN",
-                label_zh: "宋体",
-            },
-            {
-                en: "Source Han Sans",
-                zh: "思源黑体",
-                linuxVariant: "Source Han Sans CN",
-                label_zh: "思源黑体",
-            },
-            {
-                en: "KaiTi",
-                zh: "楷体",
-                macVariant: "KaiTi SC",
-                linuxVariant: "WenQuanYi Zen Hei Sharp",
-                label_zh: "楷体",
-            },
-            {
-                en: "HeiTi",
-                zh: "黑体",
-                macVariant: "Heiti SC",
-                linuxVariant: "Noto Sans CJK",
-                label_zh: "黑体",
-            },
-            {
-                en: "FangSong",
-                zh: "仿宋",
-                macVariant: "FangSong SC",
-                linuxVariant: "AR PL UKai CN",
-                label_zh: "仿宋",
-            },
-        ],
-        custom_fonts: [
-            {
-                en: "title",
-                zh: "title",
-                label_zh: CONFIG.RUNTIME_VARS.STYLE.ui_font_title_label_zh,
-                label_en: CONFIG.RUNTIME_VARS.STYLE.ui_font_title_label_en,
-            },
-            {
-                en: "body",
-                zh: "body",
-                label_zh: CONFIG.RUNTIME_VARS.STYLE.ui_font_body_label_zh,
-                label_en: CONFIG.RUNTIME_VARS.STYLE.ui_font_body_label_en,
-            },
-            { en: "fzkai", zh: "fzkai", label_zh: "方正楷体", label_en: "FZKaiTi" },
-            {
-                en: "ui",
-                zh: "ui",
-                label_zh: CONFIG.RUNTIME_VARS.STYLE.ui_font_ui_label_zh,
-                label_en: CONFIG.RUNTIME_VARS.STYLE.ui_font_ui_label_en,
-            },
-            {
-                en: "kinghwa",
-                zh: "kinghwa",
-                label_zh: "京華老宋体",
-                label_en: "KingHwa_OldSong",
-            },
-        ],
-        fallback_fonts: ["ui", "serif", "sans-serif", "monospace"],
-    };
-}
-
-/**
  * Checks if a font is available in the system
  * @param {string} font - Font name to check
  * @returns {boolean} True if font is available
  * @private
  */
-function isFontAvailable(font) {
+async function isFontAvailable(font) {
+    // If the font is not defined, return false
+    if (!font || font === "" || font === "undefined") {
+        return false;
+    }
+
+    // If the font is already cached, return the cached result
+    if (fontCache.has(font)) {
+        return fontCache.get(font);
+    }
+
+    // First check if the font is defined in the CSS @font-face
+    let isFontFaceDefined = false;
+    for (const sheet of document.styleSheets) {
+        try {
+            for (const rule of sheet.cssRules) {
+                if (rule instanceof CSSFontFaceRule) {
+                    const fontFamily = rule.style.getPropertyValue("font-family").replace(/['"]/g, "");
+                    if (fontFamily === font) {
+                        isFontFaceDefined = true;
+                        break;
+                    }
+                }
+            }
+        } catch (e) {
+            // Cross-origin style sheets will throw a security error, ignore
+            console.warn("Cannot read cssRules from stylesheet:", e);
+            continue;
+        }
+    }
+
+    try {
+        // Check if font is already available using the Font Loading API
+        // console.log(`${font}: ${document.fonts.check(`12px "${font}"`)}`);
+        if (document.fonts.check(`12px "${font}"`)) {
+            // Additional check to confirm no fallback
+            const fallbackWidth = measureText(CONFIG.CONST_FONT.FALLBACK_FONTS.join(",")); // Known fallback font
+            const testWidth = measureText(`${font}, ${CONFIG.CONST_FONT.FALLBACK_FONTS.join(",")}`);
+
+            if (testWidth === fallbackWidth) {
+                // Font is falling back to default, not actually available
+                fontCache.set(font, false);
+                return false;
+            }
+
+            fontCache.set(font, true);
+            return true;
+        }
+
+        // If font is defined in @font-face but not loaded yet, try loading it
+        if (isFontFaceDefined) {
+            try {
+                await document.fonts.load(`12px "${font}"`);
+                const isLoaded = document.fonts.check(`12px "${font}"`);
+                fontCache.set(font, isLoaded);
+                return isLoaded;
+            } catch (e) {
+                // console.warn(`Failed to load font ${font}:`, e);
+                fontCache.set(font, false);
+                return false;
+            }
+        }
+
+        // If not defined in @font-face, it's not available
+        fontCache.set(font, false);
+        return false;
+    } catch {
+        // Fallback to measureText if Font Loading API is not available
+        // console.warn("Font Loading API not available, falling back to measureText");
+
+        const fallbackWidth = measureText(CONFIG.CONST_FONT.FALLBACK_FONTS.join(","));
+        const testFontWidth = measureText(`${font}, ${CONFIG.CONST_FONT.FALLBACK_FONTS.join(",")}`);
+        // console.log(`${font} defined in @font-face: ${isFontFaceDefined}`);
+        // console.log(`${font}, ${CONFIG.CONST_FONT.FALLBACK_FONTS.join(",")}: ${testFontWidth}`);
+        // console.log(`${CONFIG.CONST_FONT.FALLBACK_FONTS.join(",")}: ${fallbackWidth}`);
+        // if (isFontFaceDefined) {
+        //     console.log(`${font}, ${CONFIG.CONST_FONT.FALLBACK_FONTS.join(",")}: ${testFontWidth}`);
+        //     console.log(`${CONFIG.CONST_FONT.FALLBACK_FONTS.join(",")}: ${fallbackWidth}`);
+        // }
+
+        // Return true if either:
+        // 1. Font is defined in @font-face AND successfully loaded (width different from fallback)
+        // 2. Font is installed in system (width different from fallback)
+        const isAvailable =
+            (isFontFaceDefined && testFontWidth !== fallbackWidth) ||
+            (!isFontFaceDefined && testFontWidth !== fallbackWidth);
+        fontCache.set(font, isAvailable);
+        return isAvailable;
+    }
+}
+
+/**
+ * Measures the width of a text string
+ * @param {string} font - Font name
+ * @returns {number} Width of the text string
+ * @private
+ */
+function measureText(font) {
     const testString = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     const testSize = "72px";
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d");
-
-    const measureText = (font) => {
-        context.font = `${testSize} ${font}`;
-        return context.measureText(testString).width;
-    };
-
-    const { system_fonts, custom_fonts, fallback_fonts } = getFontConfigs();
-    const fallbackWidth = measureText(fallback_fonts[0]);
-    const testFontWidth = measureText(`${font}, ${fallback_fonts[0]}`);
-
-    return testFontWidth !== fallbackWidth;
+    context.font = `${testSize} ${font}`;
+    return context.measureText(testString).width;
 }
 
 /**
@@ -263,33 +264,41 @@ function isFontAvailable(font) {
  * }} Object containing validated font names and labels
  * @private
  */
-function getValidFontInfo(fontList, checkAvailability = true) {
+async function getValidFontInfo(fontList, checkAvailability = true) {
     const fontInfo = {
         names: [],
         labels: [],
         labels_zh: [],
     };
 
-    fontList.forEach((font) => {
+    for (const font of fontList) {
         let fontName = null;
         const displayLabel = font.label_en || font.en; // Use the localized name if available
         const displayLabel_zh = font.label_zh || font.zh; // Use the localized name if available
 
         // Only check for system font availability if requested (for custom fonts, skip availability check)
         if (checkAvailability) {
-            if (isFontAvailable(font.en)) {
+            // console.log(
+            //     `${displayLabel_zh}: ${
+            //         (await isFontAvailable(font.en)) ||
+            //         (await isFontAvailable(font.zh)) ||
+            //         (await isFontAvailable(font.macVariant)) ||
+            //         (await isFontAvailable(font.linuxVariant))
+            //     }`
+            // );
+            if (await isFontAvailable(font.en)) {
                 fontName = font.en;
-            } else if (isFontAvailable(font.zh)) {
+            } else if (await isFontAvailable(font.zh)) {
                 fontName = font.zh;
             }
 
             // macOS-specific font check
-            if (!fontName && font.macVariant && isFontAvailable(font.macVariant)) {
+            if (!fontName && font.macVariant && (await isFontAvailable(font.macVariant))) {
                 fontName = font.macVariant;
             }
 
             // Linux-specific font check
-            if (!fontName && font.linuxVariant && isFontAvailable(font.linuxVariant)) {
+            if (!fontName && font.linuxVariant && (await isFontAvailable(font.linuxVariant))) {
                 fontName = font.linuxVariant;
             }
         } else {
@@ -302,7 +311,7 @@ function getValidFontInfo(fontList, checkAvailability = true) {
             fontInfo.labels.push(displayLabel);
             fontInfo.labels_zh.push(displayLabel_zh);
         }
-    });
+    }
 
     return [fontInfo.names, fontInfo.labels, fontInfo.labels_zh];
 }
@@ -369,11 +378,10 @@ export function changeFontSelectorItemLanguage($selector, lang) {
  * @returns {Array<HTMLElement>} Array containing [englishSelector, chineseSelector]
  * @public
  */
-export function createFontSelectorItem(id) {
+export async function createFontSelectorItem(id) {
     // Get valid font info
-    const { system_fonts, custom_fonts, fallback_fonts } = getFontConfigs();
-    const system_fonts_info = getValidFontInfo(system_fonts, true);
-    const custom_fonts_info = getValidFontInfo(custom_fonts, false);
+    const system_fonts_info = await getValidFontInfo(CONFIG.CONST_FONT.SYSTEM_FONTS, true);
+    const custom_fonts_info = await getValidFontInfo(CONFIG.CONST_FONT.CUSTOM_FONTS, true);
 
     // Create the font values array
     CONFIG.VARS.FILTERED_FONT_NAMES = [custom_fonts_info[0], system_fonts_info[0]];
@@ -414,9 +422,17 @@ export function createFontSelectorItem(id) {
  * @public
  */
 export function findFontIndex(fontName) {
-    const fontName_single = fontName.split(",")[0].trim();
+    let fontName_single = fontName.split(",")[0].trim();
+    // console.log("fontName_single:", fontName_single);
 
     // First try to find the index in the custom_fonts array
+    if (fontName_single === "title") {
+        fontName_single = CONFIG.CONST_FONT.FONT_MAPPING.title;
+    } else if (fontName_single === "body") {
+        fontName_single = CONFIG.CONST_FONT.FONT_MAPPING.body;
+    } else if (fontName_single === "ui") {
+        fontName_single = CONFIG.CONST_FONT.FONT_MAPPING.ui;
+    }
     const idx1 = findStringIndex(CONFIG.VARS.FILTERED_FONT_NAMES, fontName_single);
 
     // If the font is found in the custom_fonts array, return the index
@@ -555,6 +571,11 @@ export function setSelectorValue(id, selectedIndex) {
     // Get all <option> elements inside the <select> (flattening across optgroups, if any)
     const $options = Array.from($select.querySelectorAll("option"));
 
+    // Get all the corresponding option text inside the .select-options -> .optgroup-option or .option elements
+    const $optionsText = Array.from(
+        $select.parentElement.querySelector(".select-options").querySelectorAll(".optgroup-option, .option")
+    );
+
     // Ensure the selectedIndex is within the valid range
     if (selectedIndex < 0 || selectedIndex >= $options.length) {
         console.error(`Selected index '${selectedIndex}' is out of bounds.`);
@@ -564,7 +585,7 @@ export function setSelectorValue(id, selectedIndex) {
     // Set the selected option in the native <select> element
     $select.selectedIndex = selectedIndex;
     const selectedValue = $options[selectedIndex].value;
-    const selectedText = $options[selectedIndex].text;
+    const selectedText = $optionsText[selectedIndex].innerText ?? $options[selectedIndex].text;
     const selectedAttr = $options[selectedIndex].getAttribute("style");
 
     // Get the custom dropdown elements

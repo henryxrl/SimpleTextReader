@@ -84,7 +84,7 @@ if __name__ == '__main__':
         copy2('index.html', dist_dir)
         
         # remove font
-        os.remove(dist_dir / 'fonts' / 'FZSKBXKK.woff2')
+        # os.remove(dist_dir / 'fonts' / 'FZSKBXKK.woff2')
         
         # zip the dist directory
         os.system(f'cd {dist_dir_name}/{browser}_{version} && zip -0 -r -FS ../{browser}_{version}.zip ./* --exclude "*.git*" --exclude "*.DS_Store" && cd ../..')

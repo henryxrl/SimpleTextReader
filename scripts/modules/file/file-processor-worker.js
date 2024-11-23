@@ -9,7 +9,7 @@
  * @requires modules/config/constants
  * @requires modules/config/variables
  * @requires modules/utils/base
- * @requires lib/jschardet
+ * @requires lib/jschardet.min
  */
 
 /**
@@ -48,17 +48,11 @@ async function importDependencies() {
                     return chrome.runtime.getURL(path);
                 }
                 // Firefox
-                if (
-                    typeof browser !== "undefined" &&
-                    browser?.runtime?.getURL
-                ) {
+                if (typeof browser !== "undefined" && browser?.runtime?.getURL) {
                     return browser.runtime.getURL(path);
                 }
                 // Safari
-                if (
-                    typeof safari !== "undefined" &&
-                    safari?.extension?.baseURI
-                ) {
+                if (typeof safari !== "undefined" && safari?.extension?.baseURI) {
                     return safari.extension.baseURI + path;
                 }
             }
@@ -66,19 +60,14 @@ async function importDependencies() {
         };
 
         // Import config and text processor
-        const [
-            { TextProcessorWorker },
-            { PaginationCalculator },
-            CONSTANTS,
-            VARS,
-            { removeFileExtension },
-        ] = await Promise.all([
-            import(getPath("../text/text-processor-worker.js")),
-            import(getPath("../text/pagination-calculator.js")),
-            import(getPath("../../config/constants.js")),
-            import(getPath("../../config/variables.js")),
-            import(getPath("../../utils/base.js")),
-        ]);
+        const [{ TextProcessorWorker }, { PaginationCalculator }, CONSTANTS, VARS, { removeFileExtension }] =
+            await Promise.all([
+                import(getPath("../text/text-processor-worker.js")),
+                import(getPath("../text/pagination-calculator.js")),
+                import(getPath("../../config/constants.js")),
+                import(getPath("../../config/variables.js")),
+                import(getPath("../../utils/base.js")),
+            ]);
         const CONFIG = { ...CONSTANTS, ...VARS };
 
         // Import jschardet (if needed)
@@ -141,10 +130,7 @@ async function processChunk(
     PaginationCalculator
 ) {
     const buffer = await chunk.arrayBuffer();
-    const content = decoder.decode(new Uint8Array(buffer), {
-        stream: true,
-        fatal: true,
-    });
+    const content = decoder.decode(new Uint8Array(buffer), { stream: true, fatal: true });
     let lines = content
         .split("\n")
         .filter(Boolean)
@@ -163,19 +149,11 @@ async function processChunk(
     // This is to avoid cutting a paragraph in half.
     for (let i = 0; i < lines.length - sliceLineOffset; i++) {
         const tempLine = lines[i];
-        const [tempTitle, tempTitleGroup] =
-            TextProcessorWorker.getTitle(tempLine);
+        const [tempTitle, tempTitleGroup] = TextProcessorWorker.getTitle(tempLine);
         if (tempTitle !== "") {
             // Get the shortest title
-            const shortestTitle = getShortestTitle(
-                tempTitleGroup,
-                TextProcessorWorker
-            );
-            result.titles.push([
-                tempTitle,
-                result.currentLineNumber + title_page_line_number_offset,
-                shortestTitle,
-            ]);
+            const shortestTitle = getShortestTitle(tempTitleGroup, TextProcessorWorker);
+            result.titles.push([tempTitle, result.currentLineNumber + title_page_line_number_offset, shortestTitle]);
         }
 
         let { line, footnote } = TextProcessorWorker.makeFootNote(tempLine);
@@ -207,10 +185,7 @@ async function processChunk(
     } else {
         // Remaining chunk
         if (extraContent.endPageLines && extraContent.endPageTitles) {
-            const totalLineNumber =
-                result.lines.length +
-                startLineNumber +
-                title_page_line_number_offset;
+            const totalLineNumber = result.lines.length + startLineNumber + title_page_line_number_offset;
             extraContent.endPageLines = [generateEndPage(totalLineNumber)];
             extraContent.endPageTitles[0][1] = totalLineNumber;
             result.lines.push(...extraContent.endPageLines); // Append lines
@@ -222,11 +197,7 @@ async function processChunk(
     let combinedLines = result.lines;
     let combinedTitles = result.titles;
     // console.log("prevChunkInfo: ", prevChunkInfo);
-    if (
-        prevChunkInfo &&
-        prevChunkInfo.content &&
-        prevChunkInfo.content.length > 0
-    ) {
+    if (prevChunkInfo && prevChunkInfo.content && prevChunkInfo.content.length > 0) {
         combinedLines = prevChunkInfo.content.concat(result.lines);
 
         // 调整上一块标题的行号
@@ -260,15 +231,10 @@ async function processChunk(
     // console.log("adjustedCombinedTitles: ", tempTitles);
 
     // Calculate page breaks
-    const calculator = new PaginationCalculator(
-        combinedLines,
-        tempTitles,
-        CONFIG.VARS.IS_EASTERN_LAN,
-        {
-            ...CONFIG.CONST_PAGINATION,
-            PAGE_BREAK_ON_TITLE: pageBreakOnTitle,
-        }
-    );
+    const calculator = new PaginationCalculator(combinedLines, tempTitles, CONFIG.VARS.IS_EASTERN_LAN, {
+        ...CONFIG.CONST_PAGINATION,
+        PAGE_BREAK_ON_TITLE: pageBreakOnTitle,
+    });
     const chunkBreaks = calculator.calculate();
     // console.log("chunkBreaks: ", chunkBreaks);
 
@@ -282,22 +248,15 @@ async function processChunk(
     } else {
         // console.log("prevContentPageBreaks: ", prevChunkInfo.pageBreaks);
         result.pageBreaks = result.pageBreaks.filter(
-            (breakPoint) =>
-                breakPoint >
-                prevChunkInfo.pageBreaks[prevChunkInfo.pageBreaks.length - 1]
+            (breakPoint) => breakPoint > prevChunkInfo.pageBreaks[prevChunkInfo.pageBreaks.length - 1]
         );
     }
     // console.log("result.pageBreaks: ", result.pageBreaks);
 
     // 保存这个块的最后部分及其对应的标题
-    let prevContentLines = result.lines.slice(
-        -Math.ceil(result.lines.length * overlapSize)
-    );
-    let prevContentStartLineNumber =
-        startLineNumber + result.lines.length - prevContentLines.length;
-    let prevContentTitles = result.titles.filter(
-        (title) => title[1] >= prevContentStartLineNumber
-    );
+    let prevContentLines = result.lines.slice(-Math.ceil(result.lines.length * overlapSize));
+    let prevContentStartLineNumber = startLineNumber + result.lines.length - prevContentLines.length;
+    let prevContentTitles = result.titles.filter((title) => title[1] >= prevContentStartLineNumber);
 
     // console.log("prevContentLines: ", prevContentLines);
     // console.log("prevContentStartLineNumber: ", prevContentStartLineNumber);
@@ -322,12 +281,8 @@ function getShortestTitle(titleGroup, TextProcessorWorker) {
     let shortestTitle = titleGroup[titleGroup.length - 3];
     let nextTitle, nextTitleGroup;
     while (true) {
-        [nextTitle, nextTitleGroup] =
-            TextProcessorWorker.getTitle(shortestTitle);
-        if (
-            nextTitle === "" ||
-            nextTitleGroup[nextTitleGroup.length - 3] === nextTitle
-        ) {
+        [nextTitle, nextTitleGroup] = TextProcessorWorker.getTitle(shortestTitle);
+        if (nextTitle === "" || nextTitleGroup[nextTitleGroup.length - 3] === nextTitle) {
             break;
         }
         shortestTitle = nextTitleGroup[nextTitleGroup.length - 3];
@@ -371,15 +326,11 @@ function generateTitlePage(bookMetadata, CONFIG) {
     if (author) {
         titlePageLines.push(
             `<h1 id=line0 style='margin-bottom:0'>${bookName}</h1>`,
-            `<h1 id=line1 style='margin-top:0; margin-bottom:${
-                parseFloat(CONFIG.h1_lineHeight) / 2
-            }em'>${author}</h1>`
+            `<h1 id=line1 style='margin-top:0; margin-bottom:${parseFloat(CONFIG.h1_lineHeight) / 2}em'>${author}</h1>`
         );
     } else {
         titlePageLines.push(
-            `<h1 id=line0 style='margin-bottom:${
-                parseFloat(CONFIG.h1_lineHeight) / 2
-            }em'>${bookName}</h1>`
+            `<h1 id=line0 style='margin-bottom:${parseFloat(CONFIG.h1_lineHeight) / 2}em'>${bookName}</h1>`
         );
     }
 
@@ -451,16 +402,14 @@ self.onmessage = async function (e) {
     // console.groupEnd();
 
     try {
-        const { TextProcessorWorker, PaginationCalculator, CONFIG, utils } =
-            await importDependencies();
+        const { TextProcessorWorker, PaginationCalculator, CONFIG, utils } = await importDependencies();
 
         switch (operation) {
             case "processMetadata": {
                 const { fileName } = e.data;
-                const { bookName, author, bookNameRE, authorRE } =
-                    TextProcessorWorker.getBookNameAndAuthor(
-                        utils.removeFileExtension(fileName)
-                    );
+                const { bookName, author, bookNameRE, authorRE } = TextProcessorWorker.getBookNameAndAuthor(
+                    utils.removeFileExtension(fileName)
+                );
 
                 self.postMessage({
                     type: "metadataProcessed",
@@ -526,8 +475,7 @@ self.onmessage = async function (e) {
 
                 let titles_ind = {};
                 for (let i = 0; i < processedChunk.titles.length; i++) {
-                    titles_ind[processedChunk.titles[i][1]] =
-                        i + startTitleIndex;
+                    titles_ind[processedChunk.titles[i][1]] = i + startTitleIndex;
                 }
 
                 // console.log("remaining pageBreaks: ", processedChunk.pageBreaks);

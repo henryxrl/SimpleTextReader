@@ -51,19 +51,19 @@ Big thanks to [Manjusaka](https://github.com/Zheaoli) for his amazing help and h
 
 Firefox:
 
-1. [Regular (v1.6)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
+1. [Regular (v1.6.1)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
 
 2. [No-UI (v1.2.9.2)](https://addons.mozilla.org/en-US/firefox/addon/yijian_nogui/)
 
 Chrome:
 
-1. [Regular (v1.6)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
+1. [Regular (v1.6.1)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
 
 2. [No-UI (v1.2.9.2)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo)
 
 Edge:
 
-1. [Regular (v1.6)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
+1. [Regular (v1.6.1)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
 
 2. [No-UI (v1.2.9.2)](https://microsoftedge.microsoft.com/addons/detail/mdjajbjcppnghhcajjodfcbhebnifcnm)
 
@@ -98,7 +98,9 @@ docker run -d --name simpletextreader \
 
 6. Smoother UI language switching.
 
-7. Resolved various minor bugs, enhancing stability and user experience.
+7. Updated default font to "Kinghwa Old Song" to avoid potential copyright issues.
+
+8. Resolved various minor bugs, enhancing stability and user experience.
 
 ### v1.5
 

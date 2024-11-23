@@ -101,6 +101,7 @@ class DropdownSelector {
                 $("<li />", {
                     text: $element.text(),
                     rel: $element.val(),
+                    class: "option",
                     style: $element.attr("style"),
                 }).appendTo(this.$list);
             }
@@ -123,10 +124,18 @@ class DropdownSelector {
         // Show or hide the unordered list when the styled div is clicked
         this.$styledSelect.on("click", (e) => {
             e.stopPropagation();
-            $("div.select-styled.active").each(function () {
-                $(this).removeClass("active").next("ul.select-options").hide();
-            });
-            this.$styledSelect.toggleClass("active").next("ul.select-options").toggle();
+            // If the current element is already active
+            if (this.$styledSelect.hasClass("active")) {
+                // Directly hide the current option list and remove the active class
+                this.$styledSelect.removeClass("active").next("ul.select-options").hide();
+            } else {
+                // Close other open dropdown lists
+                $("div.select-styled.active").each(function () {
+                    $(this).removeClass("active").next("ul.select-options").hide();
+                });
+                // Show the current option list
+                this.$styledSelect.addClass("active").next("ul.select-options").show();
+            }
         });
 
         // When a list item is clicked, hide the unordered list and update the styled div to show the selected item

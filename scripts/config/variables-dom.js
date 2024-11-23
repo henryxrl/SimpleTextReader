@@ -58,9 +58,7 @@ export const RUNTIME_VARS = {
     // UI-related variables
     STYLE: new CSSGlobalVariables(),
     STORE_PREV_WINDOW_WIDTH: window.innerWidth,
-    RESPECT_USER_LANG_SETTING:
-        document.documentElement.getAttribute("respectUserLangSetting") ===
-        "true",
+    RESPECT_USER_LANG_SETTING: document.documentElement.getAttribute("respectUserLangSetting") === "true",
     WEB_LANG: document.documentElement.getAttribute("webLANG"),
 };
 

@@ -51,19 +51,19 @@
 
 火狐插件：
 
-1. [易笺正常版 (v1.6)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
+1. [易笺正常版 (v1.6.1)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
 
 2. [易笺无界面版 (v1.2.9.2)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian_nogui/)
 
 Chrome 插件：
 
-1. [易笺正常版 (v1.6)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
+1. [易笺正常版 (v1.6.1)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
 
 2. [易笺无界面版 (v1.2.9.2)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo)
 
 Edge 插件：
 
-1. [易笺正常版 (v1.6)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
+1. [易笺正常版 (v1.6.1)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
 
 2. [易笺无界面版 (v1.2.9.2)](https://microsoftedge.microsoft.com/addons/detail/mdjajbjcppnghhcajjodfcbhebnifcnm)
 
@@ -98,7 +98,9 @@ docker run -d --name simpletextreader \
 
 6. 更流畅的界面语言切换
 
-7. 修复若干 Bug，提升了稳定性和用户体验
+7. 改用京华老宋体作为默认字体，以规避可能的版权问题
+
+8. 修复若干 Bug，提升了稳定性和用户体验
 
 ### v1.5
 

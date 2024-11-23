@@ -45,7 +45,7 @@ console.log(
 setTitle();
 setMainContentUI();
 initBookshelf();
-initSettings();
+await initSettings();
 
 /**
  * Set up event listeners for drag and drop functionality

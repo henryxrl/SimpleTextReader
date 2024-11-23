@@ -433,7 +433,7 @@ const settings = {
      * @fires getColorPicker - Initializes color picker components
      * @fires getDropdownSelector - Initializes dropdown selection components
      */
-    initiateSettingMenu() {
+    async initiateSettingMenu() {
         const settingsMenu = document.createElement("div");
         settingsMenu.setAttribute("id", "settings-menu");
 
@@ -547,10 +547,10 @@ const settings = {
             ["#0D1018"],
             this.saveSettings.bind(this)
         );
-        const settingTitleFont_ = createFontSelectorItem("setting_title_font");
+        const settingTitleFont_ = await createFontSelectorItem("setting_title_font");
         const settingTitleFont_en = settingTitleFont_[0];
         const settingTitleFont_zh = settingTitleFont_[1];
-        const settingBodyFont_ = createFontSelectorItem("setting_body_font");
+        const settingBodyFont_ = await createFontSelectorItem("setting_body_font");
         const settingBodyFont_en = settingBodyFont_[0];
         const settingBodyFont_zh = settingBodyFont_[1];
         const settingPaginationBottom = createRangeItem(
@@ -672,10 +672,10 @@ const settings = {
      *
      * @see initiateSettingMenu
      */
-    showSettingMenu() {
+    async showSettingMenu() {
         const menu = CONFIG.DOM_ELEMENT.SETTINGS_MENU;
         if (!menu) {
-            this.initiateSettingMenu();
+            await this.initiateSettingMenu();
         }
 
         menu.style.display = "block"; // or "initial"
@@ -759,12 +759,12 @@ const settings = {
      * @see applySettings
      * @see initiateSettingMenu
      */
-    enable() {
+    async enable() {
         if (!this.enabled) {
             this.enabled = true;
             this.loadSettings();
             this.applySettings();
-            this.initiateSettingMenu();
+            await this.initiateSettingMenu();
             // console.log("Module <Settings> enabled.");
 
             // Listen to the updateUILanguage event
@@ -849,7 +849,7 @@ const settings = {
      * @see showSettingMenu
      * @see hideSettingMenu
      */
-    init() {
+    async init() {
         $(`<div id="STRe-setting-btn" class="btn-icon hasTitle" title="${CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_settings}">
             <svg class="icon-nofill" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
             <path class="tofill" fill-rule="evenodd" clip-rule="evenodd" d="M11.567 9.8895C12.2495 8.90124 12.114 7.5637 11.247 6.7325C10.3679 5.88806 9.02339 5.75928 7.99998 6.4215C7.57983 6.69308 7.25013 7.0837 7.05298 7.5435C6.85867 7.99881 6.80774 8.50252 6.90698 8.9875C7.00665 9.47472 7.25054 9.92071 7.60698 10.2675C7.97021 10.6186 8.42786 10.8563 8.92398 10.9515C9.42353 11.049 9.94062 11.0001 10.413 10.8105C10.8798 10.6237 11.2812 10.3033 11.567 9.8895Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -858,11 +858,13 @@ const settings = {
             </svg>
             </div>`)
             .on("click", () => {
-                if (CONFIG.VARS.SETTINGS_MENU_SHOWN) {
-                    this.hideSettingMenu();
-                } else {
-                    this.showSettingMenu();
-                }
+                (async () => {
+                    if (CONFIG.VARS.SETTINGS_MENU_SHOWN) {
+                        this.hideSettingMenu();
+                    } else {
+                        await this.showSettingMenu();
+                    }
+                })();
             })
             .appendTo($("#btnWrapper"));
         // .hide();
@@ -873,10 +875,10 @@ const settings = {
  * Initializes the settings module
  * @public
  */
-export function initSettings() {
+export async function initSettings() {
     // Enable settings functionality
     if (CONFIG.RUNTIME_CONFIG.ENABLE_SETTINGS) {
-        settings.init();
-        settings.enable();
+        await settings.init();
+        await settings.enable();
     }
 }
