@@ -8,12 +8,13 @@
  * symbols and ads.
  *
  * @module modules/text/text-processor-worker
- * @requires regex
+ * @requires modules/text/regex-rules
  * @requires config/constants
  * @requires config/variables
  */
 
-import { REGEX_RULES, generateAdsRules } from "./regex.js";
+import { REGEX_RULES, generateAdsRules } from "./regex-rules.js";
+import { BracketProcessor } from "./bracket-processor.js";
 import * as CONFIG_CONST from "../../config/constants.js";
 import * as CONFIG_VAR from "../../config/variables.js";
 
@@ -22,6 +23,14 @@ import * as CONFIG_VAR from "../../config/variables.js";
  * @description Class for processing text content in a worker thread.
  */
 export class TextProcessorWorker {
+    /**
+     * @private
+     * @type {string} Log prefix
+     * @type {boolean} Whether to enable debug mode
+     */
+    static #LOG_PREFIX = "[TextProcessorWorker";
+    static #DEBUG = false;
+
     /**
      * Build basic regular expressions
      */
@@ -45,6 +54,39 @@ export class TextProcessorWorker {
      */
     static #CACHED_ADS_REGEX = null;
     static #CACHED_BOOK_AND_AUTHOR = null;
+
+    /**
+     * Logs debug information with line numbers and context
+     * @private
+     * @param {string} message - Message to log
+     * @param {Object} [data=null] - Additional data to include in the log
+     * @param {Error} [error=null] - Error object if logging an error
+     * @description
+     * Enhanced logging features:
+     * - Includes line numbers from call stack
+     * - Formats error messages with context
+     * - Supports object inspection for debugging
+     * - Conditional output based on debug mode
+     */
+    static #log(message, data = null, error = null) {
+        if (!TextProcessorWorker.#DEBUG) return;
+
+        const stack = new Error().stack;
+        const callerLine = stack.split("\n")[2];
+        const match = callerLine.match(/:(\d+):\d+\)?$/);
+        const lineNumber = match ? match[1] : "unknown";
+        const prefix = `${TextProcessorWorker.#LOG_PREFIX}: ${lineNumber}]`;
+
+        if (error) {
+            console.error(`${prefix} ERROR - ${message}:`, error);
+            if (data) console.error(`${prefix} Context:`, data);
+            console.error(`${prefix} Stack:`, error.stack);
+        } else if (data) {
+            console.log(`${prefix} ${message}:`, data);
+        } else {
+            console.log(`${prefix} ${message}`);
+        }
+    }
 
     /**
      * Batch process text content (deprecated)
@@ -122,7 +164,7 @@ export class TextProcessorWorker {
                 };
             }
         } else {
-            let current = this.#optimization(str.trim());
+            let current = this.optimize(str.trim());
             if (current !== "") {
                 if (this.#REGEX_IS_TITLE.test(current)) {
                     return {
@@ -207,7 +249,7 @@ export class TextProcessorWorker {
         const current = str.trim();
         if (this.#REGEX_IS_TITLE.test(current)) {
             const titleGroups = this.#getTitleGroups(current);
-            // console.log(titleGroups);
+            // this.#log("titleGroups", { titleGroups });
             return [current.replace(":", "").replace("：", ""), titleGroups.filter((item) => item !== undefined)];
         } else {
             return ["", []];
@@ -264,8 +306,8 @@ export class TextProcessorWorker {
         } else if (this.#REGEX_IS_EASTERN.test(current)) {
             const pos = current.toLowerCase().lastIndexOf(CONFIG_CONST.CONST_FILE.AUTHOR_TOKEN_ZH);
             if (pos !== -1) {
-                // console.log(current.slice(0, pos).replace(this.#REGEX_BOOKNAME_AD1, "").replace(this.#REGEX_BOOKNAME_AD2, "").replace(this.#REGEX_BOOKNAME_AD3, "").trim());
-                // console.log(current.slice(pos + 2).replace(this.#REGEX_BOOKNAME_AD4, "").replace(this.#REGEX_BOOKNAME_AD3, "").replace(this.#REGEX_BOOKNAME_AD2, "").trim());
+                // this.#log(current.slice(0, pos).replace(this.#REGEX_BOOKNAME_AD1, "").replace(this.#REGEX_BOOKNAME_AD2, "").replace(this.#REGEX_BOOKNAME_AD3, "").trim());
+                // this.#log(current.slice(pos + 2).replace(this.#REGEX_BOOKNAME_AD4, "").replace(this.#REGEX_BOOKNAME_AD3, "").replace(this.#REGEX_BOOKNAME_AD2, "").trim());
                 const bookName = current
                     .slice(0, pos)
                     .replace(this.#REGEX_BOOKNAME_AD1, "")
@@ -277,14 +319,14 @@ export class TextProcessorWorker {
                     .replace(this.#REGEX_BOOKNAME_AD4, "")
                     .trim();
 
-                // Remove imbalanced brackets and their content
-                bookInfo.bookName = this.#ignoreContentFromUnbalancedBracketIndex(bookName);
-                bookInfo.author = this.#ignoreContentFromUnbalancedBracketIndex(author);
+                // Remove imbalanced brackets and their content, then strip balanced brackets
+                bookInfo.bookName = BracketProcessor.processBracketsAndTrim(bookName);
+                bookInfo.author = BracketProcessor.processBracketsAndTrim(author);
             } else {
                 const pos2 = current.toLowerCase().lastIndexOf(CONFIG_CONST.CONST_FILE.AUTHOR_TOKEN_EN);
                 if (pos2 !== -1) {
-                    // console.log(current.slice(0, pos2).replace(this.#REGEX_BOOKNAME_AD1, "").replace(this.#REGEX_BOOKNAME_AD2, "").replace(this.#REGEX_BOOKNAME_AD3, "").trim());
-                    // console.log(current.slice(pos2 + 4).replace(this.#REGEX_BOOKNAME_AD4, "").replace(this.#REGEX_BOOKNAME_AD3, "").replace(this.#REGEX_BOOKNAME_AD2, "").trim());
+                    // this.#log(current.slice(0, pos2).replace(this.#REGEX_BOOKNAME_AD1, "").replace(this.#REGEX_BOOKNAME_AD2, "").replace(this.#REGEX_BOOKNAME_AD3, "").trim());
+                    // this.#log(current.slice(pos2 + 4).replace(this.#REGEX_BOOKNAME_AD4, "").replace(this.#REGEX_BOOKNAME_AD3, "").replace(this.#REGEX_BOOKNAME_AD2, "").trim());
                     const bookName = current
                         .slice(0, pos2)
                         .replace(this.#REGEX_BOOKNAME_AD1, "")
@@ -296,20 +338,20 @@ export class TextProcessorWorker {
                         .replace(this.#REGEX_BOOKNAME_AD4, "")
                         .trim();
 
-                    // Remove imbalanced brackets and their content
-                    bookInfo.bookName = this.#ignoreContentFromUnbalancedBracketIndex(bookName);
-                    bookInfo.author = this.#ignoreContentFromUnbalancedBracketIndex(author);
+                    // Remove imbalanced brackets and their content, then strip balanced brackets
+                    bookInfo.bookName = BracketProcessor.processBracketsAndTrim(bookName);
+                    bookInfo.author = BracketProcessor.processBracketsAndTrim(author);
                 }
                 // No complete book name and author info
                 // Treat file name as book name and application name as author
-                bookInfo.bookName = current;
+                bookInfo.bookName = BracketProcessor.processBracketsAndTrim(current);
                 bookInfo.author = "";
             }
         } else {
             const pos = current.toLowerCase().lastIndexOf(CONFIG_CONST.CONST_FILE.AUTHOR_TOKEN_EN);
             if (pos !== -1) {
-                // console.log(current.slice(0, pos).replace(this.#REGEX_BOOKNAME_AD1, "").replace(this.#REGEX_BOOKNAME_AD2, "").replace(this.#REGEX_BOOKNAME_AD3, "").trim());
-                // console.log(ccurrent.slice(pos + 4).replace(this.#REGEX_BOOKNAME_AD4, "").replace(this.#REGEX_BOOKNAME_AD3, "").replace(this.#REGEX_BOOKNAME_AD2, "").trim());
+                // this.#log(current.slice(0, pos).replace(this.#REGEX_BOOKNAME_AD1, "").replace(this.#REGEX_BOOKNAME_AD2, "").replace(this.#REGEX_BOOKNAME_AD3, "").trim());
+                // this.#log(ccurrent.slice(pos + 4).replace(this.#REGEX_BOOKNAME_AD4, "").replace(this.#REGEX_BOOKNAME_AD3, "").replace(this.#REGEX_BOOKNAME_AD2, "").trim());
                 const bookName = current
                     .slice(0, pos)
                     .replace(this.#REGEX_BOOKNAME_AD1, "")
@@ -321,9 +363,9 @@ export class TextProcessorWorker {
                     .replace(this.#REGEX_BOOKNAME_AD4, "")
                     .trim();
 
-                // Remove imbalanced brackets and their content
-                bookInfo.bookName = this.#ignoreContentFromUnbalancedBracketIndex(bookName);
-                bookInfo.author = this.#ignoreContentFromUnbalancedBracketIndex(author);
+                // Remove imbalanced brackets and their content, then strip balanced brackets
+                bookInfo.bookName = BracketProcessor.processBracketsAndTrim(bookName);
+                bookInfo.author = BracketProcessor.processBracketsAndTrim(author);
             } else {
                 // No complete book name and author info
                 // Treat file name as book name and application name as author
@@ -360,8 +402,8 @@ export class TextProcessorWorker {
             } else {
                 // main text
                 for (let i in allMatches) {
-                    // console.log("footnote.length: ", CONFIG_VAR.VARS.FOOTNOTES.length);
-                    // console.log("Found footnote: ", allMatches[i]);
+                    // this.#log("footnote.length", { CONFIG_VAR.VARS.FOOTNOTES.length });
+                    // this.#log("Found footnote", { allMatches[i] });
                     const curIndex = current.indexOf(allMatches[i]);
                     current = `${current.slice(0, curIndex)}<a rel="footnote" href="#fn${
                         CONFIG_VAR.VARS.FOOTNOTES.length
@@ -381,7 +423,7 @@ export class TextProcessorWorker {
      * @returns {string} Optimized text.
      * @private
      */
-    static #optimization(str) {
+    static optimize(str, bookAndAuthor = CONFIG_VAR.VARS.BOOK_AND_AUTHOR) {
         let current = str.trim();
 
         // Remove symbols
@@ -389,8 +431,8 @@ export class TextProcessorWorker {
 
         // Remove ads from different sources using the new generateAdsRules
         // Check if ads regex cache needs to be updated
-        if (CONFIG_VAR.VARS.BOOK_AND_AUTHOR !== this.#CACHED_BOOK_AND_AUTHOR) {
-            this.#updateAdsRegexCache();
+        if (bookAndAuthor !== this.#CACHED_BOOK_AND_AUTHOR) {
+            this.#updateAdsRegexCache(bookAndAuthor);
         }
 
         // Use cached regular expressions to remove ads
@@ -405,69 +447,9 @@ export class TextProcessorWorker {
      * Update ads regex cache
      * @private
      */
-    static #updateAdsRegexCache() {
-        const adsRules = generateAdsRules(CONFIG_VAR.VARS.BOOK_AND_AUTHOR);
+    static #updateAdsRegexCache(bookAndAuthor) {
+        const adsRules = generateAdsRules(bookAndAuthor);
         this.#CACHED_ADS_REGEX = Object.values(adsRules).map((getRules) => new RegExp(getRules().join("|"), "i"));
-        this.#CACHED_BOOK_AND_AUTHOR = CONFIG_VAR.VARS.BOOK_AND_AUTHOR;
-    }
-
-    /**
-     * Check if brackets are balanced
-     * Credit: Credit: https://stackoverflow.com/questions/14334740/missing-parentheses-with-regex
-     * @param {string} str - The text to check.
-     * @returns {[boolean, string]} Boolean indicating if brackets are balanced and string of unbalanced brackets.
-     * @private
-     */
-    static #checkBalancedBrackets(str) {
-        let s;
-        str = str.replace(/[^{}[\]()（）《》「」『』﹁﹂﹃﹄【】]/g, "");
-        while (s != str) {
-            s = str;
-            str = str.replace(/{}|\[]|\(\)|（）|《》|「」|『』|﹁﹂|﹃﹄|【】/g, "");
-        }
-        return [!str, str];
-    }
-
-    /**
-     * Get index of first unbalanced bracket
-     * Credit: https://stackoverflow.com/questions/30771362/check-if-string-contains-the-substrings-sequence-of-characters-in-order-but-no
-     * @param {string} orig_str - The original text.
-     * @param {string} unbalanced_brackets_str - The string of unbalanced brackets.
-     * @returns {number} Index of first unbalanced bracket, or -1 if not found.
-     * @private
-     */
-    static #getFirstUnbalancedBracketIndex(orig_str, unbalanced_brackets_str) {
-        // Keep track of our position in the orig_str.
-        let index = 0;
-        let indices = [];
-
-        // Iterate through all of the characters in the unbalanced_brackets_str.
-        for (const character of unbalanced_brackets_str) {
-            // Find the current character starting from the last character we stopped on.
-            index = orig_str.indexOf(character, index + 1);
-            indices.push(index);
-            // If the method returned -1, the character was not found, so the result is false.
-            if (index === -1) {
-                return -1;
-            }
-        }
-
-        // If we reach this point, that means all characters were found, so the result is true.
-        return indices[0];
-    }
-
-    /**
-     * Ignore content from unbalanced brackets
-     * @param {string} orig_str - The original text.
-     * @returns {string} Processed text.
-     * @private
-     */
-    static #ignoreContentFromUnbalancedBracketIndex(orig_str) {
-        const [isBalanced, unbalancedBrackets] = this.#checkBalancedBrackets(orig_str);
-        if (!isBalanced) {
-            const idx = this.#getFirstUnbalancedBracketIndex(orig_str, unbalancedBrackets);
-            return idx !== -1 ? orig_str.slice(0, idx) : orig_str;
-        }
-        return orig_str;
+        this.#CACHED_BOOK_AND_AUTHOR = bookAndAuthor;
     }
 }

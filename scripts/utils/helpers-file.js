@@ -10,7 +10,7 @@
  *
  * @module utils/helpers-file
  * @requires config/index
- * @requires modules/ui/reader
+ * @requires modules/features/reader
  * @requires modules/file/fileload-callback
  * @requires modules/text/text-processor
  * @requires modules/file/file-processor
@@ -21,11 +21,17 @@
  */
 
 import * as CONFIG from "../config/index.js";
-import { reader } from "../modules/ui/reader.js";
+import { reader } from "../modules/features/reader.js";
 import { FileLoadCallback } from "../modules/file/fileload-callback.js";
 import { TextProcessor } from "../modules/text/text-processor.js";
 import { FileProcessor } from "../modules/file/file-processor.js";
-import { removeFileExtension, randomFloatFromInterval, formatBytes } from "./base.js";
+import {
+    removeFileExtension,
+    randomFloatFromInterval,
+    formatBytes,
+    addFootnotesToDOM,
+    triggerCustomEvent,
+} from "./base.js";
 import {
     hideDropZone,
     updateTOCUI,
@@ -34,7 +40,6 @@ import {
     hideContent,
     showContent,
     resetUI,
-    updatePaginationIndicator,
 } from "./helpers-ui.js";
 import {
     getIsFromLocal,
@@ -45,11 +50,10 @@ import {
 } from "./helpers-bookshelf.js";
 import {
     GetScrollPositions,
-    setTitleActive,
     getHistory,
+    getHistoryAndSetChapterTitleActive,
     calculatePageBreaks,
     setTitle,
-    getProgressText,
 } from "./helpers-reader.js";
 
 /**
@@ -64,15 +68,11 @@ export async function handleMultipleFiles(fileList, isFromLocal = true, isOnServ
     const files = Array.prototype.slice.call(fileList).filter((file) => file.type === "text/plain");
     // console.log("files: ", files);
     if (files.length > 1) {
-        document.dispatchEvent(
-            new CustomEvent("handleMultipleBooks", {
-                detail: {
-                    files,
-                    isFromLocal,
-                    isOnServer,
-                },
-            })
-        );
+        triggerCustomEvent("handleMultipleBooks", {
+            files,
+            isFromLocal,
+            isOnServer,
+        });
     } else if (files.length === 1) {
         const singleFile = files[0];
         setIsFromLocal(singleFile.name, getIsFromLocal(singleFile.name) || isFromLocal);
@@ -97,15 +97,11 @@ export async function handleMultipleFilesWithoutLoading(fileList, isFromLocal = 
     const files = Array.prototype.slice.call(fileList).filter((file) => file.type === "text/plain");
     // console.log("files: ", files);
     if (files.length > 1) {
-        document.dispatchEvent(
-            new CustomEvent("handleMultipleBooksWithoutLoading", {
-                detail: {
-                    files,
-                    isFromLocal,
-                    isOnServer,
-                },
-            })
-        );
+        triggerCustomEvent("handleMultipleBooksWithoutLoading", {
+            files,
+            isFromLocal,
+            isOnServer,
+        });
     }
 }
 
@@ -257,15 +253,11 @@ export async function handleSelectedFileSingleThreaded(fileList) {
                 // Change UI language based on detected language... or not?
                 // CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING = (document.documentElement.getAttribute("respectUserLangSetting") === "true");
                 if (!CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING) {
-                    // dispatch event to update UI language
-                    document.dispatchEvent(
-                        new CustomEvent("updateUILanguage", {
-                            detail: {
-                                lang: CONFIG.VARS.IS_EASTERN_LAN ? "zh" : "en",
-                                saveToLocalStorage: false,
-                            },
-                        })
-                    );
+                    // Trigger updateUILanguage event
+                    triggerCustomEvent("updateUILanguage", {
+                        lang: CONFIG.VARS.IS_EASTERN_LAN ? "zh" : "en",
+                        saveToLocalStorage: false,
+                    });
                 }
 
                 // await yieldToMain();
@@ -301,7 +293,7 @@ export async function handleSelectedFileSingleThreaded(fileList) {
                         const [tempTitle, tempTitleGroup] = TextProcessor.getTitle(line);
                         if (tempTitle !== "") {
                             // Get the shortest title
-                            const getShortestTitle = (titleGroup) => {
+                            const getShortestTitleContent = (titleGroup) => {
                                 let shortestTitle = titleGroup[titleGroup.length - 3];
                                 let nextTitle;
                                 let nextTitleGroup;
@@ -314,7 +306,7 @@ export async function handleSelectedFileSingleThreaded(fileList) {
                                 }
                                 return shortestTitle;
                             };
-                            const shortestTitle = getShortestTitle(tempTitleGroup);
+                            const shortestTitle = getShortestTitleContent(tempTitleGroup);
                             CONFIG.VARS.ALL_TITLES.push([
                                 tempTitle,
                                 parseInt(i) + CONFIG.VARS.TITLE_PAGE_LINE_NUMBER_OFFSET,
@@ -401,11 +393,7 @@ export async function handleSelectedFileSingleThreaded(fileList) {
 
                 // Retrieve reading history if exists
                 // removeAllHistory();    // for debugging
-                CONFIG.VARS.HISTORY_LINE_NUMBER = getHistory(CONFIG.VARS.FILENAME, reader.gotoLine.bind(reader));
-                if (CONFIG.VARS.CURRENT_PAGE === 1 && CONFIG.VARS.HISTORY_LINE_NUMBER === 0 && window.scrollY === 0) {
-                    // if the first line is a header, it will show up in TOC
-                    setTitleActive(CONFIG.VARS.HISTORY_LINE_NUMBER);
-                }
+                getHistoryAndSetChapterTitleActive(reader.gotoLine.bind(reader));
                 logTiming("UI updates", uiStart);
 
                 // Wait for DOM updates to complete
@@ -525,26 +513,26 @@ export async function handleSelectedFile(fileList) {
         showContent();
         FileLoadCallback.after();
 
-        // Trigger a custom event to save processed book
-        document.dispatchEvent(
-            new CustomEvent("saveProcessedBook", {
-                detail: {
-                    name: CONFIG.VARS.FILENAME,
-                    is_eastern_lan: CONFIG.VARS.IS_EASTERN_LAN,
-                    bookAndAuthor: CONFIG.VARS.BOOK_AND_AUTHOR,
-                    title_page_line_number_offset: CONFIG.VARS.TITLE_PAGE_LINE_NUMBER_OFFSET,
-                    seal_rotate_en: CONFIG.RUNTIME_VARS.STYLE.seal_rotate_en,
-                    seal_left: CONFIG.RUNTIME_VARS.STYLE.seal_left,
-                    file_content_chunks: CONFIG.VARS.FILE_CONTENT_CHUNKS,
-                    all_titles: CONFIG.VARS.ALL_TITLES,
-                    all_titles_ind: CONFIG.VARS.ALL_TITLES_IND,
-                    footnotes: CONFIG.VARS.FOOTNOTES,
-                    footnote_processed_counter: CONFIG.VARS.FOOTNOTE_PROCESSED_COUNTER,
-                    page_breaks: CONFIG.VARS.PAGE_BREAKS,
-                    total_pages: CONFIG.VARS.TOTAL_PAGES,
-                },
-            })
-        );
+        if (!CONFIG.VARS.FILENAME) {
+            throw new Error("Error processing file. No filename found.");
+        }
+
+        // Trigger saveProcessedBook event
+        triggerCustomEvent("saveProcessedBook", {
+            name: CONFIG.VARS.FILENAME,
+            is_eastern_lan: CONFIG.VARS.IS_EASTERN_LAN,
+            bookAndAuthor: CONFIG.VARS.BOOK_AND_AUTHOR,
+            title_page_line_number_offset: CONFIG.VARS.TITLE_PAGE_LINE_NUMBER_OFFSET,
+            seal_rotate_en: CONFIG.RUNTIME_VARS.STYLE.seal_rotate_en,
+            seal_left: CONFIG.RUNTIME_VARS.STYLE.seal_left,
+            file_content_chunks: CONFIG.VARS.FILE_CONTENT_CHUNKS,
+            all_titles: CONFIG.VARS.ALL_TITLES,
+            all_titles_ind: CONFIG.VARS.ALL_TITLES_IND,
+            footnotes: CONFIG.VARS.FOOTNOTES,
+            footnote_processed_counter: CONFIG.VARS.FOOTNOTE_PROCESSED_COUNTER,
+            page_breaks: CONFIG.VARS.PAGE_BREAKS,
+            total_pages: CONFIG.VARS.TOTAL_PAGES,
+        });
         await finalizeMetrics();
     }
 
@@ -558,6 +546,7 @@ export async function handleSelectedFile(fileList) {
         metrics.timings[label] = performance.now() - startTime;
     }
 
+    /** Start processing */
     if (!fileList.length || fileList[0].type !== "text/plain") {
         resetUI();
         return;
@@ -588,7 +577,7 @@ export async function handleSelectedFile(fileList) {
         const metadataStart = performance.now();
         await processor.processBookMetadata();
         CONFIG.VARS.BOOK_AND_AUTHOR = processor.bookMetadata;
-        CONFIG.VARS.FILENAME = file.name;
+        CONFIG.VARS.FILENAME = file.name && fileList[0].name;
         CONFIG.VARS.TITLE_PAGE_LINE_NUMBER_OFFSET = processor.title_page_line_number_offset;
         CONFIG.RUNTIME_VARS.STYLE.seal_rotate_en = processor.seal_rotate_en;
         CONFIG.RUNTIME_VARS.STYLE.seal_left = processor.seal_left;
@@ -602,9 +591,10 @@ export async function handleSelectedFile(fileList) {
         // console.log("initialChunkResult: ", initialChunkResult);
 
         // Update global state with initial chunk
-        CONFIG.VARS.FILE_CONTENT_CHUNKS.push(...initialChunkResult.lines);
-        CONFIG.VARS.ALL_TITLES.push(...initialChunkResult.titles);
-        CONFIG.VARS.ALL_TITLES_IND = { ...CONFIG.VARS.ALL_TITLES_IND, ...initialChunkResult.titles_ind };
+        CONFIG.VARS.FILE_CONTENT_CHUNKS = initialChunkResult.lines;
+        CONFIG.VARS.ALL_TITLES = initialChunkResult.titles;
+        CONFIG.VARS.ALL_TITLES_IND = initialChunkResult.titles_ind;
+        verifyTitleAndIndexCount("[handleSelectedFile initialChunk]");
         CONFIG.VARS.FOOTNOTES = initialChunkResult.footnotes;
         CONFIG.VARS.FOOTNOTE_PROCESSED_COUNTER = initialChunkResult.footnoteCounter;
         CONFIG.VARS.PAGE_BREAKS = initialChunkResult.pageBreaks;
@@ -626,14 +616,11 @@ export async function handleSelectedFile(fileList) {
         reader.generatePagination();
         updateTOCUI(false);
         GetScrollPositions(false);
+        logTiming("Initial UI update", initialUIStart);
 
-        if (CONFIG.RUNTIME_CONFIG.ENABLE_BOOKSHELF) {
-            // Retrieve reading history
-            // CONFIG.VARS.HISTORY_LINE_NUMBER = getHistory(CONFIG.VARS.FILENAME, reader.gotoLine.bind(reader));
-            // if (CONFIG.VARS.CURRENT_PAGE === 1 && CONFIG.VARS.HISTORY_LINE_NUMBER === 0 && window.scrollY === 0) {
-            //     setTitleActive(CONFIG.VARS.HISTORY_LINE_NUMBER);
-            // }
-
+        // If bookshelf and fast open are enabled and no history is found, show content early without waiting for processing to complete
+        const hasHistory = getHistory(CONFIG.VARS.FILENAME) > 0;
+        if (CONFIG.RUNTIME_CONFIG.ENABLE_BOOKSHELF && CONFIG.RUNTIME_CONFIG.ENABLE_FAST_OPEN && !hasHistory) {
             hideDropZone();
             hideLoadingScreen();
             showContent();
@@ -641,13 +628,28 @@ export async function handleSelectedFile(fileList) {
 
         // Update pagination UI to show processing state
         if (file.size > processor.initialChunkSize) {
-            updatePaginationIndicator();
-        }
+            // Hide bookshelf trigger button if bookshelf is opened
+            triggerCustomEvent("hideBookshelfTriggerBtn");
 
-        logTiming("Initial UI update", initialUIStart);
+            // Add processing indicator to pagination
+            const paginationElement = document.querySelector(".pagination");
+            if (paginationElement) {
+                const existingIndicator = CONFIG.DOM_ELEMENT.PAGINATION_INDICATOR;
+                if (!existingIndicator) {
+                    const processingItem = document.createElement("div");
+                    processingItem.id = "pageProcessing";
+                    const processingSpan = document.createElement("span");
+                    processingSpan.classList.add("pagination-processing", "prevent-select");
+                    processingSpan.textContent = CONFIG.RUNTIME_VARS.STYLE.ui_pagination_processing;
+                    processingItem.appendChild(processingSpan);
+                    paginationElement.appendChild(processingItem);
 
-        // Process remaining content in background
-        if (file.size > processor.initialChunkSize) {
+                    // const paginationBorder = document.querySelector("#pagination");
+                    // paginationBorder.style.borderColor = CONFIG.RUNTIME_VARS.STYLE.mainColor_active;
+                }
+            }
+
+            // Process remaining content in background
             const remainingStart = performance.now();
 
             await processor
@@ -657,6 +659,7 @@ export async function handleSelectedFile(fileList) {
                     CONFIG.VARS.FILE_CONTENT_CHUNKS = CONFIG.VARS.FILE_CONTENT_CHUNKS.concat(remainingResult.lines);
                     CONFIG.VARS.ALL_TITLES = CONFIG.VARS.ALL_TITLES.concat(remainingResult.titles);
                     CONFIG.VARS.ALL_TITLES_IND = { ...CONFIG.VARS.ALL_TITLES_IND, ...remainingResult.titles_ind };
+                    verifyTitleAndIndexCount("[handleSelectedFile remainingContent]");
                     CONFIG.VARS.FOOTNOTES = CONFIG.VARS.FOOTNOTES.concat(remainingResult.footnotes);
                     CONFIG.VARS.FOOTNOTE_PROCESSED_COUNTER = remainingResult.footnoteCounter;
                     CONFIG.VARS.PAGE_BREAKS = CONFIG.VARS.PAGE_BREAKS.concat(remainingResult.pageBreaks);
@@ -669,6 +672,9 @@ export async function handleSelectedFile(fileList) {
                         processingItem.remove();
                     }
 
+                    // Show bookshelf trigger button if bookshelf is closed
+                    triggerCustomEvent("showBookshelfTriggerBtn");
+
                     // Update UI
                     reader.processTOC();
                     reader.generatePagination();
@@ -679,23 +685,18 @@ export async function handleSelectedFile(fileList) {
                     // console.log("Background processing complete");
                 })
                 .catch((error) => {
-                    console.error("Error processing remaining content:", error);
-                    // Optionally show error to user
+                    throw new Error("Error processing remaining content: " + error);
                 });
         }
 
         // Retrieve reading history
-        CONFIG.VARS.HISTORY_LINE_NUMBER = getHistory(CONFIG.VARS.FILENAME, reader.gotoLine.bind(reader));
-        if (CONFIG.VARS.CURRENT_PAGE === 1 && CONFIG.VARS.HISTORY_LINE_NUMBER === 0 && window.scrollY === 0) {
-            setTitleActive(CONFIG.VARS.HISTORY_LINE_NUMBER);
-        }
+        getHistoryAndSetChapterTitleActive(reader.gotoLine.bind(reader));
 
         // Complete initial processing
         await finalProcessing();
     } catch (error) {
-        console.error("Error processing file:", error);
-        hideLoadingScreen();
-        // Optionally show error to user
+        // hideLoadingScreen();
+        throw new Error("Error processing file: " + error);
     }
 }
 
@@ -721,32 +722,28 @@ export async function handleProcessedBook(book) {
         CONFIG.VARS.FILE_CONTENT_CHUNKS = book.file_content_chunks;
         CONFIG.VARS.ALL_TITLES = book.all_titles;
         CONFIG.VARS.ALL_TITLES_IND = book.all_titles_ind;
+        verifyTitleAndIndexCount("[handleProcessedBook]");
         CONFIG.VARS.FOOTNOTES = book.footnotes;
         CONFIG.VARS.FOOTNOTE_PROCESSED_COUNTER = book.footnote_processed_counter;
         CONFIG.VARS.PAGE_BREAKS = book.page_breaks;
         CONFIG.VARS.TOTAL_PAGES = book.total_pages;
 
+        // Set title
+        setTitle(CONFIG.VARS.BOOK_AND_AUTHOR.bookName);
+
         // console.log("isEasternLan: ", CONFIG.VARS.IS_EASTERN_LAN);
         // Change UI language based on detected language... or not?
         // CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING = (document.documentElement.getAttribute("respectUserLangSetting") === "true");
         if (!CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING) {
-            // dispatch event to update UI language
-            document.dispatchEvent(
-                new CustomEvent("updateUILanguage", {
-                    detail: {
-                        lang: CONFIG.VARS.IS_EASTERN_LAN ? "zh" : "en",
-                        saveToLocalStorage: false,
-                    },
-                })
-            );
+            // Trigger updateUILanguage event
+            triggerCustomEvent("updateUILanguage", {
+                lang: CONFIG.VARS.IS_EASTERN_LAN ? "zh" : "en",
+                saveToLocalStorage: false,
+            });
         }
 
         // Add footnotes to DOM
-        CONFIG.VARS.FOOTNOTES.forEach((footnote) => {
-            const tempElement = document.createElement("div");
-            tempElement.innerHTML = footnote;
-            CONFIG.DOM_ELEMENT.FOOTNOTE_CONTAINER.appendChild(tempElement.firstChild);
-        });
+        addFootnotesToDOM(CONFIG.VARS.FOOTNOTES, CONFIG.DOM_ELEMENT.FOOTNOTE_CONTAINER);
 
         // Process TOC
         reader.initTOC();
@@ -760,10 +757,7 @@ export async function handleProcessedBook(book) {
         GetScrollPositions(false);
 
         // Retrieve reading history
-        CONFIG.VARS.HISTORY_LINE_NUMBER = getHistory(CONFIG.VARS.FILENAME, reader.gotoLine.bind(reader));
-        if (CONFIG.VARS.CURRENT_PAGE === 1 && CONFIG.VARS.HISTORY_LINE_NUMBER === 0 && window.scrollY === 0) {
-            setTitleActive(CONFIG.VARS.HISTORY_LINE_NUMBER);
-        }
+        getHistoryAndSetChapterTitleActive(reader.gotoLine.bind(reader));
 
         hideDropZone();
         hideLoadingScreen();
@@ -771,5 +765,22 @@ export async function handleProcessedBook(book) {
         FileLoadCallback.after();
     } else {
         await handleSelectedFile([book?.data]);
+    }
+}
+
+/**
+ * Checks if CONFIG.VARS.ALL_TITLES and CONFIG.VARS.ALL_TITLES_IND length match
+ * @param {string} messageHeader - Message header
+ * @throws {Error} If all titles and CONFIG.VARS.ALL_TITLES_IND length mismatch
+ */
+function verifyTitleAndIndexCount(messageHeader) {
+    if (CONFIG.VARS.ALL_TITLES.length !== Object.keys(CONFIG.VARS.ALL_TITLES_IND).length) {
+        console.log("CONFIG.VARS.ALL_TITLES: ", CONFIG.VARS.ALL_TITLES.length, CONFIG.VARS.ALL_TITLES);
+        console.log(
+            "CONFIG.VARS.ALL_TITLES_IND: ",
+            Object.keys(CONFIG.VARS.ALL_TITLES_IND).length,
+            CONFIG.VARS.ALL_TITLES_IND
+        );
+        throw new Error(`${messageHeader} All titles and all titles indices length mismatch.`);
     }
 }

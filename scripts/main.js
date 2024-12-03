@@ -4,9 +4,9 @@
  *
  * @module main
  * @requires config/index
- * @requires modules/ui/bookshelf
- * @requires modules/ui/settings
- * @requires modules/ui/reader
+ * @requires modules/features/bookshelf
+ * @requires modules/features/settings
+ * @requires modules/features/reader
  * @requires utils/base
  * @requires utils/helpers-reader
  * @requires utils/helpers-file
@@ -14,13 +14,13 @@
  */
 
 import * as CONFIG from "./config/index.js";
-import { initBookshelf } from "./modules/ui/bookshelf.js";
-import { initSettings } from "./modules/ui/settings.js";
-import { reader } from "./modules/ui/reader.js";
+import { initBookshelf } from "./modules/features/bookshelf.js";
+import { initSettings } from "./modules/features/settings.js";
+import { reader } from "./modules/features/reader.js";
 import { isVariableDefined, removeHashbang, isEllipsisActive } from "./utils/base.js";
 import {
     setTitle,
-    getHistory,
+    getHistoryAndSetChapterTitleActive,
     GetScrollPositions,
     showOriginalTitle,
     showShortenedTitle,
@@ -32,19 +32,25 @@ import {
     updateTOCUI,
     showDropZone,
     hideDropZone,
+    hideContent,
+    showLoadingScreen,
     resetUI,
     resetVars,
 } from "./utils/helpers-ui.js";
 
 /**
- * Log the app language and respect user language setting
+ * Log the app language, respect user language setting, and extension mode
  */
 console.log(
     `App language is "${CONFIG.RUNTIME_VARS.WEB_LANG}". Respect user language setting is ${CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING}.`
 );
 setTitle();
 setMainContentUI();
-initBookshelf();
+const openedAsNoUI = document.documentElement.getAttribute("openedAsNoUI") === "true";
+if (openedAsNoUI) {
+    showLoadingScreen();
+}
+initBookshelf(!openedAsNoUI);
 await initSettings();
 
 /**
@@ -84,7 +90,7 @@ window.addEventListener("resize", () => {
  * Handle drag enter events on window
  */
 window.addEventListener("dragenter", (event) => {
-    CONFIG.VARS.HISTORY_LINE_NUMBER = getHistory(CONFIG.VARS.FILENAME, reader.gotoLine.bind(reader));
+    getHistoryAndSetChapterTitleActive(reader.gotoLine.bind(reader), false);
     CONFIG.VARS.INIT = true;
     event.preventDefault();
     if (showDropZone(true) === 0) {
@@ -101,6 +107,26 @@ window.onscroll = (event) => {
         GetScrollPositions();
     }
 };
+
+/**
+ * Prevent dragging of selected text and non-draggable elements
+ */
+document.addEventListener("dragstart", (event) => {
+    // Check if the user is dragging selected text
+    if (window.getSelection().toString()) {
+        event.preventDefault();
+    }
+
+    // Ensure event.target is an Element before checking attributes
+    if (event.target instanceof Element) {
+        const isDraggable = event.target.hasAttribute("draggable") && event.target.getAttribute("draggable") === "true";
+        if (!isDraggable) {
+            event.preventDefault();
+        }
+    } else {
+        event.preventDefault(); // Prevent dragging for non-Element targets
+    }
+});
 
 /**
  * Handle keyboard navigation
@@ -153,14 +179,42 @@ const tocContent = CONFIG.DOM_ELEMENT.TOC_CONTAINER;
 tocContent.addEventListener("mouseenter", () => {
     CONFIG.VARS.IS_MOUSE_INSIDE_TOC_CONTENT = true;
     const allActiveTitles = CONFIG.DOM_ELEMENT.TOC_CONTAINER.querySelectorAll(".chapter-title-container.toc-active");
-    allActiveTitles.forEach((title) => showOriginalTitle(title));
+    allActiveTitles.forEach((title) => {
+        const curTitleID = title.id.split("_").pop();
+        showOriginalTitle(curTitleID);
+    });
 });
 
 tocContent.addEventListener("mouseleave", () => {
     CONFIG.VARS.IS_MOUSE_INSIDE_TOC_CONTENT = false;
     const allActiveTitles = CONFIG.DOM_ELEMENT.TOC_CONTAINER.querySelectorAll(".chapter-title-container.toc-active");
-    allActiveTitles.forEach((title) => showShortenedTitle(title, 2000));
+    allActiveTitles.forEach((title) => {
+        const curTitleID = title.id.split("_").pop();
+        showShortenedTitle(curTitleID, 2000);
+    });
 });
+
+/**
+ * Handle file object from extension
+ * Listen for the file details sent by the extension's background script
+ */
+const api = typeof chrome !== "undefined" ? chrome : typeof browser !== "undefined" ? browser : null;
+if (api?.runtime?.onMessage) {
+    api.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        // Use Promise to handle asynchronous operations
+        handleExtensionMessage(message)
+            .then((result) => {
+                // console.log("Message handled successfully:", result);
+                sendResponse({ success: true });
+            })
+            .catch((error) => {
+                console.error("Error handling message:", error);
+                sendResponse({ success: false, error: error.message });
+            });
+
+        return true; // Keep the message channel open for asynchronous responses
+    });
+}
 
 /**
  * Opens a file selector dialog for choosing text files
@@ -239,4 +293,41 @@ async function handleDrop(event) {
     CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.style.display = "block";
     resetVars();
     await handleMultipleFiles(event.dataTransfer.files);
+}
+
+/**
+ * Handles messages from the extension
+ * @param {Object} message - The message from the extension
+ */
+async function handleExtensionMessage(message) {
+    if (message.action === "loadFile") {
+        try {
+            showLoadingScreen();
+            // Decode the Base64 content back to binary
+            const base64ToArrayBuffer = (base64) => {
+                const binaryString = atob(base64);
+                const len = binaryString.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                return bytes.buffer;
+            };
+            const arrayBuffer = base64ToArrayBuffer(message.fileContent);
+
+            // Create a File object from the ArrayBuffer
+            const fileObject = new File([arrayBuffer], message.fileName, {
+                type: message.fileType,
+            });
+
+            // Call existing `handleMultipleFiles` function
+            if (typeof handleMultipleFiles === "function") {
+                await handleMultipleFiles([fileObject]);
+            } else {
+                console.error("handleMultipleFiles function is not defined.");
+            }
+        } catch (error) {
+            console.error("Error loading the file into the page:", error);
+        }
+    }
 }

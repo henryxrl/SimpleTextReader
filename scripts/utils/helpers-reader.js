@@ -21,13 +21,13 @@ import { isInViewport, isInContainerViewport } from "./base.js";
 
 /**
  * Global variables for managing title display and keyboard events
- * @type {number|null} timeoutId - Timeout ID for title display management
- * @type {number} accumulatedDelay - Accumulated delay for title transitions
- * @type {Function|null} FUNC_KEYDOWN_ - Original onkeydown function before freezing content
+ * @type {Function|null} func_keydown_ - Store original page onkeydown function for temporary disabling
+ * @type {number|null} timeoutID - Timeout ID for showing shortened title
+ * @type {number|null} currentTitleID - Tracks the titleID associated with the active timer
  */
-let timeoutId = null;
-let accumulatedDelay = 0;
-let FUNC_KEYDOWN_ = document.onkeydown; // Store original page onkeydown function for temporary disabling
+let func_keydown_ = document.onkeydown;
+let timeoutID = null;
+let currentTitleID = null;
 
 /**
  * Sets the document title.
@@ -155,9 +155,12 @@ export function GetScrollPositions(toSetHistory = true, gotoPageClicked = false)
             // console.log("Current title ID: ", curTitleID);
 
             // Set the current title in the TOC as active
-            setTitleActive(curTitleID);
+            setChapterTitleActive(curTitleID);
         } else {
-            setTitleActive(CONFIG.VARS.FILE_CONTENT_CHUNKS.length - 1);
+            setChapterTitleActive(CONFIG.VARS.FILE_CONTENT_CHUNKS.length - 1);
+
+            // If the last line is visible, set the reading history to the last line
+            setHistory(CONFIG.VARS.FILENAME, CONFIG.VARS.FILE_CONTENT_CHUNKS.length - 1);
         }
     }
 
@@ -216,77 +219,76 @@ function calculateReadingProgress(curLineNumber) {
 /**
  * Shows the original title in TOC by removing shortened version
  * @public
- * @param {HTMLElement} container - The container element holding both title versions
+ * @param {number} titleID - The line number of the title to show the original title for
  */
-export function showOriginalTitle(container) {
+export function showOriginalTitle(titleID) {
     // Clear any existing timeout to stop the shortened title timer
-    clearTimeout(timeoutId);
-    accumulatedDelay = 0; // Reset the accumulated delay since we're showing the original title
-    timeoutId = null; // Ensure timeoutId is reset after clearing
+    clearTimeout(timeoutID);
+    timeoutID = null; // Ensure timeoutId is reset after clearing
 
-    const original = container.querySelector(".title-original");
-    const shortened = container.querySelector(".title-shortened");
+    const original = CONFIG.DOM_ELEMENT.GET_TITLE(titleID)?.querySelector(".title-original");
+    const shortened = CONFIG.DOM_ELEMENT.GET_TITLE(titleID)?.querySelector(".title-shortened");
 
     // Check if the original and shortened titles are the same
-    if (original.textContent.trim() === shortened.textContent.trim()) {
+    if (original?.textContent.trim() === shortened?.textContent.trim()) {
         return; // Exit if they are the same, no need to switch
     }
 
-    shortened.classList.add("hidden"); // Hide shortened
-    original.classList.remove("hidden"); // Show original
+    // Use direct DOM manipulation to avoid race condition
+    CONFIG.DOM_ELEMENT.GET_TITLE(titleID)?.querySelector(".title-shortened")?.classList.add("hidden"); // Hide shortened
+    CONFIG.DOM_ELEMENT.GET_TITLE(titleID)?.querySelector(".title-original")?.classList.remove("hidden"); // Show original
 }
 
 /**
  * Shows the shortened title in TOC after a delay
  * @public
- * @param {HTMLElement} container - The container element holding both title versions
+ * @param {number} titleID - The line number of the title to show the shortened title for
  * @param {number} delay - Delay in milliseconds before showing shortened title
  */
-export function showShortenedTitle(container, delay = 2000) {
-    // Accumulate delay if function is called multiple times in a row
-    accumulatedDelay += delay;
-
-    const original = container.querySelector(".title-original");
-    const shortened = container.querySelector(".title-shortened");
+export function showShortenedTitle(titleID, delay = 2000) {
+    const original = CONFIG.DOM_ELEMENT.GET_TITLE(titleID)?.querySelector(".title-original");
+    const shortened = CONFIG.DOM_ELEMENT.GET_TITLE(titleID)?.querySelector(".title-shortened");
 
     // Check if the original and shortened titles are the same
-    if (original.textContent.trim() === shortened.textContent.trim()) {
+    if (original?.textContent.trim() === shortened?.textContent.trim()) {
         return; // Exit if they are the same, no need to switch
     }
 
-    // If no previous timeout exists, start a new one
-    if (!timeoutId) {
-        timeoutId = setTimeout(() => {
-            original.classList.add("hidden"); // Hide original
-            shortened.classList.remove("hidden"); // Show shortened
+    // If a new titleID is provided, reset the timeout
+    if (titleID !== currentTitleID) {
+        // console.log(`New titleID detected. Switching to: ${titleID}`);
+        currentTitleID = titleID;
 
-            accumulatedDelay = 0; // Reset after showing the shortened title
-            timeoutId = null; // Reset the timeout ID after the execution
-        }, accumulatedDelay);
+        // Clear the existing timeout for the previous titleID
+        clearTimeout(timeoutID);
+        timeoutID = null;
+    }
+
+    // Start a new timer for the current titleID
+    if (!timeoutID) {
+        timeoutID = setTimeout(() => {
+            // Ensure the currentTitleID is still valid (user might have switched titles again)
+            if (currentTitleID === titleID) {
+                // Show the shortened title
+                CONFIG.DOM_ELEMENT.GET_TITLE(titleID)?.querySelector(".title-original")?.classList.add("hidden"); // Hide original
+                CONFIG.DOM_ELEMENT.GET_TITLE(titleID)?.querySelector(".title-shortened")?.classList.remove("hidden"); // Show shortened
+
+                // console.log(`Show shortened title for titleID: ${titleID}`);
+            }
+
+            // Reset the timeout and currentTitleID after execution
+            timeoutID = null;
+        }, delay);
     }
 }
 
 /**
- * Sets the active title in TOC based on current scroll position
+ * Sets the active chapter title in TOC based on current scroll position
  * @public
  * @param {number} titleID - The line number of the title to activate
  * @returns {Promise<void>}
  */
-export async function setTitleActive(titleID) {
-    // Remove all active titles
-    let allActiveTitles = CONFIG.DOM_ELEMENT.TOC_CONTAINER.querySelectorAll(".chapter-title-container.toc-active");
-    allActiveTitles.forEach((title) => {
-        if (title && title.id.split("_").pop() != titleID) {
-            title.classList.remove("toc-active");
-            Array.from(title.children).forEach((child) => {
-                if (child.classList) {
-                    child.classList.remove("toc-active");
-                }
-            });
-            showOriginalTitle(title);
-        }
-    });
-
+export async function setChapterTitleActive(titleID) {
     // Set the selected title in the TOC as active
     const selectedTitle = CONFIG.DOM_ELEMENT.GET_TITLE(titleID);
     if (selectedTitle) {
@@ -335,6 +337,22 @@ export async function setTitleActive(titleID) {
  */
 function handleTitleActive(titleID) {
     try {
+        // Remove all active titles
+        let allActiveTitles = CONFIG.DOM_ELEMENT.TOC_CONTAINER.querySelectorAll(".chapter-title-container.toc-active");
+        // console.log("All active titles: ", allActiveTitles);
+        allActiveTitles.forEach((title) => {
+            if (title && title.id.split("_").pop() != titleID) {
+                title.classList.remove("toc-active");
+                Array.from(title.children).forEach((child) => {
+                    if (child.classList) {
+                        child.classList.remove("toc-active");
+                    }
+                });
+                const curTitleID = title.id.split("_").pop();
+                showOriginalTitle(curTitleID);
+            }
+        });
+
         CONFIG.VARS.ACTIVE_TITLE = titleID;
         const selectedTitle = CONFIG.DOM_ELEMENT.GET_TITLE(titleID);
         if (
@@ -380,8 +398,10 @@ function handleTitleActive(titleID) {
                 headerMargins[selectedLine.tagName[1]] || CONFIG.RUNTIME_VARS.STYLE.h2_margin;
         }
         // console.log("1-Show shortened title: ", selectedTitle.id);
+        // console.log("is mouse inside toc content: ", CONFIG.VARS.IS_MOUSE_INSIDE_TOC_CONTENT);
         if (!CONFIG.VARS.IS_MOUSE_INSIDE_TOC_CONTENT) {
-            showShortenedTitle(selectedTitle, 2000);
+            const curTitleID = selectedTitle.id.split("_").pop();
+            showShortenedTitle(curTitleID, 2000);
         }
     } catch (error) {
         console.log(`Error: No title with ID ${titleID} found.`);
@@ -496,7 +516,7 @@ export function freezeContent() {
  * @public
  */
 export function unfreezeContent() {
-    document.onkeydown = FUNC_KEYDOWN_;
+    document.onkeydown = func_keydown_;
     $("body").css("overflow-y", "auto");
 }
 
@@ -518,26 +538,37 @@ export function setHistory(filename, lineNumber) {
 /**
  * Retrieves reading progress from localStorage
  * @public
- * @param {string} filename - The name of the file to get history for
+ * @param {string} filename - The name of the file for which to get history
+ * @param {Function} gotoLineFunc - Function to go to a line
  * @param {boolean} consoleLog - Whether to log retrieval to console
  * @returns {number} The saved line number, or 0 if none found
  */
-export function getHistory(filename, gotoLineFunc, consoleLog = true) {
+export function getHistory(filename, gotoLineFunc = null, consoleLog = false) {
     let tempLine = localStorage.getItem(filename);
     if (tempLine) {
         try {
             tempLine = parseInt(tempLine) || 0;
+
+            if (consoleLog) {
+                console.log(`History of "${filename}" found! Line: ${tempLine}`);
+            }
+
+            // If gotoLineFunc is provided, try to go to the line
+            if (gotoLineFunc) {
+                try {
+                    let success = gotoLineFunc(tempLine, false);
+                    if (success === -1) {
+                        tempLine = 0;
+                    }
+                } catch (funcError) {
+                    console.log("Error executing gotoLineFunc:", funcError);
+                }
+            }
+
+            return tempLine;
         } catch (error) {
-            tempLine = 0;
+            return 0;
         }
-        if (consoleLog) {
-            console.log(`History of "${filename}" found! Go to line: ${tempLine}`);
-        }
-        let success = gotoLineFunc(tempLine, false);
-        if (success === -1) {
-            tempLine = 0;
-        }
-        return tempLine;
     }
     return 0;
 }
@@ -583,6 +614,21 @@ export function removeHistory(filename) {
 }
 
 /**
+ * Gets reading history and sets the chapter title active in TOC
+ * @public
+ * @param {Function} gotoLineFunc - Function to go to a line
+ * @param {boolean} setActive - Whether to set the chapter title active
+ * @param {boolean} consoleLog - Whether to log retrieval to console
+ */
+export function getHistoryAndSetChapterTitleActive(gotoLineFunc, setActive = true, consoleLog = true) {
+    CONFIG.VARS.HISTORY_LINE_NUMBER = getHistory(CONFIG.VARS.FILENAME, gotoLineFunc, consoleLog);
+    if (setActive && CONFIG.VARS.CURRENT_PAGE === 1 && CONFIG.VARS.HISTORY_LINE_NUMBER === 0 && window.scrollY === 0) {
+        // if the first line is a header, it will show up in TOC
+        setChapterTitleActive(CONFIG.VARS.HISTORY_LINE_NUMBER);
+    }
+}
+
+/**
  * Calculates page break points based on chapter structure and content
  * @public
  * @param {string[]} contentChunks - Array of content chunks
@@ -594,14 +640,15 @@ export function removeHistory(filename) {
 export function calculatePageBreaks(
     contentChunks = CONFIG.VARS.FILE_CONTENT_CHUNKS,
     allTitles = CONFIG.VARS.ALL_TITLES,
-    isEasternLan = CONFIG.VARS.IS_EASTERN_LAN,
     paginationConfig = {
         ...CONFIG.CONST_PAGINATION,
         PAGE_BREAK_ON_TITLE: CONFIG.RUNTIME_CONFIG.PAGE_BREAK_ON_TITLE,
+        IS_EASTERN_LAN: CONFIG.VARS.IS_EASTERN_LAN,
+        BOOK_AND_AUTHOR: CONFIG.VARS.BOOK_AND_AUTHOR,
     }
 ) {
     try {
-        const calculator = new PaginationCalculator(contentChunks, allTitles, isEasternLan, paginationConfig);
+        const calculator = new PaginationCalculator(contentChunks, allTitles, paginationConfig);
         return calculator.calculate();
     } catch (error) {
         console.error("Error calculating page breaks:", error);

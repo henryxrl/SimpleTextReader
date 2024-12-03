@@ -1,3 +1,12 @@
+/**
+ * @fileoverview CSS Filter Generator
+ * @module lib/css-filter-gen
+ */
+
+/**
+ * Color class for handling RGB color values
+ * @class
+ */
 export class Color {
     constructor(r, g, b) {
         this.set(r, g, b);
@@ -164,10 +173,10 @@ export class Solver {
             results.push(this.solveNarrow(this.solveWide()));
             losses.push(results[i].loss);
         }
-        console.log(losses);
+        // console.log(losses);
         const minLoss = Math.min(...losses);
         const minIdx = losses.indexOf(minLoss);
-        console.log(minIdx, minLoss);
+        // console.log(minIdx, minLoss);
         return {
             values: results[minIdx].values,
             loss: results[minIdx].loss,

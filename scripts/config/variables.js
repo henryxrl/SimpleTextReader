@@ -95,6 +95,8 @@ class AppVariables {
 
         // Reset content-related variables
         this.ALL_TITLES = [];
+        this.ALL_TITLES_IND = {};
+        this.ACTIVE_TITLE = -1;
         this.BOOK_AND_AUTHOR = {};
         this.FOOTNOTES = [];
         this.FOOTNOTE_PROCESSED_COUNTER = 0;

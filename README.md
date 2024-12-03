@@ -11,7 +11,7 @@
 <br/><br/>
 </div>
 
-![主界面](assets/4_bookshelf1.png)
+![主界面](assets/0_intro_zh.png)
 
 易笺是一款简单纯粹的文本文件阅读器（Web App）
 
@@ -49,25 +49,21 @@
 
 ## 使用
 
-火狐插件：
+**注：如果需要直接访问拖入浏览器中的本地 txt 文件（`file://*.txt`）（相当于以前的无界面模式），需要在扩展管理界面中打开`允许访问文件 URL`**
 
-1. [易笺正常版 (v1.6.1)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
+### 火狐插件
 
-2. [易笺无界面版 (v1.2.9.2)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian_nogui/)
+- [易笺 (v1.6.3)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
 
-Chrome 插件：
+### Chrome 插件
 
-1. [易笺正常版 (v1.6.1)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
+- [易笺 (v1.6.3)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
 
-2. [易笺无界面版 (v1.2.9.2)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo)
+### Edge 插件
 
-Edge 插件：
+- [易笺 (v1.6.3)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
 
-1. [易笺正常版 (v1.6.1)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
-
-2. [易笺无界面版 (v1.2.9.2)](https://microsoftedge.microsoft.com/addons/detail/mdjajbjcppnghhcajjodfcbhebnifcnm)
-
-Docker：
+### Docker
 
 ```bash
 docker run -d --name simpletextreader \
@@ -75,6 +71,24 @@ docker run -d --name simpletextreader \
   --restart unless-stopped \
   henryxrl/simpletextreader:latest
 ```
+
+### URL 参数
+
+使用 URL 参数时，在 URL 末尾添加 `?param`。若要同时使用多个参数，请添加 `?param1&param2&param3`。请确保不要在参数前添加斜杠 (`/`)。
+
+1. `no-bookshelf`：禁用书架功能
+
+2. `no-settings`：禁用设置菜单
+
+3. `no-fast-open`：禁用快速打开书籍功能，书籍会在处理完成后才会打开
+
+4. `no-pagebreak-on-title`：禁用按章节分页，退回到根据行数分页的模式
+
+5. `always-process`：强制在打开书籍时重新处理，忽略已保存的处理结果
+
+6. `print-db`：打印当前保存书籍的数据库。 【用于调试】
+
+7. `upgrade-db`：手动升级或清理当前数据库。 【用于调试】
 
 ## 重大更新
 
@@ -84,23 +98,28 @@ docker run -d --name simpletextreader \
 
 2. 性能显著提升
 
-    [1] 大文件打开速度显著提升，做到 1 秒以内
+    [1] 大文件打开速度显著提升，做到 1 秒以内（可以通过在 URL 末尾添加 `?no-fast-open` 参数来关闭此功能）
 
-    [2] 文件在首次处理后，下次打开无需再次处理，加载速度更快
+    [2] 文件在首次处理后，下次打开无需再次处理，加载速度更快（可以通过在 URL 末尾添加 `?always-process` 参数来关闭此功能）
 
     [3] 界面无任何卡顿现象
 
 3. 全新的分页逻辑
 
-4. 新增“快读完”的阅读进度提示
+4. 全新的目录显示：当鼠标指针位于目录区域外时，仅显示当前章节的简化名称，对中英文小说均有效。例如，`正文 第一卷 原上草 第一章 秦少爷初临宝地 防狼术小试牛刀` 将简化为 `秦少爷初临宝地 防狼术小试牛刀`。当鼠标移入目录区域时，会显示完整的章节名称。
+   <img src="assets/5_TOC_zh.gif" alt="TOC" height="500" />
 
-5. 优化书籍封面生成逻辑
+5. 新增“快读完”的阅读进度提示
 
-6. 更流畅的界面语言切换
+6. 优化书籍封面生成逻辑
 
-7. 改用京华老宋体作为默认字体，以规避可能的版权问题
+7. 更流畅的界面语言切换
 
-8. 修复若干 Bug，提升了稳定性和用户体验
+8. 改用京华老宋体作为默认字体，以规避可能的版权问题
+
+9. 修复若干 Bug，提升了稳定性和用户体验
+
+**注：从 v1.6 开始，不再支持无界面（No-UI）版本。无界面版本中的所有功能（包括通过 `file://*.txt` URL 打开本地 `.txt` 文件）现已完全集成到正常版本中。**
 
 ### v1.5
 
@@ -191,7 +210,7 @@ docker run -d --name simpletextreader \
 
 2. 无界面版本：无界面版的易笺会检测 URL，<s>任何以 “.txt” 结尾的 URL （包括拖拽进浏览器的本地文件，`file://*.txt`）都会自动在易笺中打开。</s>值得注意的是，无界面版本打开文件的速度会相对较慢，因为浏览器会先加载完整的文件再传给易笺渲染。
 
-    **注：自 v1.2.6 开始，无界面版本只会打开本地 txt 文件，即 `file://*.txt`。**
+**注：自 v1.2.6 开始，无界面版本只会打开本地 txt 文件，即 `file://*.txt`。**
 
 ---
 

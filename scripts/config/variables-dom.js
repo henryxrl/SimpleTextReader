@@ -3,29 +3,35 @@
  *
  * Defines and exports runtime configuration based on URL parameters.
  *
- * @requires modules/file/css-global-variables
+ * @requires lib/css-global-variables
  */
 
-import { CSSGlobalVariables } from "../modules/file/css-global-variables.js";
+import { CSSGlobalVariables } from "../lib/css-global-variables.js";
 
 /**
  * URL parameters
  * @type {Object}
  * @property {boolean} noBookshelf - Whether bookshelf feature is disabled
  * @property {boolean} noSettings - Whether settings feature is disabled
+ * @property {boolean} noFastOpen - Whether fast open of books is disabled
  * @property {boolean} pageBreakMode - Whether page break on title is disabled
+ * @property {boolean} alwaysProcess - Whether to always process books upon opening
  * @property {boolean} printDatabase - Whether to print database
  * @property {boolean} upgradeDB - Whether to upgrade database
  */
 const urlParams = new URLSearchParams(window.location.search);
 const noBookshelf = urlParams.has("no-bookshelf");
 const noSettings = urlParams.has("no-settings");
+const noFastOpen = urlParams.has("no-fast-open");
 const pageBreakMode = urlParams.has("no-pagebreak-on-title");
+const alwaysProcess = urlParams.has("always-process");
 const printDatabase = urlParams.has("print-db");
 const upgradeDB = urlParams.has("upgrade-db");
 console.log("Enable bookshelf:", !noBookshelf);
 console.log("Enable settings:", !noSettings);
+console.log("Enable fast open of books:", !noFastOpen);
 console.log("Enable page break on title:", !pageBreakMode);
+console.log("Always process books upon opening:", alwaysProcess);
 console.log("Print database:", printDatabase);
 console.log("Upgrade database:", upgradeDB);
 
@@ -34,14 +40,18 @@ console.log("Upgrade database:", upgradeDB);
  * @type {Object}
  * @property {boolean} ENABLE_BOOKSHELF - Whether bookshelf feature is enabled
  * @property {boolean} ENABLE_SETTINGS - Whether settings feature is enabled
+ * @property {boolean} ENABLE_FAST_OPEN - Whether fast open of books is enabled
  * @property {boolean} PAGE_BREAK_ON_TITLE - Whether page break on title is enabled
+ * @property {boolean} ALWAYS_PROCESS - Whether to always process
  * @property {boolean} PRINT_DATABASE - Whether to print database
  * @property {boolean} UPGRADE_DB - Whether to upgrade database
  */
 export const RUNTIME_CONFIG = {
     ENABLE_BOOKSHELF: !noBookshelf,
     ENABLE_SETTINGS: !noSettings,
+    ENABLE_FAST_OPEN: !noFastOpen,
     PAGE_BREAK_ON_TITLE: !pageBreakMode,
+    ALWAYS_PROCESS: alwaysProcess,
     PRINT_DATABASE: printDatabase,
     UPGRADE_DB: upgradeDB,
 };

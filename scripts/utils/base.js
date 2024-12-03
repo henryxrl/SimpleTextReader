@@ -570,9 +570,13 @@ export function isEllipsisActive($jQueryObject) {
  * @param {string} url - URL to convert
  * @param {string} filename - Desired filename
  * @returns {Promise<File>} File object
+ * @throws {Error} If the file cannot be fetched from the URL
  */
 export async function URLToFileObject(url, filename) {
     const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch the file from the URL: ${url}`);
+    }
     const data = await response.blob();
     return new File([data], filename, { type: data.type });
 }
@@ -628,4 +632,34 @@ export function outerHeight(element) {
     return ["top", "bottom"]
         .map((side) => parseInt(style[`margin-${side}`]))
         .reduce((total, side) => total + side, height);
+}
+
+/**
+ * Adds footnotes to the DOM
+ * @param {Array<string>} footnotes - Array of footnote strings
+ * @param {HTMLElement} footnoteContainer - Footnote container element
+ */
+export function addFootnotesToDOM(footnotes, footnoteContainer) {
+    footnotes.forEach((footnote) => {
+        const tempElement = document.createElement("div");
+        tempElement.innerHTML = footnote;
+        footnoteContainer.appendChild(tempElement.firstChild);
+    });
+}
+
+/**
+ * Triggers a custom event
+ * @param {string} eventName - Event name
+ * @param {Object} detail - Event detail
+ * @param {boolean} bubbles - Whether to bubble the event
+ * @param {boolean} cancelable - Whether the event is cancelable
+ */
+export function triggerCustomEvent(eventName, detail = {}, bubbles = true, cancelable = true) {
+    const event = new CustomEvent(eventName, {
+        detail,
+        bubbles,
+        cancelable,
+    });
+
+    document.dispatchEvent(event);
 }

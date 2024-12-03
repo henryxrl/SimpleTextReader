@@ -3,9 +3,12 @@
 html {
     margin: 0 auto;
     max-width: var(--ui_maxWidth);
+    min-width: 500px;
+    min-height: 450px;
 }
 body {
     min-width: 500px;
+    min-height: 450px;
     font-size: 100% !important;
     background-color: var(--bgColor) !important;
     scrollbar-color: var(--fontInfoColor) var(--bgColor) !important;
@@ -88,31 +91,44 @@ To Offset the anchor link to clear fixed header
     visibility: show;
     z-index: 1000;
     position: absolute;
-    top: var(--ui_dropZoneTextTop);
     left: var(--ui_dropZoneTextLeft);
-    transform: translate(-50%, 20%);
-    -webkit-transform: translate(-50%, 20%);
+    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
     margin: auto;
-    font-size: var(--ui_dropZoneTextSize);
     color: var(--fontInfoColor);
+}
+.dropzone-text-default {
+    top: calc(var(--ui_dropZoneTextTop) + var(--ui_dropZoneImgSize) / 4.5);
+    font-size: var(--ui_dropZoneTextSize);
+}
+.dropzone-text-custom {
+    top: calc(var(--ui_dropZoneImgText_scaleFactor) * var(--ui_dropZoneTextTop) + var(--ui_dropZoneImgSize_max) / 2.25);
+    font-size: var(--ui_dropZoneTextSize_max);
 }
 #dropZoneImg {
     visibility: show;
     z-index: 1000;
     position: absolute;
-    top: var(--ui_dropZoneImgTop);
     left: var(--ui_dropZoneImgLeft);
-    transform: translate(-50%, -70%);
-    -webkit-transform: translate(-50%, -70%);
+    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
     margin: auto;
-    width: var(--ui_dropZoneImgSize);
-    height: var(--ui_dropZoneImgSize);
     /* convert to var(--mainColor_active) */
     /* filter: var(--mainColor_active_filter); */
     /* convert to var(--mainColor_inactive) */
     /* filter: var(--mainColor_inactive_filter); */
     /* convert to var(--fontInfoColor) */
     filter: var(--toGray_filter);
+}
+.dropzone-img-default {
+    top: calc(var(--ui_dropZoneImgTop) - var(--ui_dropZoneTextSize) * 1.5);
+    width: var(--ui_dropZoneImgSize);
+    height: var(--ui_dropZoneImgSize);
+}
+.dropzone-img-custom {
+    top: calc(var(--ui_dropZoneImgText_scaleFactor) * var(--ui_dropZoneImgTop) - var(--ui_dropZoneTextSize_max) * 0.5);
+    width: var(--ui_dropZoneImgSize_max);
+    height: var(--ui_dropZoneImgSize_max);
 }
 
 /* Loading screen */
@@ -252,6 +268,9 @@ To Offset the anchor link to clear fixed header
     font-family: var(--fontFamily_title);
     z-index: 100;
 }
+#tocList {
+    overscroll-behavior: contain;
+}
 /* Credit: https://stackoverflow.com/questions/3874602/elements-to-look-like-a-bullet-point-list-inside-an-anchor-link */
 .chapter-title-container {
     position: relative;
@@ -295,8 +314,7 @@ To Offset the anchor link to clear fixed header
     z-index: 1;
 }
 .toc-text.hidden {
-    opacity: 0 !important; /* Hide when toggling */
-    z-index: -1;
+    display: none !important;
 }
 /* Credit: https://www.taccgl.org/blog/css-transition-visibility.html */
 /* #tocContent:hover > .chapter-title-container > .toc-text {
@@ -486,9 +504,9 @@ input:invalid {
 #settingDlg .setting-group .row {
     grid-column: 1 / -1;
 }
-#settingDlg .setting-group-UI {
-    /* grid-template-columns: repeat(2, max-content 1fr); */
-}
+/* #settingDlg .setting-group-UI {
+    grid-template-columns: repeat(2, max-content 1fr);
+} */
 dialog::backdrop {
     backdrop-filter: blur(5px);
 }
@@ -695,6 +713,18 @@ input[type="color"]:not(:hover) {
 .optgroup-option {
     /* padding-left: 20px; */
     cursor: pointer;
+}
+#setting-bottom-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px;
+}
+#settings-version-display {
+    font-size: 0.85rem;
+    margin-top: 20px;
+    text-align: right;
+    color: var(--fontInfoColor);
 }
 
 /* Book Shelf */
