@@ -1,0 +1,19 @@
+# git
+.git
+.git/
+.gitignore
+.gitmodules
+
+# assets
+**/assets/
+**/dist/
+**/manifests/
+**/debug/
+**/extension/
+.vscode/
+publish_extension.py
+**/README.md
+**/README_EN.md
+
+# docker
+Dockerfile

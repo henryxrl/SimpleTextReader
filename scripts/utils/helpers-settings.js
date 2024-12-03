@@ -426,13 +426,7 @@ export function findFontIndex(fontName) {
     // console.log("fontName_single:", fontName_single);
 
     // First try to find the index in the custom_fonts array
-    if (fontName_single === "title") {
-        fontName_single = CONFIG.CONST_FONT.FONT_MAPPING.title;
-    } else if (fontName_single === "body") {
-        fontName_single = CONFIG.CONST_FONT.FONT_MAPPING.body;
-    } else if (fontName_single === "ui") {
-        fontName_single = CONFIG.CONST_FONT.FONT_MAPPING.ui;
-    }
+    fontName_single = CONFIG.CONST_FONT.FONT_MAPPING[fontName_single] || fontName_single;
     const idx1 = findStringIndex(CONFIG.VARS.FILTERED_FONT_NAMES, fontName_single);
 
     // If the font is found in the custom_fonts array, return the index

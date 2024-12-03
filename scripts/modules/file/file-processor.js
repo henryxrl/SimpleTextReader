@@ -3,13 +3,13 @@
  *
  * @module modules/file/file-processor
  * @requires config/index
- * @requires text/text-processor-worker
+ * @requires modules/text/text-processor-worker
  * @requires utils/base
  */
 
 import * as CONFIG from "../../config/index.js";
 import { TextProcessorWorker } from "../text/text-processor-worker.js";
-import { randomFloatFromInterval } from "../../utils/base.js";
+import { randomFloatFromInterval, addFootnotesToDOM, triggerCustomEvent } from "../../utils/base.js";
 
 /**
  * Chunked file processor
@@ -237,16 +237,12 @@ export class FileProcessor {
                     this.titles = this.titles.concat(titles);
                     this.titles_ind = { ...this.titles_ind, ...titles_ind };
                     this.footnotes = this.footnotes.concat(footnotes);
-                    this.footnoteCounter = footnoteCounter;
+                    this.footnoteCounter += footnoteCounter;
                     this.currentLineNumber = currentLineNumber;
                     this.pageBreaks = this.pageBreaks.concat(pageBreaks);
 
                     // Add footnotes to DOM
-                    this.footnotes.forEach((footnote) => {
-                        const tempElement = document.createElement("div");
-                        tempElement.innerHTML = footnote;
-                        CONFIG.DOM_ELEMENT.FOOTNOTE_CONTAINER.appendChild(tempElement.firstChild);
-                    });
+                    addFootnotesToDOM(this.footnotes, CONFIG.DOM_ELEMENT.FOOTNOTE_CONTAINER);
 
                     if (operation === "processRemainingContent") {
                         this.isProcessingComplete = true;
@@ -265,6 +261,8 @@ export class FileProcessor {
                 extraContent,
                 overlapSize: this.OVERLAP_SIZE,
                 encoding: this.encoding,
+                isEasternLan: this.isEasternLan,
+                metadata: this.bookMetadata,
                 startLineNumber: this.currentLineNumber,
                 startTitleIndex: this.titles.length,
                 title_page_line_number_offset: this.title_page_line_number_offset,
@@ -281,14 +279,10 @@ export class FileProcessor {
         // Change UI language based on detected language... or not?
         // CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING = (document.documentElement.getAttribute("respectUserLangSetting") === "true");
         if (!CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING) {
-            document.dispatchEvent(
-                new CustomEvent("updateUILanguage", {
-                    detail: {
-                        lang: this.isEasternLan ? "zh" : "en",
-                        saveToLocalStorage: false,
-                    },
-                })
-            );
+            triggerCustomEvent("updateUILanguage", {
+                lang: this.isEasternLan ? "zh" : "en",
+                saveToLocalStorage: false,
+            });
         }
     }
 

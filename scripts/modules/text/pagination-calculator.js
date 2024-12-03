@@ -9,7 +9,10 @@
  * - Uses caching for performance optimization
  *
  * @module modules/text/pagination-calculator
+ * @requires modules/text/text-processor-worker
  */
+
+import { TextProcessorWorker } from "./text-processor-worker.js";
 
 /**
  * Configuration options for pagination
@@ -45,11 +48,12 @@ export class PaginationCalculator {
      * @enum {string}
      */
     static #ERROR_MESSAGES = Object.freeze({
-        INVALID_INPUT: "Invalid input: contentChunks and allTitles must be arrays",
-        INVALID_TITLES: "Invalid input: allTitles must contain at least 2 entries",
-        INVALID_CONFIG: "Invalid config: MAX_LINES and MIN_LINES are required",
-        INVALID_RANGE: "Invalid range: index out of bounds",
-        INVALID_BREAK_POINT: "Invalid break point: out of range",
+        INVALID_INPUT: "[PaginationCalculator] Invalid input: contentChunks and allTitles must be arrays",
+        INVALID_TITLES: "[PaginationCalculator] Invalid input: allTitles must contain at least 2 entries",
+        INVALID_CONFIG: "[PaginationCalculator] Invalid config: MAX_LINES and MIN_LINES are required",
+        INVALID_RANGE: "[PaginationCalculator] Invalid range: index out of bounds",
+        INVALID_BREAK_POINT: "[PaginationCalculator] Invalid break point: out of range",
+        ALL_TITLES_IND_LENGTH_MISMATCH: "[PaginationCalculator] All titles and all titles indices length mismatch.",
     });
     /**
      * Logging prefix for debug messages
@@ -57,7 +61,7 @@ export class PaginationCalculator {
      * @private
      * @type {string}
      */
-    static #LOG_PREFIX = "[PaginationCalculator]";
+    static #LOG_PREFIX = "[PaginationCalculator";
     /**
      * Controls debug logging output
      * @readonly
@@ -80,9 +84,21 @@ export class PaginationCalculator {
 
     /**
      * @private
+     * @type {Object} Object of all titles indices
+     */
+    #allTitlesInd = {};
+
+    /**
+     * @private
      * @type {boolean} Whether the content is in an Eastern language
      */
     #isEasternLan = true;
+
+    /**
+     * @private
+     * @type {Object} Book and author metadata
+     */
+    #bookAndAuthor = {};
 
     /**
      * @private
@@ -122,6 +138,18 @@ export class PaginationCalculator {
 
     /**
      * @private
+     * @type {boolean} Whether the first real chapter has been processed
+     */
+    #firstRealChapterProcessed = false;
+
+    /**
+     * @private
+     * @type {number} Index of the first real chapter
+     */
+    #firstRealChapterIndex = -1;
+
+    /**
+     * @private
      * @type {Map<string, string>} Cache for cleaned HTML content
      */
     #htmlCleanCache = new Map();
@@ -155,7 +183,6 @@ export class PaginationCalculator {
      * @public
      * @param {string[]} contentChunks - Array of content lines to be paginated
      * @param {Array<[string, number]>} allTitles - Array of chapter titles with their positions
-     * @param {boolean} isEasternLan - Whether the content is in an Eastern language
      * @param {PaginationConfig} config - Pagination configuration
      * @throws {Error} If input parameters are invalid
      * @description
@@ -168,21 +195,30 @@ export class PaginationCalculator {
      *   - Forces line count when PAGE_BREAK_ON_TITLE is false
      * - Character limit adjustments for non-Eastern languages
      */
-    constructor(contentChunks, allTitles, isEasternLan, config) {
+    constructor(contentChunks, allTitles, config) {
         this.#validateInputs(contentChunks, allTitles, config);
 
         // Initialize properties
         this.#contentChunks = contentChunks;
         this.#allTitles = allTitles;
-        this.#isEasternLan = isEasternLan;
+        this.#isEasternLan = config.IS_EASTERN_LAN;
+        this.#bookAndAuthor = config.BOOK_AND_AUTHOR;
         this.#useSmartPagination = config.PAGE_BREAK_ON_TITLE;
+
+        // Initialize all titles indices
+        for (let i = 0; i < this.#allTitles.length; i++) {
+            this.#allTitlesInd[this.#allTitles[i][1]] = i;
+        }
+        if (this.#allTitles.length !== Object.keys(this.#allTitlesInd).length) {
+            throw new Error(PaginationCalculator.#ERROR_MESSAGES.ALL_TITLES_IND_LENGTH_MISMATCH);
+        }
 
         // Determine counting mode:
         // - If USE_CHAR_COUNT is explicitly set (true/false), use that
-        // - If USE_CHAR_COUNT is null, use isEasternLan
-        // So if isEasternLan is true, it defaults to character count
+        // - If USE_CHAR_COUNT is null, use config.IS_EASTERN_LAN
+        // So if config.IS_EASTERN_LAN is true, it defaults to character count
         // Otherwise, it defaults to line count
-        this.#useCharCount = config.USE_CHAR_COUNT ?? isEasternLan;
+        this.#useCharCount = config.USE_CHAR_COUNT ?? config.IS_EASTERN_LAN;
         if (!this.#useSmartPagination) {
             this.#useCharCount = false;
         }
@@ -195,6 +231,7 @@ export class PaginationCalculator {
             contentChunksLength: this.#contentChunks.length,
             titlesCount: this.#allTitles.length,
             isEasternLan: this.#isEasternLan,
+            bookAndAuthor: this.#bookAndAuthor,
             useSmartPagination: this.#useSmartPagination,
             useCharCount: this.#useCharCount,
             originalConfig: config,
@@ -274,7 +311,7 @@ export class PaginationCalculator {
         const callerLine = stack.split("\n")[2];
         const match = callerLine.match(/:(\d+):\d+\)?$/);
         const lineNumber = match ? match[1] : "unknown";
-        const prefix = `${PaginationCalculator.#LOG_PREFIX}[${lineNumber}]`;
+        const prefix = `${PaginationCalculator.#LOG_PREFIX}: ${lineNumber}][Progress: ${this.#currentLine}]`;
 
         if (error) {
             console.error(`${prefix} ERROR - ${message}:`, error);
@@ -326,7 +363,14 @@ export class PaginationCalculator {
         let count = 0;
         for (let i = start; i < end && i < this.#contentChunks.length; i++) {
             const line = this.#contentChunks[i].trim();
-            const cleanLine = this.#removeHtmlTags(line).trim();
+
+            // Don't count title lines
+            const titleIndex = this.#allTitlesInd[i];
+            if (titleIndex !== undefined) {
+                continue;
+            }
+
+            const cleanLine = this.#optimize(line);
             if (cleanLine && !this.#isPunctuationOnly(cleanLine)) {
                 count++;
             }
@@ -358,7 +402,14 @@ export class PaginationCalculator {
         let count = 0;
         for (let i = start; i < end && i < this.#contentChunks.length; i++) {
             const line = this.#contentChunks[i].trim();
-            const cleanLine = this.#removeHtmlTags(line).trim();
+
+            // Don't count title lines
+            const titleIndex = this.#allTitlesInd[i];
+            if (titleIndex !== undefined) {
+                continue;
+            }
+
+            const cleanLine = this.#optimize(line);
             if (cleanLine && !this.#isPunctuationOnly(cleanLine)) {
                 count += cleanLine.length;
             }
@@ -366,6 +417,16 @@ export class PaginationCalculator {
 
         this.#contentCharCache.set(cacheKey, count);
         return count;
+    }
+
+    /**
+     * Optimize a line. This is needed to more accurately count lines and characters.
+     * @private
+     * @param {string} line - Line to optimize
+     * @returns {string} Optimized line
+     */
+    #optimize(line) {
+        return TextProcessorWorker.optimize(this.#removeHtmlTags(line).trim(), this.#bookAndAuthor);
     }
 
     /**
@@ -419,7 +480,17 @@ export class PaginationCalculator {
      * @returns {number} Content length (either line count or character count)
      */
     #getContentLength(start, end) {
-        return this.#useCharCount ? this.#countContentChars(start, end) : this.#countContentLines(start, end);
+        // start often contains title, so we need to exclude it
+        let realStart = start;
+        let titleIndex = this.#allTitlesInd[start];
+        if (titleIndex !== undefined) {
+            realStart = this.#allTitles[titleIndex][1] + 1;
+            if (realStart !== start + 1) {
+                throw new Error("start: ", this.#allTitles[titleIndex][0], start, realStart);
+            }
+        }
+
+        return this.#useCharCount ? this.#countContentChars(realStart, end) : this.#countContentLines(realStart, end);
     }
 
     /**
@@ -448,6 +519,15 @@ export class PaginationCalculator {
         const isEmpty = contentLength === 0;
         this.#emptyChapterCache.set(titleIndex, isEmpty);
 
+        if (isEmpty) {
+            this.#log("Empty chapter", {
+                title: this.#allTitles[titleIndex][0],
+                titleIndex,
+                titleStart,
+                nextTitleStart,
+                contentLength,
+            });
+        }
         return isEmpty;
     }
 
@@ -688,13 +768,14 @@ export class PaginationCalculator {
         // Scan through content and add break points
         for (let i = 0; i < totalLines; i++) {
             const line = this.#contentChunks[i].trim();
-            const cleanLine = this.#removeHtmlTags(line).trim();
+            const cleanLine = this.#optimize(line);
 
             // Only count lines with actual content
             if (cleanLine && !this.#isPunctuationOnly(cleanLine)) {
                 contentLength++;
             }
 
+            // Add break point if content length exceeds max limit
             if (contentLength >= maxLimit) {
                 breaks.push(i + 1);
                 lastBreak = i + 1;
@@ -747,15 +828,37 @@ export class PaginationCalculator {
             useCharCount: this.#useCharCount,
         });
 
-        // Skip end page title
+        // Last chapter before end page, skip processing as we have special handling for it
         if (i === this.#allTitles.length - 2) {
-            this.#log("Skipping end page title");
+            this.#log("Last chapter before end page, skipped processing");
             return;
         }
 
-        // Handle first chapter after title
-        if (i === 1) {
-            this.#log("Processing first chapter after title");
+        // If the title page chapter is not empty, we always add a break point after it
+        if (i === 0 && chapterLength > 0) {
+            this.#log("Title page chapter is not empty, adding break point after it");
+            this.#addBreakPoint(nextTitleStart);
+            return;
+        }
+
+        // Handle first real chapter after title, meaning the first chapter after title page chapter that has content.
+        // We need to check if the chapter has content, if it doesn't have content, we should skip processing.
+        // We need to do this check only once, so we use #firstRealChapterProcessed flag.
+        if (i > 0) {
+            if (!this.#firstRealChapterProcessed) {
+                if (chapterLength === 0) {
+                    this.#log("First chapter after title is empty, skipped processing");
+                    return;
+                } else {
+                    this.#log("First real chapter found, processing");
+                    this.#firstRealChapterProcessed = true;
+                    this.#firstRealChapterIndex = i;
+                }
+            }
+        }
+
+        if (i === this.#firstRealChapterIndex) {
+            this.#log("Processing first real chapter after title");
             const titlePageLength = this.#getContentLength(0, titleStart);
             const combinedLength = titlePageLength + chapterLength;
 
@@ -789,6 +892,7 @@ export class PaginationCalculator {
             }
 
             // Add break point at the optimal position
+            this.#log("Adding break point at optimal position");
             if (currentPos < nextTitleStart && this.#addBreakPoint(currentPos)) {
                 this.#currentLine = currentPos;
 
@@ -804,6 +908,7 @@ export class PaginationCalculator {
         // Handle empty chapters
         if (this.#isEmptyChapter(i)) {
             if (titleStart > this.#currentLine) {
+                this.#log("Adding break point for empty chapter");
                 if (this.#addBreakPoint(titleStart)) {
                     this.#currentLine = titleStart;
                 }
@@ -832,6 +937,7 @@ export class PaginationCalculator {
 
         // Add regular chapter break
         if (titleStart > this.#currentLine) {
+            this.#log("Adding break point for regular chapter");
             if (this.#addBreakPoint(titleStart)) {
                 this.#currentLine = titleStart;
             }
@@ -869,6 +975,7 @@ export class PaginationCalculator {
                         !this.#wouldCreateShortNextPage(newBreakPoint, nextTitleStart) &&
                         this.#isValidBreakPoint(lastBreakPoint, newBreakPoint)
                     ) {
+                        this.#log("Adding break point for long chapter");
                         if (this.#addBreakPoint(newBreakPoint)) {
                             lastBreakPoint = newBreakPoint;
                             contentCount = 0;
@@ -922,6 +1029,7 @@ export class PaginationCalculator {
             const minLimit = this.#useCharCount ? this.#config.MIN_CHARS : this.#config.MIN_LINES;
 
             if (remainingContentLength >= minLimit) {
+                this.#log("Adding break point for long last chapter");
                 this.#addBreakPoint(lastRealChapterStart);
             } else {
                 this.#handleShortLastChapter(lastRealChapterStart, remainingContentLength);
@@ -963,6 +1071,7 @@ export class PaginationCalculator {
             return;
         }
 
+        this.#log("Adding break point for short last chapter");
         this.#addBreakPoint(lastRealChapterStart);
     }
 

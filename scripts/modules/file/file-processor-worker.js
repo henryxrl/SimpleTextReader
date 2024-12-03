@@ -140,7 +140,7 @@ async function processChunk(
         lines: [], // Processed lines
         titles: [], // Title information
         currentLineNumber: startLineNumber, // Current line number being processed
-        footnoteCounter: CONFIG.VARS.FOOTNOTES.length,
+        footnoteCounter: 0,
         footnotes: [],
         pageBreaks: [],
     };
@@ -152,7 +152,7 @@ async function processChunk(
         const [tempTitle, tempTitleGroup] = TextProcessorWorker.getTitle(tempLine);
         if (tempTitle !== "") {
             // Get the shortest title
-            const shortestTitle = getShortestTitle(tempTitleGroup, TextProcessorWorker);
+            const shortestTitle = getShortestTitleContent(tempTitleGroup, TextProcessorWorker);
             result.titles.push([tempTitle, result.currentLineNumber + title_page_line_number_offset, shortestTitle]);
         }
 
@@ -200,7 +200,8 @@ async function processChunk(
     if (prevChunkInfo && prevChunkInfo.content && prevChunkInfo.content.length > 0) {
         combinedLines = prevChunkInfo.content.concat(result.lines);
 
-        // 调整上一块标题的行号
+        // Adjust the line number of the previous block of titles
+        // Note: We don't need to subtract title_page_line_number_offset here because we've already considered it when processing titles
         const adjustedPrevTitles = prevChunkInfo.titles.map((title) => [
             title[0],
             // title[1] - (startLineNumber - prevChunkInfo.content.length) + prevChunkInfo.startLine,
@@ -231,9 +232,11 @@ async function processChunk(
     // console.log("adjustedCombinedTitles: ", tempTitles);
 
     // Calculate page breaks
-    const calculator = new PaginationCalculator(combinedLines, tempTitles, CONFIG.VARS.IS_EASTERN_LAN, {
+    const calculator = new PaginationCalculator(combinedLines, tempTitles, {
         ...CONFIG.CONST_PAGINATION,
         PAGE_BREAK_ON_TITLE: pageBreakOnTitle,
+        IS_EASTERN_LAN: CONFIG.VARS.IS_EASTERN_LAN,
+        BOOK_AND_AUTHOR: CONFIG.VARS.BOOK_AND_AUTHOR,
     });
     const chunkBreaks = calculator.calculate();
     // console.log("chunkBreaks: ", chunkBreaks);
@@ -253,7 +256,7 @@ async function processChunk(
     }
     // console.log("result.pageBreaks: ", result.pageBreaks);
 
-    // 保存这个块的最后部分及其对应的标题
+    // Save the last part of this chunk and its corresponding titles
     let prevContentLines = result.lines.slice(-Math.ceil(result.lines.length * overlapSize));
     let prevContentStartLineNumber = startLineNumber + result.lines.length - prevContentLines.length;
     let prevContentTitles = result.titles.filter((title) => title[1] >= prevContentStartLineNumber);
@@ -272,22 +275,89 @@ async function processChunk(
 }
 
 /**
- * Get the shortest title
- * @param {Array} titleGroup - Title group
- * @param {Object} TextProcessorWorker - Text processor worker
- * @returns {string} Shortest title
+ * Iteratively strips and processes a title to derive its shortest logical "content title."
+ * The function starts from a valid title and progressively reduces it by removing components
+ * (e.g., volume, chapter prefixes) until no further stripping is possible.
+ * If intermediate stripping results in an invalid title, it attempts to find valid substrings.
+ *
+ * @param {string[]} titleGroup - An array of title components, with the 3rd element from the last
+ *                                (`titleGroup[titleGroup.length - 3]`) being the current title to strip.
+ * @param {Object} TextProcessorWorker - An object with a `getTitle` method that processes titles.
+ * @param {Function} TextProcessorWorker.getTitle - A function that takes a title as input and returns
+ *                                                  an array `[nextTitle, nextTitleGroup]`.
+ *                                                  - `nextTitle` is the valid title if found, or an empty string otherwise.
+ *                                                  - `nextTitleGroup` is an array of title components if valid, or an empty array.
+ * @returns {string} - The shortest derived title content. If no further stripping is possible, it returns
+ *                     the final valid title or the last valid substring.
+ *
+ * @example
+ * // Example 1: Input with valid progressive titles
+ * const titleGroup = ['第一卷 第一章 第一节 测试', '第一卷', '第一章 第一节 测试', 0, '第一卷 第一章 第一节 测试'];
+ * const shortestTitle = getShortestTitleContent(titleGroup, TextProcessorWorker);
+ * console.log(shortestTitle); // Output: "测试"
+ *
+ * @example
+ * // Example 2: Input with intermediate invalid titles
+ * const titleGroup = ['第一卷 你好 第一章 哈哈', '第一卷', '你好 第一章 哈哈', 0, '第一卷 你好 第一章 哈哈'];
+ * const shortestTitle = getShortestTitleContent(titleGroup, TextProcessorWorker);
+ * console.log(shortestTitle); // Output: "哈哈"
  */
-function getShortestTitle(titleGroup, TextProcessorWorker) {
-    let shortestTitle = titleGroup[titleGroup.length - 3];
-    let nextTitle, nextTitleGroup;
+function getShortestTitleContent(titleGroup, TextProcessorWorker) {
+    // console.log("titleGroup: ", titleGroup);
+    let shortestTitle = titleGroup[titleGroup.length - 3]; // Start from the most reduced valid title
+    const seenTitles = new Set(); // Prevent infinite loops
+
     while (true) {
-        [nextTitle, nextTitleGroup] = TextProcessorWorker.getTitle(shortestTitle);
-        if (nextTitle === "" || nextTitleGroup[nextTitleGroup.length - 3] === nextTitle) {
+        if (seenTitles.has(shortestTitle)) {
+            // console.warn("Infinite loop detected, stopping...");
             break;
         }
-        shortestTitle = nextTitleGroup[nextTitleGroup.length - 3];
+
+        seenTitles.add(shortestTitle); // Mark the current title as processed
+
+        let [nextTitle, nextTitleGroup] = TextProcessorWorker.getTitle(shortestTitle);
+
+        if (!nextTitle) {
+            // If no valid title, try to strip substrings to find a valid one
+            const strippedTitle = stripNextSubstring(shortestTitle, TextProcessorWorker);
+            if (!strippedTitle) {
+                // console.log("No further valid titles. Exiting.");
+                break; // Stop if no valid substrings can be found
+            }
+            shortestTitle = strippedTitle; // Continue with the stripped title
+            continue;
+        }
+
+        if (nextTitleGroup.length >= 3) {
+            // Update shortestTitle with the stripped title from the group
+            shortestTitle = nextTitleGroup[nextTitleGroup.length - 3];
+        } else {
+            // If no further stripping is possible, stop
+            break;
+        }
     }
-    return shortestTitle;
+
+    return shortestTitle; // Return the final stripped title
+}
+
+/**
+ * Tries to strip components from the title to find a substring that is a valid title.
+ * Returns the first valid substring, or null if none are valid.
+ * @param {string} title - The title to strip.
+ * @param {Object} TextProcessorWorker - Text processor worker.
+ * @returns {string} The valid substring, or null if none are valid.
+ */
+function stripNextSubstring(title, TextProcessorWorker) {
+    const parts = title.split(/\s+/); // Split the title into parts by spaces
+    for (let i = 0; i < parts.length; i++) {
+        // Test substrings progressively from the i-th position
+        const testTitle = parts.slice(i).join(" ");
+        const [validTitle] = TextProcessorWorker.getTitle(testTitle);
+        if (validTitle) {
+            return testTitle; // Return the first valid substring found
+        }
+    }
+    return null; // No valid substrings found
 }
 
 /**
@@ -315,10 +385,10 @@ function processFootnote(footnote, counter) {
 /**
  * Generate title page
  * @param {Object} bookMetadata - Book metadata
- * @param {Object} CONFIG - Configuration object
+ * @param {Object} styles - Styles
  * @returns {Array<string>} Title page lines
  */
-function generateTitlePage(bookMetadata, CONFIG) {
+function generateTitlePage(bookMetadata, styles) {
     const { bookName, author } = bookMetadata;
     const titlePageLines = [];
 
@@ -326,11 +396,11 @@ function generateTitlePage(bookMetadata, CONFIG) {
     if (author) {
         titlePageLines.push(
             `<h1 id=line0 style='margin-bottom:0'>${bookName}</h1>`,
-            `<h1 id=line1 style='margin-top:0; margin-bottom:${parseFloat(CONFIG.h1_lineHeight) / 2}em'>${author}</h1>`
+            `<h1 id=line1 style='margin-top:0; margin-bottom:${parseFloat(styles.h1_lineHeight) / 2}em'>${author}</h1>`
         );
     } else {
         titlePageLines.push(
-            `<h1 id=line0 style='margin-bottom:${parseFloat(CONFIG.h1_lineHeight) / 2}em'>${bookName}</h1>`
+            `<h1 id=line0 style='margin-bottom:${parseFloat(styles.h1_lineHeight) / 2}em'>${bookName}</h1>`
         );
     }
 
@@ -374,6 +444,7 @@ self.onmessage = async function (e) {
         prevChunkInfo = null,
         overlapSize = 0,
         encoding = "utf-8",
+        isEasternLan = true,
         startLineNumber = -1,
         startTitleIndex = -1,
         totalLines = -1,
@@ -393,6 +464,7 @@ self.onmessage = async function (e) {
     // console.log("prevChunkInfo: ", prevChunkInfo);
     // console.log("overlapSize: ", overlapSize);
     // console.log("encoding: ", encoding);
+    // console.log("isEasternLan: ", isEasternLan);
     // console.log("startLineNumber: ", startLineNumber);
     // console.log("startTitleIndex: ", startTitleIndex);
     // console.log("totalLines: ", totalLines);
@@ -423,6 +495,9 @@ self.onmessage = async function (e) {
 
             case "processInitialChunk": {
                 const decoder = getDecoder(encoding);
+
+                CONFIG.VARS.IS_EASTERN_LAN = isEasternLan;
+                CONFIG.VARS.BOOK_AND_AUTHOR = metadata;
 
                 const processedChunk = await processChunk(
                     chunk,
@@ -457,6 +532,9 @@ self.onmessage = async function (e) {
             case "processRemainingContent": {
                 const remainingChunk = file.slice(chunkStart);
                 const decoder = getDecoder(encoding);
+
+                CONFIG.VARS.IS_EASTERN_LAN = isEasternLan;
+                CONFIG.VARS.BOOK_AND_AUTHOR = metadata;
 
                 const processedChunk = await processChunk(
                     remainingChunk,

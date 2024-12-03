@@ -14,10 +14,10 @@
             type="font/woff2"
             crossorigin="anonymous"
         />
+        <link rel="preload" href="./fonts/KingHwa_OldSong.woff" as="font" type="font/woff" crossorigin="anonymous" />
         <link rel="preload" href="./fonts/qiji-combo.woff" as="font" type="font/woff" crossorigin="anonymous" />
         <link rel="preload" href="./fonts/FZSKBXKK.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
         <link rel="preload" href="./fonts/FZKTK.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
-        <link rel="preload" href="./fonts/KingHwa_OldSong.woff" as="font" type="font/woff" crossorigin="anonymous" />
 
         <!-- Images -->
         <link rel="preload" href="./images/drop.png" as="image" type="image/png" />
@@ -33,8 +33,8 @@
         <link rel="stylesheet" type="text/css" href="./css/yaireo/my-range.css" crossorigin="anonymous" />
         <link rel="stylesheet" type="text/css" href="./css/yaireo/color-picker.css" crossorigin="anonymous" />
         <link rel="stylesheet" type="text/css" href="./css/yaireo/my-color.css" crossorigin="anonymous" />
-        <link rel="stylesheet" type="text/css" href="./css/ui_buttons.css" crossorigin="anonymous" />
-        <link rel="stylesheet" type="text/css" href="./css/ui_variables.css" crossorigin="anonymous" />
+        <link rel="stylesheet" type="text/css" href="./css/buttons.css" crossorigin="anonymous" />
+        <link rel="stylesheet" type="text/css" href="./css/variables.css" crossorigin="anonymous" />
         <link rel="stylesheet" type="text/css" href="./css/ui.css" crossorigin="anonymous" />
         <link rel="stylesheet" type="text/css" href="./css/reader.css" crossorigin="anonymous" />
         <link rel="stylesheet" type="text/css" href="./css/footnotes.css" crossorigin="anonymous" />
@@ -43,21 +43,22 @@
         <link rel="manifest" href="./manifests/PWA/manifest.json" />
 
         <!-- Scripts -->
-        <script type="text/javascript" src="./scripts/modules/ui/init-lang.js"></script>
+        <script type="text/javascript" src="./scripts/modules/features/init-webage.js"></script>
     </head>
 
     <body>
         <!-- Drop zone -->
         <div id="dropZone" class="uifont prevent-select">
             <div id="dropZoneTextImgWrapper" class="hasTitle">
-                <h3 id="dropZoneText" class="uifont prevent-select"></h3>
-                <img id="dropZoneImg" src="./images/drop.png" alt="" />
+                <img id="dropZoneImg" class="prevent-select dropzone-img-default" src="./images/drop.png" alt="" />
+                <h3 id="dropZoneText" class="uifont prevent-select dropzone-text-default"></h3>
             </div>
         </div>
 
         <!-- Loading screen -->
         <div id="loading" class="uifont prevent-select">
             <img src="./images/loading_geometry.gif" />
+            <!-- <div class="loader"></div> -->
         </div>
 
         <!-- Table of contents -->
@@ -112,7 +113,7 @@
             </div>
 
             <!-- Settings button -->
-            <!-- Library button -->
+            <!-- Bookshelf button -->
         </div>
 
         <!-- Main text -->

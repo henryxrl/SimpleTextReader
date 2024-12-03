@@ -11,7 +11,7 @@
 <br/><br/>
 </div>
 
-![Main UI](assets/4_bookshelf1.png)
+![Main UI](assets/0_intro_en.png)
 
 SimpleTextReader is the online text reader that simulates the result of SimpleEpub2, providing a web-based reading experience.
 
@@ -49,25 +49,21 @@ Big thanks to [Manjusaka](https://github.com/Zheaoli) for his amazing help and h
 
 ## Usage
 
-Firefox:
+**Note: To view the local text files (`file://*.txt`) directly dragged into the browser (no-ui mode), please enable "Allow access to file URLs" in the extension management page.**
 
-1. [Regular (v1.6.1)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
+### Firefox
 
-2. [No-UI (v1.2.9.2)](https://addons.mozilla.org/en-US/firefox/addon/yijian_nogui/)
+- [SimpleTextReader (v1.6.3)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
 
-Chrome:
+### Chrome
 
-1. [Regular (v1.6.1)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
+- [SimpleTextReader (v1.6.3)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
 
-2. [No-UI (v1.2.9.2)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA%EF%BC%88%E6%97%A0%E7%95%8C%E9%9D%A2%E7%89%88%EF%BC%89/mifnkjlmnnaamfgmhmjdjiplaaladjlo)
+### Edge
 
-Edge:
+- [SimpleTextReader (v1.6.3)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
 
-1. [Regular (v1.6.1)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
-
-2. [No-UI (v1.2.9.2)](https://microsoftedge.microsoft.com/addons/detail/mdjajbjcppnghhcajjodfcbhebnifcnm)
-
-Docker:
+### Docker
 
 ```bash
 docker run -d --name simpletextreader \
@@ -76,31 +72,54 @@ docker run -d --name simpletextreader \
   henryxrl/simpletextreader:latest
 ```
 
+### URL Parameters
+
+To use URL parameters, append `?param` to the end of the URL. To use multiple parameters simultaneously, append `?param1&param2&param3`. Ensure you do not add a slash (`/`) before the parameters.
+
+1. `no-bookshelf`: Disables the bookshelf feature.
+
+2. `no-settings`: Disables the settings menu.
+
+3. `no-fast-open`: Disables fast book opening. This means the book will only open after the entire processing is complete.
+
+4. `no-pagebreak-on-title`: Disables page breaks on chapter titles, reverting to the previous mode where page breaks depend solely on the number of lines.
+
+5. `always-process`: Forces the book to reprocess upon opening, ignoring any previously saved processed book.
+
+6. `print-db`: Prints the current database(s) of saved books. [For debugging purposes]
+
+7. `upgrade-db`: Upgrades or cleans the current database(s) manually. [For debugging purposes]
+
 ## Important Updates
 
 ### v1.6
 
 1. Complete code rewritting to improve overall performance and maintainability.
 
-2. Significant Performance Improvements
+2. Significant Performance Improvements:
 
-    [1] Large files now open significantly faster, with near-instant response times (less than 1 second).
+    [1] Large files now open significantly faster, with near-instant response times (less than 1 second). This feature can be turned of by adding `?no-fast-open` option at the end of the URL.
 
-    [2] Previously processed files can be reopened without processing, further reducing loading time.
+    [2] Previously processed files can be reopened without processing, further reducing loading time. This feature can be turned of by adding `?always-process` option at the end of the URL.
 
     [3] Interface operations are smooth and free from lag.
 
 3. New pagination logic.
 
-4. "Finishing up" reading progress indicator.
+4. New table of contents display: When the cursor is outside the table of contents area, only the simplified chapter title is displayed, applicable to both Chinese and English novels. For example, `Chapter 6. The Deputy Procureur du Roi.` will be simplified to `The Deputy Procureur du Roi.`. When the cursor moves back into the table of contents area, the full chapter title will be displayed.
+   <img src="assets/5_TOC_en.gif" alt="TOC" height="500" />
 
-5. Optimized book cover generation.
+5. "Finishing up" reading progress indicator.
 
-6. Smoother UI language switching.
+6. Optimized book cover generation.
 
-7. Updated default font to "Kinghwa Old Song" to avoid potential copyright issues.
+7. Smoother UI language switching.
 
-8. Resolved various minor bugs, enhancing stability and user experience.
+8. Updated default font to "Kinghwa Old Song" to avoid potential copyright issues.
+
+9. Resolved various minor bugs, enhancing stability and user experience.
+
+**NOTE: Starting from v1.6, the No-UI version has been discontinued. All features previously available in the No-UI version, including support for opening local `.txt` files via `file://*.txt` URLs, are now fully integrated into the Regular version.**
 
 ### v1.5
 
@@ -191,7 +210,7 @@ Now SimpleTextReader is also available as a Chrome/Firefox extension with two di
 
 2. No-UI version: Once activated, <s>any URL ending in ".txt" (including local text files that were dragged and dropped in the browser, `file://*.txt`) will be automatically opened using SimpleTextReader.</s> However, please be aware that this version might have slower performance when opening large text files. The delay is due to the browser's default behavior of loading the entire file at once, which cannot be modified.
 
-    **NOTE: Starting from v1.2.6, No-UI version only opens local txt files, i.e., `file://*.txt`.**
+**NOTE: Starting from v1.2.6, No-UI version only opens local txt files, i.e., `file://*.txt`.**
 
 ---
 

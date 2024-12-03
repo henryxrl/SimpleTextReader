@@ -11,13 +11,13 @@
  * @module utils/helpers-ui
  * @requires config/index
  * @requires utils/base
- * @requires modules/ui/reader
+ * @requires modules/features/reader
  * @requires utils/helpers-reader
  */
 
 import * as CONFIG from "../config/index.js";
-import { isVariableDefined } from "./base.js";
-import { reader } from "../modules/ui/reader.js";
+import { isVariableDefined, triggerCustomEvent } from "./base.js";
+import { reader } from "../modules/features/reader.js";
 import { setTitle } from "./helpers-reader.js";
 
 // ===============================
@@ -35,12 +35,12 @@ export function setUIMode(mode) {
     localStorage.setItem("UIMode", mode);
     CONFIG.RUNTIME_VARS.STYLE.ui_Mode = theme;
 
-    document.dispatchEvent(new CustomEvent("loadSettings"));
-    document.dispatchEvent(new CustomEvent("applySettings"));
+    triggerCustomEvent("loadSettings");
+    triggerCustomEvent("applySettings");
     document.documentElement.setAttribute("data-theme", theme);
 
     // Trigger updateAllBookCovers event
-    document.dispatchEvent(new CustomEvent("updateAllBookCovers"));
+    triggerCustomEvent("updateAllBookCovers");
 }
 
 /**
@@ -115,8 +115,8 @@ export function sw(percent) {
  * @public
  */
 export function showDropZone(focused = false) {
-    // hide menus
-    document.dispatchEvent(new CustomEvent("hideSettingMenu"));
+    // Hide setting menu
+    triggerCustomEvent("hideSettingMenu");
     if (isVariableDefined($(".dot-menu__checkbox"))) {
         $(".dot-menu__checkbox").prop("checked", false);
     }
@@ -157,7 +157,7 @@ export function showDropZone(focused = false) {
         CONFIG.RUNTIME_VARS.STYLE.ui_btnOffset = "0px";
 
         // Hide bookshelf trigger button if bookshelf is opened
-        document.dispatchEvent(new CustomEvent("hideBookshelfTriggerBtn"));
+        triggerCustomEvent("hideBookshelfTriggerBtn");
         return 0;
     } else {
         return 1;
@@ -186,7 +186,7 @@ export function hideDropZone() {
             (-1 * parseInt(CONFIG.RUNTIME_VARS.STYLE.ui_scrollBarWidth)).toString() + "px";
 
         // Show bookshelf trigger button if a book is opened
-        document.dispatchEvent(new CustomEvent("showBookshelfTriggerBtn"));
+        triggerCustomEvent("showBookshelfTriggerBtn");
     }
 }
 
@@ -199,6 +199,9 @@ export function showLoadingScreen() {
 
     // Fix icons location with/without scrollbar
     CONFIG.RUNTIME_VARS.STYLE.ui_btnOffset = "0px";
+
+    // Hide bookshelf trigger button if bookshelf is opened
+    triggerCustomEvent("hideBookshelfTriggerBtn");
 }
 
 /**
@@ -210,6 +213,9 @@ export function hideLoadingScreen() {
 
     // Fix icons location with/without scrollbar
     // CONFIG.RUNTIME_VARS.STYLE.ui_btnOffset = (-1 * parseInt(CONFIG.RUNTIME_VARS.STYLE.ui_scrollBarWidth)).toString() + "px";
+
+    // Show bookshelf trigger button if bookshelf is closed
+    triggerCustomEvent("showBookshelfTriggerBtn");
 }
 
 /**
@@ -251,23 +257,15 @@ export function hideContent() {
 export async function resetUI(refreshBookshelf = true, hardRefresh = true, sortBookshelf = true) {
     if (refreshBookshelf) {
         // Trigger bookshelf refresh event with parameters
-        document.dispatchEvent(
-            new CustomEvent("refreshBookList", {
-                detail: {
-                    hardRefresh,
-                    sortBookshelf,
-                },
-            })
-        );
+        triggerCustomEvent("refreshBookList", {
+            hardRefresh,
+            sortBookshelf,
+        });
     }
-    document.dispatchEvent(
-        new CustomEvent("updateUILanguage", {
-            detail: {
-                lang: CONFIG.RUNTIME_VARS.WEB_LANG,
-                saveToLocalStorage: true,
-            },
-        })
-    );
+    triggerCustomEvent("updateUILanguage", {
+        lang: CONFIG.RUNTIME_VARS.WEB_LANG,
+        saveToLocalStorage: true,
+    });
     resetVars();
     showDropZone();
     hideLoadingScreen();
@@ -602,28 +600,6 @@ export function setTOC_onRatio(initial = false) {
                 CONFIG.DOM_ELEMENT.TOC_CONTAINER.style.display = "block";
                 CONFIG.DOM_ELEMENT.PROGRESS_CONTAINER.style.display = "block";
             }
-        }
-    }
-}
-
-/**
- * Updates the pagination indicator
- * @public
- */
-export function updatePaginationIndicator() {
-    const paginationElement = document.querySelector(".pagination");
-    if (paginationElement) {
-        const existingIndicator = CONFIG.DOM_ELEMENT.PAGINATION_INDICATOR;
-        if (!existingIndicator) {
-            const processingItem = document.createElement("div");
-            processingItem.id = "pageProcessing";
-            const processingSpan = document.createElement("span");
-            processingSpan.classList.add("pagination-processing", "prevent-select");
-            processingSpan.textContent = CONFIG.RUNTIME_VARS.STYLE.ui_pagination_processing;
-            processingItem.appendChild(processingSpan);
-            paginationElement.appendChild(processingItem);
-            // const paginationBorder = document.querySelector("#pagination");
-            // paginationBorder.style.borderColor = CONFIG.RUNTIME_VARS.STYLE.mainColor_active;
         }
     }
 }

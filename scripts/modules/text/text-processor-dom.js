@@ -5,11 +5,11 @@
  *
  * @module modules/text/text-processor-dom
  * @requires config/variables-dom
- * @requires ui/reader
+ * @requires modules/features/reader
  */
 
 import * as CONFIG_DOM from "../../config/variables-dom.js";
-import { reader } from "../ui/reader.js";
+import { reader } from "../features/reader.js";
 
 /**
  * @class TextProcessorDOM
