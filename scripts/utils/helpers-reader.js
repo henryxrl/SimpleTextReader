@@ -627,31 +627,3 @@ export function getHistoryAndSetChapterTitleActive(gotoLineFunc, setActive = tru
         setChapterTitleActive(CONFIG.VARS.HISTORY_LINE_NUMBER);
     }
 }
-
-/**
- * Calculates page break points based on chapter structure and content
- * @public
- * @param {string[]} contentChunks - Array of content chunks
- * @param {Array} allTitles - Array of all titles
- * @param {boolean} isEasternLan - Whether the language is Eastern
- * @param {Object} paginationConfig - Pagination configuration
- * @returns {number[]} Array of line numbers where page breaks should occur
- */
-export function calculatePageBreaks(
-    contentChunks = CONFIG.VARS.FILE_CONTENT_CHUNKS,
-    allTitles = CONFIG.VARS.ALL_TITLES,
-    paginationConfig = {
-        ...CONFIG.CONST_PAGINATION,
-        PAGE_BREAK_ON_TITLE: CONFIG.RUNTIME_CONFIG.PAGE_BREAK_ON_TITLE,
-        IS_EASTERN_LAN: CONFIG.VARS.IS_EASTERN_LAN,
-        BOOK_AND_AUTHOR: CONFIG.VARS.BOOK_AND_AUTHOR,
-    }
-) {
-    try {
-        const calculator = new PaginationCalculator(contentChunks, allTitles, paginationConfig);
-        return calculator.calculate();
-    } catch (error) {
-        console.error("Error calculating page breaks:", error);
-        return [0];
-    }
-}

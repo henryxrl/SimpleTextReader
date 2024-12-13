@@ -81,6 +81,8 @@ class AppVariables {
         this.HISTORY_LINE_NUMBER = 0;
         /** @type {number} Title page line number offset */
         this.TITLE_PAGE_LINE_NUMBER_OFFSET = 0;
+        /** @type {boolean} Whether processing is ongoing */
+        this.IS_PROCESSING = false;
     }
 
     /**
@@ -111,6 +113,7 @@ class AppVariables {
         this.DRAG_COUNTER = 0;
         this.HISTORY_LINE_NUMBER = 0;
         this.TITLE_PAGE_LINE_NUMBER_OFFSET = 0;
+        this.IS_PROCESSING = false;
     }
 }
 

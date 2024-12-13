@@ -1,0 +1,322 @@
+@charset "UTF-8";
+.color-picker .range {
+    --tickEvery: 400;
+    --primaryColor: #000;
+    --progress-color: transparent;
+    --progress-shadow: unset;
+    --value-active-color: white;
+    --value-background: white;
+    --value-font: 700 12px/1 Arial;
+    --fill-color: var(--primaryColor);
+    --thumb-size: 21px;
+    --track-height: calc(var(--thumb-size) / 1.5);
+    --thumb-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+    --step: 1;
+    --completed: calc((var(--value) - var(--min)) / (var(--max) - var(--min)) * 100);
+    --show-min-max: none;
+    --LTR: 1;
+    display: inline-block;
+    height: max(var(--track-height), var(--thumb-size));
+    background: none;
+    position: relative;
+    z-index: 1;
+    padding-bottom: 0;
+    padding-top: 0;
+    margin: 0 0 calc((var(--thumb-size) - var(--track-height)) * -1);
+}
+.color-picker .range__progress {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%) translateZ(0);
+    width: 100%;
+    height: calc(var(--track-height));
+    pointer-events: none;
+    z-index: -1;
+    box-shadow: var(--progress-shadow);
+    border-radius: 20px;
+    background: var(--fill-color, white);
+}
+.color-picker .range__progress::after {
+    content: unset;
+}
+.color-picker .range > input {
+    --thumb-color: transparent;
+    --inner-shadow: 0 0 0 calc(var(--thumb-size) / 8) inset white;
+    -webkit-appearance: none;
+    width: 100%;
+    height: var(--thumb-size);
+    margin: 0;
+    cursor: -webkit-grab;
+    cursor: grab;
+    outline: none;
+    background: none;
+}
+.color-picker .range > input::-webkit-slider-thumb {
+    appearance: none;
+    height: var(--thumb-size);
+    width: var(--thumb-size);
+    border-radius: 50%;
+    background: var(--thumb-color, white);
+    border: 1px solid silver;
+    box-shadow: var(--inner-shadow, 0 0), var(--thumb-shadow);
+}
+.color-picker .range > input::-moz-range-thumb {
+    appearance: none;
+    height: var(--thumb-size);
+    width: var(--thumb-size);
+    border-radius: 50%;
+    background: var(--thumb-color, white);
+    border: 1px solid silver;
+    box-shadow: var(--inner-shadow, 0 0), var(--thumb-shadow);
+}
+.color-picker .range > input:active {
+    opacity: 0.7;
+    cursor: grabbing;
+}
+.color-picker .range > input:active + output {
+    transition: 0s;
+}
+.color-picker .range > input:hover + output {
+    --value-background: var(--primaryColor);
+    opacity: 1;
+    color: var(--value-active-color);
+    transform: translate(var(--x-offset), 0);
+    box-shadow: 0 0 0 3px var(--value-background);
+}
+.color-picker .range > output {
+    --x-offset: calc(var(--completed) * -1% * var(--LTR));
+    --pos: calc(((var(--value) - var(--min)) / (var(--max) - var(--min))) * 100%);
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: 5;
+    background: var(--value-background);
+    border-radius: 10px;
+    padding: 0 4px;
+    top: -3.5ch;
+    left: var(--pos);
+    transform: translate(var(--x-offset), 6px);
+    transition: all 0.12s ease-out, left 0s, top 0s;
+}
+.color-picker .range > output::before {
+    --size: 5px;
+    content: "";
+    top: calc(100% + 2px);
+    left: 50%;
+    border: solid rgba(0, 0, 0, 0);
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    border-top-color: var(--value-background);
+    border-width: var(--size);
+    margin-left: calc(var(--size) * -1);
+    transition: inherit;
+}
+.color-picker .range > output::after {
+    content: var(--text-value);
+    font: var(--value-font);
+}
+.color-picker {
+    --hue: 150;
+    --saturation: 100;
+    --lightness: 50;
+    --alpha: 100;
+    --s: calc(var(--saturation) * 1%);
+    --l: calc(var(--lightness) * 1%);
+    --a: calc(var(--alpha) * 1%);
+    --color: hsla(var(--hue), var(--s), var(--l), var(--a));
+    --checkboard-color: #ddd;
+    --checkboard-base-gradient: repeating-conic-gradient(var(--checkboard-color) 0% 25%, transparent 0% 50%);
+    --width: 320;
+    --width-units: 1px;
+    display: flex;
+    flex-flow: column;
+    gap: 0.5em;
+    width: calc(var(--width) * var(--width-units));
+    position: relative;
+    box-sizing: border-box;
+    transition: opacity 0.15s;
+    transition-timing-function: ease-out;
+}
+.color-picker__hue.range {
+    grid-area: hue;
+    --fill-color: linear-gradient(to right, red 0%, #ff0 16.6%, lime 33.3%, cyan 50%, blue 66.6%, #f0f 83.3%, red 100%);
+}
+.color-picker__saturation.range {
+    grid-area: saturation;
+    --fill-color: linear-gradient(to right, white, hsl(var(--hue), var(--s), 50%));
+}
+.color-picker__lightness.range {
+    grid-area: lightness;
+    --c: hsl(var(--hue), var(--s), 50%);
+    --fill-color: linear-gradient(to right, black, var(--c), white);
+}
+.color-picker__alpha.range {
+    grid-area: alpha;
+    --checkboard-size: 8px;
+    --fill-color: linear-gradient(to right, transparent, hsl(var(--hue), var(--s), var(--l))),
+        var(--checkboard-base-gradient) 0 / var(--checkboard-size) var(--checkboard-size);
+}
+.color-picker button {
+    cursor: pointer;
+    border: none;
+    background: none;
+    outline: none;
+}
+.cp-checkboard::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: inherit;
+    background: repeating-conic-gradient(var(--checkboard-color) 0% 25%, transparent 0% 50%) 0/12px 12px;
+}
+.color-picker > output {
+    grid-area: color;
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+    width: 50px;
+    background: hsla(var(--hue), var(--s), var(--l), var(--a));
+    box-shadow: 0 0 8px -5px;
+}
+.color-picker > output::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: repeating-conic-gradient(var(--checkboard-color) 0% 25%, transparent 0% 50%) 0/12px 12px;
+}
+.color-picker__value {
+    --isLightColor: Min(1, Max(50 - var(--lightness) - (100 - var(--alpha)), 0));
+    grid-area: value;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 10px;
+    color: hsl(var(--hue), 100%, calc(var(--isLightColor) * 100%));
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+}
+.color-picker__value input {
+    flex: 1;
+    order: 2;
+    cursor: text;
+    width: 0;
+    letter-spacing: -0.5px;
+    word-spacing: -3px;
+    font: 800 16px/2 monospace;
+    font-size: calc(var(--width) * var(--width-units) / 22);
+    text-transform: uppercase;
+    padding: 0;
+    text-align: center;
+    border: none;
+    outline: none;
+    background: none;
+    color: inherit;
+    transition: color 0.2s;
+}
+.color-picker__value input ~ div {
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: inherit;
+    background: var(--color);
+}
+.color-picker__value input:focus {
+    color: #000;
+}
+.color-picker__value input:focus ~ button {
+    transform: translateX(100%);
+}
+.color-picker__value input:focus + button {
+    transform: translateX(-100%);
+}
+.color-picker__value input:focus ~ div {
+    background: none;
+    transition: background 0.15s;
+    border: 3px solid var(--color);
+}
+.color-picker__value > button {
+    order: 3;
+    width: 1.5em;
+    background: none;
+    border: none;
+    font: 22px/1.2 monospace;
+    outline: none;
+    color: inherit;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s, transform 0.2s ease-out;
+}
+.color-picker__value > button[name="undo"] {
+    order: 1;
+}
+.color-picker__swatches {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 3px;
+}
+.color-picker__swatches > button {
+    --shadow-size: 2px;
+    order: 0;
+    padding: 12px;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: var(--c);
+    font-size: 18px;
+    line-height: 1px;
+    text-indent: -6px;
+    transition: 0.1s;
+    box-shadow: 0 0 0 var(--shadow-size) inset var(--color);
+}
+.color-picker__swatches > button:hover:not(:active) {
+    --shadow-size: 4px;
+}
+.color-picker__swatch {
+    order: 1;
+    padding: 12px;
+    line-height: 0;
+    border-radius: 50%;
+    background: var(--c);
+    position: relative;
+    cursor: pointer;
+    transition: 0.15s ease-in-out;
+}
+.color-picker__swatch:hover {
+    transition: 50ms;
+}
+.color-picker__swatch:hover > button {
+    opacity: 1;
+}
+.color-picker__swatch.cp_remove {
+    padding: 0;
+    pointer-events: none;
+    transition: 0.2s;
+}
+.color-picker__swatch > button {
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    line-height: 0.1;
+    color: #000;
+    font-weight: 800;
+    text-shadow: 0 3px #fff, -2px 1px #fff;
+} /*# sourceMappingURL=styles.css.map */

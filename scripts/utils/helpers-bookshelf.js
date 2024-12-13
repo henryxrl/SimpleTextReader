@@ -70,7 +70,7 @@ export function getIsOnServer(filename) {
  * @param {boolean} isFromLocal - Whether the book is from local storage
  */
 export function setIsFromLocal(filename, isFromLocal) {
-    let final_isFromLocal = isFromLocal || false;
+    let final_isFromLocal = isFromLocal && true;
     localStorage.setItem(`${filename}_isFromLocal`, final_isFromLocal);
 }
 

@@ -53,15 +53,15 @@ Big thanks to [Manjusaka](https://github.com/Zheaoli) for his amazing help and h
 
 ### Firefox
 
-- [SimpleTextReader (v1.6.3)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
+- [SimpleTextReader (v1.6.5)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
 
 ### Chrome
 
-- [SimpleTextReader (v1.6.3)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
+- [SimpleTextReader (v1.6.5)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
 
 ### Edge
 
-- [SimpleTextReader (v1.6.3)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
+- [SimpleTextReader (v1.6.5)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
 
 ### Docker
 
@@ -102,22 +102,36 @@ To use URL parameters, append `?param` to the end of the URL. To use multiple pa
 
     [2] Previously processed files can be reopened without processing, further reducing loading time. This feature can be turned of by adding `?always-process` option at the end of the URL.
 
+    - To manually force reprocess a book, hold **Alt** and click (Windows/Linux) or **Option** and click (Mac) on the book. This achieves the same effect as adding the `?always-process` option but applies to a single book only.
+
     [3] Interface operations are smooth and free from lag.
 
-3. New pagination logic.
+3. Enhanced chapter title detection logic.
 
-4. New table of contents display: When the cursor is outside the table of contents area, only the simplified chapter title is displayed, applicable to both Chinese and English novels. For example, `Chapter 6. The Deputy Procureur du Roi.` will be simplified to `The Deputy Procureur du Roi.`. When the cursor moves back into the table of contents area, the full chapter title will be displayed.
+    - In addition to predefined regular expressions, v1.6.4 introduces the ability to automatically detect title patterns from the text file and dynamically add them to the regex rule library, significantly improving the accuracy of title extraction.
+
+4. New pagination logic.
+
+5. New table of contents display: When the cursor is outside the table of contents area, only the simplified chapter title is displayed, applicable to both Chinese and English novels. For example, `Chapter 6. The Deputy Procureur du Roi.` will be simplified to `The Deputy Procureur du Roi.`. When the cursor moves back into the table of contents area, the full chapter title will be displayed.
    <img src="assets/5_TOC_en.gif" alt="TOC" height="500" />
 
-5. "Finishing up" reading progress indicator.
+6. Added a toolbar in the main interface with features including:
 
-6. Optimized book cover generation.
+    - Categorizing books by reading status
 
-7. Smoother UI language switching.
+    - Displaying book count statistics
 
-8. Updated default font to "Kinghwa Old Song" to avoid potential copyright issues.
+    - Providing a "remove all books" button with a confirmation prompt to prevent accidental actions
 
-9. Resolved various minor bugs, enhancing stability and user experience.
+7. "Finishing up" reading progress indicator.
+
+8. Optimized book cover generation.
+
+9. Smoother UI language switching.
+
+10. Updated default font to "Kinghwa Old Song" to avoid potential copyright issues.
+
+11. Resolved various minor bugs, enhancing stability and user experience.
 
 **NOTE: Starting from v1.6, the No-UI version has been discontinued. All features previously available in the No-UI version, including support for opening local `.txt` files via `file://*.txt` URLs, are now fully integrated into the Regular version.**
 

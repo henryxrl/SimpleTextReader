@@ -640,6 +640,10 @@ export function outerHeight(element) {
  * @param {HTMLElement} footnoteContainer - Footnote container element
  */
 export function addFootnotesToDOM(footnotes, footnoteContainer) {
+    // clear footnote container
+    footnoteContainer.innerHTML = "";
+
+    // add footnotes to footnote container
     footnotes.forEach((footnote) => {
         const tempElement = document.createElement("div");
         tempElement.innerHTML = footnote;
@@ -662,4 +666,16 @@ export function triggerCustomEvent(eventName, detail = {}, bubbles = true, cance
     });
 
     document.dispatchEvent(event);
+}
+
+/**
+ * Dynamically sets the stroke-dasharray and stroke-dashoffset for SVG paths for animation
+ * @param {HTMLElement} container - Container element
+ */
+export function setSvgPathLength(container) {
+    const paths = container.querySelectorAll("svg .tofill");
+    paths.forEach((path) => {
+        const len = path.getTotalLength() + 1;
+        path.style.setProperty("--ui_svgPathLength", len);
+    });
 }

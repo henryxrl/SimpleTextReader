@@ -86,7 +86,7 @@ svg.icon {
 #toggle:hover ~ #toggle-btn label,
 .btn-icon:hover:not(:focus) {
     /* light mode */
-    background: rgba(125, 125, 125, 0.1);
+    background: var(--btnHoverColor);
 }
 
 .btn-group {
@@ -107,4 +107,15 @@ svg.icon {
     bottom: calc(var(--ui_btnGap) + var(--ui_scrollBarWidth));
     left: calc(var(--ui_btnGap) + var(--ui_scrollBarWidth) + var(--ui_btnOffset));
     z-index: 1005;
+}
+
+svg .tofill {
+    stroke-dasharray: var(--ui_svgPathLength);
+    stroke-dashoffset: var(--ui_svgPathLength);
+    animation: stroke 2s forwards;
+}
+@keyframes stroke {
+    to {
+        stroke-dashoffset: 0;
+    }
 }

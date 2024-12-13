@@ -16,9 +16,11 @@
  * Credit: https://stackoverflow.com/questions/267399/how-do-you-match-only-valid-roman-numerals-with-a-regular-expression
  * Credit: https://stackoverflow.com/questions/19620735/make-regular-expression-not-match-empty-string
  * @type {Object}
+ * @public
+ * @see {@link REGEX_RULES} Regular expression rules used for text processing
  */
-const REGEX_COMPONENTS = {
-    NUMBER_CHINESE: "一二两三四五六七八九十○零百千万壹贰叁肆伍陆柒捌玖拾佰仟萬首末0-9０-９",
+export const REGEX_COMPONENTS = {
+    NUMBER_CHINESE: "一二两三四五六七八九十○零百千万壹贰叁肆伍陆柒捌玖拾佰仟萬首末０-９0-9",
     NUMBER_ENGLISH_AND_ROMAN_NUMERALS:
         "(?:[0-9]+|[ⅡⅢⅣⅥⅦⅧⅨⅪⅫↀↁↂↇↈⅱⅲⅳⅵⅶⅷⅸⅺⅻ]|\\b(?<!\\w)(?:M{0,4}(?:CM|CD|D?C{0,3})(?:XC|XL|L?X{0,3})(?:IX|IV|V?I{0,3}))\\b(?!\\w)|\\b(?<!\\w)(?:m{0,4}(?:cm|cd|d?c{0,3})(?:xc|xl|l?x{0,3})(?:ix|iv|v?i{0,3}))\b(?!\\w))",
     TITLES_CHINESE: {
@@ -28,7 +30,7 @@ const REGEX_COMPONENTS = {
         POST_2: "\\s/\\.、\\]】]+)\\s*",
     },
     TITLES_CHINESE_OTHER:
-        "内容简介|內容簡介|内容介绍|內容介紹|内容梗概|内容大意|小说简介|小說簡介|小说介绍|小說介紹|小说大意|小說大意|书籍简介|書籍簡介|书籍介绍|書籍介紹|书籍大意|書籍大意|作品简介|作品簡介|作品介绍|作品介紹|作品大意|作品相关|作者简介|作者簡介|作者介绍|作者介紹|作品相關|简介|簡介|介绍|介紹|大意|梗概|序|代序|自序|序言|序章|序幕|前言|楔子|引言|引子|终章|終章|大结局|结局|结尾|尾声|尾聲|后记|後記|完本|完本感言|完结|完结感言|出版后记|出版後記|谢辞|謝辭|番外|番外篇|编辑推荐|編輯推薦|书籍相关|書籍相關|作者声明|作者聲明|译者序|譯者序|外篇|附錄|附录|短篇|创作背景|創作背景|作品原文|白话译文|白話譯文|献言|獻言|编辑评价|編輯評價|作品简评|作品簡評|文案|外传|外傳|写作杂谈|寫作雜談|写作感言|寫作感言",
+        "内容简介|內容簡介|内容介绍|內容介紹|内容梗概|内容大意|小说简介|小說簡介|小说介绍|小說介紹|小说大意|小說大意|书籍简介|書籍簡介|书籍介绍|書籍介紹|书籍大意|書籍大意|作品简介|作品簡介|作品介绍|作品介紹|作品大意|作品相关|作者简介|作者簡介|作者介绍|作者介紹|作品相關|简介|簡介|大意|梗概|序|代序|自序|序言|序章|序幕|前言|楔子|引言|引子|终章|終章|大结局|结局|结尾|尾声|尾聲|后记|後記|完本|完本感言|完结|完结感言|出版后记|出版後記|谢辞|謝辭|番外|番外篇|编辑推荐|編輯推薦|书籍相关|書籍相關|作者声明|作者聲明|译者序|譯者序|外篇|附錄|附录|短篇|创作背景|創作背景|作品原文|白话译文|白話譯文|献言|獻言|编辑评价|編輯評價|作品简评|作品簡評|文案|外传|外傳|写作杂谈|寫作雜談|写作感言|寫作感言",
     TITLES_ENGLISH: "chapter|part|section|subsection|appendix|note|reference|addendum",
     TITLES_ENGLISH_OTHER:
         "accolades|appendices|addenda|addendums|preface|foreword|introduction|prologue|epigraph|table of contents|epilogue|afterword|conclusion|glossary|acknowledgements|bibliography|index|errata|colophon|abstract|postscript|contents|list of illustrations|list of tables|notes|note|references|reference|title page|copyright page|dedication|about the author|about the translator|about the editor|about the illustrator|about the publisher|about the series|about the book|credits|credit|prefatory note|prefatory notes|proem|prolegomenon|prefatory material|prefatory matter|endpapers|endpaper|endnotes|endnote|edition",
@@ -38,8 +40,9 @@ const REGEX_COMPONENTS = {
  * Constructs title matching rules
  * Builds a complete set of title matching rules based on basic components.
  * @returns {Array<string>} Array of title matching rules.
+ * @public
  */
-const buildTitleRules = () => {
+const buildTitleRules = (detectTitlePatterns = []) => {
     const {
         NUMBER_CHINESE,
         NUMBER_ENGLISH_AND_ROMAN_NUMERALS,
@@ -52,7 +55,7 @@ const buildTitleRules = () => {
     const TITLES_CHINESE_2 = TITLES_CHINESE.PRE_2 + NUMBER_CHINESE + TITLES_CHINESE.POST_2;
     const TITLES_CHINESE_3 = "\\s*([" + NUMBER_CHINESE.slice(0, -6) + TITLES_CHINESE.POST_1;
 
-    return [
+    const baselineRules = [
         // `^(\\s*(正文\\s*)?[${NUMBER_CHINESE.slice(0, -6)}]*\\s*$)`,
         `^(\\s*[\\[【](正文\\s*)?[${NUMBER_CHINESE.slice(0, -6)}]*[\\]】]\\s*$)`,
         `^(\\s*(正文\\s*)?${TITLES_CHINESE_1}\\s*$)`,
@@ -69,24 +72,51 @@ const buildTitleRules = () => {
         `^(\\s*[\\[【](正文\\s*)?${TITLES_CHINESE_3}[:：\\s]\\s*(.+)[\\]】]\\s*$)`,
         `^(\\s*(${TITLES_CHINESE_OTHER})[:：]?\\s*$)`,
         `^(\\s*[\\[【](${TITLES_CHINESE_OTHER})[\\]】][:：]?\\s*$)`,
-        `^(\\s*(${TITLES_CHINESE_OTHER})[:：\\s]\\s*(.+)\\s*$)`,
-        `^(\\s*[\\[【](${TITLES_CHINESE_OTHER})[:：\\s]\\s*(.+)[\\]】]\\s*$)`,
+        `^(\\s*(${TITLES_CHINESE_OTHER})[:：\\s](.+)\\s*$)`,
+        `^(\\s*[\\[【](${TITLES_CHINESE_OTHER})[:：\\s](.+)[\\]】]\\s*$)`,
         `^(\\s*((${TITLES_ENGLISH})[\\.:\\s]?\\s*(${NUMBER_ENGLISH_AND_ROMAN_NUMERALS}))[:\\.\\s]?\\s*$)`,
         `^(\\s*((${TITLES_ENGLISH})[\\.:\\s]?\\s*(${NUMBER_ENGLISH_AND_ROMAN_NUMERALS}))[:\\.\\s]?\\s*(.{0,50})$)`,
         `^(\\s*(${TITLES_ENGLISH_OTHER})[:\\.\\s]?\\s*$)`,
         `^(\\s*(${TITLES_ENGLISH_OTHER})[:\\.\\s]?\\s*(.{0,50})$)`,
     ];
+
+    const namedBaselineRules = baselineRules.map((rule, index) => {
+        return `(?<base__${index}>${rule})`;
+        // return rule;
+    });
+
+    const namedCustomRules = detectTitlePatterns.map((rule, index) => {
+        return `(?<custom__${index}>${rule})`;
+        // return rule;
+    });
+
+    // console.log(namedBaselineRules);
+    // console.log(namedCustomRules);
+    // console.log(namedBaselineRules.concat(namedCustomRules));
+
+    return namedBaselineRules.concat(namedCustomRules);
+};
+
+/**
+ * Updates title matching rules
+ * @param {Array<string>} detectTitlePatterns - Array of custom title patterns.
+ * @public
+ */
+export const updateTitleRules = (detectTitlePatterns = []) => {
+    REGEX_RULES.TITLES = buildTitleRules(detectTitlePatterns);
 };
 
 /**
  * Exported regex rules set
  * Contains all regex rules used for text processing.
  * @type {Object}
+ * @public
+ * @see {@link buildTitleRules} Builds title matching rules
  */
 export const REGEX_RULES = {
     TITLES: buildTitleRules(),
     LANGUAGE: /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f\u3131-\uD79D]+/,
-    PUNCTUATION: /\p{P}/u,
+    PUNCTUATION: /\p{P}\p{S}/u,
     FOOTNOTE: /[\u24EA\u2460-\u2473\u3251-\u325F\u32B1-\u32BF]/gu,
     SYMBOLS: "[※★☆◎━┏┓┗┛╰●╯]+",
     HTTP: "(http[s]?[:：]//)?",
@@ -114,6 +144,8 @@ export const REGEX_RULES = {
  * @param {string} bookAndAuthor.bookNameRE - Regex pattern for book name.
  * @param {string} bookAndAuthor.authorRE - Regex pattern for author name.
  * @returns {Object} Object containing regex rules for various sources.
+ * @public
+ * @see {@link REGEX_RULES} Regular expression rules used for text processing
  */
 export const generateAdsRules = (bookAndAuthor) => ({
     EN: () => [
@@ -187,5 +219,9 @@ export const generateAdsRules = (bookAndAuthor) => ({
     ],
     TTSW: () => [
         `^(\\s*(欢迎访问)${REGEX_RULES.PUNC}(天天书屋)${REGEX_RULES.PUNC}(网址)${REGEX_RULES.COLON}(${REGEX_RULES.HTTP}www.ttshu.com${REGEX_RULES.HTTP_END})${REGEX_RULES.PUNC}(本站提供手机铃声)${REGEX_RULES.PUNC}(手机电影)${REGEX_RULES.PUNC}(mtv)${REGEX_RULES.PUNC}(网络小说)${REGEX_RULES.PUNC}(手机智能软件)${REGEX_RULES.PUNC}(手机游戏等最新下载)${REGEX_RULES.PUNC}(让你的手机应用丰富多彩)${REGEX_RULES.PUNC}\\s*$)`,
+    ],
+    SOUSHUBA: () => [
+        `^(\\s*(本书下载自搜书吧)${REGEX_RULES.COLON}(${REGEX_RULES.HTTP}www.soushu2022.com${REGEX_RULES.HTTP_END})\\s*$)`,
+        `^(\\s*(备用地址)${REGEX_RULES.COLON}(${REGEX_RULES.HTTP}www.soushu2023.com${REGEX_RULES.HTTP_END})\\s*$)`,
     ],
 });

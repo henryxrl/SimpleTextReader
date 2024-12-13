@@ -12,16 +12,14 @@
 }
 @font-face {
     font-family: "fzkai";
-    src: local("方正楷体"), local("FZKai"), local("FZKaiTi"), local("FZKai-Z03S"),
-        url(../fonts/FZKTK.woff2) format("woff2");
+    src: local("方正楷体"), local("FZKai"), local("FZKaiTi"), local("FZKai-Z03S");
     font-display: swap;
 }
 @font-face {
     font-family: "fzskbxk";
     src: local("方正宋刻本秀楷简体"), local("方正宋刻本秀楷简繁"), local("方正宋刻本秀楷_GBK"),
         local("FZSongKeBenXiuKai-R-GBK"), local("FZSongKeBenXiuKaiJF"), local("FZSongKeBenXiuKaiS-R-JF"),
-        local("FZSongKeBenXiuKaiS-R-GB"), local("FZSongKeBenXiuKaiF"),
-        url(../fonts/FZSKBXKK.woff2) format("woff2");
+        local("FZSongKeBenXiuKaiS-R-GB"), local("FZSongKeBenXiuKaiF");
     font-display: swap;
 }
 @font-face {
@@ -83,6 +81,7 @@
     --ui_footnoteImgSize: 12px;
     --ui_paginationBottom: 30px;
     --ui_paginationOpacity: 1;
+    --ui_svgPathLength: 0;
 
     /* UI strings */
     --ui_Mode: light;
@@ -203,6 +202,59 @@
     --ui_tooltip_bookshelf_scrollBottom: "";
     --ui_tooltip_bookshelf_scrollBottom_zh: 书架底部;
     --ui_tooltip_bookshelf_scrollBottom_en: To Bottom;
+    --ui_tooltip_book_altClick: "";
+    --ui_tooltip_book_altClick_zh: Alt / Option + 单击：强制重新处理书籍;
+    --ui_tooltip_book_altClick_en: Alt / Option + click: Force reprocess the book;
+    --ui_bookshelf_filterBtn_all: "";
+    --ui_bookshelf_filterBtn_all_zh: 所有书籍;
+    --ui_bookshelf_filterBtn_all_en: All Books;
+    --ui_bookshelf_filterBtn_chinese: "";
+    --ui_bookshelf_filterBtn_chinese_zh: 中文书籍;
+    --ui_bookshelf_filterBtn_chinese_en: Chinese;
+    --ui_bookshelf_filterBtn_english: "";
+    --ui_bookshelf_filterBtn_english_zh: 英文书籍;
+    --ui_bookshelf_filterBtn_english_en: English;
+    --ui_bookshelf_filterBtn_unread: "";
+    --ui_bookshelf_filterBtn_unread_zh: 未读;
+    --ui_bookshelf_filterBtn_unread_en: Unread;
+    --ui_bookshelf_filterBtn_finishing: "";
+    --ui_bookshelf_filterBtn_finishing_zh: 快读完;
+    --ui_bookshelf_filterBtn_finishing_en: Finishing;
+    --ui_bookshelf_filterBtn_inProgress: "";
+    --ui_bookshelf_filterBtn_inProgress_zh: 正在读;
+    --ui_bookshelf_filterBtn_inProgress_en: In Progress;
+    --ui_bookshelf_filterBtn_finished: "";
+    --ui_bookshelf_filterBtn_finished_zh: 已读完;
+    --ui_bookshelf_filterBtn_finished_en: Finished;
+    --ui_bookshelf_filterBtn_counter_prefix: "";
+    --ui_bookshelf_filterBtn_counter_prefix_zh: 共计：;
+    --ui_bookshelf_filterBtn_counter_prefix_en: Total:;
+    --ui_bookshelf_filterBtn_counter_suffix: "";
+    --ui_bookshelf_filterBtn_counter_suffix_zh: 本;
+    --ui_bookshelf_filterBtn_counter_suffix_en: book;
+
+    /* UI bookshelf remove all strings */
+    --ui_bookshelf_removeAllBooks: "";
+    --ui_bookshelf_removeAllBooks_zh: 删除所有书籍;
+    --ui_bookshelf_removeAllBooks_en: Remove All Books;
+    --ui_removeAllBooks_confirm_title: "";
+    --ui_removeAllBooks_confirm_title_zh: 确认删除所有书籍吗？;
+    --ui_removeAllBooks_confirm_title_en: Remove ALL books?;
+    --ui_removeAllBooks_confirm_text: "";
+    --ui_removeAllBooks_confirm_text_zh: 此操作无法撤销！;
+    --ui_removeAllBooks_confirm_text_en: This action cannot be undone.;
+    --ui_removeAllBooks_confirm_btn: "";
+    --ui_removeAllBooks_confirm_btn_zh: 确认;
+    --ui_removeAllBooks_confirm_btn_en: Confirm;
+    --ui_removeAllBooks_cancel_btn: "";
+    --ui_removeAllBooks_cancel_btn_zh: 取消;
+    --ui_removeAllBooks_cancel_btn_en: Cancel;
+    --ui_removeAllBooks_success_title: "";
+    --ui_removeAllBooks_success_title_zh: 已删除！;
+    --ui_removeAllBooks_success_title_en: Removed!;
+    --ui_removeAllBooks_success_text: "";
+    --ui_removeAllBooks_success_text_zh: 所有书籍已被删除。;
+    --ui_removeAllBooks_success_text_en: All books have been removed.;
 
     /* UI bookshelf variables */
     --ui_bookshadow: 5px 5px 10px -5px black, inset 0px -10px 10px var(--mainColor_active);
@@ -278,6 +330,7 @@
 
     --fontInfoColor: gray;
     --fontColor: black;
+    --btnHoverColor: rgba(125, 125, 125, 0.1);
 
     /* Font variables */
     --fontFamily_title: "";
@@ -375,6 +428,23 @@
     --ui_tooltip_modeToggle: var(--ui_tooltip_modeToggle_zh);
     --ui_tooltip_settings: var(--ui_tooltip_settings_zh);
     --ui_pagination_processing: var(--ui_pagination_processing_zh);
+    --ui_tooltip_book_altClick: var(--ui_tooltip_book_altClick_zh);
+    --ui_bookshelf_filterBtn_all: var(--ui_bookshelf_filterBtn_all_zh);
+    --ui_bookshelf_filterBtn_chinese: var(--ui_bookshelf_filterBtn_chinese_zh);
+    --ui_bookshelf_filterBtn_english: var(--ui_bookshelf_filterBtn_english_zh);
+    --ui_bookshelf_filterBtn_unread: var(--ui_bookshelf_filterBtn_unread_zh);
+    --ui_bookshelf_filterBtn_finishing: var(--ui_bookshelf_filterBtn_finishing_zh);
+    --ui_bookshelf_filterBtn_inProgress: var(--ui_bookshelf_filterBtn_inProgress_zh);
+    --ui_bookshelf_filterBtn_finished: var(--ui_bookshelf_filterBtn_finished_zh);
+    --ui_bookshelf_filterBtn_counter_prefix: var(--ui_bookshelf_filterBtn_counter_prefix_zh);
+    --ui_bookshelf_filterBtn_counter_suffix: var(--ui_bookshelf_filterBtn_counter_suffix_zh);
+    --ui_bookshelf_removeAllBooks: var(--ui_bookshelf_removeAllBooks_zh);
+    --ui_removeAllBooks_confirm_title: var(--ui_removeAllBooks_confirm_title_zh);
+    --ui_removeAllBooks_confirm_text: var(--ui_removeAllBooks_confirm_text_zh);
+    --ui_removeAllBooks_confirm_btn: var(--ui_removeAllBooks_confirm_btn_zh);
+    --ui_removeAllBooks_cancel_btn: var(--ui_removeAllBooks_cancel_btn_zh);
+    --ui_removeAllBooks_success_title: var(--ui_removeAllBooks_success_title_zh);
+    --ui_removeAllBooks_success_text: var(--ui_removeAllBooks_success_text_zh);
 }
 
 [data-lang="en"] {
@@ -431,6 +501,23 @@
     --ui_tooltip_modeToggle: var(--ui_tooltip_modeToggle_en);
     --ui_tooltip_settings: var(--ui_tooltip_settings_en);
     --ui_pagination_processing: var(--ui_pagination_processing_en);
+    --ui_tooltip_book_altClick: var(--ui_tooltip_book_altClick_en);
+    --ui_bookshelf_filterBtn_all: var(--ui_bookshelf_filterBtn_all_en);
+    --ui_bookshelf_filterBtn_chinese: var(--ui_bookshelf_filterBtn_chinese_en);
+    --ui_bookshelf_filterBtn_english: var(--ui_bookshelf_filterBtn_english_en);
+    --ui_bookshelf_filterBtn_unread: var(--ui_bookshelf_filterBtn_unread_en);
+    --ui_bookshelf_filterBtn_finishing: var(--ui_bookshelf_filterBtn_finishing_en);
+    --ui_bookshelf_filterBtn_inProgress: var(--ui_bookshelf_filterBtn_inProgress_en);
+    --ui_bookshelf_filterBtn_finished: var(--ui_bookshelf_filterBtn_finished_en);
+    --ui_bookshelf_filterBtn_counter_prefix: var(--ui_bookshelf_filterBtn_counter_prefix_en);
+    --ui_bookshelf_filterBtn_counter_suffix: var(--ui_bookshelf_filterBtn_counter_suffix_en);
+    --ui_bookshelf_removeAllBooks: var(--ui_bookshelf_removeAllBooks_en);
+    --ui_removeAllBooks_confirm_title: var(--ui_removeAllBooks_confirm_title_en);
+    --ui_removeAllBooks_confirm_text: var(--ui_removeAllBooks_confirm_text_en);
+    --ui_removeAllBooks_confirm_btn: var(--ui_removeAllBooks_confirm_btn_en);
+    --ui_removeAllBooks_cancel_btn: var(--ui_removeAllBooks_cancel_btn_en);
+    --ui_removeAllBooks_success_title: var(--ui_removeAllBooks_success_title_en);
+    --ui_removeAllBooks_success_text: var(--ui_removeAllBooks_success_text_en);
 }
 
 #dropZoneText::before {

@@ -55,7 +55,7 @@ export const reader = {
         tocScroller.id = "tocScroller";
 
         const tocConfig = {
-            itemHeight: this.EM_IN_PX_TOC * 2.8, // refer to ui.css - 1.2em (font size) + 0.3em (top margin) + 1.3em (bottom margin) = 2.8em
+            itemHeight: reader.EM_IN_PX_TOC * 2.8, // refer to ui.css - 1.2em (font size) + 0.3em (top margin) + 1.3em (bottom margin) = 2.8em
             total: CONFIG.VARS.ALL_TITLES.length,
             reverse: false,
             scrollerTagName: "div",
@@ -66,9 +66,9 @@ export const reader = {
             generate(i) {
                 const titleContainer = document.createElement("div");
 
-                if (CONFIG.VARS.ALL_TITLES.length > 0) {
+                if (CONFIG.VARS.ALL_TITLES && CONFIG.VARS.ALL_TITLES.length > 0) {
                     this.latestTitleIndex = i;
-                    const [title, lineNum, shortTitle] = CONFIG.VARS.ALL_TITLES[i];
+                    const [title, lineNum, shortTitle, isCustomOnly] = CONFIG.VARS.ALL_TITLES[i];
                     this.latestLineNum = lineNum;
                     // console.log(`[${i}/${CONFIG.VARS.ALL_TITLES.length}] ${lineNum} - ${title}`);
 
@@ -82,10 +82,13 @@ export const reader = {
                     const activeTitleToken = isCurrentTitleActive ? " toc-active" : "";
 
                     titleContainer.classList.add("chapter-title-container");
+                    titleContainer.classList.add(isCustomOnly ? "title-custom" : "title-base");
                     if (isCurrentTitleActive) {
                         titleContainer.classList.add(activeTitleToken.trim());
                     }
                     titleContainer.id = `title_${lineNum}`;
+                    titleContainer.dataset.index = i;
+                    titleContainer.dataset.lineNum = lineNum;
                     titleContainer.innerHTML = `
                         <a id="a${lineNum}_bull" href="#line${lineNum}" class="prevent-select toc-bullet${activeTitleToken}" style="cursor: pointer;"></a>
                         <a id="a${lineNum}" href="#line${lineNum}" class="prevent-select toc-text title-original${activeTitleToken}" style="cursor: pointer;">${title}</a>
@@ -97,7 +100,7 @@ export const reader = {
             },
 
             afterRender() {
-                if (CONFIG.VARS.ALL_TITLES.length > 0) {
+                if (CONFIG.VARS.ALL_TITLES && CONFIG.VARS.ALL_TITLES.length > 0) {
                     const height = parseFloat(tocScroller.style.height);
                     const percentage = (tocContainer.scrollTop / height) * 100;
 
@@ -140,7 +143,9 @@ export const reader = {
                                 lineNum: this.latestLineNum,
                             });
                         } else {
-                            console.log("Warning: ToC not fully rendered even after timeout");
+                            console.log(
+                                `Warning: ToC not fully rendered even after timeout. latestTitleIndex: ${this.latestTitleIndex}, latestLineNum: ${this.latestLineNum}`
+                            );
                         }
                     }, 100); // Increase timeout duration if necessary
                 }
@@ -167,7 +172,8 @@ export const reader = {
      */
     showCurrentPageContent() {
         try {
-            const maxLines = CONFIG.VARS.FILE_CONTENT_CHUNKS.length;
+            const contentChunks = CONFIG.VARS.FILE_CONTENT_CHUNKS;
+            const maxLines = contentChunks.length;
             const startIndex = CONFIG.VARS.PAGE_BREAKS[CONFIG.VARS.CURRENT_PAGE - 1] || 0;
             const endIndex = CONFIG.VARS.PAGE_BREAKS[CONFIG.VARS.CURRENT_PAGE] || maxLines;
             // console.log("pageBreaks: ", CONFIG.VARS.PAGE_BREAKS);
@@ -175,41 +181,28 @@ export const reader = {
             // console.log("startIndex: ", startIndex, "endIndex: ", endIndex);
 
             CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.innerHTML = "";
-            let shouldDropCap = false;
 
             // process line by line - fast
             if (maxLines > 0) {
-                const contentChunks = CONFIG.VARS.FILE_CONTENT_CHUNKS;
-                for (let j = startIndex; j < Math.min(endIndex, contentChunks.length); j++) {
+                for (let j = startIndex; j < Math.min(endIndex, maxLines); j++) {
                     const currentLine = contentChunks[j];
-                    if (currentLine.trim()) {
-                        const [processedContent, lineType] = TextProcessor.process(
-                            currentLine,
-                            j,
-                            contentChunks.length,
-                            shouldDropCap
-                        );
-                        shouldDropCap = lineType === "h";
-                        // CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.innerHTML += processedResult[0];
+                    if (typeof currentLine === "object") {
+                        // v1.6.4 and above
+                        const [processedContent, lineType] = TextProcessor.createDOM(currentLine);
                         CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.appendChild(processedContent);
+                    } else {
+                        // v1.6.3 and below
+                        if (currentLine.trim()) {
+                            const [processedContent, lineType] = TextProcessor.processAndCreateDOM(
+                                currentLine,
+                                j,
+                                j < CONFIG.VARS.TITLE_PAGE_LINE_NUMBER_OFFSET || j === maxLines - 1
+                            );
+                            CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.appendChild(processedContent);
+                        }
                     }
                 }
             }
-
-            // process 20 line at a time - fast
-            // const line_step = 20;
-            // for (let j = startIndex; j < endIndex && j < CONFIG.VARS.FILE_CONTENT_CHUNKS.length; j+=line_step) {
-            //     const preElement = document.createElement("pre");
-            //     preElement.style.whiteSpace = 'pre-wrap'; // Enable word wrapping
-            //     preElement.innerHTML = process_batch(CONFIG.VARS.FILE_CONTENT_CHUNKS.slice(j, j+line_step).join('\n'));
-            //     CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.appendChild(preElement);
-            // }
-
-            // process one page at a time - slow
-            // const preElement = document.createElement("pre");
-            // preElement.style.whiteSpace = 'pre-wrap'; // Enable word wrapping
-            // preElement.innerHTML = process_batch(CONFIG.VARS.FILE_CONTENT_CHUNKS.join('\n'));
-            // CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.appendChild(preElement);
 
             // set up footnote
             getFootnotes();
@@ -234,7 +227,8 @@ export const reader = {
         const showPages = this._getPageList(
             CONFIG.VARS.TOTAL_PAGES,
             CONFIG.VARS.CURRENT_PAGE,
-            parseInt(CONFIG.RUNTIME_VARS.STYLE.ui_numPaginationItems)
+            parseInt(CONFIG.RUNTIME_VARS.STYLE.ui_numPaginationItems),
+            CONFIG.VARS.IS_PROCESSING
         );
 
         for (let i = 1; i <= showPages.length; i++) {
@@ -458,7 +452,7 @@ export const reader = {
      * @throws {Error} If maxLength is less than 5.
      * @private
      */
-    _getPageList(totalPages, currentPage, maxLength) {
+    _getPageList(totalPages, currentPage, maxLength, duringProcessing = false) {
         if (maxLength < 5) {
             throw new Error("maxLength must be at least 5");
         }
@@ -475,24 +469,39 @@ export const reader = {
         }
 
         if (currentPage <= maxLength - sideWidth - 1 - rightWidth) {
-            return [...range(1, maxLength - sideWidth - 1), 0, ...range(totalPages - sideWidth + 1, totalPages)];
+            const pageList = [
+                ...range(1, maxLength - sideWidth - 1),
+                0,
+                ...range(totalPages - sideWidth + 1, totalPages),
+            ];
+            const pageList_duringProcessing = [...range(1, maxLength - sideWidth - 1), 0];
+            return duringProcessing ? pageList_duringProcessing : pageList;
         }
 
         if (currentPage >= totalPages - sideWidth - 1 - rightWidth) {
-            return [
+            const pageList = [
                 ...range(1, sideWidth),
                 0,
                 ...range(totalPages - sideWidth - 1 - rightWidth - leftWidth, totalPages),
             ];
+            const pageList_duringProcessing = [...range(1, sideWidth), 0];
+            return duringProcessing ? pageList_duringProcessing : pageList;
         }
 
-        return [
+        const pageList = [
             ...range(1, sideWidth),
             0,
             ...range(currentPage - leftWidth, currentPage + rightWidth),
             0,
             ...range(totalPages - sideWidth + 1, totalPages),
         ];
+        const pageList_duringProcessing = [
+            ...range(1, sideWidth),
+            0,
+            ...range(currentPage - leftWidth, currentPage + rightWidth),
+            0,
+        ];
+        return duringProcessing ? pageList_duringProcessing : pageList;
     },
 
     /**

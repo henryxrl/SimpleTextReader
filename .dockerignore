@@ -4,6 +4,9 @@
 .gitignore
 .gitmodules
 
+# vscode
+.vscode/
+
 # assets
 **/assets/
 **/dist/
@@ -11,9 +14,16 @@
 **/debug/
 **/extension/
 .vscode/
+**/node_modules/
+**/books/*
+!**/books/
 publish_extension.py
 **/README.md
 **/README_EN.md
 
 # docker
 Dockerfile
+
+# Ignore Mac DS_Store files
+**/.DS_Store
+**/.cache-*

@@ -24,9 +24,8 @@ export class FileProcessor {
     constructor(file) {
         this.worker = this.#createWorker();
 
+        // File and chunk
         this.file = file;
-        this.sampleSize = CONFIG.CONST_FILE.LOOKUP_SAMPLE_SMALL;
-        this.fileSample = this.file.slice(0, this.sampleSize);
         this.initialChunkSize = 1024 * 1024; // 1MB
         this.initialChunk = this.file.slice(0, this.initialChunkSize);
         this.initialChunkLineOffset = this.file.size <= this.initialChunkSize ? 0 : 1; // Ignoring the last line of the initial chunk if file.size <= chunk size. This is to avoid cutting a paragraph in half.
@@ -45,17 +44,9 @@ export class FileProcessor {
         this.titles_ind = {};
         this.footnotes = [];
         this.footnoteCounter = 0;
-        this.currentLineNumber = 0;
 
         // Pagination
         this.pageBreaks = [];
-        this.prevChunkInfo = {
-            startLine: 0,
-            content: [],
-            titles: [],
-            pageBreaks: [],
-        };
-        this.OVERLAP_SIZE = 0.2; // 20% overlap
 
         // Flags
         this.isProcessingComplete = false;
@@ -68,24 +59,9 @@ export class FileProcessor {
      * @public
      */
     async detectEncodingAndLanguage() {
-        try {
-            const buffer = await this.fileSample.arrayBuffer();
-            let tempBuffer = new Uint8Array(buffer);
-
-            // If sample is too small, copy until reaching required size
-            while (tempBuffer.byteLength < CONFIG.CONST_FILE.LOOKUP_SAMPLE_SMALL) {
-                tempBuffer = new Uint8Array([...tempBuffer, ...tempBuffer]);
-            }
-
-            const text = String.fromCharCode.apply(null, tempBuffer);
-            const detected = jschardet.detect(text).encoding || "utf-8";
-            this.encoding = detected.toLowerCase() === "ascii" ? "utf-8" : detected;
-            this.isEasternLan = TextProcessorWorker.getLanguage(new TextDecoder(this.encoding).decode(tempBuffer));
-        } catch (error) {
-            console.error("Error detecting encoding:", error);
-            this.encoding = "utf-8";
-            this.isEasternLan = true;
-        }
+        const { isEastern, encoding } = await TextProcessorWorker.getLanguageAndEncodingFromBook(this.file);
+        this.isEasternLan = isEastern;
+        this.encoding = encoding;
         this.#handleLanguageDetection();
     }
 
@@ -148,11 +124,13 @@ export class FileProcessor {
      * @public
      */
     async processRemainingContent() {
-        // Generate end page
+        // Generate title page and end page
+        const titlePageResult = await this.#generateTitlePage();
         const endPageResult = await this.#generateEndPage();
+
         return this.#processRemainingContent({
-            titlePageLines: null,
-            titlePageTitles: null,
+            titlePageLines: titlePageResult.lines,
+            titlePageTitles: titlePageResult.titles,
             endPageLines: endPageResult.lines,
             endPageTitles: endPageResult.titles,
         });
@@ -168,7 +146,6 @@ export class FileProcessor {
         const options = {
             chunk: this.initialChunk,
             sliceLineOffset: this.initialChunkLineOffset,
-            prevChunkInfo: this.prevChunkInfo,
         };
 
         return this.#processContent("processInitialChunk", options, extraContent);
@@ -188,8 +165,7 @@ export class FileProcessor {
 
         const options = {
             file: this.file,
-            chunkStart: this.initialChunkSize,
-            prevChunkInfo: this.prevChunkInfo,
+            chunkStart: 0,
         };
 
         return this.#processContent("processRemainingContent", options, extraContent);
@@ -209,37 +185,18 @@ export class FileProcessor {
 
         return new Promise((resolve, reject) => {
             const handler = (e) => {
-                const {
-                    type,
-                    lines,
-                    titles,
-                    titles_ind,
-                    currentLineNumber,
-                    footnoteCounter,
-                    footnotes,
-                    pageBreaks,
-                    prevContentStartLineNumber,
-                    prevContentLines,
-                    prevContentTitles,
-                    prevContentPageBreaks,
-                    error,
-                } = e.data;
+                const { type, htmlLines, titles, titles_ind, footnoteCounter, footnotes, pageBreaks, error } = e.data;
 
                 if (type === responseType) {
                     this.worker.onmessage = null;
-                    this.prevChunkInfo.startLine = prevContentStartLineNumber;
-                    this.prevChunkInfo.content = prevContentLines;
-                    this.prevChunkInfo.titles = prevContentTitles;
-                    this.prevChunkInfo.pageBreaks = prevContentPageBreaks;
 
                     // Merge processing results
-                    this.processedLines = this.processedLines.concat(lines);
-                    this.titles = this.titles.concat(titles);
-                    this.titles_ind = { ...this.titles_ind, ...titles_ind };
-                    this.footnotes = this.footnotes.concat(footnotes);
-                    this.footnoteCounter += footnoteCounter;
-                    this.currentLineNumber = currentLineNumber;
-                    this.pageBreaks = this.pageBreaks.concat(pageBreaks);
+                    this.processedLines = htmlLines;
+                    this.titles = titles;
+                    this.titles_ind = titles_ind;
+                    this.footnotes = footnotes;
+                    this.footnoteCounter = footnoteCounter;
+                    this.pageBreaks = pageBreaks;
 
                     // Add footnotes to DOM
                     addFootnotesToDOM(this.footnotes, CONFIG.DOM_ELEMENT.FOOTNOTE_CONTAINER);
@@ -248,7 +205,7 @@ export class FileProcessor {
                         this.isProcessingComplete = true;
                     }
 
-                    resolve({ lines, titles, titles_ind, currentLineNumber, footnoteCounter, footnotes, pageBreaks });
+                    resolve({ htmlLines, titles, titles_ind, footnoteCounter, footnotes, pageBreaks });
                 } else if (type === "error") {
                     reject(new Error(error));
                 }
@@ -259,12 +216,9 @@ export class FileProcessor {
                 operation,
                 ...options,
                 extraContent,
-                overlapSize: this.OVERLAP_SIZE,
                 encoding: this.encoding,
                 isEasternLan: this.isEasternLan,
                 metadata: this.bookMetadata,
-                startLineNumber: this.currentLineNumber,
-                startTitleIndex: this.titles.length,
                 title_page_line_number_offset: this.title_page_line_number_offset,
                 pageBreakOnTitle: CONFIG.RUNTIME_CONFIG.PAGE_BREAK_ON_TITLE,
             });
@@ -307,7 +261,9 @@ export class FileProcessor {
 
                     resolve({
                         lines: titlePageLines,
-                        titles: [[CONFIG.RUNTIME_VARS.STYLE.ui_titlePage, 0, CONFIG.RUNTIME_VARS.STYLE.ui_titlePage]],
+                        titles: [
+                            [CONFIG.RUNTIME_VARS.STYLE.ui_titlePage, 0, CONFIG.RUNTIME_VARS.STYLE.ui_titlePage, false],
+                        ],
                     });
                 } else if (type === "error") {
                     reject(new Error(error));
@@ -352,6 +308,7 @@ export class FileProcessor {
                                 CONFIG.RUNTIME_VARS.STYLE.ui_endPage,
                                 this.processedLines.length - 1,
                                 CONFIG.RUNTIME_VARS.STYLE.ui_endPage,
+                                false,
                             ],
                         ],
                     });

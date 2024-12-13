@@ -32,19 +32,28 @@ export class TextProcessor {
     static REGEX_IS_PUNCTUATION = TextProcessorWorker.REGEX_IS_PUNCTUATION;
 
     /**
-     * Process text content line by line
+     * Process text content line by line and create DOM elements
      * @param {string} str - The text line to process.
      * @param {number} lineNumber - The current line number.
-     * @param {number} totalLines - The total number of lines.
-     * @param {boolean} to_drop_cap - Whether to apply drop cap formatting.
+     * @param {boolean} isTitleOrEndPage - Whether the line is a title or end page.
      * @returns {[HTMLElement, string]} Processed DOM element and type identifier.
      * @public
      */
-    static process(str, lineNumber, totalLines, to_drop_cap) {
+    static processAndCreateDOM(str, lineNumber, isTitleOrEndPage = false) {
         // 1. Process text and get structure
-        const structure = TextProcessorWorker.process(str, lineNumber, totalLines, to_drop_cap);
+        const structure = TextProcessorWorker.process(str, lineNumber, isTitleOrEndPage);
 
         // 2. Create DOM elements
+        return TextProcessorDOM.createFromStructure(structure);
+    }
+
+    /**
+     * Create DOM elements from structure
+     * @param {Object} structure - The structure to create DOM elements from.
+     * @returns {HTMLElement} The created DOM element.
+     * @public
+     */
+    static createDOM(structure) {
         return TextProcessorDOM.createFromStructure(structure);
     }
 
@@ -66,6 +75,17 @@ export class TextProcessor {
      */
     static getLanguage(str) {
         return TextProcessorWorker.getLanguage(str);
+    }
+
+    /**
+     * Get the language and encoding of a book
+     * @async
+     * @param {Object} file - The file object.
+     * @returns {Promise<{isEastern: boolean, encoding: string}>} The language and encoding of the book.
+     * @public
+     */
+    static async getLanguageAndEncodingFromBook(file) {
+        return await TextProcessorWorker.getLanguageAndEncodingFromBook(file);
     }
 
     /**

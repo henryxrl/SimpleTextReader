@@ -303,6 +303,7 @@ async function handleExtensionMessage(message) {
     if (message.action === "loadFile") {
         try {
             showLoadingScreen();
+
             // Decode the Base64 content back to binary
             const base64ToArrayBuffer = (base64) => {
                 const binaryString = atob(base64);

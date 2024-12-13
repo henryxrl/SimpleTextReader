@@ -1,4 +1,4 @@
-# config Directory
+# Config Directory
 
 The `config/` directory contains configuration files and constants that define global settings, variables, and shared configurations used throughout the application.
 
@@ -20,7 +20,21 @@ The `config/` directory contains configuration files and constants that define g
 
 ---
 
-### 2. `index.js`
+### 2. `icons.js`
+
+**Purpose**: Stores SVG icon definitions that are used across the application.
+
+**Examples**:
+
+- UI icons (sun/moon for dark mode toggle)
+
+- Action icons (delete, settings)
+
+- Navigation icons (scroll-to-top)
+
+---
+
+### 3. `index.js`
 
 **Purpose**: Entry point for exporting and centralizing all configuration files in this directory.
 
@@ -35,7 +49,7 @@ The `config/` directory contains configuration files and constants that define g
 
 ---
 
-### 3. `variables.js`
+### 4. `variables.js`
 
 **Purpose**: Contains dynamic global variables that can change during runtime or be initialized at startup.
 
@@ -47,7 +61,7 @@ The `config/` directory contains configuration files and constants that define g
 
 ---
 
-### 4. `variables-dom.js`
+### 5. `variables-dom.js`
 
 **Purpose**: Defines DOM-related variables or references to key elements in the application.
 

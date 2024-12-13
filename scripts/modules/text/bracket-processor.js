@@ -181,7 +181,7 @@ export class BracketProcessor {
      */
     static #isPunctuationOnly(line) {
         if (!line) return false;
-        const punctuationRegex = /^[\p{P}\p{S}\p{Pd}\s]+$/u;
+        const punctuationRegex = /^[\p{P}\p{S}\s]+$/u;
         return punctuationRegex.test(line);
     }
 

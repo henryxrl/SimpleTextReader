@@ -1,4 +1,4 @@
-# lib Directory
+# Lib Directory
 
 This folder contains third-party libraries and external utilities used in the project. Some of these libraries have been modified or adapted to better suit the needs of this application.
 

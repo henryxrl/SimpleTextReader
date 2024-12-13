@@ -34,7 +34,16 @@ export class TextProcessorWorker {
     /**
      * Build basic regular expressions
      */
-    static #REGEX_IS_TITLE = new RegExp(REGEX_RULES.TITLES.join("|"), "i");
+    static #_REGEX_IS_TITLE = null;
+    static updateRegexIsTitle() {
+        this.#_REGEX_IS_TITLE = new RegExp(REGEX_RULES.TITLES.join("|"), "iu");
+    }
+    static get #REGEX_IS_TITLE() {
+        if (!this.#_REGEX_IS_TITLE) {
+            this.updateRegexIsTitle();
+        }
+        return this.#_REGEX_IS_TITLE;
+    }
     static #REGEX_IS_EASTERN = new RegExp(REGEX_RULES.LANGUAGE);
     static REGEX_IS_PUNCTUATION = new RegExp(REGEX_RULES.PUNCTUATION);
     static #REGEX_IS_FOOTNOTE = new RegExp(REGEX_RULES.FOOTNOTE);
@@ -54,6 +63,14 @@ export class TextProcessorWorker {
      */
     static #CACHED_ADS_REGEX = null;
     static #CACHED_BOOK_AND_AUTHOR = null;
+
+    /**
+     * Other variables
+     * @type {number} Footnote index
+     * @type {boolean} Whether to apply drop cap formatting
+     */
+    static #footnoteIndex = 0;
+    static #shouldDropCap = false;
 
     /**
      * Logs debug information with line numbers and context
@@ -89,99 +106,64 @@ export class TextProcessorWorker {
     }
 
     /**
-     * Batch process text content (deprecated)
-     * @param {string} str - The text content to process.
-     * @returns {string} Processed HTML string.
-     * @deprecated Use the process() method instead.
-     * @public
-     */
-    static process_batch(str) {
-        let to_drop_cap = false;
-        let arr = str.split("\n");
-        let newArr = [];
-        for (let i = 0; i < arr.length; i++) {
-            let current = arr[i].trim();
-            if (current !== "") {
-                if (this.#REGEX_IS_TITLE.test(current)) {
-                    newArr.push(`<h2>${current.replace(":", "").replace("：", "")}</h2>`);
-                    to_drop_cap = true;
-                } else {
-                    if (to_drop_cap && !CONFIG_VAR.VARS.IS_EASTERN_LAN) {
-                        let isPunctuation = this.REGEX_IS_PUNCTUATION.test(current[0]);
-                        if (isPunctuation) {
-                            let index = 0;
-                            while (this.REGEX_IS_PUNCTUATION.test(current[index])) {
-                                index++;
-                            }
-                            newArr.push(
-                                `<p class="first"><span class="dropCap">${current.slice(
-                                    0,
-                                    index + 1
-                                )}</span>${current.slice(index + 1)}</p>`
-                            );
-                        } else {
-                            newArr.push(
-                                `<p class="first"><span class="dropCap">${current[0]}</span>${current.slice(1)}</p>`
-                            );
-                        }
-                        to_drop_cap = false;
-                    } else {
-                        newArr.push(`<p>${current}</p>`);
-                        to_drop_cap = false;
-                    }
-                }
-            }
-        }
-        return newArr.join("");
-    }
-
-    /**
      * Process text content line by line
      * @param {string} str - The text line to process.
      * @param {number} lineNumber - The current line number.
-     * @param {number} totalLines - The total number of lines.
-     * @param {boolean} to_drop_cap - Whether to apply drop cap formatting.
+     * @param {boolean} isTitleOrEndPage - Whether the line is a title or end page.
      * @returns {[HTMLElement, string]} Processed DOM element and type identifier.
      * @public
      */
-    static process(str, lineNumber, totalLines, to_drop_cap) {
-        if (lineNumber < CONFIG_VAR.VARS.TITLE_PAGE_LINE_NUMBER_OFFSET || lineNumber === totalLines - 1) {
-            let current = str.trim();
+    static process(str, lineNumber, isTitleOrEndPage = false) {
+        if (isTitleOrEndPage) {
+            const current = str.trim();
             if (current.slice(1, 3) === "h1" || current.slice(1, 5) === "span") {
+                this.#shouldDropCap = false;
+                const content = this.#removeHtmlTags(current);
                 return {
                     type: "title",
                     tag: current.slice(1, 3) === "h1" ? "h1" : "span",
                     content: current,
+                    charCount: content.length,
                     lineNumber,
                     elementType: "t",
                 };
             } else {
+                this.#shouldDropCap = false;
+                const content = this.#removeHtmlTags(current);
                 return {
                     type: "span",
+                    tag: "span",
                     content: current,
+                    charCount: content.length,
                     lineNumber,
                     elementType: "e",
                 };
             }
         } else {
-            let current = this.optimize(str.trim());
+            const current = this.optimize(str.trim());
             if (current !== "") {
                 if (this.#REGEX_IS_TITLE.test(current)) {
+                    this.#shouldDropCap = true;
+                    const content = current.replace(":", " ").replace("：", " ");
+                    const content2 = this.#removeHtmlTags(content);
                     return {
                         type: "heading",
                         tag: "h2",
-                        content: current.replace(":", "").replace("：", ""),
+                        content,
+                        charCount: content2.length,
                         lineNumber,
                         elementType: "h",
                     };
                 } else {
-                    if (to_drop_cap && !CONFIG_VAR.VARS.IS_EASTERN_LAN) {
+                    if (this.#shouldDropCap && !CONFIG_VAR.VARS.IS_EASTERN_LAN) {
                         const isPunctuation = this.REGEX_IS_PUNCTUATION.test(current[0]);
                         if (isPunctuation) {
                             let index = 0;
                             while (this.REGEX_IS_PUNCTUATION.test(current[index])) {
                                 index++;
                             }
+                            this.#shouldDropCap = false;
+                            const content = this.#removeHtmlTags(current);
                             return {
                                 type: "paragraph",
                                 tag: "p",
@@ -190,10 +172,13 @@ export class TextProcessorWorker {
                                     content: current.slice(0, index + 1),
                                 },
                                 content: current.slice(index + 1),
+                                charCount: content.length,
                                 lineNumber,
                                 elementType: "p",
                             };
                         } else {
+                            this.#shouldDropCap = false;
+                            const content = this.#removeHtmlTags(current);
                             return {
                                 type: "paragraph",
                                 tag: "p",
@@ -202,25 +187,31 @@ export class TextProcessorWorker {
                                     content: current[0],
                                 },
                                 content: current.slice(1),
+                                charCount: content.length,
                                 lineNumber,
                                 elementType: "p",
                             };
                         }
                     } else {
+                        this.#shouldDropCap = false;
+                        const content = this.#removeHtmlTags(current);
                         return {
                             type: "paragraph",
                             tag: "p",
                             content: current,
+                            charCount: content.length,
                             lineNumber,
                             elementType: "p",
                         };
                     }
                 }
             } else {
+                this.#shouldDropCap = false;
                 return {
                     type: "empty",
                     tag: "span",
                     content: current,
+                    charCount: current.length,
                     lineNumber,
                     elementType: "e",
                 };
@@ -240,36 +231,115 @@ export class TextProcessorWorker {
     }
 
     /**
+     * Get the language and encoding of a book
+     * @param {Object} file - The file object.
+     * @returns {Promise<{isEastern: boolean, encoding: string}>} The language and encoding of the book.
+     * @public
+     */
+    static async getLanguageAndEncodingFromBook(file) {
+        try {
+            const fileSample = file.slice(0, CONFIG_CONST.CONST_FILE.LOOKUP_SAMPLE_SMALL);
+            const buffer = await fileSample.arrayBuffer();
+            let tempBuffer = new Uint8Array(buffer);
+
+            // If sample is too small, copy until reaching required size
+            while (tempBuffer.byteLength < CONFIG_CONST.CONST_FILE.LOOKUP_SAMPLE_SMALL) {
+                tempBuffer = new Uint8Array([...tempBuffer, ...tempBuffer]);
+            }
+
+            const text = String.fromCharCode.apply(null, tempBuffer);
+            const detected = jschardet.detect(text).encoding || "utf-8";
+            const encoding = detected.toLowerCase() === "ascii" ? "utf-8" : detected;
+            return {
+                isEastern: TextProcessorWorker.getLanguage(new TextDecoder(encoding).decode(tempBuffer)),
+                encoding,
+            };
+        } catch (error) {
+            console.error("Error detecting encoding:", error);
+            return {
+                isEastern: true,
+                encoding: "utf-8",
+            };
+        }
+    }
+
+    /**
      * Extract title information
      * @param {string} str - The text to extract title from.
-     * @returns {[string, Array]} Title and title groups.
+     * @returns {[string, Array, Object, boolean]} Title, title groups, named groups, and whether it is custom only.
      * @public
      */
     static getTitle(str) {
         const current = str.trim();
-        if (this.#REGEX_IS_TITLE.test(current)) {
-            const titleGroups = this.#getTitleGroups(current);
-            // this.#log("titleGroups", { titleGroups });
-            return [current.replace(":", "").replace("：", ""), titleGroups.filter((item) => item !== undefined)];
+        const isMatch = this.#REGEX_IS_TITLE.test(current);
+        if (isMatch) {
+            const { titleGroups, namedGroups, isCustomOnly } = this.#getTitleGroups(current);
+            // console.log("titleGroups", { titleGroups, namedGroups, isCustomOnly });
+            return [current.replace(":", " ").replace("：", " "), titleGroups, namedGroups, isCustomOnly];
         } else {
-            return ["", []];
+            return ["", [], {}, false];
         }
     }
 
     /**
      * Get title groups
      * @param {string} str - The text to extract title groups from.
-     * @returns {Array} Title groups.
+     * @returns {Object} Title groups, named groups, and whether it is custom only. Format: { titleGroups: Array, namedGroups: { base: Array, custom: Array }, isCustomOnly: boolean }
      * @private
      */
     static #getTitleGroups(str) {
         const current = str.trim();
-        let titleGroups = [];
         const allMatches = current.match(this.#REGEX_IS_TITLE);
-        for (let i in allMatches) {
-            titleGroups.push(allMatches[i]);
+
+        // console.log("Raw matches:", allMatches);
+        // console.log("Match type:", Object.prototype.toString.call(allMatches));
+        // console.log("Match keys:", Object.keys(allMatches));
+        // console.log("Match length:", allMatches.length);
+
+        if (!allMatches) {
+            return {
+                titleGroups: [],
+                namedGroups: {},
+                isCustomOnly: false,
+            };
         }
-        return titleGroups;
+
+        // Capture title groups
+        const titleGroups = [];
+        for (let i = 0; i < allMatches.length; i++) {
+            if (allMatches[i] !== undefined) {
+                titleGroups.push(allMatches[i]);
+            }
+        }
+
+        // Capture named groups
+        let namedGroups = {};
+        let isCustomOnly = false;
+        const rawNamedGroups = allMatches.groups
+            ? Object.entries(allMatches.groups)
+                  .filter(([_, value]) => value !== undefined)
+                  .map(([key, _]) => key)
+            : [];
+
+        // Format named groups
+        if (rawNamedGroups.length > 0) {
+            const groupedRules = rawNamedGroups.reduce((acc, groupName) => {
+                const [ruleGroup, ruleIndex] = groupName.split("__");
+                if (!acc[ruleGroup]) {
+                    acc[ruleGroup] = [];
+                }
+                acc[ruleGroup].push(parseInt(ruleIndex));
+                return acc;
+            }, {});
+            namedGroups = groupedRules;
+            isCustomOnly = "custom" in groupedRules && !("base" in groupedRules);
+        }
+
+        return {
+            titleGroups,
+            namedGroups,
+            isCustomOnly,
+        };
     }
 
     /**
@@ -389,7 +459,7 @@ export class TextProcessorWorker {
      * @returns {string} Processed text.
      * @public
      */
-    static makeFootNote(str) {
+    static makeFootNote(str, resetIndex = false) {
         let current = str.trim();
 
         // Find if footnote characters exist
@@ -402,11 +472,17 @@ export class TextProcessorWorker {
             } else {
                 // main text
                 for (let i in allMatches) {
+                    // If resetIndex is true, reset the footnote index
+                    if (resetIndex) {
+                        this.#footnoteIndex = 0;
+                    } else {
+                        this.#footnoteIndex++;
+                    }
                     // this.#log("footnote.length", { CONFIG_VAR.VARS.FOOTNOTES.length });
                     // this.#log("Found footnote", { allMatches[i] });
                     const curIndex = current.indexOf(allMatches[i]);
                     current = `${current.slice(0, curIndex)}<a rel="footnote" href="#fn${
-                        CONFIG_VAR.VARS.FOOTNOTES.length
+                        this.#footnoteIndex
                     }"><img class="footnote_img"/></a>${current.slice(curIndex + 1)}`;
                     CONFIG_VAR.VARS.FOOTNOTES.push(allMatches[i]);
                 }
@@ -451,5 +527,23 @@ export class TextProcessorWorker {
         const adsRules = generateAdsRules(bookAndAuthor);
         this.#CACHED_ADS_REGEX = Object.values(adsRules).map((getRules) => new RegExp(getRules().join("|"), "i"));
         this.#CACHED_BOOK_AND_AUTHOR = bookAndAuthor;
+    }
+
+    /**
+     * Remove HTML tags from a line
+     * @param {string} line - The line to remove HTML tags from.
+     * @returns {string} Line without HTML tags.
+     * @private
+     */
+    static #removeHtmlTags(line) {
+        if (!line) return "";
+
+        // Remove all HTML tags
+        const cleanText = line
+            .replace(/<[^>]*>/g, "") // Remove HTML tags
+            .replace(/&nbsp;/g, " ") // Replace common HTML entities
+            .trim();
+
+        return cleanText;
     }
 }

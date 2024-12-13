@@ -208,14 +208,16 @@ export function showLoadingScreen() {
  * Hides the loading screen
  * @public
  */
-export function hideLoadingScreen() {
+export function hideLoadingScreen(showBookshelfTriggerBtn = true) {
     CONFIG.DOM_ELEMENT.LOADING_SCREEN.style.visibility = "hidden";
 
     // Fix icons location with/without scrollbar
     // CONFIG.RUNTIME_VARS.STYLE.ui_btnOffset = (-1 * parseInt(CONFIG.RUNTIME_VARS.STYLE.ui_scrollBarWidth)).toString() + "px";
 
     // Show bookshelf trigger button if bookshelf is closed
-    triggerCustomEvent("showBookshelfTriggerBtn");
+    if (showBookshelfTriggerBtn) {
+        triggerCustomEvent("showBookshelfTriggerBtn");
+    }
 }
 
 /**
@@ -267,9 +269,9 @@ export async function resetUI(refreshBookshelf = true, hardRefresh = true, sortB
         saveToLocalStorage: true,
     });
     resetVars();
-    showDropZone();
-    hideLoadingScreen();
     hideContent();
+    hideLoadingScreen();
+    showDropZone();
 }
 
 /**
@@ -406,7 +408,7 @@ export function setMainContentUI() {
     setUIMode(!CONFIG.DOM_ELEMENT.DARK_MODE_TOGGLE.checked);
     CONFIG.RUNTIME_VARS.STYLE.ui_Mode = !CONFIG.DOM_ELEMENT.DARK_MODE_TOGGLE.checked ? "light" : "dark";
     // console.log(CONFIG.RUNTIME_VARS.STYLE.ui_Mode);
-    CONFIG.DOM_ELEMENT.DROPZONE_TEXT_IMG_WRAPPER.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_dropZone;
+    CONFIG.DOM_ELEMENT.DROPZONE.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_dropZone;
     CONFIG.DOM_ELEMENT.DARK_MODE_ACTUAL_BUTTON.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_modeToggle;
     setTimeout(function () {
         CONFIG.RUNTIME_VARS.STYLE.darkMode_animation = CONFIG.RUNTIME_VARS.STYLE.darkMode_default_animation;

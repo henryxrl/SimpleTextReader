@@ -96,6 +96,7 @@ To Offset the anchor link to clear fixed header
     -webkit-transform: translate(-50%, -50%);
     margin: auto;
     color: var(--fontInfoColor);
+    transition: all 0.2s ease-in-out;
 }
 .dropzone-text-default {
     top: calc(var(--ui_dropZoneTextTop) + var(--ui_dropZoneImgSize) / 4.5);
@@ -119,6 +120,7 @@ To Offset the anchor link to clear fixed header
     /* filter: var(--mainColor_inactive_filter); */
     /* convert to var(--fontInfoColor) */
     filter: var(--toGray_filter);
+    transition: all 0.2s ease-in-out;
 }
 .dropzone-img-default {
     top: calc(var(--ui_dropZoneImgTop) - var(--ui_dropZoneTextSize) * 1.5);
@@ -665,7 +667,7 @@ input[type="color"]:not(:hover) {
     top: 120%;
     right: 0;
     left: 0;
-    z-index: 2;
+    z-index: 10005;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -677,6 +679,7 @@ input[type="color"]:not(:hover) {
     -moz-box-shadow: 0 0 5px var(--shadowColor);
     max-height: 150px;
     overflow-y: auto;
+    transform: translateZ(0); /* Creates a new stacking context */
 }
 .select-options li {
     margin: 0;
@@ -738,7 +741,7 @@ input[type="color"]:not(:hover) {
     background: var(--bgColor);
     color: var(--fontColor);
     display: grid;
-    grid-gap: 2rem;
+    /* grid-gap: 2rem; */
     grid-template-rows: max-content 1fr;
     /* border-top: 0.5em dashed var(--mainColor_inactive); */
     border-top: 2px dashed var(--borderColor);
@@ -768,7 +771,11 @@ input[type="color"]:not(:hover) {
     font-family: var(--fontFamily_title);
     text-align: center;
     overflow: hidden;
-    border-bottom: 2px solid var(--borderColor);
+    border-bottom: 2px dashed var(--borderColor);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--bgColor);
     display: none;
 }
 .bookshelf .sub-title {
@@ -780,10 +787,10 @@ input[type="color"]:not(:hover) {
 .bookshelf .booklist {
     overflow-y: auto;
     text-align: center;
-    margin: 2px calc(var(--ui_windowLeftRightMargin) * 1% + 2rem); /* 避开 btn-group */
+    margin: 0 calc(var(--ui_windowLeftRightMargin) * 1% + 2rem); /* 避开 btn-group */
     padding: var(--ui_booklist_padding) 0;
     /* border-top: 2px dashed var(--borderColor); */
-    position: absolute;
+    position: relative;
     top: 0;
     bottom: 0;
     left: 0;
@@ -1112,4 +1119,133 @@ input[type="color"]:not(:hover) {
     stroke: var(--fontInfoColor);
     height: 1.4rem;
     width: 1.4rem;
+}
+
+/* Filter buttons */
+.booklist-filter-bar {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ui_btnGap);
+    padding: 1rem 0;
+    /* margin: 0 calc(var(--ui_windowLeftRightMargin) * 1% + 2rem); */
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bgColor);
+    /* border-bottom: 1px solid var(--borderColor); */
+    z-index: 5;
+    opacity: 0;
+    pointer-events: none;
+    width: 100%;
+    transition: opacity 0.2s ease-in-out;
+}
+.booklist-filter-btn {
+    font-family: var(--fontFamily_ui);
+    padding: 0.3rem 1rem;
+    border: 1px dashed transparent;
+    /* width: 120px; */
+    border-radius: 8px;
+    color: var(--fontInfoColor);
+    background: var(--bgColor);
+    cursor: pointer;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    /* transition: all 0.2s ease; */
+    box-shadow: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+.booklist-filter-btn:hover {
+    background: var(--btnHoverColor);
+}
+.booklist-filter-btn.active {
+    /* background: var(--mainColor_inactive); */
+    /* color: var(--bgColor); */
+    /* border-color: var(--mainColor_active); */
+    color: var(--mainColor_inactive);
+}
+.booklist-filter-bar .booklist-filter-btn {
+    opacity: 1;
+}
+.booklist-filter-bar.visible {
+    opacity: 1;
+    left: auto; /* Remove the initial -9999px position */
+    pointer-events: auto;
+}
+.booklist-filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ui_btnGap);
+    align-items: center;
+}
+.booklist-filter-counter {
+    position: relative;
+    margin-left: auto;
+    padding: 0.3rem 1rem;
+    color: var(--fontInfoColor);
+    font-family: var(--fontFamily_ui);
+    font-size: 0.9em;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    opacity: 1 !important;
+    width: 100%;
+}
+.booklist-remove-all {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* space between icon and text */
+    padding: 0.3rem 1rem;
+    border: 1px dashed transparent;
+    border-radius: 8px;
+    color: var(--fontInfoColor);
+    background: var(--bgColor);
+    cursor: pointer;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    font-family: var(--fontFamily_ui);
+    font-size: 0.9rem;
+}
+.booklist-remove-all:hover {
+    background: var(--btnHoverColor);
+}
+.booklist-remove-all svg {
+    width: 1.4rem;
+    height: 1.4rem;
+    /* fill: var(--fontInfoColor); */
+    stroke: var(--fontInfoColor);
+}
+.booklist-remove-all.active {
+    /* background: var(--mainColor_inactive); */
+    /* color: var(--bgColor); */
+    /* border-color: var(--mainColor_active); */
+    color: var(--mainColor_inactive);
+}
+.booklist-remove-all-popup-icon {
+    border: none !important; /* remove circle border */
+    background: transparent !important; /* remove circle background */
+}
+.booklist-remove-all-popup-icon svg {
+    width: 5rem;
+    height: 5rem;
+    /* fill: var(--fontInfoColor); */
+    stroke: var(--mainColor_inactive);
+}
+.booklist-remove-all-popup {
+    font-family: var(--fontFamily_ui) !important;
+}
+.booklist-remove-all-popup .swal2-actions {
+    gap: calc(var(--ui_btnGap) * 2);
+    margin-top: 1.75rem;
+    padding-bottom: 1rem !important;
+}
+.booklist-remove-all-popup .swal2-actions button {
+    border-radius: 8px !important;
+    padding: 10px 35px !important;
+}
+.booklist-filter-utilities {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }

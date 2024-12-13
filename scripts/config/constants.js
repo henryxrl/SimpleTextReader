@@ -48,8 +48,8 @@ export const CONST_FILE = Object.freeze({
 export const CONST_PAGINATION = Object.freeze({
     MIN_LINES: 15,
     MAX_LINES: 100,
-    MIN_CHARS: 100,
-    MAX_CHARS: 1500,
+    MIN_CHARS: 500,
+    MAX_CHARS: 2500,
     BALANCE_RATIO: 2,
     TITLE_BUFFER: 3,
     USE_CHAR_COUNT: null, // null means auto-detect

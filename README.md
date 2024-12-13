@@ -53,15 +53,15 @@
 
 ### 火狐插件
 
-- [易笺 (v1.6.3)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
+- [易笺 (v1.6.5)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
 
 ### Chrome 插件
 
-- [易笺 (v1.6.3)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
+- [易笺 (v1.6.5)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
 
 ### Edge 插件
 
-- [易笺 (v1.6.3)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
+- [易笺 (v1.6.5)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
 
 ### Docker
 
@@ -102,22 +102,36 @@ docker run -d --name simpletextreader \
 
     [2] 文件在首次处理后，下次打开无需再次处理，加载速度更快（可以通过在 URL 末尾添加 `?always-process` 参数来关闭此功能）
 
+    - 如果需要手动强制重新处理一本书，请按住 **Alt** 键并点击（Windows/Linux）或按住 **Option** 键并点击（Mac）该书。这与添加 `?always-process` 参数的效果相同，但仅对单本书生效。
+
     [3] 界面无任何卡顿现象
 
-3. 全新的分页逻辑
+3. 全新的章节标题提取逻辑
 
-4. 全新的目录显示：当鼠标指针位于目录区域外时，仅显示当前章节的简化名称，对中英文小说均有效。例如，`正文 第一卷 原上草 第一章 秦少爷初临宝地 防狼术小试牛刀` 将简化为 `秦少爷初临宝地 防狼术小试牛刀`。当鼠标移入目录区域时，会显示完整的章节名称。
+    - 除了使用预定义的正则表达式外，v1.6.4 增加了自动从文档中识别标题规律的功能，大幅提升了标题提取的准确率。
+
+4. 全新的分页逻辑
+
+5. 全新的目录显示：当鼠标指针位于目录区域外时，仅显示当前章节的简化名称，对中英文小说均有效。例如，`正文 第一卷 原上草 第一章 秦少爷初临宝地 防狼术小试牛刀` 将简化为 `秦少爷初临宝地 防狼术小试牛刀`。当鼠标移入目录区域时，会显示完整的章节名称。
    <img src="assets/5_TOC_zh.gif" alt="TOC" height="500" />
 
-5. 新增“快读完”的阅读进度提示
+6. 新增主界面功能栏，包含以下功能：
 
-6. 优化书籍封面生成逻辑
+    - 按阅读状态分类书籍
 
-7. 更流畅的界面语言切换
+    - 显示书籍数量统计
 
-8. 改用京华老宋体作为默认字体，以规避可能的版权问题
+    - 删除所有书籍功能，包含确认提示以防止误操作
 
-9. 修复若干 Bug，提升了稳定性和用户体验
+7. 新增“快读完”的阅读进度提示
+
+8. 优化书籍封面生成逻辑
+
+9. 更流畅的界面语言切换
+
+10. 改用京华老宋体作为默认字体，以规避可能的版权问题
+
+11. 修复若干 Bug，提升了稳定性和用户体验
 
 **注：从 v1.6 开始，不再支持无界面（No-UI）版本。无界面版本中的所有功能（包括通过 `file://*.txt` URL 打开本地 `.txt` 文件）现已完全集成到正常版本中。**
 

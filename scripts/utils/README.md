@@ -1,4 +1,4 @@
-# utils Directory
+# Utils Directory
 
 The `utils/` directory contains small, reusable helper functions and utility modules that provide common functionality across the application. These utilities are designed to be lightweight, modular, and independent of specific features.
 

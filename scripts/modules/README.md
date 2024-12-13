@@ -1,4 +1,4 @@
-# modules Directory
+# Modules Directory
 
 The `modules/` directory contains the core application logic, organized into specific subdirectories to maintain a modular and scalable structure. Each subdirectory represents a distinct area of functionality or responsibility.
 
@@ -16,7 +16,7 @@ The `modules/` directory contains the core application logic, organized into spe
 
 - `dropdown-selector.js`: A dropdown menu component for selecting options.
 
-- `cover-generator.js`: A utility for generating book cover visuals.
+- `cover-generator.js`: A utility for generating and visualizing book cover designs.
 
 ---
 
@@ -26,11 +26,15 @@ The `modules/` directory contains the core application logic, organized into spe
 
 **Examples**:
 
-- `bookshelf.js`: Manages the bookshelf view and its interactions.
+- `bookshelf.js`: Manages the bookshelf view and its interactions, such as browsing and organizing books.
 
-- `reader.js`: Implements the main text reading functionality.
+- `footnotes.js`: Dynamically generates and manages footnotes for text content, ensuring accurate references.
 
-- `settings.js`: Manages user settings and configurations.
+- `init-webpage.js`: Handles the initial configuration and rendering of the webpage upon loading.
+
+- `reader.js`: Implements the main text-reading functionality, including navigation, font adjustments, and highlighting.
+
+- `settings.js`: Manages user preferences and configuration options, such as theme selection and language settings.
 
 ---
 
@@ -40,11 +44,11 @@ The `modules/` directory contains the core application logic, organized into spe
 
 **Examples**:
 
-- `file-processor.js`: Processes file inputs, such as uploaded books or documents.
+- `file-processor.js`: Processes user-uploaded files, preparing them for display and interaction.
 
-- `fileload-callback.js`: Manages callbacks after a file is successfully loaded.
+- `fileload-callback.js`: Executes specific actions once a file has been successfully loaded.
 
-- `file-processor-worker.js`: A worker script for handling intensive file processing tasks in the background.
+- `file-processor-worker.js`: Utilizes a worker thread to perform intensive file processing tasks in the background, improving performance.
 
 ---
 
@@ -54,11 +58,15 @@ The `modules/` directory contains the core application logic, organized into spe
 
 **Examples**:
 
-- `text-processor.js`: Handles the parsing and processing of text content.
+- `bracket-processor.js`: Parses and processes different types of brackets (paired or unpaired), ensuring proper text formatting.
 
-- `pagination-calculator.js`: Calculates pagination for the text content in the reader.
+- `pagination-calculator.js`: Calculates and manages pagination for text content in the reader, enabling efficient navigation.
 
-- `regex-rules.js`: Defines regular expressions for parsing and cleaning up text.
+- `regex-rules.js`: Defines and manages regular expressions used for parsing, cleaning, and identifying text patterns.
+
+- `text-processor.js`, `text-processor-dom.js`, `text-processor-worker.js`: Process and parse text content, extracting book titles, author names, languages, chapter titles, and removing unnecessary ads or metadata.
+
+- `title-pattern-detector.js`: Identifies and extracts chapter title patterns dynamically, adapting to varying text structures for accurate chapter recognition.
 
 ---
 
@@ -67,7 +75,6 @@ The `modules/` directory contains the core application logic, organized into spe
 1. **Separation of Concerns**:
 
     - Keep each subdirectory focused on a specific area of functionality.
-
     - Avoid mixing unrelated logic within the same module.
 
 2. **Reusability**:
@@ -79,6 +86,7 @@ The `modules/` directory contains the core application logic, organized into spe
     - As the application grows, consider splitting large modules or adding new subdirectories to keep the codebase organized.
 
 4. **Documentation**:
+
     - Include inline comments and, where necessary, additional documentation for complex modules or logic.
 
 ---
@@ -86,5 +94,4 @@ The `modules/` directory contains the core application logic, organized into spe
 ## Notes
 
 - The `modules/` directory is the heart of the application, containing both core functionality and high-level features.
-
 - Each subdirectory is designed to be modular, making it easier to debug, extend, or refactor specific parts of the application.

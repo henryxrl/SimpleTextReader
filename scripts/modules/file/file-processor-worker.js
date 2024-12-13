@@ -6,6 +6,7 @@
  * @module modules/file/file-processor-worker
  * @requires modules/text/text-processor-worker
  * @requires modules/text/pagination-calculator
+ * @requires modules/text/title-pattern-detector
  * @requires modules/config/constants
  * @requires modules/config/variables
  * @requires modules/utils/base
@@ -60,14 +61,21 @@ async function importDependencies() {
         };
 
         // Import config and text processor
-        const [{ TextProcessorWorker }, { PaginationCalculator }, CONSTANTS, VARS, { removeFileExtension }] =
-            await Promise.all([
-                import(getPath("../text/text-processor-worker.js")),
-                import(getPath("../text/pagination-calculator.js")),
-                import(getPath("../../config/constants.js")),
-                import(getPath("../../config/variables.js")),
-                import(getPath("../../utils/base.js")),
-            ]);
+        const [
+            { TextProcessorWorker },
+            { PaginationCalculator },
+            { TitlePatternDetector },
+            CONSTANTS,
+            VARS,
+            { removeFileExtension },
+        ] = await Promise.all([
+            import(getPath("../text/text-processor-worker.js")),
+            import(getPath("../text/pagination-calculator.js")),
+            import(getPath("../text/title-pattern-detector.js")),
+            import(getPath("../../config/constants.js")),
+            import(getPath("../../config/variables.js")),
+            import(getPath("../../utils/base.js")),
+        ]);
         const CONFIG = { ...CONSTANTS, ...VARS };
 
         // Import jschardet (if needed)
@@ -78,6 +86,7 @@ async function importDependencies() {
         return {
             TextProcessorWorker,
             PaginationCalculator,
+            TitlePatternDetector,
             CONFIG,
             utils: { removeFileExtension },
         };
@@ -102,176 +111,117 @@ function getDecoder(encoding) {
 /**
  * Process file chunk
  * @param {Blob} chunk - File chunk
- * @param {Object} prevChunkInfo - Previous chunk info
  * @param {Object} extraContent - Extra content
  * @param {number} sliceLineOffset - Slice line offset
- * @param {number} overlapSize - Overlap size
- * @param {number} startLineNumber - Starting line number
  * @param {number} title_page_line_number_offset - Title page line number offset
  * @param {boolean} pageBreakOnTitle - Page break on title
  * @param {Object} CONFIG - Configuration object
  * @param {TextDecoder} decoder - Text decoder
  * @param {Object} TextProcessorWorker - Text processor
  * @param {Object} PaginationCalculator - Pagination calculator
+ * @param {boolean} isInitialChunk - Whether the chunk is the initial chunk
  * @returns {Promise<Object>} Processed chunk data
  */
 async function processChunk(
     chunk,
-    prevChunkInfo,
     extraContent,
     sliceLineOffset,
-    overlapSize,
-    startLineNumber,
     title_page_line_number_offset,
     pageBreakOnTitle,
     CONFIG,
     decoder,
     TextProcessorWorker,
-    PaginationCalculator
+    PaginationCalculator,
+    TitlePatternDetector,
+    isInitialChunk
 ) {
     const buffer = await chunk.arrayBuffer();
-    const content = decoder.decode(new Uint8Array(buffer), { stream: true, fatal: true });
+    const content = decoder.decode(new Uint8Array(buffer), { fatal: true });
     let lines = content
         .split("\n")
         .filter(Boolean)
         .filter((n) => n.trim() !== "");
 
+    // Dynamically detect title patterns from the first chunk
+    if (isInitialChunk) {
+        TitlePatternDetector.detectTitlePatternAsRegexRule(lines);
+        TextProcessorWorker.updateRegexIsTitle();
+    }
+
     const result = {
-        lines: [], // Processed lines
+        htmlLines: [], // Processed HTML lines
         titles: [], // Title information
-        currentLineNumber: startLineNumber, // Current line number being processed
+        currentLineNumber: 0, // Current line number being processed
         footnoteCounter: 0,
         footnotes: [],
         pageBreaks: [],
     };
 
+    // Prepend titlePageLines and titlePageTitles if they are defined
+    if (extraContent.titlePageLines && extraContent.titlePageTitles) {
+        result.titles.push(...extraContent.titlePageTitles); // Prepend titles
+
+        // Process the final HTML line for rendering
+        for (let i = 0; i < extraContent.titlePageLines.length; i++) {
+            result.htmlLines.push(TextProcessorWorker.process(extraContent.titlePageLines[i], i, true));
+        }
+    }
+
     // Process each line, ignoring the last line if we're processing the initial chunk and file.size <= chunk size.
     // This is to avoid cutting a paragraph in half.
     for (let i = 0; i < lines.length - sliceLineOffset; i++) {
         const tempLine = lines[i];
-        const [tempTitle, tempTitleGroup] = TextProcessorWorker.getTitle(tempLine);
+        const [tempTitle, tempTitleGroup, tempNamedGroups, tempIsCustomOnly] = TextProcessorWorker.getTitle(tempLine);
         if (tempTitle !== "") {
             // Get the shortest title
             const shortestTitle = getShortestTitleContent(tempTitleGroup, TextProcessorWorker);
-            result.titles.push([tempTitle, result.currentLineNumber + title_page_line_number_offset, shortestTitle]);
+            result.titles.push([
+                tempTitle,
+                result.currentLineNumber + title_page_line_number_offset,
+                shortestTitle,
+                tempIsCustomOnly,
+            ]);
         }
 
-        let { line, footnote } = TextProcessorWorker.makeFootNote(tempLine);
+        let { line, footnote } = TextProcessorWorker.makeFootNote(tempLine, result.footnoteCounter === 0);
         if (line === "") {
             // This is the actual footnote itself
             footnote = processFootnote(footnote, result.footnoteCounter);
             result.footnotes.push(footnote);
             result.footnoteCounter++;
         }
-        result.lines.push(line);
         result.currentLineNumber++;
+
+        // Process the final HTML line for rendering
+        result.htmlLines.push(TextProcessorWorker.process(line, i + title_page_line_number_offset));
     }
 
-    if (startLineNumber === 0) {
-        // Initial chunk
-        if (extraContent.titlePageLines && extraContent.titlePageTitles) {
-            result.lines.unshift(...extraContent.titlePageLines); // Prepend lines
-            result.titles.unshift(...extraContent.titlePageTitles); // Prepend titles
-        }
+    // Append endPageLines and endPageTitles if they are defined
+    if (extraContent.endPageLines && extraContent.endPageTitles) {
+        const totalLineNumber = result.htmlLines.length;
+        extraContent.endPageLines = [generateEndPage(totalLineNumber)];
+        extraContent.endPageTitles[0][1] = totalLineNumber;
+        result.titles.push(...extraContent.endPageTitles); // Append titles
 
-        // Append endPageLines and endPageTitles if they are defined
-        if (extraContent.endPageLines && extraContent.endPageTitles) {
-            const totalLineNumber = result.lines.length + startLineNumber;
-            extraContent.endPageLines = [generateEndPage(totalLineNumber)];
-            extraContent.endPageTitles[0][1] = totalLineNumber;
-            result.lines.push(...extraContent.endPageLines); // Append lines
-            result.titles.push(...extraContent.endPageTitles); // Append titles
-        }
-    } else {
-        // Remaining chunk
-        if (extraContent.endPageLines && extraContent.endPageTitles) {
-            const totalLineNumber = result.lines.length + startLineNumber + title_page_line_number_offset;
-            extraContent.endPageLines = [generateEndPage(totalLineNumber)];
-            extraContent.endPageTitles[0][1] = totalLineNumber;
-            result.lines.push(...extraContent.endPageLines); // Append lines
-            result.titles.push(...extraContent.endPageTitles); // Append titles
+        // Process the final HTML line for rendering
+        for (let i = extraContent.endPageLines.length - 1; i >= 0; i--) {
+            result.htmlLines.push(TextProcessorWorker.process(extraContent.endPageLines[i], i + totalLineNumber, true));
         }
     }
-
-    // Prepare full lines array for pagination calculation
-    let combinedLines = result.lines;
-    let combinedTitles = result.titles;
-    // console.log("prevChunkInfo: ", prevChunkInfo);
-    if (prevChunkInfo && prevChunkInfo.content && prevChunkInfo.content.length > 0) {
-        combinedLines = prevChunkInfo.content.concat(result.lines);
-
-        // Adjust the line number of the previous block of titles
-        // Note: We don't need to subtract title_page_line_number_offset here because we've already considered it when processing titles
-        const adjustedPrevTitles = prevChunkInfo.titles.map((title) => [
-            title[0],
-            // title[1] - (startLineNumber - prevChunkInfo.content.length) + prevChunkInfo.startLine,
-            title[1],
-            title[2],
-        ]);
-
-        combinedTitles = adjustedPrevTitles.concat(result.titles);
-    }
-
-    // console.log("startLineNumber: ", startLineNumber);
-    // console.log("result.lines: ", result.lines);
-    // console.log("combinedLines: ", combinedLines);
-    // console.log("result.titles: ", result.titles);
-    // console.log("combinedTitles: ", combinedTitles);
-    // console.log("isEasternLan: ", CONFIG.VARS.IS_EASTERN_LAN);
-    // console.log("config: ", {
-    //     ...CONFIG.CONST_PAGINATION,
-    //     PAGE_BREAK_ON_TITLE: pageBreakOnTitle,
-    // });
-
-    // Modify combinedTitles
-    const tempTitles = combinedTitles.map((title) => [
-        title[0],
-        title[1] - prevChunkInfo.startLine, // Don't need to minus title_page_line_number_offset since we've inserted title page lines
-        title[2],
-    ]);
-    // console.log("adjustedCombinedTitles: ", tempTitles);
 
     // Calculate page breaks
-    const calculator = new PaginationCalculator(combinedLines, tempTitles, {
+    const calculator = new PaginationCalculator(result.htmlLines, result.titles, {
         ...CONFIG.CONST_PAGINATION,
         PAGE_BREAK_ON_TITLE: pageBreakOnTitle,
         IS_EASTERN_LAN: CONFIG.VARS.IS_EASTERN_LAN,
         BOOK_AND_AUTHOR: CONFIG.VARS.BOOK_AND_AUTHOR,
+        COMPLETE_BOOK: !isInitialChunk,
     });
-    const chunkBreaks = calculator.calculate();
-    // console.log("chunkBreaks: ", chunkBreaks);
+    result.pageBreaks = calculator.calculate();
 
-    // Adjust break positions based on starting line number
-    result.pageBreaks = chunkBreaks.map(
-        (breakPoint) => breakPoint + prevChunkInfo.startLine // Don't need to add title_page_line_number_offset since we've inserted title page lines
-    );
-    // console.log("chunkBreaks adjusted: ", result.pageBreaks);
-    if (startLineNumber === 0) {
-        result.pageBreaks[0] = 0;
-    } else {
-        // console.log("prevContentPageBreaks: ", prevChunkInfo.pageBreaks);
-        result.pageBreaks = result.pageBreaks.filter(
-            (breakPoint) => breakPoint > prevChunkInfo.pageBreaks[prevChunkInfo.pageBreaks.length - 1]
-        );
-    }
-    // console.log("result.pageBreaks: ", result.pageBreaks);
+    // console.log("result:", result);
 
-    // Save the last part of this chunk and its corresponding titles
-    let prevContentLines = result.lines.slice(-Math.ceil(result.lines.length * overlapSize));
-    let prevContentStartLineNumber = startLineNumber + result.lines.length - prevContentLines.length;
-    let prevContentTitles = result.titles.filter((title) => title[1] >= prevContentStartLineNumber);
-
-    // console.log("prevContentLines: ", prevContentLines);
-    // console.log("prevContentStartLineNumber: ", prevContentStartLineNumber);
-    // console.log("prevContentTitles: ", prevContentTitles);
-
-    return {
-        ...result,
-        prevContentStartLineNumber,
-        prevContentLines,
-        prevContentTitles,
-        prevContentPageBreaks: result.pageBreaks,
-    };
+    return result;
 }
 
 /**
@@ -303,8 +253,11 @@ async function processChunk(
  * console.log(shortestTitle); // Output: "哈哈"
  */
 function getShortestTitleContent(titleGroup, TextProcessorWorker) {
+    const titleGroupIndexOffset = 1;
+
     // console.log("titleGroup: ", titleGroup);
-    let shortestTitle = titleGroup[titleGroup.length - 3]; // Start from the most reduced valid title
+    let shortestTitle = titleGroup[titleGroup.length - titleGroupIndexOffset]; // Start from the most reduced valid title
+    // console.log("shortestTitle: ", shortestTitle);
     const seenTitles = new Set(); // Prevent infinite loops
 
     while (true) {
@@ -328,9 +281,9 @@ function getShortestTitleContent(titleGroup, TextProcessorWorker) {
             continue;
         }
 
-        if (nextTitleGroup.length >= 3) {
+        if (nextTitleGroup.length >= titleGroupIndexOffset) {
             // Update shortestTitle with the stripped title from the group
-            shortestTitle = nextTitleGroup[nextTitleGroup.length - 3];
+            shortestTitle = nextTitleGroup[nextTitleGroup.length - titleGroupIndexOffset];
         } else {
             // If no further stripping is possible, stop
             break;
@@ -438,15 +391,10 @@ self.onmessage = async function (e) {
         metadata = null,
         chunk = null,
         chunkStart = -1,
-        chunkEnd = -1,
         sliceLineOffset = 0,
         extraContent = null,
-        prevChunkInfo = null,
-        overlapSize = 0,
         encoding = "utf-8",
         isEasternLan = true,
-        startLineNumber = -1,
-        startTitleIndex = -1,
         totalLines = -1,
         title_page_line_number_offset = 0,
         pageBreakOnTitle = false,
@@ -459,14 +407,10 @@ self.onmessage = async function (e) {
     // console.log("metadata: ", metadata);
     // console.log("chunk: ", chunk);
     // console.log("chunkStart: ", chunkStart);
-    // console.log("chunkEnd: ", chunkEnd);
+    // console.log("sliceLineOffset: ", sliceLineOffset);
     // console.log("extraContent: ", extraContent);
-    // console.log("prevChunkInfo: ", prevChunkInfo);
-    // console.log("overlapSize: ", overlapSize);
     // console.log("encoding: ", encoding);
     // console.log("isEasternLan: ", isEasternLan);
-    // console.log("startLineNumber: ", startLineNumber);
-    // console.log("startTitleIndex: ", startTitleIndex);
     // console.log("totalLines: ", totalLines);
     // console.log("title_page_line_number_offset: ", title_page_line_number_offset);
     // console.log("pageBreakOnTitle: ", pageBreakOnTitle);
@@ -474,7 +418,8 @@ self.onmessage = async function (e) {
     // console.groupEnd();
 
     try {
-        const { TextProcessorWorker, PaginationCalculator, CONFIG, utils } = await importDependencies();
+        const { TextProcessorWorker, PaginationCalculator, TitlePatternDetector, CONFIG, utils } =
+            await importDependencies();
 
         switch (operation) {
             case "processMetadata": {
@@ -501,25 +446,22 @@ self.onmessage = async function (e) {
 
                 const processedChunk = await processChunk(
                     chunk,
-                    prevChunkInfo,
                     extraContent,
                     sliceLineOffset,
-                    overlapSize,
-                    startLineNumber,
                     title_page_line_number_offset,
                     pageBreakOnTitle,
                     CONFIG,
                     decoder,
                     TextProcessorWorker,
-                    PaginationCalculator
+                    PaginationCalculator,
+                    TitlePatternDetector,
+                    true
                 );
 
                 let titles_ind = {};
                 for (let i = 0; i < processedChunk.titles.length; i++) {
                     titles_ind[processedChunk.titles[i][1]] = i;
                 }
-
-                // console.log("init pageBreaks: ", processedChunk.pageBreaks);
 
                 self.postMessage({
                     type: "initialChunkProcessed",
@@ -538,25 +480,22 @@ self.onmessage = async function (e) {
 
                 const processedChunk = await processChunk(
                     remainingChunk,
-                    prevChunkInfo,
                     extraContent,
                     sliceLineOffset,
-                    overlapSize,
-                    startLineNumber,
                     title_page_line_number_offset,
                     pageBreakOnTitle,
                     CONFIG,
                     decoder,
                     TextProcessorWorker,
-                    PaginationCalculator
+                    PaginationCalculator,
+                    TitlePatternDetector,
+                    false
                 );
 
                 let titles_ind = {};
                 for (let i = 0; i < processedChunk.titles.length; i++) {
-                    titles_ind[processedChunk.titles[i][1]] = i + startTitleIndex;
+                    titles_ind[processedChunk.titles[i][1]] = i;
                 }
-
-                // console.log("remaining pageBreaks: ", processedChunk.pageBreaks);
 
                 self.postMessage({
                     type: "remainingContentProcessed",

@@ -1,53 +1,101 @@
 /**
- * @fileoverview Page Break Calculator - Calculates optimal page break positions for text content
+ * @fileoverview Pagination calculator module for text content processing and page break calculation.
  *
- * This module provides a calculator that:
- * - Handles long text content with chapters
- * - Calculates page breaks based on configured line limits
- * - Intelligently processes empty, short, and long chapters
- * - Optimizes page distribution to avoid too short or too long pages
- * - Uses caching for performance optimization
+ * This module provides functionality for calculating optimal page break positions in text content.
+ * It supports both smart and simple pagination modes, with special handling for:
+ * - Chapter titles and section breaks
+ * - Eastern and Western languages
+ * - Character-based and line-based counting
+ * - Short and long chapters
+ * - Content validation and optimization
  *
- * @module modules/text/pagination-calculator
- * @requires modules/text/text-processor-worker
- */
-
-import { TextProcessorWorker } from "./text-processor-worker.js";
-
-/**
- * Configuration options for pagination
- * @typedef {Object} PaginationConfig
- * @property {number} MAX_LINES - Maximum number of lines allowed per page (when using line count)
- * @property {number} MIN_LINES - Minimum number of lines required per page (when using line count)
- * @property {number} MAX_CHARS - Maximum number of characters allowed per page (when using char count)
- * @property {number} MIN_CHARS - Minimum number of characters required per page (when using char count)
- * @property {?boolean} USE_CHAR_COUNT - Pagination mode: true=char count, false=line count, null=auto detect
- * @property {?number} CHAR_MULTIPLIER - Multiplier for character limits in non-Eastern languages (default: 5)
- * @property {boolean} PAGE_BREAK_ON_TITLE - Whether to use smart pagination with chapter titles
+ * The module consists of two main classes:
+ * 1. SortedPageBreaksArray: A specialized array for managing break points
+ * 2. PaginationCalculator: The main calculator class for determining page breaks
+ *
+ * @module text/pagination-calculator
  */
 
 /**
- * Page Break Calculator class
- * Calculates optimal page break positions for text content with chapter support
- *
- * Key features:
- * - Automatic chapter pagination
- * - Basic merging of consecutive pages within length limits
- * - Multi-page splitting for long chapters
- * - Page length enforcement within configured limits
- * - Special handling for first and last chapters
- * - Performance optimization through caching
- * - Supports both line-based and character-based pagination
- * - Automatic language detection for pagination mode
+ * @class SortedPageBreaksArray
+ * @extends Array
+ * @description A self-sorting array class for storing pagination break points
+ */
+class SortedPageBreaksArray extends Array {
+    /**
+     * @constructor
+     * @param {...number} values - Initial break point values
+     */
+    constructor(...values) {
+        super(); // Call the parent Array constructor
+        if (values.length > 0) {
+            super.push(...values); // Directly use the parent class's push
+            this.sort((a, b) => a - b); // Ensure the array is sorted
+        }
+    }
+
+    /**
+     * @method insert
+     * @param {number} value - Break point value to insert
+     * @description Inserts a new break point while maintaining array order
+     */
+    insert(value) {
+        if (this.length === 0 || value >= this[this.length - 1]) {
+            super.push(value); // Use the parent class's push to avoid recursion
+        } else {
+            super.push(value); // Temporarily push the value
+            this.sort((a, b) => a - b); // Sort to maintain order
+        }
+    }
+
+    /**
+     * @method push
+     * @param {...number} values - Break point values to add
+     * @returns {number} The new length of the array
+     * @description Adds one or more break points while maintaining array order
+     */
+    push(...values) {
+        for (const value of values) {
+            this.insert(value);
+        }
+        return this.length;
+    }
+
+    /**
+     * @method unshift
+     * @param {...number} values - Break point values to add
+     * @returns {number} The new length of the array
+     * @description Adds one or more break points at the start while maintaining array order
+     */
+    unshift(...values) {
+        for (const value of values) {
+            this.insert(value);
+        }
+        return this.length;
+    }
+}
+
+/**
+ * @class PaginationCalculator
+ * @description
+ * Calculates pagination break points for text content, supporting both smart and simple pagination modes.
+ * Smart pagination considers:
+ * - Chapter titles and structure
+ * - Content density and distribution
+ * - Language-specific characteristics
+ * - Minimum and maximum page sizes
+ * - Chapter merging and splitting
  */
 export class PaginationCalculator {
     /**
-     * Error messages used throughout the class
-     * @readonly
      * @private
-     * @enum {string}
+     * @static
+     * @readonly
+     * @property {Object} #ERROR_MESSAGES
+     * @description Static object containing error message constants
      */
     static #ERROR_MESSAGES = Object.freeze({
+        INVALID_BREAK_POINT_TYPE: "[PaginationCalculator] Invalid break point type: break point must be a number",
         INVALID_INPUT: "[PaginationCalculator] Invalid input: contentChunks and allTitles must be arrays",
         INVALID_TITLES: "[PaginationCalculator] Invalid input: allTitles must contain at least 2 entries",
         INVALID_CONFIG: "[PaginationCalculator] Invalid config: MAX_LINES and MIN_LINES are required",
@@ -55,157 +103,132 @@ export class PaginationCalculator {
         INVALID_BREAK_POINT: "[PaginationCalculator] Invalid break point: out of range",
         ALL_TITLES_IND_LENGTH_MISMATCH: "[PaginationCalculator] All titles and all titles indices length mismatch.",
     });
+
     /**
-     * Logging prefix for debug messages
-     * @readonly
+     * @type {string} Log prefix
      * @private
-     * @type {string}
      */
     static #LOG_PREFIX = "[PaginationCalculator";
+
     /**
-     * Controls debug logging output
-     * @readonly
+     * @type {boolean} Whether to enable debug mode
      * @private
-     * @type {boolean}
      */
     static #DEBUG = false;
 
     /**
+     * @type {Array<Object>} Content chunks
      * @private
-     * @type {string[]} Array of content lines to be paginated
      */
     #contentChunks = [];
 
     /**
+     * @type {Array<Array>} All titles
      * @private
-     * @type {Array<[string, number]>} Array of [title, position] tuples
      */
     #allTitles = [];
 
     /**
+     * @type {Object} All titles indices
      * @private
-     * @type {Object} Object of all titles indices
      */
     #allTitlesInd = {};
 
     /**
-     * @private
      * @type {boolean} Whether the content is in an Eastern language
+     * @private
      */
     #isEasternLan = true;
 
     /**
+     * @type {Object} Book and author information
      * @private
-     * @type {Object} Book and author metadata
      */
     #bookAndAuthor = {};
 
     /**
+     * @type {boolean} Whether to use smart pagination
      * @private
-     * @type {boolean} Whether to use smart pagination with chapter titles
      */
     #useSmartPagination = false;
 
     /**
+     * @type {boolean} Whether this is a complete book
      * @private
-     * @type {number} Multiplier for character limits in non-Eastern languages
      */
-    #charMultiplier = 5;
+    #isBookComplete = true;
 
     /**
+     * @type {number} Character multiplier
      * @private
-     * @type {boolean} Whether to use character count instead of line count
+     */
+    #charMultiplier = 3;
+
+    /**
+     * @type {boolean} Whether to use character count
+     * @private
      */
     #useCharCount = false;
 
     /**
+     * @type {Object} Configuration object
      * @private
-     * @type {PaginationConfig} Configuration object for pagination
      */
     #config = {};
 
     /**
+     * @type {SortedPageBreaksArray} Array of break points
      * @private
-     * @type {number[]} Array of calculated break point positions
      */
-    #breaks = [0];
+    #breaks = new SortedPageBreaksArray(0);
 
     /**
+     * @type {number} Current line
      * @private
-     * @type {number} Current line being processed during pagination
      */
     #currentLine = 0;
 
     /**
+     * @type {Map} HTML clean cache
      * @private
-     * @type {boolean} Whether the first real chapter has been processed
-     */
-    #firstRealChapterProcessed = false;
-
-    /**
-     * @private
-     * @type {number} Index of the first real chapter
-     */
-    #firstRealChapterIndex = -1;
-
-    /**
-     * @private
-     * @type {Map<string, string>} Cache for cleaned HTML content
      */
     #htmlCleanCache = new Map();
 
     /**
+     * @type {Map} Content line cache
      * @private
-     * @type {Map<string, number>} Cache for content line counts
      */
     #contentLineCache = new Map();
 
     /**
+     * @type {Map} Content character cache
      * @private
-     * @type {Map<string, number>} Cache for content character counts
      */
     #contentCharCache = new Map();
 
     /**
+     * @type {Map} Valid break point cache
      * @private
-     * @type {Map<number, boolean>} Cache for empty chapter checks
-     */
-    #emptyChapterCache = new Map();
-
-    /**
-     * @private
-     * @type {Map<string, boolean>} Cache for break point validations
      */
     #validBreakPointCache = new Map();
 
     /**
-     * Creates a new PaginationCalculator instance
-     * @public
-     * @param {string[]} contentChunks - Array of content lines to be paginated
-     * @param {Array<[string, number]>} allTitles - Array of chapter titles with their positions
-     * @param {PaginationConfig} config - Pagination configuration
-     * @throws {Error} If input parameters are invalid
-     * @description
-     * Initializes pagination calculator with:
-     * - Content lines and chapter titles
-     * - Language detection for pagination mode
-     * - Automatic or manual counting mode selection:
-     *   - If USE_CHAR_COUNT is explicitly set, uses that value
-     *   - If USE_CHAR_COUNT is null, defaults to character count for Eastern languages
-     *   - Forces line count when PAGE_BREAK_ON_TITLE is false
-     * - Character limit adjustments for non-Eastern languages
+     * @constructor
+     * @param {Array<Object>} contentChunks - Array of content chunks, each containing content and character count
+     * @param {Array<Array>} allTitles - Array of titles, each element is an array of [title text, position]
+     * @param {Object} config - Configuration object
+     * @throws {Error} When input parameters are invalid
      */
     constructor(contentChunks, allTitles, config) {
         this.#validateInputs(contentChunks, allTitles, config);
 
-        // Initialize properties
         this.#contentChunks = contentChunks;
         this.#allTitles = allTitles;
         this.#isEasternLan = config.IS_EASTERN_LAN;
         this.#bookAndAuthor = config.BOOK_AND_AUTHOR;
         this.#useSmartPagination = config.PAGE_BREAK_ON_TITLE;
+        this.#isBookComplete = config.COMPLETE_BOOK;
 
-        // Initialize all titles indices
         for (let i = 0; i < this.#allTitles.length; i++) {
             this.#allTitlesInd[this.#allTitles[i][1]] = i;
         }
@@ -213,18 +236,12 @@ export class PaginationCalculator {
             throw new Error(PaginationCalculator.#ERROR_MESSAGES.ALL_TITLES_IND_LENGTH_MISMATCH);
         }
 
-        // Determine counting mode:
-        // - If USE_CHAR_COUNT is explicitly set (true/false), use that
-        // - If USE_CHAR_COUNT is null, use config.IS_EASTERN_LAN
-        // So if config.IS_EASTERN_LAN is true, it defaults to character count
-        // Otherwise, it defaults to line count
         this.#useCharCount = config.USE_CHAR_COUNT ?? config.IS_EASTERN_LAN;
         if (!this.#useSmartPagination) {
             this.#useCharCount = false;
         }
         this.#charMultiplier = config.CHAR_MULTIPLIER ?? this.#charMultiplier;
 
-        // Adjust configuration for language type
         this.#config = this.#useCharCount ? this.#adjustConfigForLanguage(config) : config;
 
         this.#log("Constructor", {
@@ -234,19 +251,751 @@ export class PaginationCalculator {
             bookAndAuthor: this.#bookAndAuthor,
             useSmartPagination: this.#useSmartPagination,
             useCharCount: this.#useCharCount,
+            isBookComplete: this.#isBookComplete,
             originalConfig: config,
             adjustedConfig: this.#config,
         });
     }
 
     /**
-     * Adjusts character limits based on language type
+     * @method calculate
+     * @returns {SortedPageBreaksArray} Array of calculated pagination break points
+     * @description Calculates pagination positions based on configuration
+     */
+    calculate() {
+        try {
+            const result = this.#useSmartPagination
+                ? this.#calculateSmartPagination()
+                : this.#calculateSimplePagination();
+            return result;
+        } catch (error) {
+            this.#log("Error in calculate", null, error);
+            return new SortedPageBreaksArray(0);
+        }
+    }
+
+    /**
      * @private
-     * @param {PaginationConfig} config - Original configuration
-     * @returns {PaginationConfig} Adjusted configuration
-     * @description
-     * Only adjusts character limits when using character-based pagination.
-     * For non-Eastern languages, multiplies character limits by 5.
+     * @method #calculateSmartPagination
+     * @returns {SortedPageBreaksArray} Array of break points from smart pagination
+     * @description Calculates pagination positions using smart pagination algorithm
+     */
+    #calculateSmartPagination() {
+        try {
+            this.#log("Starting smart pagination");
+            this.#clearCaches();
+
+            // 1. Initialize breaks array
+            this.#log("Initialized breaks", { breaks: this.#breaks });
+
+            // 2. Add initial break points based on chapter titles
+            this.#addInitialBreakPoints();
+            this.#log("Initial break points added", { breaks: this.#breaks });
+
+            // 3. Handle empty/short chapters, remove unnecessary break points
+            this.#handleShortChapters();
+            this.#log("Short chapters handled", { breaks: this.#breaks });
+
+            // 4. Handle long chapters
+            this.#handleLongChapters();
+            this.#log("Long chapters handled", { breaks: this.#breaks });
+
+            // 5. Validate final breaks
+            return this.#validateFinalBreaks();
+        } catch (error) {
+            this.#log("Error in smart pagination", null, error);
+            return new SortedPageBreaksArray(0);
+        }
+    }
+
+    /**
+     * @private
+     * @method #calculateSimplePagination
+     * @returns {SortedPageBreaksArray} Array of break points from simple pagination
+     * @description Calculates pagination positions using simple pagination algorithm
+     */
+    #calculateSimplePagination() {
+        // assert this.#useCharCount is false
+        if (this.#useCharCount) {
+            this.#log("Simple pagination should not use character count!");
+            this.#useCharCount = false;
+        }
+
+        const breaks = new SortedPageBreaksArray(0);
+        const maxLimit = this.#config.MAX_LINES;
+        const totalLines = this.#contentChunks.length;
+        let contentLength = 0;
+        let lastBreak = 0;
+
+        // Scan through content and add break points
+        for (let i = 0; i < totalLines; i++) {
+            const charCount = this.#contentChunks[i].charCount;
+            if (charCount && charCount > 0) {
+                contentLength++;
+            }
+
+            // Add break point if content length exceeds max limit
+            if (contentLength >= maxLimit) {
+                breaks.push(i + 1);
+                lastBreak = i + 1;
+                contentLength = 0;
+            }
+        }
+
+        // Handle special case where last page only contains end page
+        if (breaks.length > 1) {
+            const lastBreak = breaks[breaks.length - 1];
+            const lastPageLength = this.#getContentLength(lastBreak, totalLines);
+
+            if (lastPageLength === 1) {
+                breaks.pop();
+            }
+        }
+
+        this.#log("Simple pagination completed", {
+            breaks,
+            totalLines,
+            maxLimit,
+            useCharCount: this.#useCharCount,
+        });
+
+        return breaks;
+    }
+
+    /**
+     * @private
+     * @method #addInitialBreakPoints
+     * @description Adds initial break points based on chapter titles, skipping the first title (since we already have 0)
+     */
+    #addInitialBreakPoints() {
+        // Iterate through all titles, except the last one (if it's the end page)
+        const titlesToProcess = this.#isBookComplete ? this.#allTitles.slice(0, -1) : this.#allTitles;
+
+        for (let i = 0; i < titlesToProcess.length; i++) {
+            const titlePosition = titlesToProcess[i][1];
+            this.#log("Adding initial break point", {
+                title: titlesToProcess[i][0],
+                titlePosition,
+            });
+            if (titlePosition > 0) {
+                // Skip the first title (since we already have 0)
+                this.#addBreakPoint(titlePosition);
+            }
+        }
+    }
+
+    /**
+     * @private
+     * @method #addBreakPoint
+     * @param {number} breakPoint - Break point position to add
+     * @returns {boolean} Whether the break point was successfully added
+     * @description Adds a break point to the array after validation checks
+     * @throws {Error} When break point is invalid or out of range
+     */
+    #addBreakPoint(breakPoint) {
+        try {
+            if (typeof breakPoint !== "number" || isNaN(breakPoint)) {
+                throw new Error(PaginationCalculator.#ERROR_MESSAGES.INVALID_BREAK_POINT_TYPE);
+            }
+
+            if (breakPoint < 0 || breakPoint > this.#contentChunks.length) {
+                throw new Error(PaginationCalculator.#ERROR_MESSAGES.INVALID_RANGE);
+            }
+
+            // Check for duplicates
+            if (this.#breaks.includes(breakPoint)) {
+                this.#log("Duplicate break point", { breakPoint });
+                return false;
+            }
+
+            this.#breaks.push(breakPoint);
+            this.#log("Added break point", {
+                rank: this.#breaks.length,
+                breakPoint,
+                currentBreaks: this.#breaks,
+            });
+            return true;
+        } catch (error) {
+            console.error("Error adding break point", { breakPoint }, error);
+            return false;
+        }
+    }
+
+    /**
+     * @private
+     * @method #handleShortChapters
+     * @description Processes short chapters, potentially merging adjacent chapters
+     */
+    #handleShortChapters() {
+        // Create a copy because we will modify the original array
+        const breaks = [...this.#breaks];
+
+        for (let i = 0; i < breaks.length - 1; i++) {
+            const start = breaks[i];
+            const end = breaks[i + 1];
+            const nextEnd = i + 2 < breaks.length ? breaks[i + 2] : this.#contentChunks.length;
+
+            // If the current chapter is empty/short
+            if (this.#isShortOrEmptyChapter(start, end)) {
+                // Remove the next break point from the original array
+                this.#breaks = this.#breaks.filter((b) => b !== end);
+                this.#log("Removed break point due to short chapter", {
+                    removed: end,
+                    currentChapter: this.#getContentLength(start, end),
+                });
+                continue;
+            }
+
+            // Check if the current chapter and the next chapter combined are within the limit
+            const combinedLength = this.#getContentLength(start, nextEnd);
+            if (combinedLength <= this.#getMaxLimit()) {
+                this.#breaks = this.#breaks.filter((b) => b !== end);
+                this.#log("Removed break point as combined chapters within limit", {
+                    removed: end,
+                    currentChapter: this.#getContentLength(start, end),
+                    nextChapter: this.#getContentLength(end, nextEnd),
+                    combinedLength,
+                });
+            }
+        }
+
+        // Handle remaining short chapters, where start = breaks[i+1], end = this.#contentChunks.length
+        const lastBreak = breaks[breaks.length - 1];
+        if (lastBreak && this.#isShortOrEmptyChapter(lastBreak, this.#contentChunks.length)) {
+            // Remove the next break point from the original array
+            this.#breaks = this.#breaks.filter((b) => b !== this.#contentChunks.length);
+            this.#log("Removed break point due to short chapter", {
+                removed: this.#contentChunks.length,
+                currentChapter: this.#getContentLength(lastBreak, this.#contentChunks.length),
+            });
+        }
+    }
+
+    /**
+     * @private
+     * @method #isShortOrEmptyChapter
+     * @param {number} start - Starting position of the chapter
+     * @param {number} end - Ending position of the chapter
+     * @returns {boolean} Whether the chapter is considered short or empty
+     * @description Checks if a chapter's content length is below the minimum limit
+     */
+    #isShortOrEmptyChapter(start, end) {
+        const contentLength = this.#getContentLength(start, end);
+        const minLimit = this.#getMinLimit();
+
+        return contentLength < minLimit;
+    }
+
+    /**
+     * @private
+     * @method #getContentLength
+     * @param {number} start - Starting position
+     * @param {number} end - Ending position
+     * @returns {number} Content length (in lines or characters)
+     * @description Calculates content length within specified range
+     */
+    #getContentLength(start, end) {
+        // start often contains title, so we need to exclude it
+        let realStart = start;
+        let titleIndex = this.#allTitlesInd[start];
+        if (titleIndex !== undefined) {
+            realStart = this.#allTitles[titleIndex][1] + 1;
+            try {
+                if (realStart !== start + 1) {
+                    // throw new Error("start: ", this.#allTitles[titleIndex][0], start, realStart);
+                    throw new Error(PaginationCalculator.#ERROR_MESSAGES.INVALID_RANGE);
+                }
+            } catch (error) {
+                console.error(
+                    "Error in getContentLength",
+                    {
+                        title: this.#allTitles[titleIndex][0],
+                        start,
+                        realStart,
+                        end,
+                    },
+                    error
+                );
+                realStart = start + 1;
+            }
+        }
+
+        return this.#useCharCount ? this.#countContentChars(realStart, end) : this.#countContentLines(realStart, end);
+    }
+
+    /**
+     * @private
+     * @method #getContent
+     * @param {number} start - Starting position
+     * @param {number} end - Ending position
+     * @returns {string} Concatenated content between start and end positions
+     * @description Retrieves the actual content between two positions
+     */
+    #getContent(start, end) {
+        return this.#contentChunks
+            .slice(start, end)
+            .map((chunk) => chunk.content)
+            .join("\n");
+    }
+
+    /**
+     * @private
+     * @method #countContentLines
+     * @param {number} start - Starting position
+     * @param {number} end - Ending position
+     * @returns {number} Number of content lines
+     * @description Counts the number of actual content lines between positions, excluding titles
+     */
+    #countContentLines(start, end) {
+        const cacheKey = `lines-${start}-${end}`;
+        if (this.#contentLineCache.has(cacheKey)) {
+            // this.#log("Cache hit for countContentLines", { start, end });
+            return this.#contentLineCache.get(cacheKey);
+        }
+
+        let count = 0;
+        for (let i = start; i < end && i < this.#contentChunks.length; i++) {
+            // Don't count title lines
+            const titleIndex = this.#allTitlesInd[i];
+            if (titleIndex !== undefined) {
+                continue;
+            }
+
+            const charCount = this.#contentChunks[i].charCount;
+            if (charCount && charCount > 0) {
+                count++;
+            }
+        }
+
+        this.#contentLineCache.set(cacheKey, count);
+        return count;
+    }
+
+    /**
+     * @private
+     * @method #countContentChars
+     * @param {number} start - Starting position
+     * @param {number} end - Ending position
+     * @returns {number} Number of characters
+     * @description Counts the number of characters between positions, excluding titles
+     */
+    #countContentChars(start, end) {
+        const cacheKey = `chars-${start}-${end}`;
+        if (this.#contentCharCache.has(cacheKey)) {
+            // this.#log("Cache hit for countContentChars", { start, end });
+            return this.#contentCharCache.get(cacheKey);
+        }
+
+        let count = 0;
+        for (let i = start; i < end && i < this.#contentChunks.length; i++) {
+            // Don't count title lines
+            const titleIndex = this.#allTitlesInd[i];
+            if (titleIndex !== undefined) {
+                continue;
+            }
+
+            const charCount = this.#contentChunks[i].charCount;
+            if (charCount && charCount > 0) {
+                count += charCount;
+            }
+        }
+
+        this.#contentCharCache.set(cacheKey, count);
+        return count;
+    }
+
+    /**
+     * @private
+     * @method #handleLongChapters
+     * @description Processes long chapters by adding additional break points where needed
+     */
+    #handleLongChapters() {
+        // Create a copy because we will modify the original array
+        const breaks = [...this.#breaks];
+
+        for (let i = 0; i < breaks.length - 1; i++) {
+            const start = breaks[i];
+            const end = breaks[i + 1];
+
+            if (this.#isLongChapter(start, end)) {
+                this.#log("Processing long chapter", {
+                    title: this.#allTitles[this.#allTitlesInd[start]][0],
+                    start_line: start,
+                    end_line: end,
+                });
+                this.#processLongChapter(start, end);
+            }
+        }
+
+        // Handle remaining short chapters, where start = breaks[i+1], end = this.#contentChunks.length
+        if (this.#isLongChapter(breaks[breaks.length - 1], this.#contentChunks.length)) {
+            this.#log("Processing long chapter", {
+                title: this.#allTitles[this.#allTitlesInd[breaks[breaks.length - 1]]][0],
+                start_line: breaks[breaks.length - 1],
+                end_line: this.#contentChunks.length,
+            });
+            this.#processLongChapter(breaks[breaks.length - 1], this.#contentChunks.length);
+        }
+    }
+
+    /**
+     * @private
+     * @method #isLongChapter
+     * @param {number} start - Starting position of the chapter
+     * @param {number} end - Ending position of the chapter
+     * @returns {boolean} Whether the chapter is considered long
+     * @description Checks if a chapter's content length exceeds the maximum limit
+     */
+    #isLongChapter(start, end) {
+        const contentLength = this.#getContentLength(start, end);
+        const maxLimit = this.#getMaxLimit();
+
+        return contentLength > maxLimit;
+    }
+
+    /**
+     * @private
+     * @method #processLongChapter
+     * @param {number} start - Starting position of the chapter
+     * @param {number} end - Ending position of the chapter
+     * @description Recursively processes long chapters by finding optimal break points
+     */
+    #processLongChapter(start, end) {
+        // Add safety checks
+        if (start >= end || start < 0 || end > this.#contentChunks.length) {
+            this.#log("Invalid chapter range", { start, end });
+            return;
+        }
+
+        const titlesInRange = this.#findTitlesInRange(start, end);
+
+        if (titlesInRange.length > 0) {
+            // Find the title position that creates the longest page (but not exceeding the max limit)
+            const bestTitleBreak = this.#findBestTitleBreak(start, titlesInRange);
+
+            if (bestTitleBreak) {
+                // Found a suitable title break point
+                this.#addBreakPoint(bestTitleBreak);
+                // Recursively process the remaining content
+                this.#processLongChapter(bestTitleBreak, end);
+            } else {
+                // No suitable title break point found, break by content length
+                this.#breakByContentLength(start, end);
+            }
+        } else {
+            // No titles in range, break by content length
+            this.#breakByContentLength(start, end);
+        }
+    }
+
+    /**
+     * @private
+     * @method #findTitlesInRange
+     * @param {number} start - Starting position
+     * @param {number} end - Ending position
+     * @returns {Array<number>} Array of title positions within the range
+     * @description Finds all title positions that fall within the specified range
+     */
+    #findTitlesInRange(start, end) {
+        return this.#allTitles
+            .filter((title) => {
+                const pos = title[1];
+                return pos > start && pos < end;
+            })
+            .map((title) => title[1]);
+    }
+
+    /**
+     * @private
+     * @method #findBestTitleBreak
+     * @param {number} start - Starting position
+     * @param {Array<number>} titlePositions - Array of potential title break positions
+     * @returns {number|null} Best title position for break point, or null if none found
+     * @description Finds the best title position for a break point that creates the longest valid page
+     */
+    #findBestTitleBreak(start, titlePositions) {
+        const maxLimit = this.#getMaxLimit();
+        const minLimit = this.#getMinLimit();
+
+        // Find the title position that creates the longest page
+        let bestTitle = null;
+        let bestLength = 0;
+
+        for (const titlePos of titlePositions) {
+            const length = this.#getContentLength(start, titlePos);
+
+            if (length >= minLimit && length <= maxLimit && length > bestLength) {
+                bestTitle = titlePos;
+                bestLength = length;
+            }
+        }
+
+        return bestTitle;
+    }
+
+    /**
+     * @private
+     * @method #breakByContentLength
+     * @param {number} start - Starting position
+     * @param {number} end - Ending position
+     * @description Calculates break points based on content length using either linear or jump search
+     */
+    #breakByContentLength(start, end) {
+        const totalLength = this.#getContentLength(start, end);
+        const maxLimit = this.#getMaxLimit();
+        const minLimit = this.#getMinLimit();
+
+        if (totalLength < maxLimit * 10) {
+            // console.log("Using linear search:", { totalLength, maxLimit });
+            // Previous implementation, efficient when end - start is reasonable.
+            // This is because of the single loop instead of nested loops.
+            // But this is not as efficient when end - start is large.
+            let contentCount = 0;
+            let lastBreakPoint = start;
+
+            for (let j = start; j < end; j++) {
+                if (this.#contentChunks[j]?.elementType !== "e") {
+                    contentCount = this.#incrementCount(contentCount, j);
+                }
+
+                if (contentCount >= maxLimit) {
+                    const newBreakPoint = j + 1;
+                    if (
+                        !this.#wouldCreateShortNextPage(newBreakPoint, end) &&
+                        this.#isValidBreakPoint(lastBreakPoint, newBreakPoint)
+                    ) {
+                        this.#log("Adding break point for long chapter");
+                        if (this.#addBreakPoint(newBreakPoint)) {
+                            lastBreakPoint = newBreakPoint;
+                            contentCount = 0;
+                        }
+                    }
+                }
+            }
+        } else {
+            // console.log("Using jump search:", { totalLength, maxLimit });
+            // Current implementation, efficient when end - start is large.
+            // But not as efficient when end - start is small because of the nested loops.
+
+            // Start accumulating content length from the current position
+            let currentPos = start;
+
+            while (currentPos < end) {
+                let nextPos = currentPos + 1;
+                let bestPos = currentPos + 1;
+
+                // Find the farthest position that doesn't exceed maxLimit
+                while (nextPos <= end) {
+                    const length = this.#getContentLength(currentPos, nextPos);
+                    if (length > maxLimit) break;
+                    bestPos = nextPos;
+                    nextPos++;
+                }
+
+                // If the found position creates a page length greater than minLimit, add a break point
+                const pageLength = this.#getContentLength(currentPos, bestPos);
+                if (pageLength >= minLimit && bestPos < end) {
+                    this.#addBreakPoint(bestPos);
+                }
+
+                currentPos = bestPos;
+            }
+        }
+    }
+
+    /**
+     * @private
+     * @method #incrementCount
+     * @param {number} currentCount - Current count
+     * @param {string} line - Current line text
+     * @returns {number} Updated count
+     * @description Updates content count based on current line
+     */
+    #incrementCount(currentCount, index) {
+        return currentCount + this.#getContentLength(index, index + 1);
+    }
+
+    /**
+     * @private
+     * @method #wouldCreateShortNextPage
+     * @param {number} breakPoint - Potential break point
+     * @param {number} endPoint - End position
+     * @returns {boolean} Whether breaking at this point would create a short next page
+     * @description Checks if adding a break point would result in a too-short following page
+     */
+    #wouldCreateShortNextPage(breakPoint, endPoint) {
+        const contentLength = this.#getContentLength(breakPoint, endPoint);
+        const minLimit = this.#useCharCount ? this.#config.MIN_CHARS : this.#config.MIN_LINES;
+        const isShort = contentLength > 0 && contentLength < minLimit;
+        this.#log("Would create short next page?", {
+            breakPoint,
+            endPoint,
+            contentLength,
+            minLimit,
+            useCharCount: this.#useCharCount,
+            nextPageIsShort: isShort,
+        });
+        return isShort;
+    }
+
+    /**
+     * @private
+     * @method #validateFinalBreaks
+     * @returns {SortedPageBreaksArray} Validated array of break points
+     * @description Validates and filters break points, ensuring each pagination position is valid
+     */
+    #validateFinalBreaks() {
+        // Create a copy because we will modify the original array
+        const breaks = [...this.#breaks];
+
+        this.#log("Starting final validation", {
+            breakPointsBeforeValidation: breaks,
+        });
+
+        // Create a new SortedPageBreaksArray to store the validated breaks
+        // Always start with 0
+        const validatedBreaks = new SortedPageBreaksArray(0);
+
+        // Validate the rest of the breaks
+        const otherBreaks = breaks.slice(1).filter((breakPoint, index, array) => {
+            const nextBreakPoint = index === array.length - 1 ? this.#contentChunks.length : array[index + 1];
+            const isValid = this.#isValidBreakPoint(breakPoint, nextBreakPoint);
+            return isValid;
+        });
+
+        // Add the validated breaks to the final array
+        validatedBreaks.push(...otherBreaks);
+
+        this.#log("Validation completed", {
+            initialBreaks: this.#breaks,
+            finalBreaks: validatedBreaks,
+            totalPages: validatedBreaks.length,
+        });
+
+        // Ensure we always have at least the initial break point
+        if (validatedBreaks.length === 0) {
+            this.#log("No valid breaks found, returning initial break point");
+            return new SortedPageBreaksArray(0);
+        }
+
+        return validatedBreaks;
+    }
+
+    /**
+     * @private
+     * @method #isValidBreakPoint
+     * @param {number} breakPoint - Current break point
+     * @param {number} nextBreakPoint - Next break point
+     * @returns {boolean} Whether the break point is valid
+     * @description Checks if a given break point is a valid pagination position
+     */
+    #isValidBreakPoint(breakPoint, nextBreakPoint) {
+        const cacheKey = `valid-${breakPoint}-${nextBreakPoint}`;
+        if (this.#validBreakPointCache.has(cacheKey)) {
+            return this.#validBreakPointCache.get(cacheKey);
+        }
+
+        try {
+            let isValid = true;
+
+            // Range validation
+            if (breakPoint < 0 || nextBreakPoint > this.#contentChunks.length) {
+                throw new Error(PaginationCalculator.#ERROR_MESSAGES.INVALID_RANGE);
+            }
+            if (breakPoint > nextBreakPoint) {
+                throw new Error(PaginationCalculator.#ERROR_MESSAGES.INVALID_BREAK_POINT);
+            }
+
+            // Calculate actual content lines between these two break points
+            const contentLength = this.#getContentLength(breakPoint, nextBreakPoint);
+            const maxLimit = this.#getMaxLimit();
+            const minLimit = this.#getMinLimit();
+
+            // Check if this is the last page of a chapter
+            const isLastPageOfChapter = this.#allTitles.some((title, index) => {
+                const nextTitle = this.#allTitles[index + 1];
+                return nextTitle && breakPoint < nextTitle[1] && nextBreakPoint >= nextTitle[1];
+            });
+
+            // For the last page of a chapter, if the content length is less than 30% of the max limit, it's not a valid break point.
+            if (isLastPageOfChapter) {
+                // this.#log("Last page of chapter", {
+                //     breakPoint,
+                //     nextBreakPoint,
+                //     contentLength,
+                //     minLimit,
+                //     useCharCount: this.#useCharCount,
+                //     lastPageContent: this.#getContent(breakPoint, nextBreakPoint),
+                // });
+                if (contentLength < maxLimit * 0.3) {
+                    isValid = false;
+                }
+            }
+
+            // Check if minimum line count requirement is met
+            if (contentLength < minLimit) {
+                // If the content is too short, we don't add the break point.
+                // If it's the last page of a chapter, we merge it with the previous page.
+                isValid = false;
+            }
+
+            // Final check for content existence
+            if (contentLength <= 0) {
+                isValid = false;
+            }
+
+            this.#validBreakPointCache.set(cacheKey, isValid);
+
+            // this.#log("Break point validation", {
+            //     breakPoint,
+            //     nextBreakPoint,
+            //     contentLength,
+            //     minLimit,
+            //     useCharCount: this.#useCharCount,
+            //     isValid,
+            // });
+
+            return isValid;
+        } catch (error) {
+            console.error("Error in isValidBreakPoint", { breakPoint, nextBreakPoint }, error);
+            this.#validBreakPointCache.set(cacheKey, false);
+            return false;
+        }
+    }
+
+    /**
+     * @private
+     * @method #validateInputs
+     * @param {Array<Object>} contentChunks - Array of content chunks
+     * @param {Array<Array>} allTitles - Array of titles
+     * @param {Object} config - Configuration object
+     * @throws {Error} When inputs are invalid
+     * @description Validates input parameters for the calculator
+     */
+    #validateInputs(contentChunks, allTitles, config) {
+        if (!Array.isArray(contentChunks) || !Array.isArray(allTitles)) {
+            throw new Error(PaginationCalculator.#ERROR_MESSAGES.INVALID_INPUT);
+        }
+        // 1 instead of 2 because we might only have either a title page or an end page because we process the file twice if the file is large.
+        if (allTitles.length < 1) {
+            throw new Error(PaginationCalculator.#ERROR_MESSAGES.INVALID_TITLES);
+        }
+
+        const useCharCount = config.USE_CHAR_COUNT ?? false;
+        const hasLineConfig = config.MAX_LINES && config.MIN_LINES;
+        const hasCharConfig = config.MAX_CHARS && config.MIN_CHARS;
+
+        if ((useCharCount && !hasCharConfig) || (!useCharCount && !hasLineConfig)) {
+            throw new Error(PaginationCalculator.#ERROR_MESSAGES.INVALID_CONFIG);
+        }
+    }
+
+    /**
+     * @private
+     * @method #adjustConfigForLanguage
+     * @param {Object} config - Original configuration object
+     * @returns {Object} Adjusted configuration object
+     * @description Adjusts character limits based on language type (Eastern vs non-Eastern)
      */
     #adjustConfigForLanguage(config) {
         // Keep original config
@@ -265,30 +1014,23 @@ export class PaginationCalculator {
     }
 
     /**
-     * Validates input parameters for the calculator
      * @private
-     * @param {string[]} contentChunks - Array of content lines to validate
-     * @param {ChapterTitle[]} allTitles - Array of chapter titles to validate
-     * @param {PaginationConfig} config - Configuration object to validate
-     * @throws {Error} INVALID_INPUT if contentChunks or allTitles are not arrays
-     * @throws {Error} INVALID_TITLES if allTitles has less than 2 entries
-     * @throws {Error} INVALID_CONFIG if config is missing required properties
+     * @method #getMaxLimit
+     * @returns {number} Maximum limit (either characters or lines)
+     * @description Returns the maximum content limit based on current counting mode
      */
-    #validateInputs(contentChunks, allTitles, config) {
-        if (!Array.isArray(contentChunks) || !Array.isArray(allTitles)) {
-            throw new Error(PaginationCalculator.#ERROR_MESSAGES.INVALID_INPUT);
-        }
-        if (allTitles.length < 2) {
-            throw new Error(PaginationCalculator.#ERROR_MESSAGES.INVALID_TITLES);
-        }
+    #getMaxLimit() {
+        return this.#useCharCount ? this.#config.MAX_CHARS : this.#config.MAX_LINES;
+    }
 
-        const useCharCount = config.USE_CHAR_COUNT ?? false;
-        const hasLineConfig = config.MAX_LINES && config.MIN_LINES;
-        const hasCharConfig = config.MAX_CHARS && config.MIN_CHARS;
-
-        if ((useCharCount && !hasCharConfig) || (!useCharCount && !hasLineConfig)) {
-            throw new Error(PaginationCalculator.#ERROR_MESSAGES.INVALID_CONFIG);
-        }
+    /**
+     * @private
+     * @method #getMinLimit
+     * @returns {number} Minimum limit (either characters or lines)
+     * @description Returns the minimum content limit based on current counting mode
+     */
+    #getMinLimit() {
+        return this.#useCharCount ? this.#config.MIN_CHARS : this.#config.MIN_LINES;
     }
 
     /**
@@ -325,894 +1067,15 @@ export class PaginationCalculator {
     }
 
     /**
-     * Clears all internal caches
      * @private
-     * @description
-     * Resets the following caches:
-     * - Content line count cache
-     * - Empty chapter check cache
-     * - Valid break point cache
+     * @method #clearCaches
+     * @description Clears all internal caches (HTML clean cache, content line cache, etc.)
      */
     #clearCaches() {
+        this.#htmlCleanCache.clear();
         this.#contentLineCache.clear();
         this.#contentCharCache.clear();
-        this.#emptyChapterCache.clear();
         this.#validBreakPointCache.clear();
         this.#log("Caches cleared");
-    }
-
-    /**
-     * Counts non-empty content lines between two positions
-     * @private
-     * @param {number} start - Starting index (inclusive)
-     * @param {number} end - Ending index (exclusive)
-     * @returns {number} Count of non-empty lines in the range
-     * @description
-     * Performance optimized with caching:
-     * - Uses cache key format: "start-end"
-     * - Caches results for repeated calls
-     * - Trims lines to ignore whitespace-only content
-     */
-    #countContentLines(start, end) {
-        const cacheKey = `lines-${start}-${end}`;
-        if (this.#contentLineCache.has(cacheKey)) {
-            // this.#log("Cache hit for countContentLines", { start, end });
-            return this.#contentLineCache.get(cacheKey);
-        }
-
-        let count = 0;
-        for (let i = start; i < end && i < this.#contentChunks.length; i++) {
-            const line = this.#contentChunks[i].trim();
-
-            // Don't count title lines
-            const titleIndex = this.#allTitlesInd[i];
-            if (titleIndex !== undefined) {
-                continue;
-            }
-
-            const cleanLine = this.#optimize(line);
-            if (cleanLine && !this.#isPunctuationOnly(cleanLine)) {
-                count++;
-            }
-        }
-
-        this.#contentLineCache.set(cacheKey, count);
-        return count;
-    }
-
-    /**
-     * Counts characters in content range (excluding whitespace)
-     * @private
-     * @param {number} start - Start index
-     * @param {number} end - End index
-     * @returns {number} Character count
-     * @description
-     * Performance optimized with caching:
-     * - Uses cache key format: "chars-start-end"
-     * - Caches results for repeated calls
-     * - Trims lines to ignore whitespace-only content
-     */
-    #countContentChars(start, end) {
-        const cacheKey = `chars-${start}-${end}`;
-        if (this.#contentCharCache.has(cacheKey)) {
-            // this.#log("Cache hit for countContentChars", { start, end });
-            return this.#contentCharCache.get(cacheKey);
-        }
-
-        let count = 0;
-        for (let i = start; i < end && i < this.#contentChunks.length; i++) {
-            const line = this.#contentChunks[i].trim();
-
-            // Don't count title lines
-            const titleIndex = this.#allTitlesInd[i];
-            if (titleIndex !== undefined) {
-                continue;
-            }
-
-            const cleanLine = this.#optimize(line);
-            if (cleanLine && !this.#isPunctuationOnly(cleanLine)) {
-                count += cleanLine.length;
-            }
-        }
-
-        this.#contentCharCache.set(cacheKey, count);
-        return count;
-    }
-
-    /**
-     * Optimize a line. This is needed to more accurately count lines and characters.
-     * @private
-     * @param {string} line - Line to optimize
-     * @returns {string} Optimized line
-     */
-    #optimize(line) {
-        return TextProcessorWorker.optimize(this.#removeHtmlTags(line).trim(), this.#bookAndAuthor);
-    }
-
-    /**
-     * Removes HTML tags from a line and returns the text content
-     * @private
-     * @param {string} line - Line to process
-     * @returns {string} Text content without HTML tags
-     * @description
-     * Removes all HTML tags and replaces common HTML entities
-     */
-    #removeHtmlTags(line) {
-        if (!line) return "";
-
-        // Cache for performance
-        const cacheKey = line;
-        if (this.#htmlCleanCache.has(cacheKey)) {
-            // this.#log("Cache hit for removeHtmlTags", { line });
-            return this.#htmlCleanCache.get(cacheKey);
-        }
-
-        // Remove all HTML tags
-        const cleanText = line
-            .replace(/<[^>]*>/g, "") // Remove HTML tags
-            .replace(/&nbsp;/g, " ") // Replace common HTML entities
-            .trim();
-
-        this.#htmlCleanCache.set(cacheKey, cleanText);
-        return cleanText;
-    }
-
-    /**
-     * Checks if a line contains only punctuation characters
-     * @private
-     * @param {string} line - Line to check
-     * @returns {boolean} true if line contains only punctuation
-     * @description
-     * Uses a regular expression to check if a line contains only punctuation characters
-     */
-    #isPunctuationOnly(line) {
-        if (!line) return false;
-        // Regular expression to match lines containing only punctuation and whitespace
-        const punctuationRegex = /^[\p{P}\p{S}\p{Pd}\s]+$/u;
-        return punctuationRegex.test(line);
-    }
-
-    /**
-     * Gets content length between positions based on current counting mode
-     * @private
-     * @param {number} start - Start index
-     * @param {number} end - End index
-     * @returns {number} Content length (either line count or character count)
-     */
-    #getContentLength(start, end) {
-        // start often contains title, so we need to exclude it
-        let realStart = start;
-        let titleIndex = this.#allTitlesInd[start];
-        if (titleIndex !== undefined) {
-            realStart = this.#allTitles[titleIndex][1] + 1;
-            if (realStart !== start + 1) {
-                throw new Error("start: ", this.#allTitles[titleIndex][0], start, realStart);
-            }
-        }
-
-        return this.#useCharCount ? this.#countContentChars(realStart, end) : this.#countContentLines(realStart, end);
-    }
-
-    /**
-     * Checks if a chapter contains only empty lines
-     * @private
-     * @param {number} titleIndex - Index of the chapter in allTitles array
-     * @returns {boolean} true if chapter has no non-empty lines
-     * @description
-     * A chapter is considered empty if:
-     * - It contains no content lines, or
-     * - All lines between its start and next chapter are empty/whitespace
-     * Uses caching to optimize repeated checks
-     */
-    #isEmptyChapter(titleIndex) {
-        if (this.#emptyChapterCache.has(titleIndex)) {
-            // this.#log("Cache hit for isEmptyChapter", { titleIndex });
-            return this.#emptyChapterCache.get(titleIndex);
-        }
-
-        const titleStart = this.#allTitles[titleIndex][1];
-        const nextTitleStart =
-            titleIndex < this.#allTitles.length - 1 ? this.#allTitles[titleIndex + 1][1] : this.#contentChunks.length;
-
-        const contentLength = this.#getContentLength(titleStart + 1, nextTitleStart);
-
-        const isEmpty = contentLength === 0;
-        this.#emptyChapterCache.set(titleIndex, isEmpty);
-
-        if (isEmpty) {
-            this.#log("Empty chapter", {
-                title: this.#allTitles[titleIndex][0],
-                titleIndex,
-                titleStart,
-                nextTitleStart,
-                contentLength,
-            });
-        }
-        return isEmpty;
-    }
-
-    /**
-     * Checks if adding a break point would create a too-short next page
-     * @private
-     * @param {number} breakPoint - Potential break point position
-     * @param {number} endPoint - End position to check against
-     * @returns {boolean} true if the next page would be shorter than MIN_LINES
-     * @description
-     * Prevents creation of short pages by:
-     * - Calculating remaining content after break point
-     * - Comparing against MIN_LINES configuration
-     * - Special handling for end of content
-     */
-    #wouldCreateShortNextPage(breakPoint, endPoint) {
-        const contentLength = this.#getContentLength(breakPoint, endPoint);
-        const minLimit = this.#useCharCount ? this.#config.MIN_CHARS : this.#config.MIN_LINES;
-        const isShort = contentLength > 0 && contentLength < minLimit;
-        this.#log("Short page check", {
-            breakPoint,
-            endPoint,
-            contentLength,
-            minLimit,
-            useCharCount: this.#useCharCount,
-            isShort,
-        });
-        return isShort;
-    }
-
-    /**
-     * Validates if a break point would create valid page lengths
-     * @private
-     * @param {number} breakPoint - Start position of the page
-     * @param {number} nextBreakPoint - End position of the page
-     * @returns {boolean} true if the break point creates a valid page
-     * @description
-     * A break point is valid if:
-     * - It's within the content bounds
-     * - Creates a page within MIN_LINES and MAX_LINES
-     * - Doesn't create invalid page lengths
-     * Uses caching for performance optimization
-     */
-    #isValidBreakPoint(breakPoint, nextBreakPoint) {
-        const cacheKey = `valid-${breakPoint}-${nextBreakPoint}`;
-        if (this.#validBreakPointCache.has(cacheKey)) {
-            return this.#validBreakPointCache.get(cacheKey);
-        }
-
-        try {
-            // Range validation
-            if (breakPoint < 0 || nextBreakPoint > this.#contentChunks.length) {
-                throw new Error(PaginationCalculator.#ERROR_MESSAGES.INVALID_RANGE);
-            }
-            if (breakPoint >= nextBreakPoint) {
-                throw new Error(PaginationCalculator.#ERROR_MESSAGES.INVALID_BREAK_POINT);
-            }
-
-            // Calculate actual content lines between these two break points
-            const contentLength = this.#getContentLength(breakPoint, nextBreakPoint);
-            const minLimit = this.#useCharCount ? this.#config.MIN_CHARS : this.#config.MIN_LINES;
-
-            // Check if minimum line count requirement is met
-            if (contentLength < minLimit) {
-                // Check if this is the last page of a chapter
-                const isLastPageOfChapter = this.#allTitles.some((title, index) => {
-                    const nextTitle = this.#allTitles[index + 1];
-                    return nextTitle && breakPoint < nextTitle[1] && nextBreakPoint >= nextTitle[1];
-                });
-
-                // If not the last page of a chapter, require minimum line count
-                if (!isLastPageOfChapter) {
-                    this.#log("Invalid break point - content too short", {
-                        breakPoint,
-                        nextBreakPoint,
-                        contentLength,
-                        minLimit,
-                        useCharCount: this.#useCharCount,
-                    });
-                    return false;
-                }
-            }
-
-            const isValid = contentLength > 0;
-            this.#validBreakPointCache.set(cacheKey, isValid);
-
-            this.#log("Break point validation", {
-                breakPoint,
-                nextBreakPoint,
-                contentLength,
-                minLimit,
-                useCharCount: this.#useCharCount,
-                isValid,
-            });
-
-            return isValid;
-        } catch (error) {
-            this.#log("Error in isValidBreakPoint", { breakPoint, nextBreakPoint }, error);
-            return false;
-        }
-    }
-
-    /**
-     * Adds a new break point to the breaks array
-     * @private
-     * @param {number} breakPoint - Position to add as break point
-     * @returns {boolean} true if break point was successfully added
-     * @description
-     * Break point addition logic:
-     * - Validates the break point position
-     * - Ensures no duplicates
-     * - Maintains break point order
-     * - Updates current line position
-     */
-    #addBreakPoint(breakPoint) {
-        try {
-            if (typeof breakPoint !== "number" || isNaN(breakPoint)) {
-                throw new Error("Invalid break point type");
-            }
-
-            if (breakPoint < 0 || breakPoint > this.#contentChunks.length) {
-                throw new Error(PaginationCalculator.#ERROR_MESSAGES.INVALID_RANGE);
-            }
-
-            // Check for duplicates
-            if (this.#breaks.includes(breakPoint)) {
-                this.#log("Duplicate break point", { breakPoint });
-                return false;
-            }
-
-            // Validate with previous break point
-            if (this.#breaks.length > 0) {
-                const lastBreak = this.#breaks[this.#breaks.length - 1];
-                if (!this.#isValidBreakPoint(lastBreak, breakPoint)) {
-                    this.#log("Invalid break point", {
-                        lastBreak,
-                        breakPoint,
-                    });
-                    return false;
-                }
-            }
-
-            this.#breaks.push(breakPoint);
-            this.#log("Added break point", {
-                breakPoint,
-                currentBreaks: this.#breaks,
-            });
-            return true;
-        } catch (error) {
-            this.#log("Error adding break point", { breakPoint }, error);
-            return false;
-        }
-    }
-
-    /**
-     * Calculates page break positions for the entire content
-     * @public
-     * @returns {number[]} Array of page break positions
-     * @throws {Error} If calculation fails
-     * @description
-     * Uses smart pagination if enabled, otherwise falls back to simple pagination
-     */
-    calculate() {
-        try {
-            const result = this.#useSmartPagination
-                ? this.#calculateSmartPagination()
-                : this.#calculateSimplePagination();
-            return result;
-        } catch (error) {
-            this.#log("Error in calculate", null, error);
-            return [0];
-        }
-    }
-
-    /**
-     * Calculates page break positions for the entire content using smart pagination
-     * @private
-     * @returns {number[]} Array of page break positions
-     * @throws {Error} If calculation fails
-     * @description
-     * Handles various chapter scenarios:
-     * - End page title (skips processing)
-     * - First chapter after title (special handling for title page)
-     * - Empty chapters (adds break point if needed)
-     * - Short chapters (attempts to merge with previous page)
-     * - Long chapters (splits into multiple pages)
-     */
-    #calculateSmartPagination() {
-        try {
-            this.#log("Starting calculation");
-            this.#clearCaches();
-
-            // Handle empty content
-            if (this.#contentChunks.length === 0) {
-                return [0];
-            }
-
-            // Process each chapter
-            for (let i = 0; i < this.#allTitles.length - 1; i++) {
-                this.#processChapter(i);
-            }
-
-            // Handle last chapter
-            this.#handleLastChapter();
-
-            // Merge short pages
-            this.#mergeShortPages();
-
-            // Validate final breaks
-            return this.#validateFinalBreaks();
-        } catch (error) {
-            this.#log("Error in calculation", null, error);
-            return [0];
-        }
-    }
-
-    /**
-     * Calculates page break positions for the entire content using simple pagination
-     * @private
-     * @returns {number[]} Array of page break positions
-     * @description
-     * Simple pagination:
-     * - Adds break points at fixed intervals
-     * - Handles special case where last page only contains end page
-     */
-    #calculateSimplePagination() {
-        // assert this.#useCharCount is false
-        if (this.#useCharCount) {
-            throw new Error("Simple pagination should not use character count!");
-        }
-
-        const breaks = [0];
-        const maxLimit = this.#config.MAX_LINES;
-        const totalLines = this.#contentChunks.length;
-        let contentLength = 0;
-        let lastBreak = 0;
-
-        // Scan through content and add break points
-        for (let i = 0; i < totalLines; i++) {
-            const line = this.#contentChunks[i].trim();
-            const cleanLine = this.#optimize(line);
-
-            // Only count lines with actual content
-            if (cleanLine && !this.#isPunctuationOnly(cleanLine)) {
-                contentLength++;
-            }
-
-            // Add break point if content length exceeds max limit
-            if (contentLength >= maxLimit) {
-                breaks.push(i + 1);
-                lastBreak = i + 1;
-                contentLength = 0;
-            }
-        }
-
-        // Handle special case where last page only contains end page
-        if (breaks.length > 1) {
-            const lastBreak = breaks[breaks.length - 1];
-            const lastPageLength = this.#getContentLength(lastBreak, totalLines);
-
-            if (lastPageLength === 1) {
-                breaks.pop();
-            }
-        }
-
-        this.#log("Simple pagination completed", {
-            breaks,
-            totalLines,
-            maxLimit,
-            useCharCount: this.#useCharCount,
-        });
-
-        return breaks;
-    }
-
-    /**
-     * Processes a single chapter to determine its page breaks
-     * @private
-     * @param {number} i - Chapter index in allTitles array
-     * @description
-     * Handles various chapter scenarios:
-     * - End page title (skips processing)
-     * - First chapter after title (special handling for title page)
-     * - Empty chapters (adds break point if needed)
-     * - Short chapters (attempts to merge with previous page)
-     * - Long chapters (splits into multiple pages)
-     */
-    #processChapter(i) {
-        const titleStart = this.#allTitles[i][1];
-        const nextTitleStart = this.#allTitles[i + 1][1];
-        const chapterLength = this.#getContentLength(titleStart, nextTitleStart);
-        const minLimit = this.#useCharCount ? this.#config.MIN_CHARS : this.#config.MIN_LINES;
-        const maxLimit = this.#useCharCount ? this.#config.MAX_CHARS : this.#config.MAX_LINES;
-
-        this.#log(`Chapter ${i}`, {
-            title: this.#allTitles[i][0],
-            contentLength: chapterLength,
-            useCharCount: this.#useCharCount,
-        });
-
-        // Last chapter before end page, skip processing as we have special handling for it
-        if (i === this.#allTitles.length - 2) {
-            this.#log("Last chapter before end page, skipped processing");
-            return;
-        }
-
-        // If the title page chapter is not empty, we always add a break point after it
-        if (i === 0 && chapterLength > 0) {
-            this.#log("Title page chapter is not empty, adding break point after it");
-            this.#addBreakPoint(nextTitleStart);
-            return;
-        }
-
-        // Handle first real chapter after title, meaning the first chapter after title page chapter that has content.
-        // We need to check if the chapter has content, if it doesn't have content, we should skip processing.
-        // We need to do this check only once, so we use #firstRealChapterProcessed flag.
-        if (i > 0) {
-            if (!this.#firstRealChapterProcessed) {
-                if (chapterLength === 0) {
-                    this.#log("First chapter after title is empty, skipped processing");
-                    return;
-                } else {
-                    this.#log("First real chapter found, processing");
-                    this.#firstRealChapterProcessed = true;
-                    this.#firstRealChapterIndex = i;
-                }
-            }
-        }
-
-        if (i === this.#firstRealChapterIndex) {
-            this.#log("Processing first real chapter after title");
-            const titlePageLength = this.#getContentLength(0, titleStart);
-            const combinedLength = titlePageLength + chapterLength;
-
-            this.#log("Title page analysis", {
-                titlePageLength,
-                chapterLength,
-                combinedLength,
-                maxLimit,
-                useCharCount: this.#useCharCount,
-            });
-
-            // Always try to keep first chapter with title page unless combined length exceeds maxLimit
-            if (combinedLength <= maxLimit) {
-                this.#log("Keeping first chapter with title page");
-                return;
-            }
-
-            // If combined content is too long, find optimal break point
-            this.#log("Finding optimal break point after title page");
-            let currentPos = titleStart;
-            let accumulatedLength = titlePageLength;
-
-            // Keep adding content until we hit the limit
-            while (currentPos < nextTitleStart) {
-                const nextLength = this.#getContentLength(currentPos, currentPos + 1);
-                if (accumulatedLength + nextLength > maxLimit) {
-                    break;
-                }
-                accumulatedLength += nextLength;
-                currentPos++;
-            }
-
-            // Add break point at the optimal position
-            this.#log("Adding break point at optimal position");
-            if (currentPos < nextTitleStart && this.#addBreakPoint(currentPos)) {
-                this.#currentLine = currentPos;
-
-                // Process remaining content if it's still too long
-                const remainingLength = this.#getContentLength(currentPos, nextTitleStart);
-                if (remainingLength > maxLimit) {
-                    this.#processLongChapter(currentPos, nextTitleStart);
-                }
-            }
-            return;
-        }
-
-        // Handle empty chapters
-        if (this.#isEmptyChapter(i)) {
-            if (titleStart > this.#currentLine) {
-                this.#log("Adding break point for empty chapter");
-                if (this.#addBreakPoint(titleStart)) {
-                    this.#currentLine = titleStart;
-                }
-            }
-            return;
-        }
-
-        // If previous chapter was empty
-        if (i > 0 && this.#isEmptyChapter(i - 1)) {
-            if (chapterLength > maxLimit) {
-                this.#processLongChapter(titleStart, nextTitleStart);
-            }
-            return;
-        }
-
-        // Handle short chapters
-        if (chapterLength < minLimit && titleStart > 0) {
-            const lastBreak = this.#breaks[this.#breaks.length - 1];
-            const contentOnLastPage = this.#getContentLength(lastBreak, titleStart);
-
-            if (contentOnLastPage + chapterLength <= maxLimit) {
-                this.#log("Merging short chapter with previous page");
-                return;
-            }
-        }
-
-        // Add regular chapter break
-        if (titleStart > this.#currentLine) {
-            this.#log("Adding break point for regular chapter");
-            if (this.#addBreakPoint(titleStart)) {
-                this.#currentLine = titleStart;
-            }
-        }
-
-        // Handle long chapters
-        if (chapterLength > maxLimit) {
-            this.#processLongChapter(titleStart, nextTitleStart);
-        }
-    }
-
-    /**
-     * Processes a long chapter that needs to be split across multiple pages
-     * @private
-     * @param {number} titleStart - Starting position of the chapter
-     * @param {number} nextTitleStart - Starting position of the next chapter
-     * @description
-     * Splits long chapters by:
-     * 1. Counting non-empty content lines
-     * 2. Adding break points when MAX_LINES is reached
-     * 3. Ensuring no short pages are created
-     * 4. Validating each break point
-     */
-    #processLongChapter(titleStart, nextTitleStart) {
-        let contentCount = 0;
-        let lastBreakPoint = titleStart;
-        const maxLimit = this.#useCharCount ? this.#config.MAX_CHARS : this.#config.MAX_LINES;
-
-        for (let j = titleStart; j < nextTitleStart; j++) {
-            if (this.#contentChunks[j]?.trim()) {
-                contentCount++;
-                if (contentCount >= maxLimit) {
-                    const newBreakPoint = j + 1;
-                    if (
-                        !this.#wouldCreateShortNextPage(newBreakPoint, nextTitleStart) &&
-                        this.#isValidBreakPoint(lastBreakPoint, newBreakPoint)
-                    ) {
-                        this.#log("Adding break point for long chapter");
-                        if (this.#addBreakPoint(newBreakPoint)) {
-                            lastBreakPoint = newBreakPoint;
-                            contentCount = 0;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Handles the last chapter of the content
-     * @private
-     * @description
-     * Special handling for the last chapter:
-     * - Processes remaining content if any exists
-     * - Handles short last chapter appropriately
-     * - Splits into multiple pages if too long
-     */
-    #handleLastChapter() {
-        const lastRealChapterIndex = this.#allTitles.length - 2;
-        const lastRealChapterStart = this.#allTitles[lastRealChapterIndex][1];
-        const totalLines = this.#contentChunks.length;
-
-        const remainingContentLength = this.#getContentLength(lastRealChapterStart, totalLines);
-        this.#log("Processing last chapter", {
-            remainingContentLength,
-            useCharCount: this.#useCharCount,
-        });
-
-        if (remainingContentLength > 0) {
-            this.#processLastChapterContent(lastRealChapterStart, remainingContentLength, totalLines);
-        }
-    }
-
-    /**
-     * Processes content of the last chapter
-     * @private
-     * @param {number} lastRealChapterStart - Starting position of the last real chapter
-     * @param {number} remainingContentLength - Number of non-empty lines/chars in the last chapter
-     * @param {number} totalLines - Total number of lines in the content
-     * @description
-     * Handles last chapter content by:
-     * 1. Adding break point if chapter is long enough (>= MIN_LINES/MIN_CHARS)
-     * 2. Attempting to merge with previous page if too short
-     * 3. Splitting into multiple pages if exceeds MAX_LINES/MAX_CHARS
-     * @throws {Error} If invalid positions are provided
-     */
-    #processLastChapterContent(lastRealChapterStart, remainingContentLength, totalLength) {
-        if (lastRealChapterStart > this.#currentLine) {
-            const minLimit = this.#useCharCount ? this.#config.MIN_CHARS : this.#config.MIN_LINES;
-
-            if (remainingContentLength >= minLimit) {
-                this.#log("Adding break point for long last chapter");
-                this.#addBreakPoint(lastRealChapterStart);
-            } else {
-                this.#handleShortLastChapter(lastRealChapterStart, remainingContentLength);
-            }
-        }
-
-        const maxLimit = this.#useCharCount ? this.#config.MAX_CHARS : this.#config.MAX_LINES;
-        if (remainingContentLength > maxLimit) {
-            this.#processLongChapter(lastRealChapterStart, totalLength);
-        }
-    }
-
-    /**
-     * Handles short last chapter by attempting to merge with previous page
-     * @private
-     * @param {number} lastRealChapterStart - Starting position of the last chapter
-     * @param {number} remainingContentLength - Number of non-empty lines in the last chapter
-     * @description
-     * Merging logic:
-     * 1. Gets the last break point
-     * 2. Calculates lines on the last existing page
-     * 3. Checks if merging would exceed MAX_LINES
-     * 4. Either merges with previous page or adds new break point
-     */
-    #handleShortLastChapter(lastRealChapterStart, remainingContentLength) {
-        const lastBreak = this.#breaks[this.#breaks.length - 1];
-        const contentLength = this.#getContentLength(lastBreak, lastRealChapterStart);
-        const maxLimit = this.#useCharCount ? this.#config.MAX_CHARS : this.#config.MAX_LINES;
-
-        this.#log("Handling short last chapter", {
-            lastBreak,
-            contentLength,
-            remainingContentLength,
-            useCharCount: this.#useCharCount,
-        });
-
-        if (contentLength + remainingContentLength <= maxLimit) {
-            this.#log("Merging short last chapter with previous page");
-            return;
-        }
-
-        this.#log("Adding break point for short last chapter");
-        this.#addBreakPoint(lastRealChapterStart);
-    }
-
-    /**
-     * Checks if two consecutive pages should be merged
-     * @private
-     * @param {number} firstBreak - Starting position of first page
-     * @param {number} secondBreak - Starting position of second page (end of first page)
-     * @param {number} endPoint - End position of second page
-     * @returns {boolean} true if pages should be merged
-     * @description
-     * Merge decision process:
-     * 1. Calculates content lines in first page
-     * 2. Calculates content lines in second page
-     * 3. Checks if combined length <= MAX_LINES
-     * 4. Returns false on any error to prevent invalid merges
-     *
-     * @throws {Error} Logs error and returns false if calculation fails
-     */
-    #shouldMergePages(firstBreak, secondBreak, endPoint) {
-        try {
-            const firstPageLength = this.#getContentLength(firstBreak, secondBreak);
-            const secondPageLength = this.#getContentLength(secondBreak, endPoint);
-            const totalLength = firstPageLength + secondPageLength;
-
-            const maxLimit = this.#useCharCount ? this.#config.MAX_CHARS : this.#config.MAX_LINES;
-            const shouldMerge = totalLength <= maxLimit;
-
-            // this.#log("Page merge check", {
-            //     firstBreak,
-            //     secondBreak,
-            //     endPoint,
-            //     firstPageLength,
-            //     secondPageLength,
-            //     totalLength,
-            //     maxLimit,
-            //     useCharCount: this.#useCharCount,
-            //     shouldMerge,
-            // });
-
-            return shouldMerge;
-        } catch (error) {
-            this.#log("Error checking page merge", { firstBreak, secondBreak, endPoint }, error);
-            return false;
-        }
-    }
-
-    /**
-     * Attempts to merge consecutive short pages
-     * @private
-     * @description
-     * Merging process:
-     * 1. Sorts break points
-     * 2. Checks consecutive pages for potential merging
-     * 3. Merges pages if combined length is within MAX_LINES/MAX_CHARS
-     * 4. Special handling for last two pages
-     * Uses either line count or character count based on configuration
-     */
-    #mergeShortPages() {
-        this.#log("Starting page merge process", {
-            initialBreaks: [...this.#breaks],
-        });
-
-        this.#breaks.sort((a, b) => a - b);
-
-        let i = 0;
-        while (i < this.#breaks.length - 1) {
-            const currentBreak = this.#breaks[i];
-            const nextBreak = this.#breaks[i + 1];
-            const endPoint = i + 2 < this.#breaks.length ? this.#breaks[i + 2] : this.#contentChunks.length;
-
-            // this.#log("Checking pages for merge", {
-            //     currentBreak,
-            //     nextBreak,
-            //     endPoint,
-            // });
-
-            if (this.#shouldMergePages(currentBreak, nextBreak, endPoint)) {
-                this.#log("Merging pages", {
-                    removedBreak: nextBreak,
-                });
-                this.#breaks.splice(i + 1, 1);
-                // Don't increment i as we need to check the new pair
-            } else {
-                i++;
-            }
-        }
-
-        // Check last two pages
-        if (this.#breaks.length >= 2) {
-            const secondLastBreak = this.#breaks[this.#breaks.length - 2];
-            const lastBreak = this.#breaks[this.#breaks.length - 1];
-            const fileEnd = this.#contentChunks.length;
-
-            if (this.#shouldMergePages(secondLastBreak, lastBreak, fileEnd)) {
-                this.#breaks.pop();
-            }
-        }
-    }
-
-    /**
-     * Validates and finalizes the break points
-     * @private
-     * @returns {number[]} Array of validated break points
-     * @description
-     * Final validation ensures:
-     * - All break points create valid page lengths
-     * - At least one break point exists (0)
-     * - No invalid or unnecessary break points
-     */
-    #validateFinalBreaks() {
-        this.#log("Starting final validation", {
-            breakPointsBeforeValidation: [...this.#breaks],
-        });
-
-        const validatedBreaks = this.#breaks.filter((breakPoint, index, array) => {
-            const nextBreakPoint = index === array.length - 1 ? this.#contentChunks.length : array[index + 1];
-
-            const isValid = this.#isValidBreakPoint(breakPoint, nextBreakPoint);
-
-            // this.#log(`Validating break point ${breakPoint}`, {
-            //     index,
-            //     nextBreakPoint,
-            //     isValid,
-            // });
-
-            return isValid;
-        });
-
-        this.#log("Validation completed", {
-            initialBreaks: this.#breaks,
-            finalBreaks: validatedBreaks,
-            totalPages: validatedBreaks.length,
-        });
-
-        // Ensure we always have at least the initial break point
-        if (validatedBreaks.length === 0) {
-            this.#log("No valid breaks found, returning initial break point");
-            return [0];
-        }
-
-        return validatedBreaks;
     }
 }
