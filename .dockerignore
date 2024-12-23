@@ -11,13 +11,15 @@
 **/assets/
 **/dist/
 **/manifests/
+!**/manifests/PWA/
+!**/manifests/PWA/*
 **/debug/
+**/build/
 **/extension/
 .vscode/
 **/node_modules/
 **/books/*
 !**/books/
-publish_extension.py
 **/README.md
 **/README_EN.md
 

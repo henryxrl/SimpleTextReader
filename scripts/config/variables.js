@@ -55,6 +55,8 @@ class AppVariables {
         this.FONT_GROUPS = [];
         /** @type {Array} Font groups in Chinese */
         this.FONT_GROUPS_ZH = [];
+        /** @type {Object} Object of custom fonts */
+        this.CUSTOM_FONTS = {};
         /** @type {boolean} Whether settings menu is shown */
         this.SETTINGS_MENU_SHOWN = false;
         /** @type {Array<boolean>} Color picker open states */
@@ -75,8 +77,6 @@ class AppVariables {
         this.INIT = true;
         /** @type {boolean} Whether "goto title" was clicked */
         this.GOTO_TITLE_CLICKED = false;
-        /** @type {number} Drag counter for HTML5 drag-and-drop fix */
-        this.DRAG_COUNTER = 0;
         /** @type {number} History line number */
         this.HISTORY_LINE_NUMBER = 0;
         /** @type {number} Title page line number offset */
@@ -110,7 +110,6 @@ class AppVariables {
         // Reset status flags
         this.INIT = true;
         this.GOTO_TITLE_CLICKED = false;
-        this.DRAG_COUNTER = 0;
         this.HISTORY_LINE_NUMBER = 0;
         this.TITLE_PAGE_LINE_NUMBER_OFFSET = 0;
         this.IS_PROCESSING = false;

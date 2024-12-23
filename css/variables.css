@@ -1,7 +1,7 @@
 @charset "UTF-8";
 @font-face {
     font-family: "wenkai";
-    src: local("霞鹜文楷"), local("LXGW WenKai"), url(../fonts/LXGWWenKai-Regular.woff2) format("woff2");
+    src: local("霞鹜文楷"), local("LXGW WenKai"), url(../fonts/LXGWWenKai-Regular.woff) format("woff");
     font-display: swap;
 }
 @font-face {
@@ -31,7 +31,7 @@
 }
 @font-face {
     font-family: "ui";
-    src: local("霞鹜文楷"), local("LXGW WenKai"), url(../fonts/LXGWWenKai-Regular.woff2) format("woff2");
+    src: local("霞鹜文楷"), local("LXGW WenKai"), url(../fonts/LXGWWenKai-Regular.woff) format("woff");
     font-display: swap;
 }
 @font-face {
@@ -56,6 +56,7 @@
     --ui_btnOffset: 0px;
     --ui_btnGap: 1rem;
     --ui_btnSize: 1.5rem;
+    --ui_borderSize: 0.5em;
     --ui_bookCoverWidth: 12rem;
     --ui_bookCoverHeight: 16rem;
     --ui_bookContainerHeight: 18rem;
@@ -77,6 +78,7 @@
     --ui_dropZoneTextSize_max: 0em;
     --ui_dropZoneImgSize_max: 0em;
     --ui_dropZoneImgText_scaleFactor: 1;
+    --ui_dropZoneImgText_lineNumber: 1;
     --ui_loadingImgSize: 380px;
     --ui_footnoteImgSize: 12px;
     --ui_paginationBottom: 30px;
@@ -167,9 +169,12 @@
     --ui_font_group_system: "";
     --ui_font_group_system_zh: 系统字体;
     --ui_font_group_system_en: OS Font;
+    --ui_font_group_app: "";
+    --ui_font_group_app_zh: 易笺字体;
+    --ui_font_group_app_en: WebApp Font;
     --ui_font_group_custom: "";
-    --ui_font_group_custom_zh: 易笺字体;
-    --ui_font_group_custom_en: WebApp Font;
+    --ui_font_group_custom_zh: 自定义字体;
+    --ui_font_group_custom_en: Custom Font;
 
     /* UI bookshelf strings */
     --ui_tooltip_removeBook: "";
@@ -251,10 +256,51 @@
     --ui_removeAllBooks_cancel_btn_en: Cancel;
     --ui_removeAllBooks_success_title: "";
     --ui_removeAllBooks_success_title_zh: 已删除！;
-    --ui_removeAllBooks_success_title_en: Removed!;
+    --ui_removeAllBooks_success_title_en: Removed.;
     --ui_removeAllBooks_success_text: "";
-    --ui_removeAllBooks_success_text_zh: 所有书籍已被删除。;
+    --ui_removeAllBooks_success_text_zh: 所有书籍已被删除！;
     --ui_removeAllBooks_success_text_en: All books have been removed.;
+
+    /* UI notification variables */
+    --ui_notification_icon_size: 3.5rem;
+    --ui_notification_text_maxFontsReached: "";
+    --ui_notification_text_maxFontsReached_zh: 自定义字体不能超过 xxx 个！;
+    --ui_notification_text_maxFontsReached_en: Custom fonts cannot exceed xxx.;
+    --ui_notification_text_addFontSuccess: "";
+    --ui_notification_text_addFontSuccess_zh: 新增字体;
+    --ui_notification_text_addFontSuccess_en: Added font;
+    --ui_notification_text_fontExists: "";
+    --ui_notification_text_fontExists_zh: 已存在字体;
+    --ui_notification_text_fontExists_en: Existing font;
+    --ui_notification_text_andMore: "";
+    --ui_notification_text_andMore_zh: （另有 xxx 个）;
+    --ui_notification_text_andMore_en: (and xxx more);
+    --ui_notification_text_wrongFileType: "";
+    --ui_notification_text_wrongFileType_zh: 无效的文件;
+    --ui_notification_text_wrongFileType_en: Invalid file;
+    --ui_notification_text_fontFileInvalid: "";
+    --ui_notification_text_fontFileInvalid_zh: 无效的字体文件;
+    --ui_notification_text_fontFileInvalid_en: Invalid font file;
+    --ui_notification_text_failedToSave: "";
+    --ui_notification_text_failedToSave_zh: 保存失败，可能本地存储已满！;
+    --ui_notification_text_failedToSave_en: Failed to save to local bookshelf (localStorage may be full).;
+    --ui_notification_text_bookAdded: "";
+    --ui_notification_text_bookAdded_zh: 新增书籍;
+    --ui_notification_text_bookAdded_en: Added book;
+    --ui_notification_text_failedToOpen: "";
+    --ui_notification_text_failedToOpen_zh: 打开失败：;
+    --ui_notification_text_failedToOpen_en: Failed to open:;
+
+    /* UI changelog variables */
+    --ui_changelog_title: "";
+    --ui_changelog_title_zh: 更新日志;
+    --ui_changelog_title_en: Changelog;
+    --ui_changelog_button_text: "";
+    --ui_changelog_button_text_zh: 知道啦;
+    --ui_changelog_button_text_en: Got it;
+    --ui_changelog_previous_changes: "";
+    --ui_changelog_previous_changes_zh: 之前的更新;
+    --ui_changelog_previous_changes_en: Previous Updates;
 
     /* UI bookshelf variables */
     --ui_bookshadow: 5px 5px 10px -5px black, inset 0px -10px 10px var(--mainColor_active);
@@ -319,6 +365,8 @@
     --mainColor_inactive: #427B9C; */
     --mainColor_active: #314874;
     --mainColor_inactive: #4a6dae;
+    --error: #ef233c;
+    --warning: #fca311;
 
     --toGray_filter: invert(53%) sepia(0%) saturate(76%) hue-rotate(158deg) brightness(95%) contrast(82%);
 
@@ -403,6 +451,7 @@
     --ui_title_font: var(--ui_title_font_zh);
     --ui_body_font: var(--ui_body_font_zh);
     --ui_font_group_system: var(--ui_font_group_system_zh);
+    --ui_font_group_app: var(--ui_font_group_app_zh);
     --ui_font_group_custom: var(--ui_font_group_custom_zh);
     --ui_pagination2pageBottom_dist: var(--ui_pagination2pageBottom_dist_zh);
     --ui_pagination_opacity: var(--ui_pagination_opacity_zh);
@@ -445,6 +494,18 @@
     --ui_removeAllBooks_cancel_btn: var(--ui_removeAllBooks_cancel_btn_zh);
     --ui_removeAllBooks_success_title: var(--ui_removeAllBooks_success_title_zh);
     --ui_removeAllBooks_success_text: var(--ui_removeAllBooks_success_text_zh);
+    --ui_notification_text_andMore: var(--ui_notification_text_andMore_zh);
+    --ui_notification_text_wrongFileType: var(--ui_notification_text_wrongFileType_zh);
+    --ui_notification_text_fontFileInvalid: var(--ui_notification_text_fontFileInvalid_zh);
+    --ui_notification_text_failedToSave: var(--ui_notification_text_failedToSave_zh);
+    --ui_notification_text_bookAdded: var(--ui_notification_text_bookAdded_zh);
+    --ui_notification_text_failedToOpen: var(--ui_notification_text_failedToOpen_zh);
+    --ui_notification_text_maxFontsReached: var(--ui_notification_text_maxFontsReached_zh);
+    --ui_notification_text_addFontSuccess: var(--ui_notification_text_addFontSuccess_zh);
+    --ui_notification_text_fontExists: var(--ui_notification_text_fontExists_zh);
+    --ui_changelog_title: var(--ui_changelog_title_zh);
+    --ui_changelog_button_text: var(--ui_changelog_button_text_zh);
+    --ui_changelog_previous_changes: var(--ui_changelog_previous_changes_zh);
 }
 
 [data-lang="en"] {
@@ -476,6 +537,7 @@
     --ui_title_font: var(--ui_title_font_en);
     --ui_body_font: var(--ui_body_font_en);
     --ui_font_group_system: var(--ui_font_group_system_en);
+    --ui_font_group_app: var(--ui_font_group_app_en);
     --ui_font_group_custom: var(--ui_font_group_custom_en);
     --ui_pagination2pageBottom_dist: var(--ui_pagination2pageBottom_dist_en);
     --ui_pagination_opacity: var(--ui_pagination_opacity_en);
@@ -518,6 +580,18 @@
     --ui_removeAllBooks_cancel_btn: var(--ui_removeAllBooks_cancel_btn_en);
     --ui_removeAllBooks_success_title: var(--ui_removeAllBooks_success_title_en);
     --ui_removeAllBooks_success_text: var(--ui_removeAllBooks_success_text_en);
+    --ui_notification_text_andMore: var(--ui_notification_text_andMore_en);
+    --ui_notification_text_wrongFileType: var(--ui_notification_text_wrongFileType_en);
+    --ui_notification_text_fontFileInvalid: var(--ui_notification_text_fontFileInvalid_en);
+    --ui_notification_text_failedToSave: var(--ui_notification_text_failedToSave_en);
+    --ui_notification_text_bookAdded: var(--ui_notification_text_bookAdded_en);
+    --ui_notification_text_failedToOpen: var(--ui_notification_text_failedToOpen_en);
+    --ui_notification_text_maxFontsReached: var(--ui_notification_text_maxFontsReached_en);
+    --ui_notification_text_addFontSuccess: var(--ui_notification_text_addFontSuccess_en);
+    --ui_notification_text_fontExists: var(--ui_notification_text_fontExists_en);
+    --ui_changelog_title: var(--ui_changelog_title_en);
+    --ui_changelog_button_text: var(--ui_changelog_button_text_en);
+    --ui_changelog_previous_changes: var(--ui_changelog_previous_changes_en);
 }
 
 #dropZoneText::before {
@@ -564,6 +638,9 @@
 }
 #settingLabel-setting_font_group_system::before {
     content: var(--ui_font_group_system);
+}
+#settingLabel-setting_font_group_app::before {
+    content: var(--ui_font_group_app);
 }
 #settingLabel-setting_font_group_custom::before {
     content: var(--ui_font_group_custom);

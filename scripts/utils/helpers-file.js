@@ -14,10 +14,12 @@
  * @requires modules/file/fileload-callback
  * @requires modules/text/text-processor
  * @requires modules/file/file-processor
+ * @requires modules/components/popup-manager
  * @requires utils/base
  * @requires utils/helpers-ui
  * @requires utils/helpers-bookshelf
  * @requires utils/helpers-reader
+ * @requires utils/helpers-fonts
  */
 
 import * as CONFIG from "../config/index.js";
@@ -25,21 +27,25 @@ import { reader } from "../modules/features/reader.js";
 import { FileLoadCallback } from "../modules/file/fileload-callback.js";
 import { TextProcessor } from "../modules/text/text-processor.js";
 import { FileProcessor } from "../modules/file/file-processor.js";
+import { PopupManager } from "../modules/components/popup-manager.js";
 import {
     removeFileExtension,
     randomFloatFromInterval,
     formatBytes,
     addFootnotesToDOM,
     triggerCustomEvent,
+    constructNotificationMessageFromArray,
 } from "./base.js";
 import {
     hideDropZone,
+    resetDropZoneState,
     updateTOCUI,
     showLoadingScreen,
     hideLoadingScreen,
     hideContent,
     showContent,
     resetUI,
+    resetVars,
 } from "./helpers-ui.js";
 import {
     getIsFromLocal,
@@ -49,53 +55,173 @@ import {
     setBookLastReadTimestamp,
 } from "./helpers-bookshelf.js";
 import { GetScrollPositions, getHistory, getHistoryAndSetChapterTitleActive, setTitle } from "./helpers-reader.js";
+import { validateFontFile } from "./helpers-fonts.js";
 
 /**
  * Handles multiple file uploads with bookshelf integration
  * @param {FileList} fileList - List of files to process
  * @param {boolean} isFromLocal - Whether files are from local storage
  * @param {boolean} isOnServer - Whether files are stored on server
- * @param {number} num_load_batch - Number of files to load in each batch
+ * @param {boolean} loadFiles - Whether to load files into memory
  * @returns {Promise<void>}
  */
-export async function handleMultipleFiles(fileList, isFromLocal = true, isOnServer = false) {
-    const files = Array.prototype.slice.call(fileList).filter((file) => file.type === "text/plain");
-    // console.log("files: ", files);
-    if (files.length > 1) {
-        triggerCustomEvent("handleMultipleBooks", {
-            files,
+export async function handleMultipleFiles(fileList, isFromLocal = true, isOnServer = false, loadFiles = true) {
+    // Show loading screen
+    hideDropZone();
+    hideContent();
+    showLoadingScreen();
+
+    // Processing input files
+    const allFiles = Array.from(fileList);
+    const txtFiles = allFiles.filter((file) => file.type === "text/plain");
+    const otherFiles = allFiles.filter((file) => file.type !== "text/plain");
+    // const fontFiles = allFiles.filter((file) => CONFIG.CONST_FONT.SUPPORTED_FONT_TYPES.includes(file.type));
+
+    // Validate font files
+    const fontValidationResults = await Promise.all(
+        otherFiles.map(async (file) => {
+            const isSupportedType = CONFIG.CONST_FONT.SUPPORTED_FONT_TYPES.includes(file.type);
+            const validation = await validateFontFile(file);
+            const isValidFont = validation.isValid;
+            const reason = validation.reason;
+
+            // console.log(`File: ${file.name}, isSupportedType: ${isSupportedType}, isValidFont: ${isValidFont}`);
+            // return isSupportedType || isValidFont;
+            // return isValidFont;
+            return validation;
+        })
+    );
+    // const fontFiles = otherFiles.filter((_, index) => fontValidationResults[index].isValid);
+    const fontFiles = [];
+    const incorrectFonts = [];
+    const invalidFiles = [];
+    fontValidationResults.forEach((result, index) => {
+        if (result.isValid) {
+            fontFiles.push(otherFiles[index]);
+        } else {
+            if (result.type === 0) {
+                incorrectFonts.push(otherFiles[index].name);
+            } else {
+                invalidFiles.push(otherFiles[index].name);
+            }
+        }
+    });
+
+    // console.groupCollapsed("[Input Files]");
+    // console.log("allFiles: ", allFiles);
+    // console.log("txtFiles: ", txtFiles);
+    // console.log("fontFiles: ", fontFiles);
+    // console.log("incorrectFonts: ", incorrectFonts);
+    // console.log("invalidFiles: ", invalidFiles);
+    // console.groupEnd();
+
+    // Handle incorrect font files
+    if (incorrectFonts.length > 0) {
+        PopupManager.showNotification({
+            iconName: "FONT_FILE_INVALID",
+            iconColor: "error",
+            text: constructNotificationMessageFromArray(
+                CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_fontFileInvalid,
+                incorrectFonts,
+                {
+                    language: CONFIG.RUNTIME_VARS.WEB_LANG,
+                    maxItems: 3,
+                    messageSuffix: CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_andMore,
+                }
+            ),
+        });
+    }
+
+    // Handle invalid files
+    if (invalidFiles.length > 0) {
+        PopupManager.showNotification({
+            iconName: "WRONG_FILE_TYPE",
+            iconColor: "error",
+            text: constructNotificationMessageFromArray(
+                CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_wrongFileType,
+                invalidFiles,
+                {
+                    language: CONFIG.RUNTIME_VARS.WEB_LANG,
+                    maxItems: 3,
+                    messageSuffix: CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_andMore,
+                }
+            ),
+        });
+    }
+
+    // Check if there are no valid files
+    if (txtFiles.length === 0 && fontFiles.length === 0 && fileList.length > 0) {
+        // Hide loading screen
+        resetDropZoneState();
+        hideLoadingScreen();
+
+        return;
+    }
+
+    // Handle font files
+    if (fontFiles.length > 0) {
+        // await resetUI();
+        triggerCustomEvent("handleMultipleFonts", {
+            files: fontFiles,
+        });
+    }
+
+    // Check if there are no valid text files
+    if (txtFiles.length === 0) {
+        // Hide loading screen
+        resetDropZoneState();
+        hideLoadingScreen();
+
+        return;
+    }
+
+    // Handle text files
+    if (txtFiles.length > 1) {
+        resetVars();
+        // Trigger different events based on whether files should be loaded
+        const eventName = loadFiles ? "handleMultipleBooks" : "handleMultipleBooksWithoutLoading";
+        triggerCustomEvent(eventName, {
+            files: txtFiles,
             isFromLocal,
             isOnServer,
         });
-    } else if (files.length === 1) {
-        const singleFile = files[0];
+
+        PopupManager.showNotification({
+            iconName: "BOOK",
+            text: constructNotificationMessageFromArray(
+                CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_bookAdded,
+                txtFiles.map((file) => file.name),
+                {
+                    language: CONFIG.RUNTIME_VARS.WEB_LANG,
+                    maxItems: 3,
+                    messageSuffix: CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_andMore,
+                }
+            ),
+        });
+    } else if (loadFiles && txtFiles.length === 1) {
+        resetVars();
+        const singleFile = txtFiles[0];
         setIsFromLocal(singleFile.name, getIsFromLocal(singleFile.name) || isFromLocal);
         setIsOnServer(singleFile.name, getIsOnServer(singleFile.name) || isOnServer);
         setBookLastReadTimestamp(singleFile.name);
-        await handleSelectedFile(files);
+
+        // PopupManager.showNotification({
+        //     iconName: "BOOK",
+        //     text: constructNotificationMessageFromArray(
+        //         CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_bookAdded,
+        //         [singleFile.name],
+        //         {
+        //             language: CONFIG.RUNTIME_VARS.WEB_LANG,
+        //             maxItems: 3,
+        //             messageSuffix: CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_andMore,
+        //         }
+        //     ),
+        // });
+
+        await handleSelectedFile(txtFiles);
     } else {
         console.log("No valid file selected.");
-        resetUI();
-    }
-}
-
-/**
- * Handles multiple files without loading them into memory
- * Used for bookshelf display and management
- * @param {FileList} fileList - List of files to process
- * @param {boolean} isFromLocal - Whether files are from local storage
- * @param {boolean} isOnServer - Whether files are stored on server
- * @returns {Promise<void>}
- */
-export async function handleMultipleFilesWithoutLoading(fileList, isFromLocal = true, isOnServer = false) {
-    const files = Array.prototype.slice.call(fileList).filter((file) => file.type === "text/plain");
-    // console.log("files: ", files);
-    if (files.length > 1) {
-        triggerCustomEvent("handleMultipleBooksWithoutLoading", {
-            files,
-            isFromLocal,
-            isOnServer,
-        });
+        await resetUI();
     }
 }
 
@@ -162,9 +288,12 @@ export async function handleSelectedFile(fileList) {
      * @returns {Promise<void>}
      */
     async function finalProcessing() {
-        hideDropZone();
-        hideLoadingScreen();
-        showContent();
+        // Hide loading screen
+        deferUIUpdate(() => {
+            hideDropZone();
+            hideLoadingScreen();
+            showContent();
+        });
         FileLoadCallback.after();
 
         if (!CONFIG.VARS.FILENAME) {
@@ -202,19 +331,30 @@ export async function handleSelectedFile(fileList) {
 
     /** Start processing */
     if (!fileList.length || fileList[0].type !== "text/plain") {
-        resetUI();
+        PopupManager.showNotification({
+            iconName: "WRONG_FILE_TYPE",
+            text: CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_wrongFileType,
+            iconColor: "error",
+        });
+
+        // Hide loading screen
+        resetDropZoneState();
+        hideLoadingScreen();
+
         return;
     }
 
     try {
-        const file = await FileLoadCallback.before(fileList[0]);
-        metrics.fileSize = file.size;
-        metrics.fileName = file.name;
-
         // Show loading screen
         hideDropZone();
         hideContent();
         showLoadingScreen();
+
+        resetVars();
+
+        const file = await FileLoadCallback.before(fileList[0]);
+        metrics.fileSize = file.size;
+        metrics.fileName = file.name;
 
         // Create processor
         const processor = new FileProcessor(file);
@@ -281,6 +421,8 @@ export async function handleSelectedFile(fileList) {
             !hasHistoryBeyondInitChunk
         ) {
             getHistoryAndSetChapterTitleActive(reader.gotoLine.bind(reader));
+
+            // Hide loading screen
             hideDropZone();
             hideLoadingScreen();
             showContent();
@@ -334,19 +476,36 @@ export async function handleSelectedFile(fileList) {
                     CONFIG.VARS.IS_PROCESSING = false;
 
                     // Remove the existing processing indicator
-                    const processingItem = CONFIG.DOM_ELEMENT.PAGINATION_INDICATOR;
-                    if (processingItem) {
-                        processingItem.remove();
-                    }
+                    deferUIUpdate(() => {
+                        const processingItem = CONFIG.DOM_ELEMENT.PAGINATION_INDICATOR;
+                        if (processingItem) {
+                            processingItem.remove();
+                        }
+                    });
 
                     // Show bookshelf trigger button if bookshelf is closed
-                    triggerCustomEvent("showBookshelfTriggerBtn");
+                    deferUIUpdate(() => {
+                        triggerCustomEvent("showBookshelfTriggerBtn");
+                    });
 
                     // Update UI
-                    reader.processTOC();
-                    reader.generatePagination();
-                    updateTOCUI(false);
-                    GetScrollPositions(false);
+                    deferUIUpdate(() => {
+                        requestAnimationFrame(() => {
+                            reader.processTOC();
+
+                            requestAnimationFrame(() => {
+                                reader.generatePagination();
+
+                                requestAnimationFrame(() => {
+                                    updateTOCUI(false);
+
+                                    requestAnimationFrame(() => {
+                                        GetScrollPositions(false);
+                                    });
+                                });
+                            });
+                        });
+                    });
 
                     logTiming("Remaining content processing", remainingStart);
                     // console.log("Background processing complete");
@@ -362,7 +521,7 @@ export async function handleSelectedFile(fileList) {
         // Complete initial processing
         await finalProcessing();
     } catch (error) {
-        // hideLoadingScreen();
+        await resetUI();
         throw new Error("Error processing file: " + error);
     }
 }
@@ -379,6 +538,8 @@ export async function handleProcessedBook(book) {
         hideDropZone();
         hideContent();
         showLoadingScreen();
+
+        resetVars();
 
         CONFIG.VARS.FILENAME = book.name;
         CONFIG.VARS.IS_EASTERN_LAN = book.is_eastern_lan ?? TextProcessor.getLanguage(book.file_content_chunks[0]);
@@ -426,6 +587,7 @@ export async function handleProcessedBook(book) {
         // Retrieve reading history
         getHistoryAndSetChapterTitleActive(reader.gotoLine.bind(reader));
 
+        // Hide loading screen
         hideDropZone();
         hideLoadingScreen();
         showContent();
@@ -449,5 +611,50 @@ function verifyTitleAndIndexCount(messageHeader) {
             CONFIG.VARS.ALL_TITLES_IND
         );
         throw new Error(`${messageHeader} All titles and all titles indices length mismatch.`);
+    }
+}
+
+/**
+ * Defers UI update if an animation is in progress
+ * @param {Function} updateFn - The function to execute
+ * @param {boolean} consoleLog - Whether to log to console
+ */
+export function deferUIUpdate(updateFn, consoleLog = false) {
+    if (PopupManager.isAnimating) {
+        if (consoleLog) {
+            // 提取操作名称并分类
+            let operationName = updateFn
+                .toString()
+                .replace(/\s+/g, " ")
+                .match(/=>.*?{(.*?)}/)?.[1];
+
+            // 根据操作类型添加图标和分类
+            let formattedOperation;
+            if (operationName?.includes("requestAnimationFrame")) {
+                formattedOperation =
+                    "🔄 Heavy UI Updates: " + operationName.match(/reader\.\w+|update\w+|Get\w+/g)?.join(" → ");
+            } else if (operationName?.includes("hideDropZone") || operationName?.includes("showContent")) {
+                formattedOperation = "👁️ Visibility: " + operationName.match(/hide\w+|show\w+/g)?.join(", ");
+            } else if (operationName?.includes("processingItem")) {
+                formattedOperation = "🧹 Cleanup: remove pagination indicator";
+            } else if (operationName?.includes("triggerCustomEvent")) {
+                formattedOperation = "🔔 Event: " + operationName.match(/"([^"]+)"/)?.[1];
+            }
+
+            console.log("[UI Update] Deferring:", {
+                operations: formattedOperation || "anonymous function",
+                time: new Date().toLocaleTimeString("en-US", {
+                    hour12: false,
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                }),
+                queueSize: PopupManager.pendingUIUpdates.size + 1,
+            });
+        }
+
+        PopupManager.pendingUIUpdates.add(updateFn);
+    } else {
+        updateFn();
     }
 }

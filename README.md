@@ -53,15 +53,15 @@
 
 ### 火狐插件
 
-- [易笺 (v1.6.5)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
+- [易笺 (v1.6.6)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
 
 ### Chrome 插件
 
-- [易笺 (v1.6.5)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
+- [易笺 (v1.6.6)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
 
 ### Edge 插件
 
-- [易笺 (v1.6.5)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
+- [易笺 (v1.6.6)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
 
 ### Docker
 
@@ -123,15 +123,24 @@ docker run -d --name simpletextreader \
 
     - 删除所有书籍功能，包含确认提示以防止误操作
 
-7. 新增“快读完”的阅读进度提示
+7. 支持添加自定义字体（v1.6.6），最多可添加 3 个字体
 
-8. 优化书籍封面生成逻辑
+    <div float="left">
+        <img src="assets/6_custom_fonts_zh.gif" width="49%" alt="Bookshelf1" />
+        <img src="assets/6_custom_fonts_zh.png" width="49%" alt="Bookshelf2" />
+    </div>
 
-9. 更流畅的界面语言切换
+8. 新增消息通知系统
 
-10. 改用京华老宋体作为默认字体，以规避可能的版权问题
+9. 新增“快读完”的阅读进度提示
 
-11. 修复若干 Bug，提升了稳定性和用户体验
+10. 优化书籍封面生成逻辑
+
+11. 更流畅的界面语言切换
+
+12. 改用京华老宋体作为默认字体，以规避可能的版权问题
+
+13. 修复若干 Bug，提升了稳定性和用户体验
 
 **注：从 v1.6 开始，不再支持无界面（No-UI）版本。无界面版本中的所有功能（包括通过 `file://*.txt` URL 打开本地 `.txt` 文件）现已完全集成到正常版本中。**
 

@@ -30,7 +30,15 @@ import { ICONS } from "../../config/icons.js";
 import { CSSGlobalVariables } from "../../lib/css-global-variables.js";
 import { getDropdownSelector } from "../components/dropdown-selector.js";
 import { getColorPicker } from "../components/custom-color-picker.js";
-import { isVariableDefined, HSLToHex, hexToHSL, pSBC, triggerCustomEvent, setSvgPathLength } from "../../utils/base.js";
+import {
+    isVariableDefined,
+    HSLToHex,
+    hexToHSL,
+    pSBC,
+    triggerCustomEvent,
+    setSvgPathLength,
+    fetchVersion,
+} from "../../utils/base.js";
 import {
     setRangeValue,
     setColorValue,
@@ -41,7 +49,7 @@ import {
     createFontSelectorItem,
     findFontIndex,
     changeFontSelectorItemLanguage,
-    handleClickOutsideBox,
+    handleSettingsClose,
 } from "../../utils/helpers-settings.js";
 import { setTitle } from "../../utils/helpers-reader.js";
 
@@ -53,7 +61,9 @@ import { setTitle } from "../../utils/helpers-reader.js";
 const settings = {
     enabled: false,
 
-    // Default settings
+    /*
+     * Default settings
+     */
     ui_language_default: CONFIG.RUNTIME_VARS.STYLE.ui_LANG,
     p_lineHeight_default: CONFIG.RUNTIME_VARS.STYLE.p_lineHeight,
     p_fontSize_default: CONFIG.RUNTIME_VARS.STYLE.p_fontSize,
@@ -70,7 +80,9 @@ const settings = {
     pagination_bottom_default: CONFIG.RUNTIME_VARS.STYLE.ui_paginationBottom,
     pagination_opacity_default: CONFIG.RUNTIME_VARS.STYLE.ui_paginationOpacity,
 
-    // Current settings
+    /*
+     * Current settings
+     */
     ui_language: null,
     p_lineHeight: null,
     p_fontSize: null,
@@ -86,6 +98,35 @@ const settings = {
     body_font: null,
     pagination_bottom: null,
     pagination_opacity: null,
+
+    /*
+     * Cache version promise
+     */
+    versionPromise: null,
+
+    /**
+     * Fetches the version number from a JSON file.
+     * @returns {Promise<string>} A promise that resolves to the version number, or an empty string if not found.
+     */
+    async getVersion() {
+        if (CONFIG.RUNTIME_VARS.APP_VERSION) {
+            return Promise.resolve(CONFIG.RUNTIME_VARS.APP_VERSION);
+        }
+
+        if (!this.versionPromise) {
+            this.versionPromise = fetchVersion()
+                .then((version) => {
+                    CONFIG.RUNTIME_VARS.APP_VERSION = version;
+                    return version;
+                })
+                .catch((error) => {
+                    console.error("Failed to fetch version:", error);
+                    return "";
+                });
+        }
+
+        return this.versionPromise;
+    },
 
     /**
      * Loads user settings from local storage or falls back to default values.
@@ -177,7 +218,9 @@ const settings = {
      * @instance
      */
     loadDefaultSettings() {
+        // console.log("loadDefaultSettings");
         if (CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING) {
+            // console.log("loadDefaultSettings: RESPECT_USER_LANG_SETTING");
             this.ui_language = this.ui_language_default;
         }
         this.p_lineHeight = this.p_lineHeight_default;
@@ -291,7 +334,7 @@ const settings = {
      * @fires bookshelf#updateColors - When color settings are changed
      */
     saveSettings(toSetLanguage = false, forceSetLanguage = false) {
-        // console.log("saveSettings");
+        // console.log("saveSettings", { toSetLanguage, forceSetLanguage });
         if (CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING) {
             this.ui_language =
                 $("#setting_uilanguage")
@@ -368,6 +411,7 @@ const settings = {
      * @param {boolean} saveToLocalStorage - Whether to save language preference
      */
     setLanguage(lang, saveToLocalStorage = true, consoleLog = false) {
+        // console.log("setLanguage", { lang, saveToLocalStorage });
         if (saveToLocalStorage) {
             CONFIG.RUNTIME_VARS.WEB_LANG = lang;
             localStorage.setItem("UILang", lang);
@@ -385,15 +429,16 @@ const settings = {
         }
 
         // Reset tooltips for specific elements
-        // reset all tooltips
+        // Reset all tooltips
         // document.querySelectorAll(".hasTitle").forEach((el) => {
         // console.log(el);
         // });
-        // only reset visible tooltips
+        // Optimization: Only reset visible tooltips
         const tooltips = {
             darkModeButton: CONFIG.DOM_ELEMENT.DARK_MODE_ACTUAL_BUTTON,
             bookshelfButton: CONFIG.DOM_ELEMENT.BOOKSHELF_BUTTON,
             settingsButton: CONFIG.DOM_ELEMENT.SETTINGS_BUTTON,
+            dropZone: CONFIG.DOM_ELEMENT.DROPZONE,
         };
 
         if (isVariableDefined(tooltips.darkModeButton)) {
@@ -404,6 +449,9 @@ const settings = {
         }
         if (isVariableDefined(tooltips.settingsButton)) {
             tooltips.settingsButton.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_settings;
+        }
+        if (isVariableDefined(tooltips.dropZone)) {
+            tooltips.dropZone.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_dropZone;
         }
 
         if (consoleLog) {
@@ -576,6 +624,12 @@ const settings = {
             this.saveSettings.bind(this)
         );
 
+        // Add empty content container
+        const settingsContent = document.createElement("div");
+        settingsContent.className = "settings-content";
+        settingsMenu.appendChild(settingsContent);
+
+        // Add settings items
         if (CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING) {
             settingsMenu.appendChild(settingUILanguage);
         }
@@ -612,36 +666,27 @@ const settings = {
         settingReset.setAttribute("type", "button");
         settingReset.addEventListener("click", (e) => {
             this.loadDefaultSettings();
-            this.saveSettings(false, true);
+            // this.saveSettings(false, true);
+            this.saveSettings(true);
         });
 
         // Create version display
         const versionDiv = document.createElement("div");
         versionDiv.id = "settings-version-display";
         versionDiv.className = "prevent-select";
-        fetch("version.json")
-            .then((response) => response.json())
-            .then((data) => {
-                versionDiv.textContent = data.version ? `v${data.version}` : "";
-            });
+        const version = await this.getVersion();
+        versionDiv.textContent = version;
 
+        // Add reset button and version display to the bottom row
         settingBottomRow.appendChild(settingReset);
         settingBottomRow.appendChild(versionDiv);
         settingsMenu.appendChild(settingBottomRow);
+
         document.body.appendChild(settingsMenu);
 
         // Add click event listener
-        document.addEventListener("click", (event) => {
-            const actions = handleClickOutsideBox(event);
-            if (actions) {
-                if (actions.shouldSave) {
-                    this.saveSettings();
-                }
-                if (actions.shouldHide) {
-                    this.hideSettingMenu();
-                }
-            }
-        });
+        document.addEventListener("click", this.settingsCloseHandler);
+
         // settingsMenu_shown = true;
 
         // Render color picker
@@ -655,7 +700,7 @@ const settings = {
         document.getElementById("setting_pagination_bottom").value = parseFloat(this.pagination_bottom);
         document.getElementById("setting_pagination_opacity").value = parseFloat(this.pagination_opacity);
 
-        // Render selector
+        // Language selector
         if (CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING) {
             getDropdownSelector(
                 $("#setting_uilanguage"),
@@ -678,18 +723,114 @@ const settings = {
                 ]
             );
         }
-        getDropdownSelector($("#setting_title_font"), findFontIndex(this.title_font), [
-            {
-                func: this.saveSettings.bind(this),
-                params: [false, false],
+
+        // Title font and body font selectors
+        const titleFontConfig = this.createFontSelectorConfig("#setting_title_font", this.title_font);
+        const bodyFontConfig = this.createFontSelectorConfig("#setting_body_font", this.body_font);
+        getDropdownSelector(
+            titleFontConfig.element,
+            titleFontConfig.index,
+            titleFontConfig.callbacks,
+            titleFontConfig.options
+        );
+        getDropdownSelector(
+            bodyFontConfig.element,
+            bodyFontConfig.index,
+            bodyFontConfig.callbacks,
+            bodyFontConfig.options
+        );
+    },
+
+    /**
+     * Event handler for closing the settings menu
+     * @param {Event} event - The event object
+     */
+    settingsCloseHandler: (event) => {
+        // If it's a keydown event, check if it's the Escape key
+        if (event.type === "keydown") {
+            if (event.key !== "Escape") return;
+            event.stopPropagation();
+        }
+
+        const actions = handleSettingsClose(event, event.type === "keydown");
+        if (actions) {
+            if (actions.shouldSave) {
+                settings.saveSettings();
+            }
+            if (actions.shouldHide) {
+                settings.hideSettingMenu();
+            }
+            // Only remove the keydown event listener when Escape key is pressed
+            if (event.type === "keydown") {
+                if (!actions.closedColorPicker) {
+                    document.removeEventListener("keydown", settings.settingsCloseHandler, true);
+                }
+            }
+        } else if (event.type === "keydown") {
+            // Remove the keydown event listener when Escape key is pressed but no action is taken
+            document.removeEventListener("keydown", settings.settingsCloseHandler, true);
+        }
+    },
+
+    /**
+     * Create font selector configuration
+     * @param {string} element - The element to create the font selector for
+     * @param {string} fontValue - The font value to set
+     * @returns {Object} The font selector configuration
+     */
+    createFontSelectorConfig: (element, fontValue) => {
+        return {
+            element: $(`${element}`),
+            index: findFontIndex(fontValue),
+            callbacks: [
+                {
+                    func: settings.saveSettings.bind(settings),
+                    params: [false, false],
+                },
+            ],
+            options: {
+                groupClassResolver: (label) => {
+                    return label === CONFIG.RUNTIME_VARS.STYLE.ui_font_group_custom_en ||
+                        label === CONFIG.RUNTIME_VARS.STYLE.ui_font_group_custom_zh
+                        ? "custom-font"
+                        : "";
+                },
+                actionButtons: [
+                    {
+                        className: "delete-button",
+                        html: ICONS.DELETE_BOOK,
+                        onClick: async (value, text, event, $element, currentDropdownSelector) => {
+                            // Find and save the other dropdown selectors
+                            const $currentSelect = currentDropdownSelector.$selectElement;
+                            const $allSelects = $(".select-hidden"); // All hidden select elements
+                            const $otherSelects = $allSelects.not($currentSelect); // Exclude the current select
+
+                            // Remove the option from the current dropdown
+                            const removed = currentDropdownSelector.removeItem(value);
+
+                            // If the option item is successfully removed, handle the other dropdowns
+                            if (removed) {
+                                // For each other dropdown,emove the same option
+                                $otherSelects.each(function () {
+                                    const otherDropdownSelector = $(this).data("dropdownSelector");
+                                    if (otherDropdownSelector) {
+                                        otherDropdownSelector.removeItem(value);
+                                    }
+                                });
+
+                                // Trigger the delete font event
+                                triggerCustomEvent("deleteCustomFont", {
+                                    fontFamily: value,
+                                });
+                            }
+                        },
+                        shouldShow: (value, text, $element) => {
+                            return $element.hasClass("optgroup-option") && $element.hasClass("custom-font");
+                        },
+                    },
+                ],
             },
-        ]);
-        getDropdownSelector($("#setting_body_font"), findFontIndex(this.body_font), [
-            {
-                func: this.saveSettings.bind(this),
-                params: [false, false],
-            },
-        ]);
+        };
     },
 
     /**
@@ -710,15 +851,19 @@ const settings = {
      * @see initiateSettingMenu
      */
     async showSettingMenu() {
-        const menu = CONFIG.DOM_ELEMENT.SETTINGS_MENU;
+        let menu = CONFIG.DOM_ELEMENT.SETTINGS_MENU;
         if (!menu) {
             await this.initiateSettingMenu();
+            menu = CONFIG.DOM_ELEMENT.SETTINGS_MENU;
         }
 
         menu.style.display = "block"; // or "initial"
         menu.style.zIndex = "9999";
         menu.style.visibility = "visible";
         CONFIG.VARS.SETTINGS_MENU_SHOWN = true;
+
+        // Add ESC key listener
+        document.addEventListener("keydown", this.settingsCloseHandler, true);
     },
 
     /**
@@ -773,7 +918,7 @@ const settings = {
         if (isVariableDefined(menu)) {
             menu.remove();
             // Remove click event listener
-            document.removeEventListener("click", handleClickOutsideBox);
+            document.removeEventListener("click", this.settingsCloseHandler);
         }
     },
 
@@ -825,6 +970,12 @@ const settings = {
             // Listen to the hideSettingMenu event
             document.addEventListener("hideSettingMenu", (event) => {
                 this.hideSettingMenu();
+            });
+
+            // Listen to the customFontsLoaded event
+            document.addEventListener("customFontsLoaded", async (event) => {
+                this.removeSettingMenu();
+                await this.initiateSettingMenu();
             });
 
             // Trigger updateUILanguage event

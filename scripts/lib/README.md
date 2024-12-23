@@ -50,7 +50,15 @@ This folder contains third-party libraries and external utilities used in the pr
 
 ---
 
-### 6. `yaireo/`
+### 6. `sweetalert2/sweetalert2.js`
+
+**Description**: A beautiful, responsive, customizable, accessible (WAI-ARIA) replacement for JavaScript's popup boxes.
+
+**Original Source**: [sweetalert2 GitHub](https://github.com/sweetalert2/sweetalert2)
+
+---
+
+### 7. `yaireo/`
 
 **color-picker.js** and **position.js**
 

@@ -2,11 +2,11 @@
 # **/FZSKBXKK.woff2
 **/KX_47043_14.woff
 **/dist/
-# **/publish_extension.py
 .vscode/
 **/books/*
 !**/books/
 **/node_modules/
+**/server/
 
 # Ignore Mac DS_Store files
 **/.DS_Store
@@ -29,7 +29,6 @@ downloads/
 eggs/
 .eggs/
 # lib/
-debug/
 lib64/
 parts/
 sdist/

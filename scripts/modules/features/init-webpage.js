@@ -26,6 +26,7 @@ import { createSvgSprite } from "../../config/icons.js";
 
     /**
      * Flag to determine if user language settings should be respected
+     * If not, then the book's language will be used
      */
     const respectUserLangSetting = false;
     document.documentElement.setAttribute("respectUserLangSetting", respectUserLangSetting);
