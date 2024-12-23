@@ -142,6 +142,7 @@ function createSelectorWithGroupItem(id, values, texts, groups, isFont = false) 
 
 /**
  * Checks if a font is available in the system
+ * @async
  * @param {string} font - Font name to check
  * @returns {boolean} True if font is available
  * @private
@@ -255,13 +256,10 @@ function measureText(font) {
 /**
  * Gets valid font information from a list of fonts
  * Validates font availability and formats labels
+ * @async
  * @param {Array<{en: string, zh: string, label_en?: string, label_zh?: string}>} fontList - List of font objects
  * @param {boolean} checkAvailability - Whether to check if fonts are available in system
- * @returns {{
- *   names: Array<string>,
- *   labels: Array<string>,
- *   labels_zh: Array<string>
- * }} Object containing validated font names and labels
+ * @returns {Array<Array<string>>} Array containing [names, labels, labels_zh]
  * @private
  */
 async function getValidFontInfo(fontList, checkAvailability = true) {
@@ -317,6 +315,28 @@ async function getValidFontInfo(fontList, checkAvailability = true) {
 }
 
 /**
+ * Gets valid custom font information from a map
+ * @param {Map<string, {en: string, zh: string, label_en?: string, label_zh?: string}>} fontMap - Map of custom fonts
+ * @returns {Array<Array<string>>} Array containing [names, labels, labels_zh]
+ * @private
+ */
+function getValidCustomFontInfo(fontMap) {
+    const fontInfo = {
+        names: [],
+        labels: [],
+        labels_zh: [],
+    };
+
+    Object.entries(fontMap).forEach(([key, value]) => {
+        fontInfo.names.push(key);
+        fontInfo.labels.push(value.label_en ?? value.en);
+        fontInfo.labels_zh.push(value.label_zh ?? value.zh);
+    });
+
+    return [fontInfo.names, fontInfo.labels, fontInfo.labels_zh];
+}
+
+/**
  * Updates the language of font selector options and groups
  * @param {jQuery} $selector - jQuery selector element
  * @param {string} lang - Target language code ('en' or 'zh')
@@ -328,6 +348,8 @@ export function changeFontSelectorItemLanguage($selector, lang) {
         // Flatten the array of arrays for English and Chinese labels
         const flatFilteredFontLabels = CONFIG.VARS.FILTERED_FONT_LABELS.flat();
         const flatFilteredFontLabelsZh = CONFIG.VARS.FILTERED_FONT_LABELS_ZH.flat();
+        // console.log("flatFilteredFontLabels:", flatFilteredFontLabels);
+        // console.log("flatFilteredFontLabelsZh:", flatFilteredFontLabelsZh);
 
         // Get all the group labels inside the select
         let $groups = $selector.closest(".select").children(".select-options").find(".optgroup-label");
@@ -344,7 +366,7 @@ export function changeFontSelectorItemLanguage($selector, lang) {
 
         // Get the current text inside the .select-styled div
         let $selectedOption = $selector.closest(".select").children(".select-styled");
-        let currentText = $selectedOption.text().trim();
+        let currentText = $selectedOption.find("span").text().trim();
         let selectedIndex = -1;
 
         // Get all the options inside the select, including those in optgroups
@@ -352,28 +374,30 @@ export function changeFontSelectorItemLanguage($selector, lang) {
         // Loop through each option and update the text based on the language
         $options.each(function (i, option) {
             // Check if the current option matches the text in .select-styled div
-            if (option.innerText.trim() === currentText) {
+            const optionText = $(option).find(".option-text").text().trim();
+            if (optionText === currentText) {
                 selectedIndex = i; // Capture the index of the selected option
             }
 
             if (lang === "en") {
-                option.innerText = flatFilteredFontLabels[i]; // Use flattened English labels
+                $(option).find(".option-text").text(flatFilteredFontLabels[i]); // Use flattened English labels
             } else if (lang === "zh") {
-                option.innerText = flatFilteredFontLabelsZh[i]; // Use flattened Chinese labels
+                $(option).find(".option-text").text(flatFilteredFontLabelsZh[i]); // Use flattened Chinese labels
             }
         });
 
         // Update the selected option text based on the language
         if (lang === "en") {
-            $selectedOption.text(flatFilteredFontLabels[selectedIndex]); // Set to English label
+            $selectedOption.find("span").text(flatFilteredFontLabels[selectedIndex]); // Set to English label
         } else if (lang === "zh") {
-            $selectedOption.text(flatFilteredFontLabelsZh[selectedIndex]); // Set to Chinese label
+            $selectedOption.find("span").text(flatFilteredFontLabelsZh[selectedIndex]); // Set to Chinese label
         }
     }
 }
 
 /**
  * Creates font selector elements for both English and Chinese
+ * @async
  * @param {string} id - Element ID
  * @returns {Array<HTMLElement>} Array containing [englishSelector, chineseSelector]
  * @public
@@ -381,20 +405,38 @@ export function changeFontSelectorItemLanguage($selector, lang) {
 export async function createFontSelectorItem(id) {
     // Get valid font info
     const system_fonts_info = await getValidFontInfo(CONFIG.CONST_FONT.SYSTEM_FONTS, true);
-    const custom_fonts_info = await getValidFontInfo(CONFIG.CONST_FONT.CUSTOM_FONTS, true);
+    const app_fonts_info = await getValidFontInfo(CONFIG.CONST_FONT.APP_FONTS, true);
+    const custom_fonts_info = getValidCustomFontInfo(CONFIG.VARS.CUSTOM_FONTS);
 
     // Create the font values array
-    CONFIG.VARS.FILTERED_FONT_NAMES = [custom_fonts_info[0], system_fonts_info[0]];
-    CONFIG.VARS.FILTERED_FONT_LABELS = [custom_fonts_info[1], system_fonts_info[1]];
-    CONFIG.VARS.FILTERED_FONT_LABELS_ZH = [custom_fonts_info[2], system_fonts_info[2]];
-    CONFIG.VARS.FONT_GROUPS = [
-        CONFIG.RUNTIME_VARS.STYLE.ui_font_group_custom_en,
-        CONFIG.RUNTIME_VARS.STYLE.ui_font_group_system_en,
-    ];
-    CONFIG.VARS.FONT_GROUPS_ZH = [
-        CONFIG.RUNTIME_VARS.STYLE.ui_font_group_custom_zh,
-        CONFIG.RUNTIME_VARS.STYLE.ui_font_group_system_zh,
-    ];
+    const hasCustomFonts = custom_fonts_info.every((arr) => arr.length > 0);
+
+    // Base font arrays that are always included
+    const fontArrays = {
+        names: [app_fonts_info[0], system_fonts_info[0]],
+        labels: [app_fonts_info[1], system_fonts_info[1]],
+        labels_zh: [app_fonts_info[2], system_fonts_info[2]],
+        groups_en: [CONFIG.RUNTIME_VARS.STYLE.ui_font_group_app_en, CONFIG.RUNTIME_VARS.STYLE.ui_font_group_system_en],
+        groups_zh: [CONFIG.RUNTIME_VARS.STYLE.ui_font_group_app_zh, CONFIG.RUNTIME_VARS.STYLE.ui_font_group_system_zh],
+    };
+
+    // Insert custom fonts if available
+    if (hasCustomFonts) {
+        fontArrays.names.splice(1, 0, custom_fonts_info[0]);
+        fontArrays.labels.splice(1, 0, custom_fonts_info[1]);
+        fontArrays.labels_zh.splice(1, 0, custom_fonts_info[2]);
+        fontArrays.groups_en.splice(1, 0, CONFIG.RUNTIME_VARS.STYLE.ui_font_group_custom_en);
+        fontArrays.groups_zh.splice(1, 0, CONFIG.RUNTIME_VARS.STYLE.ui_font_group_custom_zh);
+    }
+
+    // Update CONFIG.VARS with the prepared arrays
+    Object.assign(CONFIG.VARS, {
+        FILTERED_FONT_NAMES: fontArrays.names,
+        FILTERED_FONT_LABELS: fontArrays.labels,
+        FILTERED_FONT_LABELS_ZH: fontArrays.labels_zh,
+        FONT_GROUPS: fontArrays.groups_en,
+        FONT_GROUPS_ZH: fontArrays.groups_zh,
+    });
 
     // Create the font selector element
     let fontSelector = createSelectorWithGroupItem(
@@ -565,9 +607,11 @@ export function setSelectorValue(id, selectedIndex) {
     // Get all <option> elements inside the <select> (flattening across optgroups, if any)
     const $options = Array.from($select.querySelectorAll("option"));
 
-    // Get all the corresponding option text inside the .select-options -> .optgroup-option or .option elements
+    // Get all the corresponding option text inside the .select-options -> .optgroup-option -> .option-text or .option -> .option-text elements
     const $optionsText = Array.from(
-        $select.parentElement.querySelector(".select-options").querySelectorAll(".optgroup-option, .option")
+        $select.parentElement
+            .querySelector(".select-options")
+            .querySelectorAll(".optgroup-option .option-text, .option .option-text")
     );
 
     // Ensure the selectedIndex is within the valid range
@@ -592,7 +636,11 @@ export function setSelectorValue(id, selectedIndex) {
     $customOptions = $customOptions.filter(($li) => !$li.classList.contains("optgroup-label"));
 
     // Update the visible styled select text
-    $styledSelect.textContent = selectedText;
+    const $styledSelectSpan = $styledSelect.querySelector("span") || document.createElement("span");
+    $styledSelectSpan.textContent = selectedText;
+    if (!$styledSelect.contains($styledSelectSpan)) {
+        $styledSelect.appendChild($styledSelectSpan);
+    }
     $styledSelect.setAttribute("style", selectedAttr);
 
     // Remove 'is-selected' from all custom options and set it on the correct one
@@ -628,67 +676,55 @@ export function setColorValue(id, value) {
     let temp_item = document.getElementById(id);
     temp_item.value = value;
     temp_item.style.setProperty("--color", value);
-    // document.querySelectorAll(".myColor").forEach((colorInput) => {
-    //     if (colorInput.id == id) {
-    //         console.log(colorInput.id);
-    //         colorInput.value = value;
-    //         colorInput.style.setProperty("--color", value);
-    //         console.log(colorInput._colorPicker.color, value);
-    //         colorInput._colorPicker.color = {h: 0, s: 0, l: 0, a: '100'};
-    //         console.log(colorInput._colorPicker.DOM.scope);
-    //         colorInput._colorPicker.DOM.scope.style.setProperty("--hue", 0);
-    //         colorInput._colorPicker.DOM.scope.style.setProperty("--saturation", 0);
-    //         colorInput._colorPicker.DOM.scope.style.setProperty("--lightness", 0);
-    //         colorInput._colorPicker.DOM.scope.style.setProperty("--alpha", 100);
-    //         colorInput._colorPicker.DOM.scope.querySelectorAll(".range").forEach((range) => {
-    //             if (range.title == "hue") {
-    //                 range.style.setProperty("--value", 0);
-    //                 range.style.setProperty("--text-value", `"${JSON.stringify(0)}"`);
-    //             } else if (range.title == "saturation") {
-    //                 range.style.setProperty("--value", 0);
-    //                 range.style.setProperty("--text-value", `"${JSON.stringify(0)}"`);
-    //             } else if (range.title == "lightness") {
-    //                 range.style.setProperty("--value", 0);
-    //                 range.style.setProperty("--text-value", `"${JSON.stringify(0)}"`);
-    //             } else if (range.title == "alpha") {
-    //                 range.style.setProperty("--value", 100);
-    //                 range.style.setProperty("--text-value", `"${JSON.stringify(100)}"`);
-    //             }
-    //         });
-    //         // simulateClick(colorInput._colorPicker.DOM.scope);
-
-    //         console.log(colorInput._colorPicker.color)
-
-    //     }
-    // });
-    // $(window).trigger('resize');
-    // temp_item.style.display = "none";
-    // temp_item.style.display = "block";
 }
 
 /**
- * Handles click outside the settings menu
+ * Handles the closing of the settings menu
  * @param {Event} event - Click event
  * @public
  */
-export function handleClickOutsideBox(event) {
+export function handleSettingsClose(event, isEscKey = false) {
     const settingsMenu = CONFIG.DOM_ELEMENT.SETTINGS_MENU;
     const settingsBtn = CONFIG.DOM_ELEMENT.SETTINGS_BUTTON;
     const colorPickerArray = document.getElementsByClassName("color-picker");
     CONFIG.VARS.IS_COLOR_PICKER_OPEN.push(isVariableDefined(colorPickerArray) && colorPickerArray.length > 0);
     CONFIG.VARS.IS_COLOR_PICKER_OPEN.shift();
-    // console.log(colorPickerArray, CONFIG.VARS.IS_COLOR_PICKER_OPEN);
+    // console.log("colorPickerArray:", colorPickerArray);
+    // console.log("CONFIG.VARS.IS_COLOR_PICKER_OPEN[0]:", CONFIG.VARS.IS_COLOR_PICKER_OPEN[0]);
     if (!settingsMenu) return;
-    if (!settingsMenu.contains(event.target) && !settingsBtn.contains(event.target)) {
+    if ((!settingsMenu.contains(event.target) && !settingsBtn.contains(event.target)) || isEscKey) {
+        // console.log("CONFIG.VARS.SETTINGS_MENU_SHOWN:", CONFIG.VARS.SETTINGS_MENU_SHOWN);
         if (CONFIG.VARS.SETTINGS_MENU_SHOWN) {
             if (CONFIG.VARS.IS_COLOR_PICKER_OPEN[0]) {
+                // console.log("color picker was open before the click");
                 // if color picker was open before the click
                 // do nothing as the click is to close the color picker
-                return;
+
+                if (isEscKey) {
+                    // close the color picker
+                    // document.body.click();
+                    // Create a click event outside the color picker
+                    const clickEvent = new MouseEvent("click", {
+                        bubbles: true,
+                        cancelable: true,
+                        clientX: 10, // Ensure it's outside the color picker
+                        clientY: 10,
+                    });
+                    // Trigger the click event
+                    document.body.dispatchEvent(clickEvent);
+                }
+
+                return {
+                    shouldSave: true,
+                    shouldHide: false,
+                    closedColorPicker: true,
+                };
             } else {
+                // console.log("color picker was not open before the click");
                 return {
                     shouldSave: true,
                     shouldHide: true,
+                    closedColorPicker: false,
                 };
             }
         }

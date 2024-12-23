@@ -11,38 +11,33 @@
  * @module modules/features/bookshelf
  * @requires config/index
  * @requires config/icons
+ * @requires modules/database/db-manager
  * @requires modules/text/text-processor
  * @requires modules/file/fileload-callback
  * @requires modules/components/cover-generator
+ * @requires modules/components/popup-manager
  * @requires utils/base
  * @requires utils/helpers-ui
  * @requires utils/helpers-file
  * @requires utils/helpers-bookshelf
  * @requires utils/helpers-reader
- * @requires lib/sweetalert2
  */
 
 import * as CONFIG from "../../config/index.js";
 import { ICONS } from "../../config/icons.js";
+import { DBManager } from "../database/db-manager.js";
 import { TextProcessor } from "../text/text-processor.js";
 import { FileLoadCallback } from "../file/fileload-callback.js";
 import { getCoverGenerator } from "../components/cover-generator.js";
+import { PopupManager } from "../components/popup-manager.js";
 import {
     isVariableDefined,
     getSizePrecise,
     removeFileExtension,
     convertUTCTimestampToLocalString,
     formatBytes,
-    setSvgPathLength,
 } from "../../utils/base.js";
-import {
-    showLoadingScreen,
-    hideLoadingScreen,
-    hideContent,
-    hideDropZone,
-    resetUI,
-    resetVars,
-} from "../../utils/helpers-ui.js";
+import { showLoadingScreen, hideLoadingScreen, resetUI, resetVars } from "../../utils/helpers-ui.js";
 import { handleSelectedFile, handleProcessedBook } from "../../utils/helpers-file.js";
 import {
     setBookLastReadTimestamp,
@@ -52,148 +47,38 @@ import {
     getIsOnServer,
 } from "../../utils/helpers-bookshelf.js";
 import { getProgressText, removeHistory, getIsBookFinished } from "../../utils/helpers-reader.js";
-import Swal from "../../lib/sweetalert2/src/sweetalert2.js";
 
 /**
  * @class BookshelfDB
  * @description Handles IndexedDB operations for book storage
  * @private
  */
-class BookshelfDB {
-    #indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
-    #db = null;
-    #dbVersion = 2;
-    #dbName = "SimpleTextReader";
-    #objectStores = {
-        bookfiles: "bookfiles",
-        bookProcessed: "bookProcessed",
+class BookshelfDB extends DBManager {
+    /**
+     * Object store names
+     * @type {Object}
+     * @private
+     */
+    #objectStoreNames = {
+        bookfiles: CONFIG.CONST_DB.DB_STORES[0].name,
+        bookProcessed: CONFIG.CONST_DB.DB_STORES[1].name,
     };
 
     /**
-     * Establishes connection to IndexedDB
-     * @returns {Promise<IDBDatabase>} Database connection
-     * @throws {Error} When connection fails
+     * Constructor for BookshelfDB
+     * @constructor
      */
-    #connect() {
-        return new Promise((resolve, reject) => {
-            const req = this.#indexedDB.open(this.#dbName, this.#dbVersion);
-            req.onupgradeneeded = (evt) => {
-                const db = evt.target.result;
-
-                // Create an objectStore for this database
-                // This will be used to store book metadata
-                if (!db.objectStoreNames.contains(this.#objectStores.bookfiles)) {
-                    db.createObjectStore(this.#objectStores.bookfiles, { keyPath: "name" });
-                }
-
-                // Create an objectStore for this database
-                // This will be used to store processed books
-                if (!db.objectStoreNames.contains(this.#objectStores.bookProcessed)) {
-                    db.createObjectStore(this.#objectStores.bookProcessed, { keyPath: "name" });
-                }
-            };
-            req.onsuccess = (evt) => {
-                resolve(evt.target.result);
-            };
-            req.onerror = (evt) => {
-                console.log("openDB.onError");
-                bookshelf.disable();
-                reject(evt.target.error);
-            };
-        });
-    }
-
-    /**
-     * Gets the database version
-     * @returns {Promise<number>} Database version
-     * @throws {Error} When database initialization fails
-     */
-    async #getDBVersion() {
-        return new Promise((resolve, reject) => {
-            const request = this.#indexedDB.open(this.#dbName);
-
-            request.onsuccess = (event) => {
-                const db = event.target.result;
-                const version = db.version;
-                db.close(); // Always close the database when done
-                resolve(version);
-            };
-
-            request.onerror = (event) => {
-                reject(`Error opening database: ${event.target.error}`);
-            };
-        });
-    }
-
-    /**
-     * Gets an object store from the database
-     * @param {string|string[]} storeNames - Name(s) of the object store(s)
-     * @param {string} [mode="readonly"] - Transaction mode ("readonly" or "readwrite")
-     * @param {IDBTransaction} [transaction=null] - Transaction object
-     * @returns {IDBObjectStore|Object<string, IDBObjectStore>} The requested object store(s)
-     */
-    #getObjectStore(storeNames, mode = "readonly", transaction = null) {
-        // Ensure storeNames is either a string or an array
-        if (typeof storeNames !== "string" && !Array.isArray(storeNames)) {
-            throw new Error("storeNames must be a string or an array.");
-        }
-
-        // Normalize to array for consistent handling
-        const names = Array.isArray(storeNames) ? storeNames : [storeNames];
-
-        const activeTransaction = transaction || this.#db.transaction(names, mode);
-        activeTransaction.onerror = function (evt) {
-            console.error("Transaction error:", evt.target.error);
-        };
-
-        // Return a single store or an object containing multiple stores
-        if (names.length === 1) {
-            return activeTransaction.objectStore(names[0]); // Single store
-        }
-
-        // Return an object mapping store names to their respective object stores
-        return names.reduce((stores, name) => {
-            stores[name] = activeTransaction.objectStore(name);
-            return stores;
-        }, {});
-    }
-
-    /**
-     * Executes an IndexedDB request and wraps it in a Promise
-     * @param {IDBRequest} request - The request to execute
-     * @returns {Promise<any>} Result of the request
-     * @throws {Error} When request fails
-     */
-    #exec(request) {
-        return new Promise((resolve, reject) => {
-            request.onsuccess = (evt) => {
-                resolve(evt.target.result);
-            };
-            request.onerror = (evt) => {
-                console.log("exec.onError: ");
-                console.log(evt.target);
-                reject(evt.target.error);
-            };
-        });
-    }
-
-    /**
-     * Initializes the database connection and performs cleanup
-     * @async
-     * @returns {Promise<boolean>} Success status
-     */
-    async #init() {
-        try {
-            if (!this.#db) {
-                this.#db = await this.#connect();
+    constructor() {
+        super({
+            dbName: CONFIG.CONST_DB.DB_NAME,
+            dbVersion: CONFIG.CONST_DB.DB_VERSION,
+            objectStores: CONFIG.CONST_DB.DB_STORES,
+            errorCallback: () => bookshelf.disable(),
+            initCallback: async () => {
                 // await this.removeAllBooks();
                 await this.removeAllCloudBooks();
-            }
-            return true;
-        } catch (e) {
-            console.log(e);
-            return false;
-        }
+            },
+        });
     }
 
     /**
@@ -207,50 +92,41 @@ class BookshelfDB {
      * @throws {Error} When database initialization fails or transaction fails
      */
     async putBook(name, data, isFromLocal = true, isOnServer = false) {
-        if (!(await this.#init())) {
+        if (!(await this.init())) {
             throw new Error("Init local db error!");
         }
 
         // Get the language of the book
         const { isEastern } = await TextProcessor.getLanguageAndEncodingFromBook(data);
 
-        // Start a single transaction for both object stores
-        const transaction = this.#db.transaction(
-            [this.#objectStores.bookfiles, this.#objectStores.bookProcessed],
-            "readwrite"
-        );
-
         try {
-            // Get the object stores using the same transaction
-            const { bookfiles: tbl, bookProcessed: processedTbl } = this.#getObjectStore(
-                [this.#objectStores.bookfiles, this.#objectStores.bookProcessed],
-                "readwrite",
-                transaction
-            );
+            const bookData = {
+                name,
+                data,
+                isFromLocal,
+                isOnServer,
+                isEastern,
+            };
 
-            // Save processed book info to bookProcessed
-            await this.#exec(
-                processedTbl.put({
-                    name: name,
-                })
-            );
-
-            // Save book info to bookfiles
-            await this.#exec(
-                tbl.put({
-                    name,
-                    data,
-                    isFromLocal,
-                    isOnServer,
-                    processed: false,
-                    pageBreakOnTitle: CONFIG.RUNTIME_CONFIG.PAGE_BREAK_ON_TITLE ?? true,
-                    isEastern: isEastern,
-                })
-            );
+            await this.put(bookData, {
+                stores: {
+                    [this.#objectStoreNames.bookfiles]: (inputData) => ({
+                        name: inputData.name,
+                        data: inputData.data,
+                        isFromLocal: inputData.isFromLocal,
+                        isOnServer: inputData.isOnServer,
+                        processed: false,
+                        pageBreakOnTitle: CONFIG.RUNTIME_CONFIG.PAGE_BREAK_ON_TITLE ?? true,
+                        isEastern: inputData.isEastern,
+                    }),
+                    [this.#objectStoreNames.bookProcessed]: (inputData) => ({
+                        name: inputData.name,
+                    }),
+                },
+            });
 
             return true;
         } catch (error) {
-            transaction.abort();
             console.error("Error putting book:", error);
             throw error;
         }
@@ -265,56 +141,43 @@ class BookshelfDB {
      * @throws {Error} When database initialization fails or transaction fails
      */
     async updateProcessedBook(name, processedData) {
-        if (!(await this.#init())) {
+        if (!(await this.init())) {
             throw new Error("Init local db error!");
         }
 
-        // Start a single transaction for both object stores
-        const transaction = this.#db.transaction(
-            [this.#objectStores.bookfiles, this.#objectStores.bookProcessed],
-            "readwrite"
-        );
-
         try {
-            // Get the object stores using the same transaction
-            const { bookfiles: tbl, bookProcessed: processedTbl } = this.#getObjectStore(
-                [this.#objectStores.bookfiles, this.#objectStores.bookProcessed],
-                "readwrite",
-                transaction
-            );
+            const [existingBook, existingProcessedBook] = await Promise.all([
+                this.get([this.#objectStoreNames.bookfiles], name),
+                this.get([this.#objectStoreNames.bookProcessed], name),
+            ]);
 
-            const existingBook = await this.#exec(tbl.get(name));
             if (!existingBook) {
                 throw new Error(`Book with name "${name}" not found in the database.`);
             }
 
-            // Update the book metadata
-            await this.#exec(
-                tbl.put({
-                    ...existingBook, // Keep all existing data
-                    processed: true, // Set the processed flag to true
-                    pageBreakOnTitle: CONFIG.RUNTIME_CONFIG.PAGE_BREAK_ON_TITLE ?? true,
-                })
-            );
-
-            // Get the existing processed book
-            const existingProcessedBook = await this.#exec(processedTbl.get(name));
             if (!existingProcessedBook) {
                 throw new Error(`Processed book with name "${name}" not found in the database.`);
             }
-            // Update the book data with processed information
-            const updatedBook = {
-                ...existingProcessedBook, // Keep all existing data
-                ...processedData, // Add or overwrite with processed data
-            };
-            // console.log("updatedBook: ", updatedBook);
 
-            // Save the updated book back to the database
-            await this.#exec(processedTbl.put(updatedBook));
+            await this.put(
+                { name, ...processedData },
+                {
+                    stores: {
+                        [this.#objectStoreNames.bookfiles]: () => ({
+                            ...existingBook,
+                            processed: true,
+                            pageBreakOnTitle: CONFIG.RUNTIME_CONFIG.PAGE_BREAK_ON_TITLE ?? true,
+                        }),
+                        [this.#objectStoreNames.bookProcessed]: () => ({
+                            ...existingProcessedBook,
+                            ...processedData,
+                        }),
+                    },
+                }
+            );
 
             return true;
         } catch (error) {
-            transaction.abort();
             console.error("Error updating processed book:", error);
             throw error;
         }
@@ -329,28 +192,33 @@ class BookshelfDB {
      * @throws {Error} When database initialization fails or transaction fails
      */
     async updateBookLanguage(name, isEastern) {
-        if (!(await this.#init())) {
+        if (!(await this.init())) {
             throw new Error("Init local db error!");
         }
 
-        // Start a single transaction for the object store
-        const transaction = this.#db.transaction([this.#objectStores.bookfiles], "readwrite");
-
         try {
-            // Get the object stores using the same transaction
-            const tbl = this.#getObjectStore(this.#objectStores.bookfiles, "readwrite", transaction);
-
-            // Get the existing book
-            const existingBook = await this.#exec(tbl.get(name));
+            const existingBook = await this.get([this.#objectStoreNames.bookfiles], name);
             if (!existingBook) {
                 throw new Error(`Book with name "${name}" not found in the database.`);
             }
 
-            await this.#exec(tbl.put({ ...existingBook, isEastern }));
+            await this.put(
+                { name, isEastern },
+                {
+                    stores: {
+                        [this.#objectStoreNames.bookfiles]: () => ({
+                            ...existingBook,
+                            isEastern,
+                        }),
+                        [this.#objectStoreNames.bookProcessed]: () => ({
+                            name,
+                        }),
+                    },
+                }
+            );
 
             return true;
         } catch (error) {
-            transaction.abort();
             console.error("Error updating book language:", error);
             throw error;
         }
@@ -364,38 +232,25 @@ class BookshelfDB {
      * @throws {Error} When database initialization fails or transaction fails
      */
     async getBook(name) {
-        if (!(await this.#init())) {
+        if (!(await this.init())) {
             throw new Error("Init local db error!");
         }
 
-        // Start a single transaction for the object stores
-        const transaction = this.#db.transaction(
-            [this.#objectStores.bookfiles, this.#objectStores.bookProcessed],
-            "readonly"
-        );
-
         try {
-            // Get the object stores using the same transaction
-            const { bookfiles: tbl, bookProcessed: processedTbl } = this.#getObjectStore(
-                [this.#objectStores.bookfiles, this.#objectStores.bookProcessed],
-                "readonly",
-                transaction
-            );
-
-            // Retrieve book data and processed data
-            const [result, processedResult] = await Promise.all([
-                this.#exec(tbl.get(name)),
-                this.#exec(processedTbl.get(name)),
+            const [bookFile, processedBook] = await Promise.all([
+                this.get([this.#objectStoreNames.bookfiles], name),
+                this.get([this.#objectStoreNames.bookProcessed], name),
             ]);
 
-            // Merge the results and return
-            if (!result && !processedResult) {
-                return null; // Return null if both are missing
+            if (!bookFile && !processedBook) {
+                return null;
             }
 
-            return { ...result, ...processedResult };
+            return {
+                ...(bookFile || {}),
+                ...(processedBook || {}),
+            };
         } catch (error) {
-            transaction.abort();
             console.error("Error getting book:", error);
             throw error;
         }
@@ -408,29 +263,23 @@ class BookshelfDB {
      * @throws {Error} When database initialization fails or transaction fails
      */
     async getAllBooks() {
-        if (!(await this.#init())) {
+        if (!(await this.init())) {
             throw new Error("Init local db error!");
         }
 
-        const tbl = this.#getObjectStore(this.#objectStores.bookfiles);
-        const books = [];
+        try {
+            await this.ensureStoresAvailable([this.#objectStoreNames.bookfiles, this.#objectStoreNames.bookProcessed]);
+            // console.log("Required stores are available");
 
-        return new Promise((resolve, reject) => {
-            const request = tbl.openCursor();
-            request.onsuccess = (event) => {
-                const cursor = event.target.result;
-                if (cursor) {
-                    books.push(cursor.value);
-                    cursor.continue();
-                } else {
-                    resolve(books); // No more records
-                }
-            };
-            request.onerror = (event) => {
-                console.error("Cursor error:", event.target.error);
-                reject(event.target.error);
-            };
-        });
+            const allBooks = await this.getAll([this.#objectStoreNames.bookfiles], {
+                useCursor: true,
+            });
+            // console.log("Books:", books);
+            return allBooks;
+        } catch (error) {
+            console.error("Error getting all books:", error);
+            return [];
+        }
     }
 
     /**
@@ -440,32 +289,8 @@ class BookshelfDB {
      * @throws {Error} When database initialization fails or transaction fails
      */
     async getAllCloudBooks() {
-        if (!(await this.#init())) {
-            throw new Error("Init local db error!");
-        }
-
-        const tbl = this.#getObjectStore(this.#objectStores.bookfiles);
-        const cloudBooks = [];
-
-        return new Promise((resolve, reject) => {
-            const request = tbl.openCursor();
-            request.onsuccess = (event) => {
-                const cursor = event.target.result;
-                if (cursor) {
-                    const book = cursor.value;
-                    if (book.isOnServer) {
-                        cloudBooks.push(book);
-                    }
-                    cursor.continue();
-                } else {
-                    resolve(cloudBooks); // No more records
-                }
-            };
-            request.onerror = (event) => {
-                console.error("Cursor error:", event.target.error);
-                reject(event.target.error);
-            };
-        });
+        const books = await this.getAllBooks();
+        return books.filter((book) => book.isOnServer);
     }
 
     /**
@@ -476,18 +301,11 @@ class BookshelfDB {
      * @throws {Error} When database initialization fails or transaction fails
      */
     async isBookExist(name) {
-        if (!(await this.#init())) {
+        if (!(await this.init())) {
             throw new Error("Init local db error!");
         }
 
-        try {
-            const tbl = this.#getObjectStore(this.#objectStores.bookfiles);
-            const result = await this.#exec(tbl.getKey(name));
-            return !!result;
-        } catch (error) {
-            console.error("Error checking if book exists:", error);
-            throw error;
-        }
+        return await this.exists(this.#objectStoreNames.bookfiles, name);
     }
 
     /**
@@ -497,31 +315,14 @@ class BookshelfDB {
      * @throws {Error} When database initialization fails or transaction fails
      */
     async removeBook(name) {
-        if (!(await this.#init())) {
+        if (!(await this.init())) {
             throw new Error("Init local db error!");
         }
 
-        // Start a single transaction for the object stores
-        const transaction = this.#db.transaction(
-            [this.#objectStores.bookfiles, this.#objectStores.bookProcessed],
-            "readwrite"
-        );
-
         try {
-            // Get the object stores using the same transaction
-            const { bookfiles: tbl, bookProcessed: processedTbl } = this.#getObjectStore(
-                [this.#objectStores.bookfiles, this.#objectStores.bookProcessed],
-                "readwrite",
-                transaction
-            );
-
-            // Delete entries
-            await this.#exec(tbl.delete(name));
-            await this.#exec(processedTbl.delete(name));
-
+            await this.delete([this.#objectStoreNames.bookfiles, this.#objectStoreNames.bookProcessed], name);
             return true;
         } catch (error) {
-            transaction.abort();
             console.error("Error removing book:", error);
             throw error;
         }
@@ -533,31 +334,14 @@ class BookshelfDB {
      * @throws {Error} When database initialization fails or transaction fails
      */
     async removeAllBooks() {
-        if (!(await this.#init())) {
+        if (!(await this.init())) {
             throw new Error("Init local db error!");
         }
 
-        // Start a single transaction for the object stores
-        const transaction = this.#db.transaction(
-            [this.#objectStores.bookfiles, this.#objectStores.bookProcessed],
-            "readwrite"
-        );
-
         try {
-            // Get the object stores using the same transaction
-            const { bookfiles: tbl, bookProcessed: processedTbl } = this.#getObjectStore(
-                [this.#objectStores.bookfiles, this.#objectStores.bookProcessed],
-                "readwrite",
-                transaction
-            );
-
-            // Clear the object stores
-            await this.#exec(tbl.clear());
-            await this.#exec(processedTbl.clear());
-
+            await this.clear([this.#objectStoreNames.bookfiles, this.#objectStoreNames.bookProcessed]);
             return true;
         } catch (error) {
-            transaction.abort();
             console.error("Error removing all books:", error);
             throw error;
         }
@@ -569,47 +353,19 @@ class BookshelfDB {
      * @throws {Error} When database initialization fails or transaction fails
      */
     async removeAllCloudBooks() {
-        if (!(await this.#init())) {
+        if (!(await this.init())) {
             throw new Error("Init local db error!");
         }
 
-        // Start a single transaction for the object stores
-        const transaction = this.#db.transaction(
-            [this.#objectStores.bookfiles, this.#objectStores.bookProcessed],
-            "readwrite"
-        );
-
         try {
-            // Get the object stores using the same transaction
-            const { bookfiles: tbl, bookProcessed: processedTbl } = this.#getObjectStore(
-                [this.#objectStores.bookfiles, this.#objectStores.bookProcessed],
-                "readwrite",
-                transaction
-            );
+            const cloudBooks = await this.getAllCloudBooks();
 
-            // Use a cursor to iterate through all records in `bookfiles`
-            const cursorRequest = tbl.openCursor();
-            cursorRequest.onsuccess = async (event) => {
-                const cursor = event.target.result;
-                if (cursor) {
-                    const book = cursor.value;
-                    if (book.isOnServer && !book.isFromLocal) {
-                        // Delete the current record
-                        await this.#exec(tbl.delete(cursor.key));
-                        await this.#exec(processedTbl.delete(cursor.key));
-                    }
-                    // Move to the next record
-                    cursor.continue();
-                }
-            };
+            for (const book of cloudBooks) {
+                await this.delete([this.#objectStoreNames.bookfiles, this.#objectStoreNames.bookProcessed], book.name);
+            }
 
-            // Wait for the transaction to complete
-            return new Promise((resolve, reject) => {
-                transaction.oncomplete = () => resolve(true);
-                transaction.onerror = (evt) => reject(evt.target.error);
-            });
+            return true;
         } catch (error) {
-            transaction.abort();
             console.error("Error removing all cloud books:", error);
             throw error;
         }
@@ -620,259 +376,69 @@ class BookshelfDB {
      * @async
      * @throws {Error} When database initialization fails or transaction fails
      */
-    async upgradeDB(force = false) {
-        // console.log("upgradeDB: ", force);
-        const currentDBVersion = await this.#getDBVersion();
-        // console.log("currentDBVersion: ", currentDBVersion);
+    async upgradeBookshelfDB(force = false) {
+        // console.log("upgradeBookshelfDB: force =", force);
+        const currentDBVersion = await this.getDBVersion();
+        const configuredDBVersion = this.getConfiguredDBVersion();
 
-        if (currentDBVersion > this.#dbVersion) {
-            throw new Error(`Database version mismatch! Current: ${currentDBVersion}, Expected: ${this.#dbVersion}`);
-        } else if (currentDBVersion === this.#dbVersion && !force) {
+        if (currentDBVersion > configuredDBVersion) {
+            throw new Error(
+                `Database version mismatch! Current: ${currentDBVersion}, Expected: ${configuredDBVersion}`
+            );
+        } else if (currentDBVersion === configuredDBVersion && !force) {
             return;
         }
 
-        // Initialize the database
-        if (!(await this.#init())) {
-            throw new Error("Init local db error!");
-        }
-
-        // Define required fields for bookfiles and bookProcessed
-        const bookfilesFields = [
-            "name",
-            "data",
-            "isFromLocal",
-            "isOnServer",
-            "processed",
-            "pageBreakOnTitle",
-            "isEastern",
-        ];
-        const bookProcessedFields = [
-            "name",
-            "bookAndAuthor",
-            "title_page_line_number_offset",
-            "seal_rotate_en",
-            "seal_left",
-            "file_content_chunks",
-            "all_titles",
-            "all_titles_ind",
-            "footnotes",
-            "footnote_processed_counter",
-            "page_breaks",
-            "total_pages",
-            "is_eastern_lan",
-        ];
-
-        // Start a single transaction
-        const transaction = this.#db.transaction(
-            [this.#objectStores.bookfiles, this.#objectStores.bookProcessed],
-            "readwrite"
-        );
-
-        // Get the object stores
-        const { bookfiles: tbl, bookProcessed: processedTbl } = this.#getObjectStore(
-            [this.#objectStores.bookfiles, this.#objectStores.bookProcessed],
-            "readwrite",
-            transaction
-        );
-
-        let dbUpdated = false;
-
-        // Open a cursor to iterate over all books in the bookfiles object store
-        const cursorRequest = tbl.openCursor();
-        cursorRequest.onsuccess = async (event) => {
-            const cursor = event.target.result;
-            if (cursor) {
-                const book = cursor.value;
-                const { name, ...rest } = book;
-
-                // Separate fields for bookProcessed
-                const processedData = {};
-                bookProcessedFields.forEach((field) => {
-                    if (rest[field] !== undefined) {
-                        processedData[field] = rest[field];
-                        delete rest[field]; // Remove from bookfiles
-                    }
-                });
-
-                // Ensure bookfiles only contains required fields
-                const bookfilesData = {};
-                bookfilesFields.forEach((field) => {
-                    if (book[field] !== undefined) {
-                        bookfilesData[field] = book[field];
-                    }
-                });
-
-                // Apply default values for bookfiles
-                bookfilesFields.forEach((field) => {
-                    if (bookfilesData[field] === undefined) {
-                        bookfilesData[field] = this.#getDefaultValueForField(field);
-                    }
-                });
-
-                // Get the existing processed book if it exists
-                const existingProcessedBook = await this.#exec(processedTbl.get(name));
-
-                // Create or update entry in bookProcessed
-                const updatedProcessedBook = {
-                    name: name,
-                    ...existingProcessedBook, // Keep all existing data
-                    ...processedData, // Overwrite or add any missing fields
-                };
-
-                // Ensure all required fields in bookProcessed have default values if missing
-                bookProcessedFields.forEach((field) => {
-                    if (updatedProcessedBook[field] === undefined) {
-                        updatedProcessedBook[field] = this.#getDefaultValueForField(field);
-                    }
-                });
-
-                // If the book does not exist in bookProcessed, create it
-                if (!existingProcessedBook) {
-                    console.log(`Creating new entry in bookProcessed for book: ${name}`);
-                    dbUpdated = true;
-                    await this.#exec(processedTbl.put(updatedProcessedBook));
-                } else {
-                    // If the updated entry differs from the existing one, update it
-                    if (JSON.stringify(existingProcessedBook) !== JSON.stringify(updatedProcessedBook)) {
-                        console.log(`Updating entry in bookProcessed for book: ${name}`);
-                        dbUpdated = true;
-                        await this.#exec(processedTbl.put(updatedProcessedBook));
-                    }
-                }
-
-                // Clean up excessive fields in bookfiles
-                if (JSON.stringify(book) !== JSON.stringify(bookfilesData)) {
-                    dbUpdated = true;
-                    await this.#exec(tbl.put(bookfilesData));
-                }
-
-                cursor.continue();
-            }
-        };
-
-        cursorRequest.onerror = (event) => {
-            console.error("Cursor error:", event.target.error);
-        };
-
-        return new Promise((resolve, reject) => {
-            transaction.oncomplete = () => {
-                if (dbUpdated) {
-                    this.printAllDatabases();
-                    console.log("Database upgrade completed.");
-                }
-                resolve();
-            };
-
-            transaction.onerror = (event) => {
-                console.error("Transaction error:", event.target.error);
-                reject(event.target.error);
-            };
-
-            transaction.onabort = (event) => {
-                console.error("Transaction aborted:", event.target.error);
-                reject(event.target.error);
-            };
-        });
-    }
-
-    /**
-     * Gets the default value for a field
-     * @param {string} field - Field name
-     * @returns {any} Default value for the field
-     */
-    #getDefaultValueForField(field) {
-        const defaults = {
-            // bookfiles fields
-            name: "",
-            data: new File([], ""), // Empty File object
-            isFromLocal: true,
-            isOnServer: false,
-            processed: false,
-            pageBreakOnTitle: true,
-            isEastern: true,
-
-            // bookProcessed fields
-            bookAndAuthor: {},
-            title_page_line_number_offset: 0,
-            seal_rotate_en: "0deg",
-            seal_left: "0",
-            file_content_chunks: [],
-            all_titles: [],
-            all_titles_ind: {},
-            footnotes: [],
-            footnote_processed_counter: 0,
-            page_breaks: [],
-            total_pages: 0,
-            is_eastern_lan: true,
-        };
-        return defaults[field];
-    }
-
-    /**
-     * Prints all records in the "bookfiles" object store
-     * @async
-     * @throws {Error} When database initialization fails or transaction fails
-     */
-    async #printBookfiles() {
-        if (!(await this.#init())) {
+        if (!(await this.init())) {
             throw new Error("Init local db error!");
         }
 
         try {
-            const tbl = this.#getObjectStore(this.#objectStores.bookfiles);
-            const records = await this.#exec(tbl.getAll());
-            if (records.length === 0) {
-                console.log("No records found in bookfiles.");
-            } else {
-                console.log("All records in bookfiles:");
-                console.table(records);
+            const allBooks = await this.getAllBooks();
+            for (const book of allBooks) {
+                const { name } = book;
+                const processedBook = await this.get([this.#objectStoreNames.bookProcessed], name);
+                await this.put(book, {
+                    stores: {
+                        [this.#objectStoreNames.bookfiles]: () => ({
+                            name: book.name,
+                            data: book.data,
+                            isFromLocal: book.isFromLocal ?? true,
+                            isOnServer: book.isOnServer ?? false,
+                            processed: book.processed ?? false,
+                            pageBreakOnTitle:
+                                book.pageBreakOnTitle ?? CONFIG.RUNTIME_CONFIG.PAGE_BREAK_ON_TITLE ?? true,
+                            isEastern: book.isEastern ?? true,
+                        }),
+                        [this.#objectStoreNames.bookProcessed]: () => ({
+                            name: book.name,
+                            ...(processedBook || {}),
+                            bookAndAuthor: processedBook?.bookAndAuthor ?? { bookName: "", author: "" },
+                            title_page_line_number_offset: processedBook?.title_page_line_number_offset ?? 0,
+                            seal_rotate_en: processedBook?.seal_rotate_en ?? "0deg",
+                            seal_left: processedBook?.seal_left ?? "0",
+                            file_content_chunks: processedBook?.file_content_chunks ?? [],
+                            all_titles: processedBook?.all_titles ?? [],
+                            all_titles_ind: processedBook?.all_titles_ind ?? {},
+                            footnotes: processedBook?.footnotes ?? [],
+                            footnote_processed_counter: processedBook?.footnote_processed_counter ?? 0,
+                            page_breaks: processedBook?.page_breaks ?? [],
+                            total_pages: processedBook?.total_pages ?? 0,
+                            is_eastern_lan: processedBook?.is_eastern_lan ?? true,
+                        }),
+                    },
+                });
             }
-        } catch (error) {
-            console.error("Error printing bookfiles:", error);
-        }
-    }
 
-    /**
-     * Prints all records in the "bookProcessed" object store
-     * @async
-     * @throws {Error} When database initialization fails or transaction fails
-     */
-    async #printBookProcessed() {
-        if (!(await this.#init())) {
-            throw new Error("Init local db error!");
-        }
-
-        try {
-            const processedTbl = this.#getObjectStore(this.#objectStores.bookProcessed);
-            const records = await this.#exec(processedTbl.getAll());
-
-            // Preprocess records to include sizes of arrays and objects
-            const processedRecords = records.map((record) => {
-                const preprocessValue = (key, value) => {
-                    if (key === "bookAndAuthor" && value && typeof value === "object") {
-                        return `${value.bookName}, ${value.author}`;
-                    } else if (Array.isArray(value)) {
-                        return `Array(${value.length})`; // Show array length
-                    } else if (value && typeof value === "object") {
-                        return `Object(${Object.keys(value).length})`; // Show object key count
-                    }
-                    return value; // Keep primitive values as-is
-                };
-
-                // Process each record's properties
-                return Object.fromEntries(
-                    Object.entries(record).map(([key, value]) => [key, preprocessValue(key, value)])
-                );
-            });
-
-            if (processedRecords.length === 0) {
-                console.log("No records found in bookProcessed.");
-            } else {
-                console.log("All records in bookProcessed:");
-                console.table(processedRecords);
+            if (allBooks.length > 0) {
+                await this.printAllDatabases();
+                console.log("Database upgrade completed.");
             }
+
+            return true;
         } catch (error) {
-            console.error("Error printing bookProcessed:", error);
+            console.error("Error upgrading database:", error);
+            throw error;
         }
     }
 
@@ -882,25 +448,41 @@ class BookshelfDB {
      * @throws {Error} When database initialization fails
      */
     async printAllDatabases() {
-        if (!(await this.#init())) {
+        if (!(await this.init())) {
             throw new Error("Init local db error!");
         }
 
-        console.log("Printing all database records...");
+        console.log("Printing all book-related database records...");
 
         try {
-            await this.#printBookfiles();
-        } catch (error) {
-            console.error("Error printing bookfiles:", error);
-        }
+            await this.printStoreRecords({
+                storeNames: [this.#objectStoreNames.bookfiles, this.#objectStoreNames.bookProcessed],
+                preprocessors: {
+                    [this.#objectStoreNames.bookfiles]: (record) => record,
+                    [this.#objectStoreNames.bookProcessed]: (record) => {
+                        const preprocessValue = (key, value) => {
+                            if (key === "bookAndAuthor" && value && typeof value === "object") {
+                                return `${value.bookName}, ${value.author}`;
+                            } else if (Array.isArray(value)) {
+                                return `Array(${value.length})`;
+                            } else if (value && typeof value === "object") {
+                                return `Object(${Object.keys(value).length})`;
+                            }
+                            return value;
+                        };
 
-        try {
-            await this.#printBookProcessed();
-        } catch (error) {
-            console.error("Error printing bookProcessed:", error);
-        }
+                        return Object.fromEntries(
+                            Object.entries(record).map(([key, value]) => [key, preprocessValue(key, value)])
+                        );
+                    },
+                },
+            });
 
-        console.log("Finished printing all database records.");
+            console.log("Finished printing all book-related database records.");
+        } catch (error) {
+            console.error("Error printing book-related databases:", error);
+            throw error;
+        }
     }
 }
 
@@ -916,6 +498,8 @@ const bookshelf = {
     _coverGenerator: null,
     _FILENAME_: "STR-Filename",
     _CACHE_FLAG_: "STR-Cache-File",
+
+    _FILE_LOAD_CALLBACK_FUNC_: null,
 
     /**
      * Reopens the last read book on startup
@@ -946,7 +530,6 @@ const bookshelf = {
     async openBook(fname, forceRefresh = false) {
         if (this.enabled) {
             // console.log("Open book from cache: " + fname);
-            // showLoadingScreen();
             try {
                 // check if the book exists in db
                 if (!(await this.isBookExist(fname))) {
@@ -970,11 +553,19 @@ const bookshelf = {
                                 false
                             );
                         } catch (e) {
-                            // alert("An error occurred!");
+                            PopupManager.showNotification({
+                                iconName: "ERROR",
+                                text: `${CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_failedToOpen} "${fname}"`,
+                                iconColor: "error",
+                            });
                             throw new Error(`openBook error: "${fname}"`);
                         }
                     } else {
-                        // alert("An error occurred!");
+                        PopupManager.showNotification({
+                            iconName: "ERROR",
+                            text: `${CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_failedToOpen} "${fname}"`,
+                            iconColor: "error",
+                        });
                         throw new Error(`openBook error: "${fname}"`);
                     }
                 }
@@ -1002,7 +593,11 @@ const bookshelf = {
                     setBookLastReadTimestamp(fname);
                     return true;
                 } else {
-                    // alert("An error occurred!");
+                    PopupManager.showNotification({
+                        iconName: "ERROR",
+                        text: `${CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_failedToOpen} "${fname}"`,
+                        iconColor: "error",
+                    });
                     throw new Error(`openBook error: "${fname}"`);
                 }
             } catch (e) {
@@ -1063,7 +658,8 @@ const bookshelf = {
         isOnServer = false,
         refreshBookshelf = true,
         hardRefresh = true,
-        sortBookshelf = true
+        sortBookshelf = true,
+        inFileLoadCallback = false
     ) {
         if (bookshelf.enabled) {
             if (file.type === "text/plain") {
@@ -1080,14 +676,19 @@ const bookshelf = {
 
                         await bookshelf.db.putBook(file.name, file, isFromLocal, isOnServer);
                         if (!(await bookshelf.db.isBookExist(file.name))) {
-                            // alert("Failed to save to local bookshelf (storage may be full)");
+                            PopupManager.showNotification({
+                                iconName: "ERROR",
+                                text: CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_failedToSave,
+                                iconColor: "error",
+                            });
                             throw new Error(`saveBook error (localStorage full): "${file.name}"`);
                         }
 
                         // Refresh Bookshelf in DropZone
                         // await bookshelf.refreshBookList();
                         // console.log(`refreshBookshelf: ${refreshBookshelf}, HardRefresh: ${hardRefresh}`);
-                        if (refreshBookshelf) await resetUI(refreshBookshelf, hardRefresh, sortBookshelf);
+                        if (refreshBookshelf)
+                            await resetUI(refreshBookshelf, hardRefresh, sortBookshelf, inFileLoadCallback);
                     } catch (e) {
                         console.log(e);
                     }
@@ -1469,6 +1070,15 @@ const bookshelf = {
      * @param {boolean} [sortBookshelf=true] - Whether to sort the books
      */
     async refreshBookList(hardRefresh = false, sortBookshelf = true) {
+        // console.log(
+        //     "Refreshing book list...",
+        //     "hardRefresh:",
+        //     hardRefresh,
+        //     "sortBookshelf:",
+        //     sortBookshelf,
+        //     "enabled:",
+        //     this.enabled
+        // );
         if (this.enabled) {
             if (navigator.storage) {
                 const storageInfo = await navigator.storage.estimate();
@@ -1482,7 +1092,8 @@ const bookshelf = {
                 $("#bookshelfUsageText").hide();
             }
             try {
-                for (const book of await this.db.getAllBooks()) {
+                const allBooks = await this.db.getAllBooks();
+                for (const book of allBooks) {
                     const final_isFromLocal = book.isFromLocal ?? false;
                     const final_isOnServer = book.isOnServer ?? false;
                     const final_isEastern = await this._getBookLanguage(book);
@@ -1688,6 +1299,8 @@ const bookshelf = {
             //     booklistMarginValue,
             //     relativeLeft,
             //     theoreticalLastBookRight: relativeLeft + totalRowWidth,
+            //     filterBarLeft: relativeLeft - getSizePrecise(),
+            //     filterBarWidth: totalRowWidth + 2 * getSizePrecise(),
             // });
 
             // Apply position and width
@@ -1725,10 +1338,6 @@ const bookshelf = {
                 // Align the filter bar
                 bookshelf._alignFilterBar();
 
-                // Adjust the margin of the bookshelf
-                const filterBarHeight = filterBar.outerHeight(true);
-                booklist.css("margin-top", `-${filterBarHeight}px`);
-
                 // Use requestAnimationFrame to ensure the position is set before showing
                 requestAnimationFrame(() => {
                     filterBar.addClass("visible");
@@ -1741,10 +1350,6 @@ const bookshelf = {
 
                 // Important: even when hiding buttons, call the alignment function
                 bookshelf._alignFilterBar();
-
-                // Recalculate height (only include counter)
-                const filterBarHeight = filterBar.outerHeight(true);
-                booklist.css("margin-top", `-${filterBarHeight}px`);
 
                 filterBar.removeClass("visible");
             }
@@ -1833,8 +1438,9 @@ const bookshelf = {
         const counterSuffix =
             CONFIG.RUNTIME_VARS.STYLE.ui_bookshelf_filterBtn_counter_suffix +
             (CONFIG.RUNTIME_VARS.WEB_LANG === "en" && totalBooks > 1 ? "s" : "");
-        const counterElement = $("<span></span>")
+        const counterElement = $("<button></button>")
             .addClass("booklist-filter-counter prevent-select")
+            .attr("disabled", true)
             .text(`${counterPrefix}${totalBooks} ${counterSuffix}`);
 
         // Add remove all button
@@ -1848,28 +1454,11 @@ const bookshelf = {
         removeAllBtn.on("click", () => {
             if (allBooks.length === 0) return;
 
-            Swal.fire({
+            PopupManager.showConfirmationPopup({
+                iconName: "DELETE_ALL_BOOKS",
                 title: CONFIG.RUNTIME_VARS.STYLE.ui_removeAllBooks_confirm_title,
                 text: CONFIG.RUNTIME_VARS.STYLE.ui_removeAllBooks_confirm_text,
-                iconHtml: ICONS.DELETE_ALL_BOOKS,
-                customClass: {
-                    icon: "booklist-remove-all-popup-icon",
-                    popup: "booklist-remove-all-popup",
-                    title: "booklist-remove-all-popup",
-                    htmlContainer: "booklist-remove-all-popup",
-                    confirmButton: "booklist-remove-all-popup",
-                    cancelButton: "booklist-remove-all-popup",
-                    actions: "booklist-remove-all-popup swal2-actions",
-                },
-                iconColor: CONFIG.RUNTIME_VARS.STYLE.mainColor_inactive,
-                showCancelButton: true,
-                confirmButtonColor: CONFIG.RUNTIME_VARS.STYLE.mainColor_inactive,
-                cancelButtonColor: CONFIG.RUNTIME_VARS.STYLE.fontInfoColor,
-                confirmButtonText: CONFIG.RUNTIME_VARS.STYLE.ui_removeAllBooks_confirm_btn,
-                cancelButtonText: CONFIG.RUNTIME_VARS.STYLE.ui_removeAllBooks_cancel_btn,
-                background: CONFIG.RUNTIME_VARS.STYLE.bgColor,
-            }).then((result) => {
-                if (result.isConfirmed) {
+                onConfirm: () => {
                     // Remove all books
                     const promises = allBooks.map(
                         (book) =>
@@ -1885,7 +1474,7 @@ const bookshelf = {
                         CONFIG.VARS.ALL_BOOKS_INFO = {};
                         $(".booklist").trigger("contentchange");
                     });
-                }
+                },
             });
         });
 
@@ -1943,6 +1532,10 @@ const bookshelf = {
      * @private
      */
     _resetDropzoneStyles() {
+        CONFIG.RUNTIME_VARS.STYLE.ui_dropZoneImgText_lineNumber = this._detectLineWrap(
+            CONFIG.DOM_ELEMENT.DROPZONE_TEXT
+        );
+
         if (isVariableDefined(CONFIG.DOM_ELEMENT.DROPZONE_TEXT)) {
             $(CONFIG.DOM_ELEMENT.DROPZONE_TEXT).removeClass("dropzone-text-custom").addClass("dropzone-text-default");
         }
@@ -1957,6 +1550,10 @@ const bookshelf = {
      * @private
      */
     _setDropzoneStyles() {
+        CONFIG.RUNTIME_VARS.STYLE.ui_dropZoneImgText_lineNumber = this._detectLineWrap(
+            CONFIG.DOM_ELEMENT.DROPZONE_TEXT
+        );
+
         if (isVariableDefined(CONFIG.DOM_ELEMENT.DROPZONE_TEXT)) {
             $(CONFIG.DOM_ELEMENT.DROPZONE_TEXT).removeClass("dropzone-text-default").addClass("dropzone-text-custom");
         }
@@ -1966,11 +1563,28 @@ const bookshelf = {
     },
 
     /**
+     * Detects the number of lines in an element
+     * @private
+     */
+    _detectLineWrap(element) {
+        // Get the computed line height of the element
+        const computedStyle = window.getComputedStyle(element);
+        const lineHeight = parseFloat(computedStyle.lineHeight);
+
+        // Get the scroll height of the element
+        const scrollHeight = element.scrollHeight;
+
+        // Calculate the number of lines
+        const lines = Math.round(scrollHeight / lineHeight);
+
+        return lines; // Returns the number of lines (e.g., 2, 3, etc.)
+    },
+
+    /**
      * Shows the bookshelf UI if enabled and contains books
-     * @async
      * @returns {Object} The bookshelf instance for chaining
      */
-    async show() {
+    show() {
         if (this.enabled) {
             if (isVariableDefined($(".bookshelf")) && $(".bookshelf .booklist").children().length > 0) {
                 $(".bookshelf").show();
@@ -1986,7 +1600,7 @@ const bookshelf = {
      * @param {boolean} [doNotRemove=true] - If false, removes the bookshelf element instead of hiding
      * @returns {Object} The bookshelf instance for chaining
      */
-    async hide(doNotRemove = true) {
+    hide(doNotRemove = true) {
         if (this.enabled) {
             this._resetDropzoneStyles();
             if (!doNotRemove) {
@@ -2032,19 +1646,29 @@ const bookshelf = {
      * Enables the bookshelf module and sets up event handlers
      * @returns {Object} The bookshelf instance for chaining
      */
-    enable() {
+    async enable() {
         if (!this.enabled) {
             this.db = new BookshelfDB();
-            this.db.upgradeDB();
-            FileLoadCallback.regBefore(this.saveBook);
+            await this.db.upgradeBookshelfDB();
+            this._FILE_LOAD_CALLBACK_FUNC_ = (file) =>
+                this.saveBook(
+                    file,
+                    true, // isFromLocal
+                    false, // isOnServer
+                    true, // refreshBookshelf
+                    true, // hardRefresh
+                    true, // sortBookshelf
+                    true // inFileLoadCallback
+                );
+            FileLoadCallback.regBefore(this._FILE_LOAD_CALLBACK_FUNC_);
             this.enabled = true;
 
             if (CONFIG.RUNTIME_CONFIG.UPGRADE_DB) {
-                this.db.upgradeDB(true);
+                await this.db.upgradeBookshelfDB(true);
             }
 
             if (CONFIG.RUNTIME_CONFIG.PRINT_DATABASE) {
-                this.db.printAllDatabases();
+                await this.db.printAllDatabases();
             }
 
             // Listen for refreshBookList event
@@ -2054,8 +1678,8 @@ const bookshelf = {
             });
 
             // Listen for settings change events
-            document.addEventListener("updateAllBookCovers", () => {
-                this.updateAllBookCovers();
+            document.addEventListener("updateAllBookCovers", async () => {
+                await this.updateAllBookCovers();
             });
 
             // Listen for showBookshelfTriggerBtn event
@@ -2066,6 +1690,16 @@ const bookshelf = {
             // Listen for hideBookshelfTriggerBtn event
             document.addEventListener("hideBookshelfTriggerBtn", () => {
                 this.hideTriggerBtn();
+            });
+
+            // Listen for showBookshelf event
+            document.addEventListener("showBookshelf", () => {
+                this.show();
+            });
+
+            // Listen for hideBookshelf event
+            document.addEventListener("hideBookshelf", () => {
+                this.hide();
             });
 
             // Listen for handleMultipleBooks event
@@ -2134,7 +1768,8 @@ const bookshelf = {
                         }
 
                         // Get all existing books
-                        for (const book of await this.db.getAllBooks()) {
+                        const allBooks = await this.db.getAllBooks();
+                        for (const book of allBooks) {
                             const final_isFromLocal = book.isFromLocal || false;
                             const final_isOnServer = book.isOnServer || false;
                             const new_file = {
@@ -2176,7 +1811,7 @@ const bookshelf = {
                         }
                         container.trigger("contentchange");
                     } catch (e) {
-                        console.log("Error in handleMultipleFilesWithoutLoading:", e);
+                        console.log("Error in handleMultipleBooksWithoutLoading:", e);
                     }
 
                     // If there is no book in bookshelf, hide the bookshelf
@@ -2203,7 +1838,7 @@ const bookshelf = {
             <div class="title">${CONFIG.RUNTIME_VARS.STYLE.ui_bookshelfCachedStorage}
             <div class="sub-title">${CONFIG.RUNTIME_VARS.STYLE.ui_bookshelfCachedStorage_subTitle}<br/>
                 <span id="bookshelfUsageText">${CONFIG.RUNTIME_VARS.STYLE.ui_bookshelfCachedStorage_usage}&nbsp;<span id="bookshelfUsagePct"></span>% (<span id="bookshelfUsage"></span> / <span id="bookshelfQuota"></span>)</span></div></div>
-            <div class="booklist-filter-bar"></div>
+            <nav class="booklist-filter-bar"></nav>
             <div class="booklist"></div>
             <div class="bookshelf-btn-group">
                 <div id="scrollTop-btn" class="btn-icon hasTitle" title="${CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_bookshelf_scrollTop}" style="visibility:hidden">
@@ -2392,7 +2027,7 @@ const bookshelf = {
      */
     disable() {
         if (this.enabled) {
-            FileLoadCallback.unregBefore(this.saveBook);
+            FileLoadCallback.unregBefore(this._FILE_LOAD_CALLBACK_FUNC_);
             this.hide(false);
             this.hideTriggerBtn(false);
             this.db = null;
@@ -2405,14 +2040,14 @@ const bookshelf = {
     /**
      * Initializes the bookshelf UI by creating the trigger button
      */
-    init() {
+    async init() {
         const $button = $(
             `<div id="STRe-bookshelf-btn" class="btn-icon hasTitle" title="${CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_goToBookshelf}">${ICONS.BOOKSHELF}</div>`
         );
 
-        $button.on("click", () => {
+        $button.on("click", async () => {
             // setSvgPathLength($button.get(0));
-            resetUI();
+            await resetUI();
         });
         $button.prependTo($("#btnWrapper")).hide();
     },
@@ -2422,18 +2057,30 @@ const bookshelf = {
  * Initializes the bookshelf module
  * @public
  */
-export function initBookshelf(displayBooks = true) {
+export async function initBookshelf(displayBooks = true) {
     // Enable bookshelf functionality
     if (CONFIG.RUNTIME_CONFIG.ENABLE_BOOKSHELF) {
-        bookshelf.init();
-        bookshelf.enable();
+        await bookshelf.init();
+        await bookshelf.enable();
 
         if (displayBooks) {
             // Now whether or not to show bookshelf depends on whether there is a book in bookshelf
-            bookshelf.refreshBookList();
+            await bookshelf.refreshBookList();
 
             // Open the last read book on startup
             bookshelf.reopenBook();
+        }
+    }
+}
+
+/**
+ * Forces the filter bar to recalculate its width
+ * @public
+ */
+export function forceRecalculateFilterBar() {
+    if (CONFIG.RUNTIME_CONFIG.ENABLE_BOOKSHELF) {
+        if (bookshelf.enabled) {
+            bookshelf._updateFilterBar();
         }
     }
 }

@@ -311,7 +311,7 @@ class CoverGenerator {
                 let lineWidth = 0;
 
                 // Force Chinese titles with 3 characters to fit on one line
-                if (targetLines === 1 || (isChinese && str.length === 3)) {
+                if (targetLines === 1 || (!isAuthor && isChinese && str.length === 3)) {
                     // Use full text for single line
                     lines = [str.trim()];
                     lineWidth = this.ctx.measureText(lines[0]).width;

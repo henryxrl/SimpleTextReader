@@ -5,8 +5,10 @@
  * @module main
  * @requires config/index
  * @requires modules/features/bookshelf
+ * @requires modules/features/fontpool
  * @requires modules/features/settings
  * @requires modules/features/reader
+ * @requires modules/components/popup-manager
  * @requires utils/base
  * @requires utils/helpers-reader
  * @requires utils/helpers-file
@@ -14,10 +16,12 @@
  */
 
 import * as CONFIG from "./config/index.js";
-import { initBookshelf } from "./modules/features/bookshelf.js";
+import { initBookshelf, forceRecalculateFilterBar } from "./modules/features/bookshelf.js";
+import { initFontpool } from "./modules/features/fontpool.js";
 import { initSettings } from "./modules/features/settings.js";
 import { reader } from "./modules/features/reader.js";
-import { isVariableDefined, removeHashbang, isEllipsisActive } from "./utils/base.js";
+import { PopupManager } from "./modules/components/popup-manager.js";
+import { isVariableDefined, removeHashbang, isEllipsisActive, fetchVersionData } from "./utils/base.js";
 import {
     setTitle,
     getHistoryAndSetChapterTitleActive,
@@ -32,10 +36,10 @@ import {
     updateTOCUI,
     showDropZone,
     hideDropZone,
+    resetDropZoneState,
     hideContent,
     showLoadingScreen,
     resetUI,
-    resetVars,
 } from "./utils/helpers-ui.js";
 
 /**
@@ -50,21 +54,41 @@ const openedAsNoUI = document.documentElement.getAttribute("openedAsNoUI") === "
 if (openedAsNoUI) {
     showLoadingScreen();
 }
-initBookshelf(!openedAsNoUI);
+await initFontpool();
 await initSettings();
+await initBookshelf(!openedAsNoUI);
+
+/*
+ * Show changelog popup
+ */
+const versionData = await fetchVersionData();
+CONFIG.RUNTIME_VARS.APP_VERSION = versionData.version;
+if (versionData) {
+    PopupManager.showChangelogPopup({
+        version: versionData.version,
+        changelog: versionData.changelog,
+        previousVersions: 2,
+        forceShow: false,
+    });
+}
 
 /**
  * Set up event listeners for drag and drop functionality
  */
 const dropzone = CONFIG.DOM_ELEMENT.DROPZONE;
 if (isVariableDefined(dropzone)) {
+    dropzone.addEventListener("dblclick", openFileSelector, false);
     dropzone.addEventListener("dragenter", allowDrag);
     dropzone.addEventListener("dragenter", handleDragEnter, false);
     dropzone.addEventListener("dragover", allowDrag);
     dropzone.addEventListener("dragover", handleDragOver, false);
     dropzone.addEventListener("drop", handleDrop, false);
-    dropzone.addEventListener("dragleave", handleDragLeave, false);
-    dropzone.addEventListener("dblclick", openFileSelector, false);
+    dropzone.addEventListener("dragleave", (event) => {
+        // Check if the mouse truly left the dropzone
+        if (!dropzone.contains(event.relatedTarget)) {
+            handleDragLeave(event);
+        }
+    });
 }
 
 /**
@@ -80,22 +104,29 @@ if (isVariableDefined(darkModeToggle)) {
 /**
  * Handle window resize events for TOC UI updates
  */
+let resizeTimeout;
 window.addEventListener("resize", () => {
-    const isIncreasing = window.innerWidth >= CONFIG.RUNTIME_VARS.STORE_PREV_WINDOW_WIDTH;
-    CONFIG.RUNTIME_VARS.STORE_PREV_WINDOW_WIDTH = window.innerWidth;
-    updateTOCUI(isIncreasing);
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        const isIncreasing = window.innerWidth >= CONFIG.RUNTIME_VARS.STORE_PREV_WINDOW_WIDTH;
+        CONFIG.RUNTIME_VARS.STORE_PREV_WINDOW_WIDTH = window.innerWidth;
+        updateTOCUI(isIncreasing);
+
+        requestAnimationFrame(() => {
+            forceRecalculateFilterBar();
+        });
+    }, 100);
 });
 
 /**
  * Handle drag enter events on window
  */
 window.addEventListener("dragenter", (event) => {
-    getHistoryAndSetChapterTitleActive(reader.gotoLine.bind(reader), false);
+    // getHistoryAndSetChapterTitleActive(reader.gotoLine.bind(reader), false);
     CONFIG.VARS.INIT = true;
     event.preventDefault();
-    if (showDropZone(true) === 0) {
-        CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.style.display = "none";
-    }
+    showDropZone(true, !(CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.innerHTML === ""));
+    hideContent();
 });
 
 /**
@@ -131,7 +162,7 @@ document.addEventListener("dragstart", (event) => {
 /**
  * Handle keyboard navigation
  */
-document.onkeydown = (event) => {
+document.onkeydown = async (event) => {
     if (!(isVariableDefined(dropzone) && dropzone.style.visibility === "hidden")) {
         return;
     }
@@ -148,7 +179,7 @@ document.onkeydown = (event) => {
             }
             break;
         case "Escape":
-            resetUI();
+            await resetUI();
             break;
     }
 };
@@ -224,7 +255,7 @@ function openFileSelector(event) {
     event.preventDefault();
     const fileSelector = document.createElement("input");
     fileSelector.type = "file";
-    fileSelector.accept = CONFIG.CONST_FILE.SUPPORTED_EXT;
+    fileSelector.accept = CONFIG.CONST_FILE.SUPPORTED_FONT_EXT.concat(CONFIG.CONST_FILE.SUPPORTED_EXT).join(",");
     fileSelector.multiple = true;
     fileSelector.click();
     fileSelector.onchange = async () => await handleMultipleFiles(fileSelector.files);
@@ -245,10 +276,9 @@ function allowDrag(event) {
  * @param {DragEvent} event - The drag enter event
  */
 function handleDragEnter(event) {
-    CONFIG.VARS.DRAG_COUNTER++;
     event.preventDefault();
-    showDropZone(true);
-    CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.style.display = "none";
+    showDropZone(true, !(CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.innerHTML === ""));
+    hideContent();
 }
 
 /**
@@ -257,8 +287,8 @@ function handleDragEnter(event) {
  */
 function handleDragOver(event) {
     event.preventDefault();
-    showDropZone(true);
-    CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.style.display = "none";
+    showDropZone(true, !(CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.innerHTML === ""));
+    hideContent();
 }
 
 /**
@@ -267,19 +297,8 @@ function handleDragOver(event) {
  * @param {DragEvent} event - The drag leave event
  */
 function handleDragLeave(event) {
-    CONFIG.VARS.DRAG_COUNTER--;
     event.preventDefault();
-    if (CONFIG.VARS.DRAG_COUNTER === 0) {
-        if (CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.innerHTML === "") {
-            showDropZone();
-            CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.style.display = "none";
-        } else {
-            hideDropZone();
-            CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.style.display = "block";
-            reader.gotoLine(CONFIG.VARS.HISTORY_LINE_NUMBER, false);
-            CONFIG.VARS.INIT = false;
-        }
-    }
+    resetDropZoneState();
 }
 
 /**
@@ -289,9 +308,6 @@ function handleDragLeave(event) {
  */
 async function handleDrop(event) {
     event.preventDefault();
-    hideDropZone();
-    CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.style.display = "block";
-    resetVars();
     await handleMultipleFiles(event.dataTransfer.files);
 }
 

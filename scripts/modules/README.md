@@ -12,21 +12,35 @@ The `modules/` directory contains the core application logic, organized into spe
 
 **Examples**:
 
+- `cover-generator.js`: A utility for generating and visualizing book cover designs.
+
 - `custom-color-picker.js`: A customizable color picker component.
 
 - `dropdown-selector.js`: A dropdown menu component for selecting options.
 
-- `cover-generator.js`: A utility for generating and visualizing book cover designs.
+- `popup-manager.js`: A utility for displaying user-friendly popups and notifications with customizable content and behavior.
 
 ---
 
-### 2. `features/`
+### 2. `database/`
+
+**Purpose**: Provides tools and abstractions for managing IndexedDB operations, ensuring efficient and reliable data storage and retrieval.
+
+**Examples**:
+
+- `db-manager.js`: The main database module that abstracts complex IndexedDB interactions, including transaction handling, batch operations, and data retrieval.
+
+---
+
+### 3. `features/`
 
 **Purpose**: Houses high-level features or flows of the application. These files typically combine multiple components, utilities, and business logic to implement specific features.
 
 **Examples**:
 
 - `bookshelf.js`: Manages the bookshelf view and its interactions, such as browsing and organizing books.
+
+- `fontpool.js`: Handles custom font management, including user-uploaded fonts and integration with the text display.
 
 - `footnotes.js`: Dynamically generates and manages footnotes for text content, ensuring accurate references.
 
@@ -38,7 +52,7 @@ The `modules/` directory contains the core application logic, organized into spe
 
 ---
 
-### 3. `file/`
+### 4. `file/`
 
 **Purpose**: Handles file-related logic, such as processing and loading files into the application.
 
@@ -52,7 +66,7 @@ The `modules/` directory contains the core application logic, organized into spe
 
 ---
 
-### 4. `text/`
+### 5. `text/`
 
 **Purpose**: Responsible for text parsing, processing, and rendering logic.
 

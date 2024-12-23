@@ -9,10 +9,11 @@
  * - File handling
  * - Viewport and visibility detection
  * - Data type validation
+ * - Custom event trigger
+ * - SVG manipulation
  *
  * @module utils/base
  * @requires config/constants
- * @requires config/variables-dom
  */
 
 import * as CONFIG_CONST from "../config/constants.js";
@@ -678,4 +679,83 @@ export function setSvgPathLength(container) {
         const len = path.getTotalLength() + 1;
         path.style.setProperty("--ui_svgPathLength", len);
     });
+}
+
+/**
+ * Constructs a notification message from an array of items.
+ *
+ * @param {string} baseText - The base notification text.
+ * @param {Array<string>} itemList - The list of items to include in the message.
+ * @param {Object} [options={}] - Additional options.
+ * @param {string} [options.language="zh"] - The language of the notification ("en" or "zh").
+ * @param {number} [options.maxItems=3] - The maximum number of items to display.
+ * @param {string} [options.messageSuffix=""] - The suffix for additional items (e.g., "more files").
+ * @returns {string} - The constructed notification message.
+ */
+export function constructNotificationMessageFromArray(baseText, itemList, options = {}) {
+    if (itemList.length === 0) {
+        return "";
+    }
+
+    const language = options.language ?? "zh";
+    const maxItems = options.maxItems ?? 3;
+    const messageSuffix = options.messageSuffix ?? "";
+
+    const isEnglish = language === "en";
+    const baseTextSuffix = isEnglish ? (itemList.length > 1 ? "s: " : ": ") : "：";
+    const suffixMore =
+        itemList.length > maxItems
+            ? (isEnglish ? ` ${messageSuffix}` : messageSuffix).replace("xxx", itemList.length - maxItems)
+            : "";
+    const itemNames = itemList
+        .slice(0, maxItems)
+        .map((item) => (isEnglish ? `"${item}"` : `“${item}”`))
+        .join(",\n");
+    const moreItems = itemList.length > maxItems ? `,\n...${suffixMore}` : "";
+
+    return `${baseText}${baseTextSuffix}${itemNames}${moreItems}`;
+}
+
+/**
+ * Fetches the version number from a JSON file.
+ * @param {string} url - The URL of the JSON file containing the version.
+ * @returns {Promise<string>} A promise that resolves to the version number, or an empty string if not found.
+ */
+export async function fetchVersion(url = "version.json") {
+    return fetch(url)
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data.version ? `v${data.version}` : "";
+        })
+        .catch((error) => {
+            console.error("Error fetching version:", error);
+            return ""; // Return an empty string in case of an error
+        });
+}
+
+/**
+ * Fetches the complete version data from a JSON file.
+ * @param {string} url - The URL of the JSON file containing the version data.
+ * @returns {Promise<Object>} A promise that resolves to the version data object, or null if not found.
+ */
+export async function fetchVersionData(url = "version.json") {
+    return fetch(url)
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data ?? null;
+        })
+        .catch((error) => {
+            console.error("Error fetching version data:", error);
+            return null; // Return null in case of an error
+        });
 }

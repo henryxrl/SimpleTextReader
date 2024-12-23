@@ -13,23 +13,33 @@
 const SUPPORTED_EXT = ".txt";
 
 /**
+ * Supported font extensions
+ * @type {string[]}
+ */
+const SUPPORTED_FONT_EXT = [".ttf", ".otf"];
+
+/**
  * File-related constants
  * @type {Object}
  * @property {number} LOOKUP_SAMPLE_SMALL - Number of bytes used for encoding detection
  * @property {number} LOOKUP_SAMPLE - Number of bytes used for encoding detection
  * @property {string} SUPPORTED_EXT - Supported file extension
+ * @property {string[]} SUPPORTED_FONT_EXT - Supported font file extensions
  * @property {RegExp} EXT_REGEX - Regular expression for matching file extension
  * @property {string} AUTHOR_TOKEN_ZH - Author token for Chinese
  * @property {string} AUTHOR_TOKEN_EN - Author token for English
+ * @property {string} BOOKNAME_TOKEN_ZH - Book name token for Chinese
  * @readonly
  */
 export const CONST_FILE = Object.freeze({
     LOOKUP_SAMPLE_SMALL: 4096,
     LOOKUP_SAMPLE: 65536,
     SUPPORTED_EXT,
-    EXT_REGEX: new RegExp(`(${SUPPORTED_EXT})$`, "i"),
+    SUPPORTED_FONT_EXT,
+    EXT_REGEX: new RegExp(`(${SUPPORTED_EXT}|${SUPPORTED_FONT_EXT.join("|")})$`, "i"),
     AUTHOR_TOKEN_ZH: "作者",
     AUTHOR_TOKEN_EN: " by ",
+    BOOKNAME_TOKEN_ZH: "书名",
 });
 
 /**
@@ -73,12 +83,14 @@ export const CONST_UI = Object.freeze({
  * Font-related constants
  * @type {Object}
  * @property {Array} SYSTEM_FONTS - System fonts
- * @property {Array} CUSTOM_FONTS - Custom fonts
+ * @property {Array} APP_FONTS - Custom fonts
  * @property {Array} FALLBACK_FONTS - Fallback fonts
  * @property {Object} FONT_MAPPING - Mapping of font names to CSS font family names
  * @readonly
  */
 export const CONST_FONT = Object.freeze({
+    MAX_CUSTOM_FONTS: 3,
+    SUPPORTED_FONT_TYPES: ["font/ttf", "font/otf"],
     SYSTEM_FONTS: [
         { en: "Helvetica", zh: "Helvetica" },
         {
@@ -132,7 +144,7 @@ export const CONST_FONT = Object.freeze({
             label_zh: "仿宋",
         },
     ],
-    CUSTOM_FONTS: [
+    APP_FONTS: [
         {
             en: "kinghwa",
             zh: "kinghwa",
@@ -165,4 +177,69 @@ export const CONST_FONT = Object.freeze({
         title: "kinghwa",
         body: "kinghwa",
     },
+});
+
+/**
+ * Font validation configuration
+ * @type {Object}
+ * @property {string} fontSize - Font size
+ * @property {Object} testStrings - Test strings
+ * @property {Object} defaultFonts - Default fonts
+ * @property {Object} canvas - Canvas configuration
+ * @property {Object} text - Text configuration
+ * @property {Object} ratio - Ratio configuration
+ * @readonly
+ */
+export const CONST_FONT_VALIDATION_CONFIG = Object.freeze({
+    fontSize: "12px",
+    testStrings: {
+        en: "The quick brown fox",
+        zh: "测试文字",
+    },
+    defaultFonts: {
+        en: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Ubuntu'",
+        zh: "system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', 'WenQuanYi Micro Hei', 'Noto Sans CJK SC', 'SimSun', 'Heiti SC', sans-serif",
+    },
+    canvas: {
+        width: 300,
+        height: 50,
+    },
+    text: {
+        x: 10,
+        y: 20,
+    },
+    ratio: {
+        min: 0.333,
+        max: 3.0,
+    },
+});
+
+/**
+ * Database-related constants
+ * @type {Object}
+ * @property {string} DB_NAME - Database name
+ * @property {number} DB_VERSION - Database version
+ * @property {Object[]} DB_STORES - Database stores
+ * @private
+ */
+export const CONST_DB = Object.freeze({
+    DB_NAME: "SimpleTextReader",
+    DB_VERSION: 3,
+    DB_STORES: [
+        {
+            name: "bookfiles",
+            options: { keyPath: "name" },
+            index: 0,
+        },
+        {
+            name: "bookProcessed",
+            options: { keyPath: "name" },
+            index: 1,
+        },
+        {
+            name: "fontfiles",
+            options: { keyPath: "name" },
+            index: 2,
+        },
+    ],
 });

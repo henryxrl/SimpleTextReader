@@ -53,15 +53,15 @@ Big thanks to [Manjusaka](https://github.com/Zheaoli) for his amazing help and h
 
 ### Firefox
 
-- [SimpleTextReader (v1.6.5)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
+- [SimpleTextReader (v1.6.6)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
 
 ### Chrome
 
-- [SimpleTextReader (v1.6.5)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
+- [SimpleTextReader (v1.6.6)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
 
 ### Edge
 
-- [SimpleTextReader (v1.6.5)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
+- [SimpleTextReader (v1.6.6)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
 
 ### Docker
 
@@ -123,15 +123,24 @@ To use URL parameters, append `?param` to the end of the URL. To use multiple pa
 
     - Providing a "remove all books" button with a confirmation prompt to prevent accidental actions
 
-7. "Finishing up" reading progress indicator.
+7. Support for adding custom fonts (v1.6.6), with a limit of up to 3 fonts.
 
-8. Optimized book cover generation.
+    <div float="left">
+        <img src="assets/6_custom_fonts_en.gif" width="49%" alt="Bookshelf1" />
+        <img src="assets/6_custom_fonts_en.png" width="49%" alt="Bookshelf2" />
+    </div>
 
-9. Smoother UI language switching.
+8. Added a notification system.
 
-10. Updated default font to "Kinghwa Old Song" to avoid potential copyright issues.
+9. "Finishing up" reading progress indicator.
 
-11. Resolved various minor bugs, enhancing stability and user experience.
+10. Optimized book cover generation.
+
+11. Smoother UI language switching.
+
+12. Updated default font to "Kinghwa Old Song" to avoid potential copyright issues.
+
+13. Resolved various minor bugs, enhancing stability and user experience.
 
 **NOTE: Starting from v1.6, the No-UI version has been discontinued. All features previously available in the No-UI version, including support for opening local `.txt` files via `file://*.txt` URLs, are now fully integrated into the Regular version.**
 

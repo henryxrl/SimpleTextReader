@@ -9,7 +9,7 @@
 // Since "@yaireo/position" is used as a script file rather than a Node module (ES export)
 position = position.default;
 
-// Get ColorPicker and utility functions from window object
+// Get the ColorPicker & some helper functions for color format transformations
 const { default: ColorPicker, any_to_hex, changeColorFormat } = window.ColorPicker;
 
 /**
@@ -18,7 +18,6 @@ const { default: ColorPicker, any_to_hex, changeColorFormat } = window.ColorPick
  * @class
  * @classdesc Creates and manages color pickers for all elements with 'myColor' class.
  * Features:
- * - Singleton pattern ensures only one manager instance exists
  * - Automatic positioning relative to input elements
  * - Swatch management with local storage support
  * - Responsive layout with ResizeObserver
@@ -26,40 +25,17 @@ const { default: ColorPicker, any_to_hex, changeColorFormat } = window.ColorPick
  * - Real-time color updates
  * - Multiple color format support (HEX, RGBA, HSLA)
  * @property {Function} func - Callback function for color changes
- * @property {CustomColorPicker|null} #instance - Private static instance of the color picker manager
  */
 class CustomColorPicker {
-    static #instance = null;
-
     /**
      * Creates a new CustomColorPicker instance if none exists
      * @constructor
      * @param {Function} func - Callback function to be called when color picker input changes
-     * @throws {Error} When attempting to create multiple instances
      * @public
      */
     constructor(func) {
-        if (CustomColorPicker.#instance) {
-            throw new Error("Use CustomColorPicker.getInstance()");
-        }
         this.func = func;
         this.#init();
-    }
-
-    /**
-     * Gets the singleton instance of CustomColorPicker
-     * @static
-     * @param {Function} func - Callback function for color changes
-     * @returns {CustomColorPicker} The singleton instance
-     * @public
-     */
-    static getInstance(func) {
-        if (!CustomColorPicker.#instance) {
-            CustomColorPicker.#instance = new CustomColorPicker(func);
-        } else if (func) {
-            CustomColorPicker.#instance.func = func; // Update callback function
-        }
-        return CustomColorPicker.#instance;
     }
 
     /**
@@ -79,17 +55,16 @@ class CustomColorPicker {
      * @listens input - Handles color value changes
      */
     #init() {
-        // Iterate through all color inputs and instantiate new ColorPicker instances
+        // Iterate all color inputs and instantiate new ColorPicker instances (for each one)
         document.querySelectorAll(".myColor").forEach((colorInput) => {
             const observerCallback = (entries) => {
-                if (!cPicker.DOM.scope.classList.contains("hidden")) {
+                !cPicker.DOM.scope.classList.contains("hidden") &&
                     position({
                         target: cPicker.DOM.scope,
                         ref: colorInput,
                         placement: colorInput.dataset.placement || "center above",
                         offset: [20],
                     });
-                }
             };
 
             // Create observers to monitor color picker size and visibility changes
@@ -106,7 +81,9 @@ class CustomColorPicker {
                 swatches: colorInput.dataset.swatches === "false" ? false : JSON.parse(colorInput.dataset.swatches),
                 swatchesLocalStorage: true,
 
-                // When clicking anywhere outside the color picker
+                // When clicking anywhere that is not within the color picker.
+                // Use special logic if clicked on the color-input which is
+                // assosiacated with this specific picker
                 onClickOutside: (e) => {
                     let showPicker = false;
                     const isTargetColorInput = e.target === colorInput;
@@ -115,10 +92,11 @@ class CustomColorPicker {
                     if (isTargetColorInput) showPicker = true;
                     if (e.key === "Escape") showPicker = false;
 
-                    // Remove color picker from DOM
-                    showPicker ? this.#showColorPicker(pickerElem) : this.#hideColorPicker(pickerElem);
+                    // Remove the color-picker from the DOM
+                    if (showPicker) this.#showColorPicker(pickerElem);
+                    else this.#hideColorPicker(pickerElem);
 
-                    if (isTargetColorInput) observerCallback();
+                    isTargetColorInput && observerCallback();
                 },
 
                 // Called when color input changes
@@ -140,7 +118,8 @@ class CustomColorPicker {
             intersectionObserver.observe(cPicker.DOM.scope);
             observerCallback();
 
-            // Assign a custom property to color-input element pointing to its corresponding CustomColorPicker instance
+            // Assign a custom property to color-input element
+            // which points to the corresponding color-picker instance
             colorInput._colorPicker = cPicker;
         });
     }
@@ -153,9 +132,9 @@ class CustomColorPicker {
      * @private
      */
     #showColorPicker(pickerElem) {
-        // If picker is not yet in DOM:
+        // If picker isn't already in the DOM:
         if (!document.body.contains(pickerElem)) {
-            // Append picker to DOM
+            // Inject to DOM
             document.body.appendChild(pickerElem);
         }
     }
@@ -172,11 +151,11 @@ class CustomColorPicker {
 }
 
 /**
- * Creates and initializes a new ColorPicker instance
+ * Creates and initializes a new CustomColorPicker instance
  * @param {Function} func - Callback function to be called when color picker input changes
- * @returns {CustomColorPicker} New ColorPicker instance
+ * @returns {CustomColorPicker} New CustomColorPicker instance
  * @public
  */
 export function getColorPicker(func) {
-    return CustomColorPicker.getInstance(func);
+    return new CustomColorPicker(func);
 }

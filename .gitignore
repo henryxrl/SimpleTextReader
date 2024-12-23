@@ -2,7 +2,6 @@
 # **/FZSKBXKK.woff2
 **/KX_47043_14.woff
 **/dist/
-# **/publish_extension.py
 .vscode/
 **/books/*
 !**/books/
@@ -29,7 +28,6 @@ downloads/
 eggs/
 .eggs/
 # lib/
-debug/
 lib64/
 parts/
 sdist/

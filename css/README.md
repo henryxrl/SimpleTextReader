@@ -74,7 +74,7 @@ This directory contains third-party stylesheets used for specific UI components 
 
   - Provides modern, customizable alert boxes.
 
-  - [Documentation](https://sweetalert2.github.io/#usage)
+  - [Documentation](https://sweetalert2.github.io)
 
 ---
 

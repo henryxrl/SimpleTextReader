@@ -18,7 +18,7 @@
 import * as CONFIG from "../config/index.js";
 import { isVariableDefined, triggerCustomEvent } from "./base.js";
 import { reader } from "../modules/features/reader.js";
-import { setTitle } from "./helpers-reader.js";
+import { setTitle, getHistoryAndSetChapterTitleActive } from "./helpers-reader.js";
 
 // ===============================
 // UI Mode Related Functions
@@ -112,9 +112,10 @@ export function sw(percent) {
 /**
  * Shows the file drop zone and adjusts UI elements
  * @param {boolean} [focused=false] - Whether the drop zone should be in focused state
+ * @param {boolean} [hideBookshelf=false] - Whether the bookshelf should be hidden
  * @public
  */
-export function showDropZone(focused = false) {
+export function showDropZone(focused = false, hideBookshelf = false) {
     // Hide setting menu
     triggerCustomEvent("hideSettingMenu");
     if (isVariableDefined($(".dot-menu__checkbox"))) {
@@ -129,6 +130,9 @@ export function showDropZone(focused = false) {
         isVariableDefined(CONFIG.DOM_ELEMENT.DROPZONE_TEXT) &&
         isVariableDefined(CONFIG.DOM_ELEMENT.DROPZONE_IMG)
     ) {
+        // To avoid scrollbar from appearing when dropping a file
+        CONFIG.DOM_ELEMENT.BODY.style.overflow = "hidden";
+
         let c = null;
         // let filter = CONFIG.RUNTIME_VARS.STYLE.mainColor_inactive_filter;
         if (focused) {
@@ -158,9 +162,12 @@ export function showDropZone(focused = false) {
 
         // Hide bookshelf trigger button if bookshelf is opened
         triggerCustomEvent("hideBookshelfTriggerBtn");
-        return 0;
-    } else {
-        return 1;
+
+        if (hideBookshelf) {
+            triggerCustomEvent("hideBookshelf");
+        } else {
+            triggerCustomEvent("showBookshelf");
+        }
     }
 }
 
@@ -174,6 +181,10 @@ export function hideDropZone() {
         isVariableDefined(CONFIG.DOM_ELEMENT.DROPZONE_TEXT) &&
         isVariableDefined(CONFIG.DOM_ELEMENT.DROPZONE_IMG)
     ) {
+        // To restore scrollbar
+        CONFIG.DOM_ELEMENT.BODY.style.overflow = "visible";
+
+        // Hide drop zone
         CONFIG.DOM_ELEMENT.DROPZONE.style.visibility = "hidden";
         CONFIG.DOM_ELEMENT.DROPZONE.style.zIndex = "1";
         CONFIG.DOM_ELEMENT.DROPZONE_TEXT.style.visibility = "hidden";
@@ -187,6 +198,22 @@ export function hideDropZone() {
 
         // Show bookshelf trigger button if a book is opened
         triggerCustomEvent("showBookshelfTriggerBtn");
+    }
+}
+
+/**
+ * Resets the drop zone state, hiding or showing the drop zone based on the content container
+ * @param {boolean} [force=false] - Whether to force the drop zone state to be reset
+ * @public
+ */
+export function resetDropZoneState(force = false) {
+    if (CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.innerHTML === "") {
+        hideContent(force);
+        showDropZone();
+    } else {
+        hideDropZone();
+        showContent(force);
+        CONFIG.VARS.INIT = false;
     }
 }
 
@@ -206,6 +233,7 @@ export function showLoadingScreen() {
 
 /**
  * Hides the loading screen
+ * @param {boolean} [showBookshelfTriggerBtn=true] - Whether to show the bookshelf trigger button
  * @public
  */
 export function hideLoadingScreen(showBookshelfTriggerBtn = true) {
@@ -222,9 +250,16 @@ export function hideLoadingScreen(showBookshelfTriggerBtn = true) {
 
 /**
  * Shows main content containers (content, TOC, pagination, progress)
+ * @param {boolean} [force=false] - Whether to force the content state to be reset
  * @public
  */
-export function showContent() {
+export function showContent(force = false) {
+    if (force) {
+        CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.style.display = "block";
+        CONFIG.DOM_ELEMENT.TOC_CONTAINER.style.display = "block";
+        CONFIG.DOM_ELEMENT.PAGINATION_CONTAINER.style.display = "block";
+        CONFIG.DOM_ELEMENT.PROGRESS_CONTAINER.style.display = "block";
+    }
     CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.style.visibility = "visible";
     CONFIG.DOM_ELEMENT.TOC_CONTAINER.style.visibility = "visible";
     CONFIG.DOM_ELEMENT.PAGINATION_CONTAINER.style.visibility = "visible";
@@ -233,18 +268,25 @@ export function showContent() {
 
 /**
  * Hides main content containers (content, TOC, pagination, progress)
+ * @param {boolean} [force=false] - Whether to force the content state to be reset
  * @public
  */
-export function hideContent() {
+export function hideContent(force = false) {
     CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.style.visibility = "hidden";
     CONFIG.DOM_ELEMENT.TOC_CONTAINER.style.visibility = "hidden";
     CONFIG.DOM_ELEMENT.PAGINATION_CONTAINER.style.visibility = "hidden";
     CONFIG.DOM_ELEMENT.PROGRESS_CONTAINER.style.visibility = "hidden";
+    if (force) {
+        CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.style.display = "none";
+        CONFIG.DOM_ELEMENT.TOC_CONTAINER.style.display = "none";
+        CONFIG.DOM_ELEMENT.PAGINATION_CONTAINER.style.display = "none";
+        CONFIG.DOM_ELEMENT.PROGRESS_CONTAINER.style.display = "none";
+    }
 }
 
 /**
  * Resets all UI elements to their initial state and clears content, TOC, and pagination containers
- * @param {boolean} [refreshBookshelf=true] - Whether to refresh the bookshelf list
+ * @param {boolean} [refreshBookshelf=true] - Whether to refresh the bookshelf
  * @param {boolean} [hardRefresh=true] - Whether to perform a hard refresh of the bookshelf
  * @param {boolean} [sortBookshelf=true] - Whether to sort the bookshelf after refresh
  * @returns {Promise<void>}
@@ -256,7 +298,12 @@ export function hideContent() {
  * @see hideLoadingScreen
  * @see hideContent
  */
-export async function resetUI(refreshBookshelf = true, hardRefresh = true, sortBookshelf = true) {
+export async function resetUI(
+    refreshBookshelf = true,
+    hardRefresh = true,
+    sortBookshelf = true,
+    inFileLoadCallback = false
+) {
     if (refreshBookshelf) {
         // Trigger bookshelf refresh event with parameters
         triggerCustomEvent("refreshBookList", {
@@ -269,9 +316,11 @@ export async function resetUI(refreshBookshelf = true, hardRefresh = true, sortB
         saveToLocalStorage: true,
     });
     resetVars();
-    hideContent();
-    hideLoadingScreen();
-    showDropZone();
+    if (!inFileLoadCallback) {
+        hideContent();
+        hideLoadingScreen();
+        showDropZone();
+    }
 }
 
 /**

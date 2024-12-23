@@ -74,6 +74,12 @@ svg.icon {
     /* stroke: var(--bgColor); */
 }
 
+#toggle:hover ~ #toggle-btn label .icons,
+.btn-icon:hover:not(:focus) svg {
+    --icon-fill: var(--mainColor_inactive);
+    --icon-stroke: var(--mainColor_inactive);
+}
+
 .btn-icon:focus {
     background: var(--mainColor_active);
 }
@@ -81,6 +87,8 @@ svg.icon {
 .btn-icon:focus svg .tofill {
     fill: var(--bgColor);
     stroke: var(--bgColor);
+    --icon-fill: var(--bgColor);
+    --icon-stroke: var(--bgColor);
 }
 
 #toggle:hover ~ #toggle-btn label,

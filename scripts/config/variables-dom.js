@@ -12,6 +12,7 @@ import { CSSGlobalVariables } from "../lib/css-global-variables.js";
  * URL parameters
  * @type {Object}
  * @property {boolean} noBookshelf - Whether bookshelf feature is disabled
+ * @property {boolean} noFontpool - Whether fontpool feature is disabled
  * @property {boolean} noSettings - Whether settings feature is disabled
  * @property {boolean} noFastOpen - Whether fast open of books is disabled
  * @property {boolean} pageBreakMode - Whether page break on title is disabled
@@ -21,6 +22,7 @@ import { CSSGlobalVariables } from "../lib/css-global-variables.js";
  */
 const urlParams = new URLSearchParams(window.location.search);
 const noBookshelf = urlParams.has("no-bookshelf");
+const noFontpool = urlParams.has("no-custom-fonts");
 const noSettings = urlParams.has("no-settings");
 const noFastOpen = urlParams.has("no-fast-open");
 const pageBreakMode = urlParams.has("no-pagebreak-on-title");
@@ -28,6 +30,7 @@ const alwaysProcess = urlParams.has("always-process");
 const printDatabase = urlParams.has("print-db");
 const upgradeDB = urlParams.has("upgrade-db");
 console.log("Enable bookshelf:", !noBookshelf);
+console.log("Enable custom fonts:", !noFontpool);
 console.log("Enable settings:", !noSettings);
 console.log("Enable fast open of books:", !noFastOpen);
 console.log("Enable page break on title:", !pageBreakMode);
@@ -39,6 +42,7 @@ console.log("Upgrade database:", upgradeDB);
  * Runtime configuration
  * @type {Object}
  * @property {boolean} ENABLE_BOOKSHELF - Whether bookshelf feature is enabled
+ * @property {boolean} ENABLE_FONTPOOL - Whether fontpool feature is enabled
  * @property {boolean} ENABLE_SETTINGS - Whether settings feature is enabled
  * @property {boolean} ENABLE_FAST_OPEN - Whether fast open of books is enabled
  * @property {boolean} PAGE_BREAK_ON_TITLE - Whether page break on title is enabled
@@ -48,6 +52,7 @@ console.log("Upgrade database:", upgradeDB);
  */
 export const RUNTIME_CONFIG = {
     ENABLE_BOOKSHELF: !noBookshelf,
+    ENABLE_FONTPOOL: !noFontpool,
     ENABLE_SETTINGS: !noSettings,
     ENABLE_FAST_OPEN: !noFastOpen,
     PAGE_BREAK_ON_TITLE: !pageBreakMode,
@@ -63,6 +68,7 @@ export const RUNTIME_CONFIG = {
  * @property {number} STORE_PREV_WINDOW_WIDTH - Previous window width
  * @property {boolean} RESPECT_USER_LANG_SETTING - Whether to respect user's language setting
  * @property {string} WEB_LANG - Web page language
+ * @property {string} APP_VERSION - Application version
  */
 export const RUNTIME_VARS = {
     // UI-related variables
@@ -70,11 +76,13 @@ export const RUNTIME_VARS = {
     STORE_PREV_WINDOW_WIDTH: window.innerWidth,
     RESPECT_USER_LANG_SETTING: document.documentElement.getAttribute("respectUserLangSetting") === "true",
     WEB_LANG: document.documentElement.getAttribute("webLANG"),
+    APP_VERSION: null,
 };
 
 /**
  * DOM element references
  * @type {Object}
+ * @property {HTMLElement} BODY - Body element (getter)
  * @property {HTMLElement} DROPZONE - File drop zone element (getter)
  * @property {HTMLElement} LOADING_SCREEN - Loading screen element (getter)
  * @property {HTMLElement} DROPZONE_TEXT_IMG_WRAPPER - Wrapper for drop zone text and image (getter)
@@ -97,9 +105,13 @@ export const RUNTIME_VARS = {
  * @property {HTMLElement} BOOKSHELF_BUTTON - Bookshelf button (getter)
  * @property {function} GET_TITLE - Getter for a title element by its ID
  * @property {function} GET_LINE - Getter for a line element by its ID
+ * @property {HTMLElement} NOTIFICATION_CONTAINER - Getter for the notification container (getter)
  * @readonly
  */
 export const DOM_ELEMENT = Object.freeze({
+    get BODY() {
+        return document.body;
+    },
     get DROPZONE() {
         return document.getElementById("dropZone");
     },
@@ -165,5 +177,8 @@ export const DOM_ELEMENT = Object.freeze({
     },
     GET_LINE(lineID) {
         return document.getElementById(`line${lineID}`);
+    },
+    get NOTIFICATION_CONTAINER() {
+        return document.getElementById("notification-container");
     },
 });
