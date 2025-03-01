@@ -9,6 +9,7 @@
 
 # assets
 **/assets/
+!**/assets/0_icon.png
 **/dist/
 **/manifests/
 !**/manifests/PWA/
@@ -20,8 +21,23 @@
 **/node_modules/
 **/books/*
 !**/books/
+!**/books/README.md
+**/books_*/
+**/books-*/
+**/books.*/
+!**/bookshelf.js
 **/README.md
 **/README_EN.md
+**/uploads/
+**/processed_books/
+
+# Prisma
+**/prisma/*.db
+**/prisma/*.db-journal
+**/prisma/migrations/*/
+**/node_modules/.prisma/*
+!**/prisma/schema.prisma
+!**/prisma/migrations/
 
 # docker
 Dockerfile

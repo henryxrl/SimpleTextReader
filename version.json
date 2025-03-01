@@ -1,6 +1,49 @@
 {
-    "version": "1.6.6",
+    "version": "1.6.9",
     "changelog": {
+        "1.6.9": {
+            "date": "2025-02-28",
+            "changes": {
+                "zh": [
+                    "支持浏览器历史导航",
+                    "全新的设置菜单"
+                ],
+                "en": [
+                    "Support for browser history navigation",
+                    "New settings menu interface"
+                ]
+            }
+        },
+        "1.6.8": {
+            "date": "2025-02-06",
+            "changes": {
+                "zh": [
+                    "修复了首字符为标点符号时首字下沉的问题",
+                    "限制书籍文件大小为 128MB",
+                    "修复了 UI 相关问题"
+                ],
+                "en": [
+                    "Fixed an issue with drop cap when the first character is a punctuation",
+                    "Limit the book file size to 128MB",
+                    "Fixed UI related bugs"
+                ]
+            }
+        },
+        "1.6.7": {
+            "date": "2024-12-29",
+            "changes": {
+                "zh": [
+                    "支持从用户定义的目录加载文本文件（需要通过服务器部署，如使用 Docker）",
+                    "重构代码以提高可维护性",
+                    "修复了书名中包含括号时无法正确处理的问题"
+                ],
+                "en": [
+                    "Support loading text files from a user-defined directory (requires deployment on a server, such as using Docker)",
+                    "Refactored code for better maintainability",
+                    "Fixed an issue with handling book titles containing brackets"
+                ]
+            }
+        },
         "1.6.6": {
             "date": "2024-12-22",
             "changes": {

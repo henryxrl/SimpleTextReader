@@ -1,0 +1,538 @@
+@charset "UTF-8";
+/* Book Shelf */
+.bookshelf {
+    position: absolute;
+    /* top: var(--ui_bookShelfTop); */
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0;
+    background: var(--bgColor);
+    color: var(--fontColor);
+    display: grid;
+    /* grid-gap: 2rem; */
+    grid-template-rows: max-content 1fr;
+    /* border-top: 0.5em dashed var(--mainColor_inactive); */
+    border-top: 2px dashed var(--borderColor);
+    z-index: 2000;
+}
+.bookshelf .booklist-scroll-btns {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: calc(var(--ui_windowLeftRightMargin) * 1%);
+    background-color: var(--bgColor);
+    color: var(--fontColor);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 2rem;
+    z-index: 1;
+}
+.bookshelf .booklist-scroll-btns #scrollBottom-btn {
+    z-index: 1;
+}
+.bookshelf .title {
+    padding: 0.5rem 0;
+    font-size: 1.6rem;
+    /* font-family: var(--fontFamily_title); */
+    color: var(--mainColor_active);
+    font-weight: bold;
+    text-align: center;
+    overflow: hidden;
+    border-bottom: 2px dashed var(--borderColor);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--bgColor);
+    display: none;
+}
+.bookshelf .sub-title {
+    color: var(--fontInfoColor);
+    font-size: 1rem;
+    font-family: var(--fontFamily_ui);
+    text-align: center;
+    font-weight: normal;
+}
+.bookshelf .booklist {
+    overflow-y: auto;
+    text-align: center;
+    margin: 0 calc(var(--ui_windowLeftRightMargin) * 1% + 2rem); /* Leave space for btn-group */
+    padding: 0 0 var(--ui_booklist_padding) 0;
+    /* border-top: 2px dashed var(--borderColor); */
+    position: relative;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+.bookshelf .book {
+    display: inline-grid;
+    grid-template-rows: max-content 1fr;
+    font-family: var(--fontFamily_ui);
+    font-size: 1.2rem;
+    width: var(--ui_bookCoverWidth);
+    height: var(--ui_bookContainerHeight);
+    color: var(--fontColor);
+    /* margin: 2.5vw; */
+    margin: 3em;
+    overflow: visible;
+}
+/* .bookshelf .book:hover > .infoContainer .dot-menu__label {
+    visibility: visible;
+} */
+.bookshelf .book .coverContainer {
+    position: relative;
+    width: var(--ui_bookCoverWidth);
+    height: var(--ui_bookCoverHeight);
+    font-family: var(--fontFamily_ui);
+    text-align: left;
+    background-color: var(--bgColor);
+    cursor: pointer;
+    /* box-shadow: 5px 5px 10px -5px black, 5px 10px 14px -3px rgba(0,0,0,0.5), inset -5px -5px 10px black; */
+    /* box-shadow: 5px 5px 10px -5px black, inset -5px -5px 10px black; */
+    box-shadow: var(--ui_bookshadow);
+    /* filter: drop-shadow(0px 0px 10px rgb(0 0 0 / 0.4)); */
+    margin: auto;
+    overflow: visible;
+    border-radius: 3px 5px 5px 3px;
+    -moz-border-radius: 3px 5px 5px 3px;
+    -webkit-border-radius: 3px 5px 5px 3px;
+    z-index: 1;
+}
+.bookshelf .book .coverContainer::after {
+    /* the book bend */
+    content: "";
+    position: absolute;
+    top: 0;
+    width: var(--ui_bookCoverWidth);
+    height: var(--ui_bookCoverHeight);
+    background-repeat: no-repeat;
+    background-image: linear-gradient(
+            to right,
+            transparent 2%,
+            rgba(0, 0, 0, 0.1) 3%,
+            rgba(0, 0, 0, 0.1) 4%,
+            transparent 5%
+        ),
+        linear-gradient(-50deg, rgba(0, 0, 0, 0.1) 20%, transparent 100%),
+        linear-gradient(-50deg, rgba(0, 0, 0, 0.2) 20%, transparent 100%),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 20%, transparent 100%),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 20%, transparent 100%);
+    background-size: 100% 100%, 2% 20%, 1% 20%, 2% 20%, 1% 20%;
+    background-position: 0 0, 2.2% 100%, 3% 100%, 2.2% 0, 3% 0;
+
+    /* another implementation - not as good */
+    /* content: '';
+    position: absolute;
+    width: 2px;
+    height: 100%;
+    left: 5px;
+    background-color: rgba(0, 0, 0, 0.25);
+    box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.4); */
+}
+.bookshelf .book .coverContainer .coverCanvas,
+.coverText {
+    position: absolute;
+    overflow: hidden;
+    width: var(--ui_bookCoverWidth);
+    height: var(--ui_bookCoverHeight);
+    border-radius: 3px 5px 5px 3px;
+    -moz-border-radius: 3px 5px 5px 3px;
+    -webkit-border-radius: 3px 5px 5px 3px;
+}
+.bookshelf .book .bookInfoMenuBtn {
+    position: absolute;
+    width: 30px;
+    height: 0.8rem;
+    right: 0px;
+}
+.bookshelf .book .bookInfoMenuBtn .dot-menu__label {
+    cursor: pointer;
+    width: 30px;
+    height: 0.8rem;
+    background-color: var(--bgColor);
+    /* background-color: rgb(0 0 0 / 0.4); */
+    display: block;
+    text-indent: 0em;
+    position: absolute;
+    right: 0px;
+    top: -1px;
+}
+.bookshelf .book .bookInfoMenuBtn .dot-menu__label:hover::before,
+.bookshelf .book .bookInfoMenuBtn .dot-menu__label:hover::after,
+.bookshelf .book .bookInfoMenuBtn .dot-menu__label:hover span::before {
+    background-color: var(--mainColor_inactive);
+}
+.bookshelf .book .bookInfoMenuBtn .dot-menu__label::before,
+.bookshelf .book .dot-menu__label::after {
+    content: "";
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 3px;
+    background-color: var(--fontInfoColor);
+    transition: 0.2s;
+    top: calc((100% - 3px) / 2);
+    transition: 0.2s;
+}
+.bookshelf .book .bookInfoMenuBtn .dot-menu__label:after {
+    right: 5px;
+}
+.bookshelf .book .bookInfoMenuBtn .dot-menu__label:before {
+    right: 17px;
+}
+.bookshelf .book .bookInfoMenuBtn .dot-menu__label span:before {
+    content: "";
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 3px;
+    background-color: var(--fontInfoColor);
+    transition: 0.2s;
+    right: 11px;
+    top: calc((100% - 3px) / 2);
+}
+.bookshelf .book .bookInfoMenuBtn .dot-menu__checkbox {
+    display: none;
+}
+.bookInfoMenu {
+    font-size: var(--ui_settingMenuFontSize);
+    position: fixed;
+    z-index: 1004;
+    background-color: var(--bgColor);
+    border: 1px solid var(--borderColor);
+    border-radius: 8px;
+    padding: 15px 20px;
+    box-shadow: 0 0 5px var(--shadowColor);
+    -webkit-box-shadow: var(--shadowColor) 0 0 5px;
+    -moz-box-shadow: 0 0 5px var(--shadowColor);
+    font-family: var(--fontFamily_ui) !important;
+    color: var(--mainColor_active) !important;
+    overflow: unset;
+}
+.bookInfoMenu::before {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    right: 0;
+    margin: auto;
+    width: 20px;
+    height: 20px;
+    background: var(--bgColor);
+    transform: rotate(135deg);
+    border: 1px solid var(--borderColor);
+    box-shadow: 0 0 5px var(--shadowColor);
+    -webkit-box-shadow: var(--shadowColor) 0 0 5px;
+    -moz-box-shadow: 0 0 5px var(--shadowColor);
+    font-family: var(--fontFamily_ui) !important;
+    color: var(--mainColor_active) !important;
+    overflow: unset;
+}
+.bookInfoMenu-clip {
+    position: absolute;
+    bottom: 0;
+    background: inherit;
+    height: 35px;
+    left: 0;
+    right: 0;
+    border-radius: 8px;
+    z-index: 1;
+}
+.bookInfoMenu_item {
+    display: flex;
+    padding: 7px 0;
+    text-align: left;
+}
+.bookInfoMenu_item_text {
+    display: inline-block;
+    width: 6.5rem;
+    color: var(--fontInfoColor);
+    font-size: 1rem;
+    z-index: 2;
+}
+.bookInfoMenu_item_info {
+    display: inline-block;
+    width: 8rem;
+    color: var(--mainColor_active);
+    font-size: 1rem;
+    /* overflow: overlay; */
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    max-height: 10rem;
+    overflow-y: overlay;
+    z-index: 2;
+}
+/* .bookshelf .book .progress {
+    margin-top: 1px;
+    background-color: var(--bgColor);
+}
+.bookshelf .book.read .progress {
+    background-image: linear-gradient(to right, var(--mainColor_inactive) var(--read-progress), transparent 0);
+} */
+.bookshelf .book .progress {
+    color: var(--fontInfoColor);
+    font-size: 0.8rem;
+    font-family: var(--fontFamily_ui);
+    text-align: left;
+    background-color: var(--bgColor);
+    /* margin-top: 1px; */
+    /* padding-left: 10px; */
+    /* display: inline; */
+    left: 5px;
+    /* position: absolute; */
+    position: relative;
+}
+.bookshelf .book .infoContainer {
+    text-align: justify;
+    position: relative;
+    display: flex;
+    align-items: end;
+}
+.bookshelf .book .infoContainer:hover > .delete-btn-wrapper {
+    /* visibility: visible; */
+    opacity: 1;
+    transition: 0.2s;
+}
+.bookshelf .book .coverContainer .bookFinished_badge {
+    top: -7px;
+    right: -7px;
+    position: absolute;
+    z-index: 1;
+}
+.bookshelf .book .coverContainer .bookFinished_badge svg {
+    height: 2.75em;
+    width: 2.75em;
+    /* fill: #eb620d; */
+    filter: drop-shadow(1px 1px 2px rgb(0 0 0 / 0.4));
+}
+.bookshelf .book .infoContainer .progress .read_text {
+    position: relative;
+    bottom: -4px;
+}
+.bookshelf .book .infoContainer .progress .read_text svg {
+    vertical-align: middle;
+    fill: var(--fontInfoColor);
+    padding-top: 2px;
+    padding-right: 2px;
+    width: 16px;
+    height: 20px;
+}
+.bookshelf .book .coverContainer .bookNotRead_badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    z-index: 1;
+}
+.bookshelf .book .coverContainer .bookNotRead_badge svg {
+    height: 5em;
+    width: 5em;
+    filter: drop-shadow(1px 1px 2px rgb(0 0 0 / 0.4));
+}
+.bookshelf .book .infoContainer .progress .notRead_text {
+    background: var(--mainColor_inactive);
+    color: var(--bgColor);
+    border-radius: 3px;
+    padding: 0 6px;
+}
+.bookshelf .book .infoContainer .progress .almostDone_text {
+    color: var(--mainColor_inactive);
+    font-style: italic;
+    border-radius: 3px;
+    padding-left: 8px;
+}
+.bookshelf .book .delete-btn-wrapper {
+    font-size: 0.9rem;
+    font-family: var(--fontFamily_ui);
+    text-align: right;
+    position: absolute;
+    right: 28px;
+    top: 12px;
+    z-index: 5;
+    /* visibility: hidden; */
+    opacity: 0;
+    transition: 0.2s;
+}
+.bookshelf .book .delete-btn {
+    font-family: var(--fontFamily_ui);
+    position: relative;
+    display: block;
+    float: right;
+    cursor: pointer;
+    /* font-size: 1.5rem; */
+    /* padding: 6px 8px; */
+    padding: 2px 0px;
+    z-index: 2;
+    color: var(--fontInfoColor);
+    width: 1.25rem;
+    height: 1.25rem;
+}
+.bookshelf .book .delete-btn svg {
+    /* fill: var(--fontInfoColor); */
+    stroke: var(--fontInfoColor);
+    height: 1.2rem;
+    width: 1.2rem;
+}
+.bookshelf .book .delete-btn svg:hover {
+    /* fill: var(--fontInfoColor); */
+    stroke: var(--mainColor_inactive);
+}
+.bookshelf .book .isOnServer {
+    font-family: var(--fontFamily_ui);
+    position: relative;
+    display: block;
+    float: left;
+    cursor: pointer;
+    font-size: 1.5rem;
+    /* padding: 6px 8px; */
+    z-index: 2;
+    color: var(--fontInfoColor);
+    width: 1.25rem;
+    height: 1.25rem;
+    left: 15px;
+    top: 3px;
+}
+.bookshelf .book .isOnServer svg {
+    fill: var(--fontInfoColor);
+    stroke: var(--fontInfoColor);
+    height: 1.4rem;
+    width: 1.4rem;
+}
+
+/* Filter buttons */
+.booklist-filter-bar {
+    /* position: relative; */
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ui_btnGap);
+    padding-top: 1rem;
+    margin: 0 calc(var(--ui_windowLeftRightMargin) * 1% + 2rem);
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bgColor);
+    /* border-bottom: 1px solid var(--borderColor); */
+    z-index: 5;
+    opacity: 0;
+    pointer-events: none;
+    width: 100%;
+    transition: opacity 0.2s ease-in-out;
+    max-width: 100vw;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+.booklist-filter-btn {
+    font-family: var(--fontFamily_ui);
+    padding: 0.3rem 1rem;
+    border: 1px dashed transparent;
+    /* width: 120px; */
+    border-radius: 8px;
+    color: var(--fontInfoColor);
+    background: var(--bgColor);
+    cursor: pointer;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    /* transition: all 0.2s ease; */
+    box-shadow: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+.booklist-filter-btn:hover {
+    background: var(--btnHoverColor);
+}
+.booklist-filter-btn:focus {
+    outline: none;
+}
+.booklist-filter-btn.active {
+    /* background: var(--mainColor_inactive); */
+    /* color: var(--bgColor); */
+    /* border-color: var(--mainColor_active); */
+    color: var(--mainColor_inactive);
+}
+.booklist-filter-bar .booklist-filter-btn {
+    opacity: 1;
+}
+.booklist-filter-bar.visible {
+    opacity: 1;
+    left: auto; /* Remove the initial -9999px position */
+    pointer-events: auto;
+}
+.booklist-filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ui_btnGap);
+    align-items: center;
+}
+.booklist-filter-counter,
+.booklist-remove-all {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* space between icon and text */
+    padding: 0.3rem 1rem;
+    border: 1px dashed transparent;
+    border-radius: 8px;
+    color: var(--fontInfoColor);
+    background: var(--bgColor);
+    cursor: pointer;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    font-family: var(--fontFamily_ui);
+    font-size: 0.9rem;
+}
+.booklist-filter-counter {
+    pointer-events: none;
+}
+.booklist-remove-all:hover {
+    background: var(--btnHoverColor);
+}
+.booklist-remove-all:focus {
+    outline: none;
+}
+.booklist-remove-all svg {
+    width: 1.4rem;
+    height: 1.4rem;
+    /* fill: var(--fontInfoColor); */
+    stroke: var(--fontInfoColor);
+}
+.booklist-remove-all.active {
+    /* background: var(--mainColor_inactive); */
+    /* color: var(--bgColor); */
+    /* border-color: var(--mainColor_active); */
+    color: var(--mainColor_inactive);
+}
+
+/* Swal popup styles for remove all books */
+.booklist-remove-all-popup-icon {
+    border: none !important; /* remove circle border */
+    background: transparent !important; /* remove circle background */
+    overflow: visible !important;
+}
+.booklist-remove-all-popup-icon svg {
+    width: 5rem;
+    height: 5rem;
+    /* fill: var(--fontInfoColor); */
+    stroke: var(--mainColor_inactive);
+}
+.booklist-remove-all-popup {
+    font-family: var(--fontFamily_ui) !important;
+}
+.booklist-remove-all-popup .swal2-actions {
+    gap: calc(var(--ui_btnGap) * 2);
+    margin-top: 1.75rem;
+    padding-bottom: 2.5rem !important;
+}
+.booklist-remove-all-popup .swal2-actions button {
+    border-radius: 8px !important;
+    padding: 10px 35px !important;
+}
+.booklist-filter-utilities {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ui_btnGap);
+    align-items: center;
+}
