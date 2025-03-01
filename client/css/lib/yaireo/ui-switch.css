@@ -1,0 +1,96 @@
+.switch {
+    --color-bg: #e1e1e1;
+    --color-bg-on: #16b5ff;
+    --thumb-color-on: white;
+    --thumb-color-off: var(--thumb-color-on);
+    --thumb-scale: 1;
+    --size: 16px;
+    --duration: 0.18s;
+    --width-multiplier: 2.5;
+    --thumb-animation-pad: 15%;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+}
+@keyframes switchMoveThumb {
+    50% {
+        padding: 0 var(--thumb-animation-pad);
+    }
+}
+@keyframes switchMoveThumb1 {
+    50% {
+        padding: 0 var(--thumb-animation-pad);
+    }
+}
+.switch--textRight .switch__label {
+    order: 10;
+    padding: 0 0 0 0.4em;
+}
+.switch > div {
+    cursor: pointer;
+}
+.switch__label {
+    order: 0;
+    padding-right: 0.4em;
+    color: var(--label-color);
+}
+.switch__gfx {
+    --thumb-left: 0%;
+    --transform: translateX(calc(var(--thumb-left) * -1)) scale(var(--thumb-scale));
+    order: 5;
+    padding: 3px;
+    position: relative;
+    background: var(--bg, var(--color-bg));
+    border-radius: 50px;
+    width: calc(var(--size) * var(--width-multiplier));
+    transition: var(--duration);
+    background-size: 4px 4px;
+}
+.switch__gfx::before {
+    content: "";
+    display: block;
+    position: relative;
+    left: var(--thumb-left);
+    background: var(--thumb-color, var(--thumb-color-off));
+    border-radius: var(--size);
+    width: var(--size);
+    height: var(--size);
+    transform: var(--transform);
+    transition: var(--duration);
+    animation: switchMoveThumb var(--duration) ease 1;
+}
+.switch input {
+    position: absolute;
+    opacity: 0;
+}
+.switch input[disabled] + div {
+    background-image: linear-gradient(
+        45deg,
+        #fff 25%,
+        transparent 25%,
+        transparent 50%,
+        #fff 50%,
+        #fff 75%,
+        transparent 75%
+    );
+}
+.switch input:disabled ~ div {
+    cursor: not-allowed;
+}
+.switch input:indeterminate + div {
+    --thumb-left: 50%;
+}
+.switch input:checked + div {
+    --bg: var(--color-bg-on);
+    --thumb-left: 100%;
+    --thumb-color: var(--thumb-color-on);
+}
+.switch input:checked + div::before {
+    animation-name: switchMoveThumb1;
+}
+.switch input:focus + div {
+    outline: 1px dotted silver;
+}
+.switch input:focus:not(:focus-visible) + div {
+    outline: 0;
+}

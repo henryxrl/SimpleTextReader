@@ -1,0 +1,366 @@
+@charset "UTF-8";
+body {
+    margin-top: 0%;
+    margin-bottom: 4.5em;
+    margin-left: 0%;
+    margin-right: 0%;
+}
+img {
+    max-width: 100%;
+    max-height: 100%;
+    margin: auto;
+    overflow: auto;
+}
+p {
+    font-family: var(--fontFamily_body);
+    font-size: var(--p_fontSize);
+    color: var(--fontColor);
+    text-align: justify;
+    text-indent: 2em;
+    line-height: var(--p_lineHeight);
+    margin: 1em;
+}
+p.first {
+    text-indent: 0em !important;
+}
+.cover {
+    width: 100%;
+}
+.center {
+    text-align: center;
+    margin-left: 0%;
+    margin-right: 0%;
+}
+.left {
+    text-align: left;
+    margin-left: 0%;
+    margin-right: 0%;
+}
+.right {
+    text-align: right;
+    margin-left: 0%;
+    margin-right: 0%;
+}
+.quote {
+    margin-top: 0%;
+    margin-bottom: 0%;
+    margin-left: 1em;
+    margin-right: 1em;
+    text-align: justify;
+    font-family: var(--fontFamily_body);
+    color: var(--fontColor);
+}
+.stickupCap {
+    font-size: 4em;
+    font-weight: bold;
+    margin: 7px 6px 6px -1px;
+    padding: 3px;
+    text-indent: 0em !important;
+}
+.dropCap {
+    font-size: 4em;
+    font-weight: bold;
+    float: left !important;
+    margin: 7px 6px 6px -1px;
+    padding: 3px;
+    text-indent: 0em !important;
+}
+h1 {
+    line-height: var(--h1_lineHeight);
+    text-align: center;
+    font-weight: bold;
+    font-size: var(--h1_fontSize);
+    font-family: var(--fontFamily_title);
+    color: var(--mainColor_active);
+    margin: var(--h1_margin) 0 var(--h1_margin) 0;
+}
+h1.author {
+    font-size: var(--h1_fontSize_author);
+    /* font-style: italic; */
+    /* color: var(--mainColor_active) !important; */
+}
+h2 {
+    line-height: var(--h2_lineHeight);
+    text-align: center;
+    font-weight: bold;
+    font-size: var(--h2_fontSize);
+    font-family: var(--fontFamily_title);
+    color: var(--mainColor_active);
+    margin: var(--h2_margin) 0 var(--h2_margin) 0;
+}
+h3 {
+    line-height: var(--h3_lineHeight);
+    text-align: center;
+    font-weight: bold;
+    font-size: var(--h3_fontSize);
+    font-family: var(--fontFamily_title);
+    color: var(--mainColor_active);
+    margin: var(--h3_margin) 0 var(--h3_margin) 0;
+}
+h4 {
+    line-height: var(--h4_lineHeight);
+    text-align: center;
+    font-weight: bold;
+    font-size: var(--h4_fontSize);
+    font-family: var(--fontFamily_title);
+    color: var(--mainColor_active);
+    margin: var(--h4_margin) 0 var(--h4_margin) 0;
+}
+h5 {
+    line-height: var(--h5_lineHeight);
+    text-align: center;
+    font-weight: bold;
+    font-size: var(--h5_fontSize);
+    font-family: var(--fontFamily_title);
+    color: var(--mainColor_active);
+    margin: var(--h5_margin) 0 var(--h5_margin) 0;
+}
+h6 {
+    line-height: var(--h6_lineHeight);
+    text-align: center;
+    font-weight: bold;
+    font-size: var(--h6_fontSize);
+    font-family: var(--fontFamily_title);
+    color: var(--mainColor_active);
+    margin: var(--h6_margin) 0 var(--h6_margin) 0;
+}
+
+/* TOC */
+#tocContent {
+    /* border: var(--mainColor_active) solid 1px; */
+    /* width: 16%; */
+    /* height: 50%; */
+    /* margin: 0 0 0 3%; */
+    padding-right: 0;
+    transition: padding-right 0.3s ease;
+    position: fixed;
+    top: 50%;
+    transform: translate(0%, -50%);
+    -webkit-transform: translate(0%, -50%);
+    line-height: 1em;
+    font-size: 1.2em;
+    overflow-x: hidden;
+    overflow-y: auto;
+    font-family: var(--fontFamily_title);
+    z-index: 100;
+}
+#tocList {
+    overscroll-behavior: contain;
+}
+/* Credit: https://stackoverflow.com/questions/3874602/elements-to-look-like-a-bullet-point-list-inside-an-anchor-link */
+.chapter-title-container {
+    position: relative;
+    width: 100%;
+    height: auto;
+    display: block;
+    margin-bottom: 1em;
+}
+.chapter-title-container:hover:not(.active) > .toc-bullet {
+    background-color: var(--mainColor_inactive);
+}
+.chapter-title-container:hover:not(.active) > .toc-text {
+    color: var(--mainColor_inactive);
+}
+.toc-bullet {
+    /* position: absolute; */
+    background-color: var(--fontInfoColor);
+    border-radius: 1em;
+    content: " ";
+    display: inline-block;
+    /* margin-right: 6px; */
+    width: 0.9em;
+    height: 0.3em;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin-top: 0.65em;
+    margin-bottom: 0.65em;
+}
+.toc-text {
+    position: absolute;
+    top: 0;
+    display: inline-block;
+    width: calc(100% - 0.9em - 1em); /* 100% - width of .toc-bullet - margin-left of <a>*/
+    /* transition: opacity 1s; */
+    opacity: 0;
+    text-decoration: none;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    z-index: 1;
+}
+.toc-text.hidden {
+    display: none !important;
+}
+/* Credit: https://www.taccgl.org/blog/css-transition-visibility.html */
+/* #tocContent:hover > .chapter-title-container > .toc-text {
+    visibility: visible;
+    opacity: 1;
+} */
+#tocContent:hover {
+    padding-right: 1em; /* Leave space for the text */
+    .chapter-title-container .toc-text {
+        opacity: 1;
+        /* transition: opacity 0.3s ease; */
+    }
+}
+a,
+a:link,
+a:visited,
+a:hover,
+a:active {
+    text-decoration: none;
+}
+a.title,
+a.title:link,
+a.title:visited {
+    color: var(--mainColor_active);
+}
+a.author,
+a.author:link,
+a.author:visited {
+    color: var(--mainColor_active);
+}
+a.toc-text:hidden {
+    opacity: 0;
+    pointer-events: none; /* Prevents interactions while fading out */
+}
+a.toc-text,
+a.toc-text:link,
+a.toc-text:visited {
+    color: var(--fontInfoColor);
+    margin: 0.3em 0 1.3em 1em;
+}
+a.toc-text:active {
+    color: var(--mainColor_active);
+}
+a.toc-active {
+    font-weight: bold;
+    color: var(--mainColor_active) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+.toc-bullet.toc-active {
+    background-color: var(--mainColor_active) !important;
+}
+a.toc-active::before {
+    background-color: var(--mainColor_active) !important;
+}
+
+/* Pagination */
+#pagination {
+    opacity: var(--ui_paginationOpacity);
+    position: fixed;
+    bottom: var(--ui_paginationBottom);
+    background-color: var(--bgColor);
+    border: 1px dashed var(--borderColor);
+    border-radius: 8px;
+    box-shadow: 0 1px 1px var(--shadowColor), 0 2px 2px var(--shadowColor), 0 4px 4px var(--shadowColor),
+        0 8px 8px var(--shadowColor), 0 16px 16px var(--shadowColor);
+    -webkit-box-shadow: var(--shadowColor) 0 1px 1px, var(--shadowColor) 0 2px 2px, var(--shadowColor) 0 4px 4px,
+        var(--shadowColor) 0 8px 8px, var(--shadowColor) 0 16px 16px;
+    -moz-box-shadow: 0 1px 1px var(--shadowColor), 0 2px 2px var(--shadowColor), 0 4px 4px var(--shadowColor),
+        0 8px 8px var(--shadowColor), 0 16px 16px var(--shadowColor);
+    transform: translate(-50%);
+    -webkit-transform: translate(-50%);
+    font-size: 0.9em;
+}
+.pagination {
+    list-style-type: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* display: none; */
+}
+.pagination li {
+    margin: 0 5px;
+}
+.pagination a {
+    color: var(--paginationFontColor);
+    float: left;
+    padding: 8px 16px;
+    text-decoration: none;
+}
+.pagination a.active {
+    background-color: var(--mainColor_active);
+    color: var(--paginationActiveFontColor);
+    border-radius: 5px;
+}
+.pagination a:hover:not(.active) {
+    background-color: var(--mainColor_inactive);
+    color: var(--paginationActiveFontColor);
+    border-radius: 5px;
+}
+#pagination:hover {
+    opacity: 1;
+}
+.jumpInput {
+    text-align: center;
+    color: var(--paginationFontColor);
+    font-family: var(--fontFamily_ui);
+    border: 0;
+    outline: 0;
+    background-color: var(--bgColor) !important;
+}
+.disabledbutton {
+    pointer-events: none;
+    opacity: 0.4;
+}
+.pagination-processing {
+    text-align: center;
+    color: var(--bgColor);
+    font-family: var(--fontFamily_ui);
+    border-radius: 5px;
+    background-color: var(--mainColor_active) !important;
+    float: left;
+    padding: 8px 32px;
+    text-decoration: none;
+}
+
+/* Progress */
+#progress {
+    position: fixed;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    /* width: 16%; */
+    height: 3.6em;
+    line-height: 2em;
+    /* margin: 0 0 0 3%; */
+    color: var(--fontInfoColor);
+    /* top: 75%; */
+    font-size: 0.9em;
+    z-index: 101;
+}
+
+/* Footnote */
+img.footnote_img {
+    content: var(--footnote_img_url);
+    width: var(--ui_footnoteImgSize);
+    height: var(--ui_footnoteImgSize);
+    vertical-align: super;
+}
+ol#footnote-content {
+    visibility: hidden;
+    display: none;
+}
+
+/* Seal */
+div.seal {
+    margin: 6em 0 6em 0;
+    overflow: hidden;
+}
+img#seal_front {
+    content: var(--seal_url);
+    width: var(--seal_width);
+    height: auto;
+    left: calc(var(--seal_left) * (100% - var(--seal_width)));
+    transform: rotate(var(--seal_rotate));
+    position: relative;
+}
+img#seal_end {
+    content: var(--seal_url);
+    width: calc(var(--seal_width) / 2);
+    height: auto;
+    left: calc(100% - var(--seal_width) / 2);
+    position: relative;
+}

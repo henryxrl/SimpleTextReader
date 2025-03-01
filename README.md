@@ -53,26 +53,34 @@
 
 ### 火狐插件
 
-- [易笺 (v1.6.6)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
+- [易笺 (v1.6.9)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
 
 ### Chrome 插件
 
-- [易笺 (v1.6.6)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
+- [易笺 (v1.6.9)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
 
 ### Edge 插件
 
-- [易笺 (v1.6.6)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
+- [易笺 (v1.6.9)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
 
 ### Docker
 
 ```bash
+# 基础运行命令
 docker run -d --name simpletextreader \
   -p 8866:8866 \
   --restart unless-stopped \
   henryxrl/simpletextreader:latest
+
+# 带图书库目录的运行命令（实验性功能 - 可能存在 bug）
+docker run -d --name simpletextreader \
+  -p 8866:8866 \
+  -v /path/to/your/books:/app/books \
+  --restart unless-stopped \
+  henryxrl/simpletextreader:latest
 ```
 
-### URL 参数
+### URL 参数（调试用）
 
 使用 URL 参数时，在 URL 末尾添加 `?param`。若要同时使用多个参数，请添加 `?param1&param2&param3`。请确保不要在参数前添加斜杠 (`/`)。
 
@@ -113,7 +121,8 @@ docker run -d --name simpletextreader \
 4. 全新的分页逻辑
 
 5. 全新的目录显示：当鼠标指针位于目录区域外时，仅显示当前章节的简化名称，对中英文小说均有效。例如，`正文 第一卷 原上草 第一章 秦少爷初临宝地 防狼术小试牛刀` 将简化为 `秦少爷初临宝地 防狼术小试牛刀`。当鼠标移入目录区域时，会显示完整的章节名称。
-   <img src="assets/5_TOC_zh.gif" alt="TOC" height="500" />
+
+   <img src="assets/5_TOC_zh.gif" alt="TOC" height="500px" />
 
 6. 新增主界面功能栏，包含以下功能：
 
@@ -123,24 +132,30 @@ docker run -d --name simpletextreader \
 
     - 删除所有书籍功能，包含确认提示以防止误操作
 
-7. 支持添加自定义字体（v1.6.6），最多可添加 3 个字体
+7. 全新的设置菜单
+
+    <img src="assets/7_settings_menu_zh.png" alt="SettingsMenu" width="75%" />
+
+8. 支持添加自定义字体（v1.6.6），最多可添加 3 个字体
 
     <div float="left">
         <img src="assets/6_custom_fonts_zh.gif" width="49%" alt="Bookshelf1" />
         <img src="assets/6_custom_fonts_zh.png" width="49%" alt="Bookshelf2" />
     </div>
 
-8. 新增消息通知系统
+9. 新增消息通知系统
 
-9. 新增“快读完”的阅读进度提示
+10. 新增“快读完”的阅读进度提示
 
-10. 优化书籍封面生成逻辑
+11. 优化书籍封面生成逻辑
 
-11. 更流畅的界面语言切换
+12. 更流畅的界面语言切换
 
-12. 改用京华老宋体作为默认字体，以规避可能的版权问题
+13. 改用京华老宋体作为默认字体，以规避可能的版权问题
 
-13. 修复若干 Bug，提升了稳定性和用户体验
+14. 支持浏览器历史导航
+
+15. 修复若干 Bug，提升了稳定性和用户体验
 
 **注：从 v1.6 开始，不再支持无界面（No-UI）版本。无界面版本中的所有功能（包括通过 `file://*.txt` URL 打开本地 `.txt` 文件）现已完全集成到正常版本中。**
 
@@ -178,7 +193,7 @@ docker run -d --name simpletextreader \
 
     [4] 在书架中显示每本书的进度以及其他详细信息；增加未读和读完书籍封面的样式；
 
-    <img src="assets/4_new_cover_zh.gif" alt="Darkmode" height="200" />
+    <img src="assets/4_new_cover_zh.gif" alt="Darkmode" height="200px" />
 
     [5] 书架高度由书籍数量而定；
 

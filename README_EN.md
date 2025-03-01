@@ -53,26 +53,34 @@ Big thanks to [Manjusaka](https://github.com/Zheaoli) for his amazing help and h
 
 ### Firefox
 
-- [SimpleTextReader (v1.6.6)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
+- [SimpleTextReader (v1.6.9)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
 
 ### Chrome
 
-- [SimpleTextReader (v1.6.6)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
+- [SimpleTextReader (v1.6.9)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
 
 ### Edge
 
-- [SimpleTextReader (v1.6.6)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
+- [SimpleTextReader (v1.6.9)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
 
 ### Docker
 
 ```bash
+# Basic Docker run command
 docker run -d --name simpletextreader \
   -p 8866:8866 \
   --restart unless-stopped \
   henryxrl/simpletextreader:latest
+
+# Run the container with a library directory (experimental - prone to bugs)
+docker run -d --name simpletextreader \
+  -p 8866:8866 \
+  -v /path/to/your/books:/app/books \
+  --restart unless-stopped \
+  henryxrl/simpletextreader:latest
 ```
 
-### URL Parameters
+### URL Parameters (For debug purposes)
 
 To use URL parameters, append `?param` to the end of the URL. To use multiple parameters simultaneously, append `?param1&param2&param3`. Ensure you do not add a slash (`/`) before the parameters.
 
@@ -113,7 +121,8 @@ To use URL parameters, append `?param` to the end of the URL. To use multiple pa
 4. New pagination logic.
 
 5. New table of contents display: When the cursor is outside the table of contents area, only the simplified chapter title is displayed, applicable to both Chinese and English novels. For example, `Chapter 6. The Deputy Procureur du Roi.` will be simplified to `The Deputy Procureur du Roi.`. When the cursor moves back into the table of contents area, the full chapter title will be displayed.
-   <img src="assets/5_TOC_en.gif" alt="TOC" height="500" />
+
+   <img src="assets/5_TOC_en.gif" alt="TOC" height="500px" />
 
 6. Added a toolbar in the main interface with features including:
 
@@ -123,24 +132,30 @@ To use URL parameters, append `?param` to the end of the URL. To use multiple pa
 
     - Providing a "remove all books" button with a confirmation prompt to prevent accidental actions
 
-7. Support for adding custom fonts (v1.6.6), with a limit of up to 3 fonts.
+7. New settings menu interface.
+
+    <img src="assets/7_settings_menu_en.png" alt="SettingsMenu" width="75%" />
+
+8. Support for adding custom fonts (v1.6.6), with a limit of up to 3 fonts.
 
     <div float="left">
         <img src="assets/6_custom_fonts_en.gif" width="49%" alt="Bookshelf1" />
         <img src="assets/6_custom_fonts_en.png" width="49%" alt="Bookshelf2" />
     </div>
 
-8. Added a notification system.
+9. Added a notification system.
 
-9. "Finishing up" reading progress indicator.
+10. "Finishing up" reading progress indicator.
 
-10. Optimized book cover generation.
+11. Optimized book cover generation.
 
-11. Smoother UI language switching.
+12. Smoother UI language switching.
 
-12. Updated default font to "Kinghwa Old Song" to avoid potential copyright issues.
+13. Updated default font to "Kinghwa Old Song" to avoid potential copyright issues.
 
-13. Resolved various minor bugs, enhancing stability and user experience.
+14. Support for browser history navigation.
+
+15. Resolved various minor bugs, enhancing stability and user experience.
 
 **NOTE: Starting from v1.6, the No-UI version has been discontinued. All features previously available in the No-UI version, including support for opening local `.txt` files via `file://*.txt` URLs, are now fully integrated into the Regular version.**
 
@@ -178,7 +193,7 @@ To use URL parameters, append `?param` to the end of the URL. To use multiple pa
 
     [4] Show reading progress and other detailed information for each book; add special stylings of book covers for both unread books and finished books;
 
-    <img src="assets/4_new_cover_en.gif" alt="Darkmode" height="200" />
+    <img src="assets/4_new_cover_en.gif" alt="Darkmode" height="200px" />
 
     [5] The height of the bookshelf automatically adjusts according to the number of books;
 

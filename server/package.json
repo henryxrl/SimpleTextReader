@@ -1,0 +1,33 @@
+{
+    "name": "simpletextreader-server",
+    "version": "1.0.0",
+    "type": "module",
+    "scripts": {
+        "start": "NODE_ENV=production node app/app.js",
+        "dev": "NODE_ENV=development nodemon app/app.js",
+        "prisma:init": "prisma init",
+        "prisma:generate": "prisma generate",
+        "prisma:push": "prisma db push"
+    },
+    "keywords": [
+        "simpletextreader",
+        "server",
+        "backend"
+    ],
+    "author": "henryxrl",
+    "license": "MIT",
+    "description": "The backend server for SimpleTextReader",
+    "dependencies": {
+        "@prisma/client": "5.10.2",
+        "dotenv": "^16.4.7",
+        "express": "^4.21.1",
+        "express-session": "^1.18.1",
+        "jschardet": "^3.1.4",
+        "mime-types": "^2.1.35",
+        "ws": "^8.18.0"
+    },
+    "devDependencies": {
+        "nodemon": "^3.1.7",
+        "prisma": "5.10.2"
+    }
+}

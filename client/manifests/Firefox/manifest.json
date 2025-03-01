@@ -1,0 +1,37 @@
+{
+    "manifest_version": 2,
+    "name": "易笺",
+    "description": "txt（小说）阅读器：支持秒开本地的所有txt文件，自动排版，自动分页，自动生成目录，记录阅读进度。",
+    "version": "1.6.9",
+    "background": {
+        "scripts": [
+            "client/app/extension/activate.js"
+        ],
+        "type": "module"
+    },
+    "browser_action": {
+        "default_icon": "client/images/icon.png"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "file://*/*.txt*"
+            ],
+            "js": [
+                "client/app/extension/contentScript.js"
+            ],
+            "all_frames": true,
+            "run_at": "document_start"
+        }
+    ],
+    "content_security_policy": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'",
+    "icons": {
+        "24": "client/images/icon24.png",
+        "64": "client/images/icon64.png",
+        "128": "client/images/icon128.png"
+    },
+    "homepage_url": "https://github.com/henryxrl/SimpleTextReader",
+    "permissions": [
+        "storage"
+    ]
+}

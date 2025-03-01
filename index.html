@@ -7,50 +7,75 @@
         <title></title>
 
         <!-- Fonts -->
-        <link rel="preload" href="./fonts/LXGWWenKai-Regular.woff" as="font" type="font/woff" crossorigin="anonymous" />
-        <link rel="preload" href="./fonts/KingHwa_OldSong.woff" as="font" type="font/woff" crossorigin="anonymous" />
-        <link rel="prefetch" href="./fonts/qiji-combo.woff" as="font" type="font/woff" crossorigin="anonymous" />
+        <link
+            rel="preload"
+            href="./client/fonts/LXGWWenKai-Regular.woff"
+            as="font"
+            type="font/woff"
+            crossorigin="anonymous"
+        />
+        <link
+            rel="preload"
+            href="./client/fonts/KingHwa_OldSong.woff"
+            as="font"
+            type="font/woff"
+            crossorigin="anonymous"
+        />
+        <link rel="prefetch" href="./client/fonts/qiji-combo.woff" as="font" type="font/woff" crossorigin="anonymous" />
 
         <!-- Images -->
-        <link rel="preload" href="./images/drop.png" as="image" type="image/png" />
-        <link rel="preload" href="./images/loading_geometry.gif" as="image" type="image/gif" />
-        <link rel="prefetch" href="./images/seal_zh.png" as="image" type="image/png" />
-        <link rel="prefetch" href="./images/seal_en.png" as="image" type="image/png" />
-        <link rel="prefetch" href="./images/note_zh.png" as="image" type="image/png" />
-        <link rel="prefetch" href="./images/note_en.png" as="image" type="image/png" />
-        <link rel="icon" type="image/png" href="./images/icon.png" />
+        <link rel="preload" href="./client/images/drop.png" as="image" type="image/png" />
+        <link rel="preload" href="./client/images/loading_geometry.gif" as="image" type="image/gif" />
+        <link rel="prefetch" href="./client/images/seal_zh.png" as="image" type="image/png" />
+        <link rel="prefetch" href="./client/images/seal_en.png" as="image" type="image/png" />
+        <link rel="prefetch" href="./client/images/note_zh.png" as="image" type="image/png" />
+        <link rel="prefetch" href="./client/images/note_en.png" as="image" type="image/png" />
+        <link rel="icon" type="image/png" href="./client/images/icon.png" />
 
         <!-- CSS -->
-        <link rel="stylesheet" type="text/css" href="./css/lib/yaireo/ui-range.css" crossorigin="anonymous" />
-        <link rel="stylesheet" type="text/css" href="./css/lib/yaireo/my-range.css" crossorigin="anonymous" />
-        <link rel="stylesheet" type="text/css" href="./css/lib/yaireo/color-picker.css" crossorigin="anonymous" />
-        <link rel="stylesheet" type="text/css" href="./css/lib/yaireo/my-color.css" crossorigin="anonymous" />
-        <link rel="stylesheet" type="text/css" href="./css/lib/sweetalert2.css" crossorigin="anonymous" />
-        <link rel="stylesheet" type="text/css" href="./css/buttons.css" crossorigin="anonymous" />
-        <link rel="stylesheet" type="text/css" href="./css/variables.css" crossorigin="anonymous" />
-        <link rel="stylesheet" type="text/css" href="./css/ui.css" crossorigin="anonymous" />
-        <link rel="stylesheet" type="text/css" href="./css/reader.css" crossorigin="anonymous" />
-        <link rel="stylesheet" type="text/css" href="./css/footnotes.css" crossorigin="anonymous" />
+        <link rel="stylesheet" type="text/css" href="./client/css/lib/yaireo/ui-range.css" crossorigin="anonymous" />
+        <link rel="stylesheet" type="text/css" href="./client/css/lib/yaireo/my-range.css" crossorigin="anonymous" />
+        <link
+            rel="stylesheet"
+            type="text/css"
+            href="./client/css/lib/yaireo/color-picker.css"
+            crossorigin="anonymous"
+        />
+        <link rel="stylesheet" type="text/css" href="./client/css/lib/yaireo/my-color.css" crossorigin="anonymous" />
+        <link rel="stylesheet" type="text/css" href="./client/css/lib/yaireo/ui-switch.css" crossorigin="anonymous" />
+        <link rel="stylesheet" type="text/css" href="./client/css/lib/sweetalert2.css" crossorigin="anonymous" />
+        <link rel="stylesheet" type="text/css" href="./client/css/buttons.css" crossorigin="anonymous" />
+        <link rel="stylesheet" type="text/css" href="./client/css/variables.css" crossorigin="anonymous" />
+        <link rel="stylesheet" type="text/css" href="./client/css/main.css" crossorigin="anonymous" />
+        <link rel="stylesheet" type="text/css" href="./client/css/bookshelf.css" crossorigin="anonymous" />
+        <link rel="stylesheet" type="text/css" href="./client/css/reader.css" crossorigin="anonymous" />
+        <link rel="stylesheet" type="text/css" href="./client/css/footnotes.css" crossorigin="anonymous" />
+        <link rel="stylesheet" type="text/css" href="./client/css/settings.css" crossorigin="anonymous" />
 
         <!-- Manifest -->
-        <link rel="manifest" href="./manifests/PWA/manifest.json" />
+        <link rel="manifest" href="./client/manifests/PWA/manifest.json" />
 
         <!-- Scripts -->
-        <script type="module" src="./scripts/modules/features/init-webpage.js"></script>
+        <script type="module" src="./client/app/modules/features/init-webpage.js"></script>
     </head>
 
     <body>
         <!-- Drop zone -->
         <div id="dropZone" class="uifont prevent-select">
             <div id="dropZoneTextImgWrapper" class="hasTitle">
-                <img id="dropZoneImg" class="prevent-select dropzone-img-default" src="./images/drop.png" alt="" />
+                <img
+                    id="dropZoneImg"
+                    class="prevent-select dropzone-img-default"
+                    src="./client/images/drop.png"
+                    alt=""
+                />
                 <h3 id="dropZoneText" class="uifont prevent-select dropzone-text-default"></h3>
             </div>
         </div>
 
         <!-- Loading screen -->
         <div id="loading" class="uifont prevent-select">
-            <img src="./images/loading_geometry.gif" />
+            <img src="./client/images/loading_geometry.gif" />
             <!-- <div class="loader"></div> -->
         </div>
 
@@ -98,7 +123,7 @@
         </div>
 
         <!-- Main text -->
-        <div id="content"></div>
+        <div id="content" class="columns-1"></div>
 
         <!-- Pagination -->
         <div id="pagination" class="uifont prevent-select"></div>
@@ -110,13 +135,13 @@
         <div id="notification-container"></div>
 
         <!-- Import dependencies -->
-        <script type="text/javascript" src="./scripts/lib/jquery.min.js"></script>
-        <script type="text/javascript" src="./scripts/lib/jschardet.min.js"></script>
-        <script type="text/javascript" src="./scripts/lib/yaireo/position.js"></script>
-        <script type="text/javascript" src="./scripts/lib/yaireo/color-picker.js"></script>
-        <script type="text/javascript" src="./scripts/lib/hyperlist.js"></script>
+        <script type="text/javascript" src="./client/app/lib/jquery.min.js"></script>
+        <script type="text/javascript" src="./client/app/lib/jschardet.min.js"></script>
+        <script type="text/javascript" src="./client/app/lib/yaireo/position.js"></script>
+        <script type="text/javascript" src="./client/app/lib/yaireo/color-picker.js"></script>
+        <script type="text/javascript" src="./client/app/lib/hyperlist.js"></script>
 
-        <!-- Main script -->
-        <script type="module" src="./scripts/main.js"></script>
+        <!-- Main entry point -->
+        <script type="module" src="./client/app/app.js"></script>
     </body>
 </html>

@@ -1,0 +1,51 @@
+generator client {
+    provider   = "prisma-client-js"
+    engineType = "binary"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Font {
+    id        Int      @id @default(autoincrement())
+    name      String   @unique
+    data      String
+    label_zh  String
+    label_en  String
+    en        String
+    zh        String
+    createdAt DateTime @default(now())
+}
+
+model Book {
+    id               Int            @id @default(autoincrement())
+    name             String         @unique
+    data             String
+    isFromLocal      Boolean        @default(true)
+    isOnServer       Boolean        @default(false)
+    processed        Boolean        @default(false)
+    pageBreakOnTitle Boolean        @default(true)
+    isEastern        Boolean        @default(false)
+    encoding         String         @default("utf-8")
+    size             Int            @default(0)
+    createdAt        DateTime       @default(now())
+    processedBook    ProcessedBook?
+}
+
+model ProcessedBook {
+    id                            Int      @id @default(autoincrement())
+    book                          Book     @relation(fields: [bookId], references: [id])
+    bookId                        Int      @unique
+    name                          String
+    is_eastern_lan                Boolean
+    bookAndAuthor                 Json
+    title_page_line_number_offset Int
+    seal_rotate_en                String
+    seal_left                     Float
+    footnote_processed_counter    Int      @default(0)
+    total_pages                   Int
+    content_path                  String
+    processedAt                   DateTime @default(now())
+}
