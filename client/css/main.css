@@ -14,6 +14,10 @@ body {
     scrollbar-color: var(--fontInfoColor) var(--bgColor) !important;
     /* transition: var(--darkMode_animation); */
 }
+*:focus {
+    outline: none;
+    box-shadow: none;
+}
 ::-webkit-scrollbar {
     width: var(--ui_scrollBarWidth) !important;
     background: var(--bgColor) !important;
@@ -34,32 +38,6 @@ div {
 }
 div::-webkit-scrollbar {
     display: none;
-}
-#content {
-    height: 100%;
-    display: block;
-    overflow-x: hidden;
-}
-.columns-1,
-.columns-2 {
-    max-width: none;
-    column-gap: 2em;
-}
-.columns-1 {
-    column-count: 1;
-}
-.columns-2 {
-    column-count: 2;
-}
-.active {
-    font-weight: normal;
-}
-.center {
-    text-align: center;
-}
-.uifont {
-    font-family: var(--fontFamily_ui);
-    color: var(--mainColor_inactive);
 }
 .prevent-select {
     -webkit-touch-callout: none; /* iOS Safari */
@@ -114,8 +92,6 @@ To Offset the anchor link to clear fixed header
     border-color: var(--mainColor_inactive);
     border-radius: 16px;
     box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
     /* transition: var(--darkMode_animation); */
 }
 #dropZoneText {
@@ -123,8 +99,8 @@ To Offset the anchor link to clear fixed header
     z-index: 1000;
     position: absolute;
     left: var(--ui_dropZoneTextLeft);
-    transform: translate(-50%, -50%);
     -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
     margin: auto;
     color: var(--fontInfoColor);
     transition: all 0.2s ease-in-out;
@@ -142,8 +118,8 @@ To Offset the anchor link to clear fixed header
     z-index: 1000;
     position: absolute;
     left: var(--ui_dropZoneImgLeft);
-    transform: translate(-50%, -50%);
     -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
     margin: auto;
     /* convert to var(--mainColor_active) */
     /* filter: var(--mainColor_active_filter); */
@@ -187,8 +163,8 @@ To Offset the anchor link to clear fixed header
     top: 50%;
     left: 50%;
     width: var(--ui_loadingImgSize);
-    transform: translate(-50%, -50%);
     -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
     /* filter: var(--mainColor_inactive_filter); */
     filter: var(--toGray_filter);
 }
@@ -257,6 +233,7 @@ To Offset the anchor link to clear fixed header
     z-index: 9999;
     pointer-events: none;
     /* Creates a new composite layer */
+    -webkit-transform: translateZ(0);
     transform: translateZ(0);
     will-change: transform;
     /* Tells the browser that internal changes to this element will not affect the external layout */
@@ -274,6 +251,7 @@ To Offset the anchor link to clear fixed header
         height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     pointer-events: auto;
     will-change: transform, opacity, height; /* Tells the browser to optimize these properties */
+    -webkit-transform: translateZ(0);
     transform: translateZ(0); /* Forces GPU acceleration */
     backface-visibility: hidden; /* Reduces composite layers */
     perspective: 1000px;
@@ -290,15 +268,18 @@ To Offset the anchor link to clear fixed header
 }
 @keyframes slideIn {
     from {
+        -webkit-transform: translate3d(100%, 0, 0); /* Forces GPU acceleration */
         transform: translate3d(100%, 0, 0); /* Forces GPU acceleration */
         opacity: 0;
     }
     to {
+        -webkit-transform: translate3d(0, 0, 0);
         transform: translate3d(0, 0, 0);
         opacity: 1;
     }
 }
 #notification-container .swal2-container.removing {
+    -webkit-transform: translate3d(100%, 0, 0); /* Forces GPU acceleration */
     transform: translate3d(100%, 0, 0); /* Forces GPU acceleration */
     opacity: 0;
     margin: 0;
@@ -309,11 +290,15 @@ To Offset the anchor link to clear fixed header
 
 /* Changelog styles */
 .changelog-container {
-    max-height: 70vh;
+    max-height: 50vh;
     overflow-y: auto;
     padding: 2.5em !important;
     padding-bottom: 0 !important;
     margin-bottom: 0 !important;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--mainColor_active) transparent;
+    margin: 0 10px !important;
 }
 .changelog-title {
     margin-top: 0.75em !important;

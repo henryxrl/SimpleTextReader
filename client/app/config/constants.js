@@ -26,9 +26,11 @@ const SUPPORTED_FONT_EXT = [".ttf", ".otf"];
 /**
  * Configuration constants
  * @type {Object}
+ * @property {boolean} SHOW_FILTER_BAR - Whether to show the filter bar
  * @property {boolean} AUTO_OPEN_LAST_BOOK - Whether to auto-open last book
  */
 export const CONST_CONFIG = {
+    SHOW_FILTER_BAR: true,
     AUTO_OPEN_LAST_BOOK: true,
 };
 

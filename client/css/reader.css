@@ -11,17 +11,52 @@ img {
     margin: auto;
     overflow: auto;
 }
+#content {
+    height: 100%;
+    display: block;
+    overflow-x: hidden;
+}
+.columns-1,
+.columns-2 {
+    max-width: none;
+    column-gap: 2em;
+}
+.columns-1 {
+    column-count: 1;
+}
+.columns-2 {
+    column-count: 2;
+}
+.active {
+    font-weight: normal;
+}
+.center {
+    text-align: center;
+}
+.uifont {
+    font-family: var(--fontFamily_ui);
+    color: var(--mainColor_inactive);
+}
 p {
     font-family: var(--fontFamily_body);
     font-size: var(--p_fontSize);
     color: var(--fontColor);
-    text-align: justify;
-    text-indent: 2em;
+    text-align: var(--p_textAlign_value);
+    text-indent: var(--p_paragraphIndent_value);
     line-height: var(--p_lineHeight);
-    margin: 1em;
+    margin: var(--p_paragraphSpacing);
 }
-p.first {
+p.first,
+p.noIndent {
     text-indent: 0em !important;
+}
+p::selection {
+    background-color: var(--mainColor_active);
+    color: var(--bgColor);
+}
+p::-moz-selection {
+    background-color: var(--mainColor_active);
+    color: var(--bgColor);
 }
 .cover {
     width: 100%;
@@ -52,6 +87,7 @@ p.first {
 }
 .stickupCap {
     font-size: 4em;
+    text-transform: uppercase;
     font-weight: bold;
     margin: 7px 6px 6px -1px;
     padding: 3px;
@@ -59,6 +95,7 @@ p.first {
 }
 .dropCap {
     font-size: 4em;
+    text-transform: uppercase;
     font-weight: bold;
     float: left !important;
     margin: 7px 6px 6px -1px;
@@ -135,8 +172,8 @@ h6 {
     transition: padding-right 0.3s ease;
     position: fixed;
     top: 50%;
-    transform: translate(0%, -50%);
     -webkit-transform: translate(0%, -50%);
+    transform: translate(0%, -50%);
     line-height: 1em;
     font-size: 1.2em;
     overflow-x: hidden;
@@ -261,8 +298,8 @@ a.toc-active::before {
         var(--shadowColor) 0 8px 8px, var(--shadowColor) 0 16px 16px;
     -moz-box-shadow: 0 1px 1px var(--shadowColor), 0 2px 2px var(--shadowColor), 0 4px 4px var(--shadowColor),
         0 8px 8px var(--shadowColor), 0 16px 16px var(--shadowColor);
-    transform: translate(-50%);
     -webkit-transform: translate(-50%);
+    transform: translate(-50%);
     font-size: 0.9em;
 }
 .pagination {
@@ -354,6 +391,7 @@ img#seal_front {
     width: var(--seal_width);
     height: auto;
     left: calc(var(--seal_left) * (100% - var(--seal_width)));
+    -webkit-transform: rotate(var(--seal_rotate));
     transform: rotate(var(--seal_rotate));
     position: relative;
 }

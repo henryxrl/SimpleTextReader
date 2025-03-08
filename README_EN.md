@@ -1,27 +1,60 @@
 <!-- markdownlint-disable MD033 MD041 -->
 <div align="center">
-<img width="200" src="assets/0_icon.png" alt="SimpleTextReader Logo" />
+
+<!-- Project Logo -->
+<a href="https://reader.yijian.app" target="_blank">
+    <img width="200" src="assets/0_logo.png" alt="SimpleTextReader Logo" />
+</a>
+
 <br/>
-<h1>SimpleTextReader - 易笺</h1>
+
+<!-- Project Badges -->
+
+<!-- MIT License -->
+<a href="https://opensource.org/licenses/MIT" target="_blank">
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
+</a>
+
+<!-- Chrome Users -->
+<a href="https://chrome.google.com/webstore/detail/dbanahlbopbjpgdkecmclbbonhpohcaf" target="_blank">
+    <img src="https://img.shields.io/chrome-web-store/users/dbanahlbopbjpgdkecmclbbonhpohcaf?label=Chrome%20Users&color=4C8BF5" alt="Chrome Users">
+</a>
+
+<!-- Firefox Users -->
+<a href="https://addons.mozilla.org/en-US/firefox/addon/yijian/" target="_blank">
+    <img src="https://img.shields.io/amo/users/yijian?label=Firefox%20Users&color=e66000" alt="Firefox Users">
+</a>
+
+<!-- Edge Users -->
+<a href="https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak" target="_blank">
+    <img src="https://img.shields.io/badge/dynamic/json?label=Edge%20Users&query=%24.activeInstallCount&url=https%3A%2F%2Fmicrosoftedge.microsoft.com%2Faddons%2Fgetproductdetailsbycrxid%2Fpabihehbdhldbdliffaddllmjlknmpak&color=61C250" alt="Edge Users">
+</a>
+
+<!-- Docker Pulls -->
+<a href="https://hub.docker.com/r/henryxrl/simpletextreader" target="_blank">
+    <img src="https://img.shields.io/docker/pulls/henryxrl/simpletextreader?label=Docker%20Users&color=0db7ed" alt="Docker Pulls">
+</a>
+
+<br/><br/>
+
+<!-- Project README's -->
+<a href="README.md">中文</a> | <a href="README_EN.md">English</a>
+
 </div>
 
-<div align="center">
-<br/>
-<a href="README.md">中文</a> | English
-<br/><br/>
-</div>
+SimpleTextReader enhances plain TXT reading with a refined, elegant experience.
 
 ![Main UI](assets/0_intro_en.png)
 
-SimpleTextReader is the online text reader that simulates the result of SimpleEpub2, providing a web-based reading experience.
-
 Official site: [https://reader.yijian.app](https://reader.yijian.app)
 
-Big thanks to [Manjusaka](https://github.com/Zheaoli) for his amazing help and hosting 易笺! Really appreciate it!
+Beta site: [https://beta.yijian.app](https://beta.yijian.app)
+
+Big thanks to [CataeroGong](https://github.com/cataerogong) for his amazing help and [Manjusaka](https://github.com/Zheaoli) for hosting SimpleTextReader! Really appreciate it!
 
 ## Highlights
 
-1. Open large text files in a split second; automatic detection of text encoding
+1. Instant opening of large text files with automatic text encoding detection
 
 2. Auto detection of file name:
 
@@ -45,23 +78,25 @@ Big thanks to [Manjusaka](https://github.com/Zheaoli) for his amazing help and h
 
 9. Auto generation of book cover arts in the bookshelf
 
-10. Modern-looking UI design
+10. Support for up to 3 custom fonts (TTF or OTF formats)
+
+11. Sleek, modern UI design
 
 ## Usage
 
 **Note: To view the local text files (`file://*.txt`) directly dragged into the browser (no-ui mode), please enable "Allow access to file URLs" in the extension management page.**
 
-### Firefox
-
-- [SimpleTextReader (v1.6.9)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
-
 ### Chrome
 
-- [SimpleTextReader (v1.6.9)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
+- [SimpleTextReader (v1.6.9.1)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
+
+### Firefox
+
+- [SimpleTextReader (v1.6.9.1)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
 
 ### Edge
 
-- [SimpleTextReader (v1.6.9)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
+- [SimpleTextReader (v1.6.9.1)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
 
 ### Docker
 

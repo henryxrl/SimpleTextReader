@@ -1614,39 +1614,12 @@ const bookshelf = {
         const filterBar = $(".booklist-filter-bar");
         const booklist = $(".bookshelf .booklist");
 
-        // If no books, hide the filter bar
-        if (allBooks.length === 0) {
+        // If no books or filter bar is set to behidden, hide the filter bar
+        if (allBooks.length === 0 || !CONFIG.CONST_CONFIG.SHOW_FILTER_BAR) {
             filterBar.removeClass("visible");
+            filterBar.addClass("hidden");
             return;
         }
-
-        // Helper function to show/hide the filter bar
-        const setFilterBarVisibility = (visible) => {
-            if (visible) {
-                // console.log("show filter bar");
-
-                // Show all filter buttons
-                filterBar.find(".booklist-filter-btn").show();
-
-                // Align the filter bar
-                this._alignFilterBar();
-
-                // Use requestAnimationFrame to ensure the position is set before showing
-                requestAnimationFrame(() => {
-                    filterBar.addClass("visible");
-                });
-            } else {
-                // console.log("hide filter bar");
-
-                // Hide filter buttons, keep the counter visible
-                filterBar.find(".booklist-filter-btn").hide();
-
-                // Important: even when hiding buttons, call the alignment function
-                this._alignFilterBar();
-
-                filterBar.removeClass("visible");
-            }
-        };
 
         // Helper function to create filter buttons
         const createFilterButton = (text, className = "") => {
@@ -1817,7 +1790,58 @@ const bookshelf = {
         });
 
         // Show or hide filter bar based on the number of buttons
-        setFilterBarVisibility(filterButtonCount > 0);
+        this._setFilterBarVisibility(filterButtonCount > 0);
+    },
+
+    /**
+     * Sets the visibility of the filter bar
+     * @param {boolean} visible - Whether to show or hide the filter bar
+     * @private
+     */
+    _setFilterBarVisibility(visible) {
+        const filterBar = $(".booklist-filter-bar");
+        const booklist = $(".bookshelf .booklist");
+
+        if (visible) {
+            // console.log("show filter bar");
+
+            // Check if the filter bar is empty, if so, create the filter bar
+            if (filterBar.find(".booklist-filter-btn").length === 0) {
+                this._updateFilterBar();
+            }
+
+            // Show all filter buttons
+            filterBar.find(".booklist-filter-btn").show();
+
+            // Align the filter bar
+            this._alignFilterBar();
+
+            // Use requestAnimationFrame to ensure the position is set before showing
+            requestAnimationFrame(() => {
+                filterBar.removeClass("hidden");
+                filterBar.addClass("visible");
+            });
+
+            // Set the booklist's top margin to negative value of the filter bar's height
+            booklist.css("margin-top", `-40px`);
+        } else {
+            // console.log("hide filter bar");
+
+            // Hide filter buttons, keep the counter visible
+            filterBar.find(".booklist-filter-btn").hide();
+
+            // Important: even when hiding buttons, call the alignment function
+            this._alignFilterBar();
+
+            // Use requestAnimationFrame to ensure the position is set before showing
+            requestAnimationFrame(() => {
+                filterBar.removeClass("visible");
+                filterBar.addClass("hidden");
+            });
+
+            // Set the booklist's top margin to 0
+            booklist.css("margin-top", "0px");
+        }
     },
 
     /**
@@ -2199,6 +2223,12 @@ const bookshelf = {
                 }
             });
 
+            // Listen for toggleFilterBar event
+            document.addEventListener("toggleFilterBar", () => {
+                this._setFilterBarVisibility(CONFIG.CONST_CONFIG.SHOW_FILTER_BAR);
+            });
+
+            // Create the bookshelf element
             $(`<div class="bookshelf">
             <div class="title">${CONFIG.RUNTIME_VARS.STYLE.ui_bookshelfCachedStorage}
             <div class="sub-title">${CONFIG.RUNTIME_VARS.STYLE.ui_bookshelfCachedStorage_subTitle}<br/>

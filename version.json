@@ -1,6 +1,21 @@
 {
-    "version": "1.6.9",
+    "version": "1.6.9.1",
     "changelog": {
+        "1.6.9.1": {
+            "date": "2025-03-08",
+            "changes": {
+                "zh": [
+                    "新增段落间距、首行缩进、两端对齐等排版设置",
+                    "优化设置菜单组件的样式",
+                    "调整设置菜单的布局"
+                ],
+                "en": [
+                    "Added options for paragraph spacing, first-line indent, and text alignment",
+                    "Refined the styling of settings menu components",
+                    "Improved the layout of the settings menu"
+                ]
+            }
+        },
         "1.6.9": {
             "date": "2025-02-28",
             "changes": {

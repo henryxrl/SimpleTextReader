@@ -1,0 +1,57 @@
+@charset "UTF-8";
+.range-slider,
+label[dir="rtl"] .range-slider {
+    width: 200px;
+    min-width: 200px;
+    /* border: 1px solid black; */
+    overflow-y: unset !important;
+    --thumb-size: 15px;
+    --ticks-height: 0px;
+    --primary-color: var(--mainColor_active);
+    --thumb-color: var(--bgColor);
+    --progress-background: var(--fontInfoColor);
+}
+
+/* hide thumb value */
+.range-slider-output::after {
+    /* color: var(--thumb-text-color); */
+    color: white;
+    visibility: hidden;
+}
+
+/* show thumb value when hovering on input */
+.range-slider-input:hover + .range-slider-output::after {
+    visibility: visible;
+    font-family: var(--fontFamily_ui);
+    font-size: 0.7em;
+}
+
+/* hide min max text */
+.range-slider::before,
+.range-slider::after {
+    visibility: hidden;
+}
+
+.range-slider__progress {
+    width: 200px;
+    left: 0px;
+}
+
+.range-slider > input:hover + output {
+    top: 10px;
+    border-radius: 8px !important;
+    padding: 2px;
+}
+
+/* Add a border to the thumb */
+.range-slider > input::-webkit-slider-thumb {
+    box-shadow: 0 0 0 3px var(--mainColor_active);
+}
+
+.range-slider > input::-moz-range-thumb {
+    box-shadow: 0 0 0 3px var(--mainColor_active);
+}
+
+.range-slider > input::-ms-thumb {
+    box-shadow: 0 0 0 3px var(--mainColor_active);
+}

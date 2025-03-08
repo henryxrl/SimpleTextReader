@@ -62,17 +62,7 @@ This directory contains third-party stylesheets used for specific UI components 
 
 - **`color-picker.css`**
 
-  - Styles for the color picker widget.
-
-  - Part of the `yaireo` library integration.
-
-- **`my-color.css`**
-
-  - Custom styles or overrides for the color picker.
-
-- **`my-range.css`**
-
-  - Custom styles or overrides for range sliders.
+  - Styles for the color picker widget provided by the `yaireo` library.
 
 - **`ui-range.css`**
 
@@ -81,6 +71,20 @@ This directory contains third-party stylesheets used for specific UI components 
 - **`ui-switch.css`**
 
   - Styles for custom switch buttons by the `yaireo` library.
+
+#### `custom/` Subdirectory
+
+- **`custom-color-picker.css`**
+
+  - Custom styles or overrides for the `yaireo` color pickers.
+
+- **`custom-ui-range.css`**
+
+  - Custom styles or overrides for the `yaireo` range sliders.
+
+- **`custom-ui-switch.css`**
+
+  - Custom styles or overrides for the `yaireo` range switches.
 
 #### Other External Libraries
 

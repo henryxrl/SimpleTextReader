@@ -65,7 +65,7 @@ The top-level directory serves as the root of the frontend portion of the projec
 
 **Files**:
 
-- Includes `.woff` files like `KingHwa_OldSong.woff`, `LXGWWenKai-Regular.woff`, and `qiji-combo.woff`.
+- Includes `.woff` files like `KingHwa_OldSong.woff`, `LXGWWenKaiScreen.woff`, and `qiji-combo.woff`.
 
 **Notes**:
 

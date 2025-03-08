@@ -4,12 +4,20 @@
         <!-- Meta -->
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <!-- Open Graph meta tags -->
+        <meta property="og:title" content="" id="og-title" />
+        <meta property="og:description" content="" id="og-description" />
+        <meta property="og:url" content="" id="og-url" />
+        <meta property="og:image" content="" id="og-image" />
+
+        <!-- Title -->
         <title></title>
 
         <!-- Fonts -->
         <link
             rel="preload"
-            href="./client/fonts/LXGWWenKai-Regular.woff"
+            href="./client/fonts/LXGWWenKaiScreen.woff"
             as="font"
             type="font/woff"
             crossorigin="anonymous"
@@ -34,15 +42,31 @@
 
         <!-- CSS -->
         <link rel="stylesheet" type="text/css" href="./client/css/lib/yaireo/ui-range.css" crossorigin="anonymous" />
-        <link rel="stylesheet" type="text/css" href="./client/css/lib/yaireo/my-range.css" crossorigin="anonymous" />
         <link
             rel="stylesheet"
             type="text/css"
             href="./client/css/lib/yaireo/color-picker.css"
             crossorigin="anonymous"
         />
-        <link rel="stylesheet" type="text/css" href="./client/css/lib/yaireo/my-color.css" crossorigin="anonymous" />
         <link rel="stylesheet" type="text/css" href="./client/css/lib/yaireo/ui-switch.css" crossorigin="anonymous" />
+        <link
+            rel="stylesheet"
+            type="text/css"
+            href="./client/css/lib/custom/custom-ui-range.css"
+            crossorigin="anonymous"
+        />
+        <link
+            rel="stylesheet"
+            type="text/css"
+            href="./client/css/lib/custom/custom-color-picker.css"
+            crossorigin="anonymous"
+        />
+        <link
+            rel="stylesheet"
+            type="text/css"
+            href="./client/css/lib/custom/custom-ui-switch.css"
+            crossorigin="anonymous"
+        />
         <link rel="stylesheet" type="text/css" href="./client/css/lib/sweetalert2.css" crossorigin="anonymous" />
         <link rel="stylesheet" type="text/css" href="./client/css/buttons.css" crossorigin="anonymous" />
         <link rel="stylesheet" type="text/css" href="./client/css/variables.css" crossorigin="anonymous" />
@@ -75,7 +99,7 @@
 
         <!-- Loading screen -->
         <div id="loading" class="uifont prevent-select">
-            <img src="./client/images/loading_geometry.gif" />
+            <img src="./client/images/loading_geometry.gif" alt="Loading..." />
             <!-- <div class="loader"></div> -->
         </div>
 

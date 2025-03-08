@@ -50,6 +50,8 @@ import {
     createSelectorItem,
     createFontSelectorItem,
     createCheckboxItem,
+    createSeparatorItem,
+    createSeparatorItemWithText,
     findFontIndex,
     changeLanguageSelectorItemLanguage,
     changeFontSelectorItemLanguage,
@@ -99,7 +101,12 @@ class SettingsMenu {
      * Creates an instance of SettingsMenu.
      * Initializes the menu with references to settings and default configurations.
      *
+     * @note
+     * This constructor is asynchronous and returns a promise that resolves with the initialized instance.
+     * Must be awaited when creating an instance.
+     *
      * @constructor
+     * @async
      * @param {Object} settingsObj - The main settings object containing all settings values and methods
      * @returns {Promise<SettingsMenu>} A promise that resolves with the initialized instance
      */
@@ -125,27 +132,33 @@ class SettingsMenu {
      * Also sets up event listeners and initializes components like color pickers and dropdowns.
      *
      * @async
-     * @method
      * @returns {Promise<void>} Resolves when the menu is fully initialized and rendered
      * @throws {Error} If required DOM elements cannot be created or initialized
      */
     async #init() {
+        // Create the settings menu main container and overlay
         this.settingsMenu = this.#createMainContainer();
         this.overlay = this.#createOverlay();
 
+        // Create the settings menu elements
+        const topRow = this.#createTopRow();
         const settingsContainer = this.#createSettingsContainer();
         const tabContainer = this.#createTabContainer();
         const settingsContent = await this.#createSettingsContent();
         const bottomRow = this.#createBottomRow();
 
+        // Append the elements to the settings menu
         settingsContainer.appendChild(tabContainer);
         settingsContainer.appendChild(settingsContent);
+        this.settingsMenu.appendChild(topRow);
         this.settingsMenu.appendChild(settingsContainer);
         this.settingsMenu.appendChild(bottomRow);
 
+        // Append the settings menu and overlay to the document body
         document.body.appendChild(this.overlay);
         document.body.appendChild(this.settingsMenu);
 
+        // Initialize event listeners and components
         this.#initializeEventListeners();
         this.#initializeComponents();
 
@@ -158,7 +171,6 @@ class SettingsMenu {
      * If the menu hasn't been initialized yet, initializes it first.
      *
      * @async
-     * @method
      * @returns {Promise<void>} Resolves when the menu is fully visible
      * @throws {Error} If menu initialization fails
      */
@@ -180,6 +192,11 @@ class SettingsMenu {
 
         // Add ESC key listener
         document.addEventListener("keydown", this.#handleClose, true);
+
+        // Add global wheel event handler
+        // Disable page scrolling when settings menu is open
+        document.body.style.overflow = "hidden";
+        document.addEventListener("wheel", this.#handleGlobalWheel, { passive: false });
     }
 
     /**
@@ -207,6 +224,11 @@ class SettingsMenu {
         if (settingsBtn) {
             settingsBtn.blur();
         }
+
+        // Remove global wheel event handler
+        // Enable page scrolling when settings menu is closed
+        document.body.style.overflow = "";
+        document.removeEventListener("wheel", this.#handleGlobalWheel, { passive: false });
     }
 
     /**
@@ -267,32 +289,49 @@ class SettingsMenu {
      * @param {HTMLElement} container - The settings menu container element
      */
     #addScrollHandler(container) {
-        container.addEventListener("wheel", (e) => {
-            // Prevent event from bubbling up to the document
-            e.stopPropagation();
-            e.preventDefault();
+        container.addEventListener(
+            "wheel",
+            (e) => {
+                // Prevent event from bubbling up to the document
+                e.stopPropagation();
+                e.preventDefault();
 
-            // Get the current scrolling target element
-            const target = e.target;
+                // Get the current scrolling target element
+                const target = e.target;
 
-            // Check if the target element is within a scrollable container
-            const scrollableParent = target.closest(
-                ".settings-tabs, .settings-content, .tab-content.active, .select-options"
-            );
+                // Check if the target element is within a scrollable container
+                const scrollableParent = target.closest(
+                    ".settings-tabs, .settings-content, .tab-content.active, .select-options"
+                );
 
-            if (scrollableParent) {
-                // Get the actual element to scroll (if within settings-content, use its first tab-content.active)
-                const scrollTarget = scrollableParent.classList.contains("settings-content")
-                    ? scrollableParent.querySelector(".tab-content.active") || scrollableParent
-                    : scrollableParent;
+                if (scrollableParent) {
+                    // Check if there is a dropdown open
+                    const dropdowns = document.querySelectorAll(".select-options[style*='display: block']");
+                    if (dropdowns.length > 0) {
+                        const isInsideDropdown = target.closest(".select-options");
 
-                // Calculate the new scroll position
-                const newScrollTop = scrollTarget.scrollTop + e.deltaY;
+                        // Prevent scrolling if the target is not within the open dropdown
+                        if (!isInsideDropdown) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            return;
+                        }
+                    }
 
-                // Apply the scroll
-                scrollTarget.scrollTop = newScrollTop;
-            }
-        });
+                    // Get the actual element to scroll (if within settings-content, use its first tab-content.active)
+                    const scrollTarget = scrollableParent.classList.contains("settings-content")
+                        ? scrollableParent.querySelector(".tab-content.active") || scrollableParent
+                        : scrollableParent;
+
+                    // Calculate the new scroll position
+                    const newScrollTop = scrollTarget.scrollTop + e.deltaY;
+
+                    // Apply the scroll
+                    scrollTarget.scrollTop = newScrollTop;
+                }
+            },
+            { passive: false }
+        );
     }
 
     /**
@@ -339,6 +378,7 @@ class SettingsMenu {
             tabButton.setAttribute("data-tab", tab.id);
             tabButton.setAttribute("id", `setting-tab-${tab.id}`);
             tabButton.setAttribute("type", "button");
+            tabButton.setAttribute("aria-label", tab.id);
             tabButton.addEventListener("click", () => this.switchTab(tab.id));
             tabContainer.appendChild(tabButton);
         });
@@ -348,6 +388,7 @@ class SettingsMenu {
 
     /**
      * Creates the content section for the settings menu.
+     * @async
      * @returns {HTMLElement} The created settings content element
      */
     async #createSettingsContent() {
@@ -371,6 +412,11 @@ class SettingsMenu {
         tab.id = "general";
         tab.className = "tab-content active"; // Show this by default
 
+        /**
+         * Language
+         */
+        tab.appendChild(createSeparatorItemWithText("setting_separator_ui"));
+
         tab.appendChild(
             createSelectorItem(
                 "setting_uilanguage",
@@ -378,6 +424,20 @@ class SettingsMenu {
                 [CONFIG.RUNTIME_VARS.STYLE.ui_language_text, ...Object.values(CONFIG.CONST_UI.LANGUAGE_MAPPING)]
             )
         );
+
+        tab.appendChild(
+            createCheckboxItem(
+                "setting_show_filter_bar",
+                this.settingsObj.show_filter_bar,
+                this.settingsObj.saveSettings.bind(this.settingsObj)
+            )
+        );
+
+        /**
+         * Behavior
+         */
+        tab.appendChild(createSeparatorItemWithText("setting_separator_behavior"));
+        // tab.appendChild(createSeparatorItem());
 
         tab.appendChild(
             createCheckboxItem(
@@ -398,6 +458,11 @@ class SettingsMenu {
         const tab = document.createElement("div");
         tab.id = "theme";
         tab.className = "tab-content";
+
+        /**
+         * Light theme
+         */
+        tab.appendChild(createSeparatorItemWithText("setting_separator_light"));
 
         tab.appendChild(
             createColorItem(
@@ -425,6 +490,12 @@ class SettingsMenu {
                 this.settingsObj.saveSettings.bind(this.settingsObj)
             )
         );
+
+        /**
+         * Dark theme
+         */
+        tab.appendChild(createSeparatorItemWithText("setting_separator_dark"));
+        // tab.appendChild(createSeparatorItem());
 
         tab.appendChild(
             createColorItem(
@@ -458,12 +529,49 @@ class SettingsMenu {
 
     /**
      * Creates the reader tab for the settings menu.
+     * @async
      * @returns {HTMLElement} The created reader tab element
      */
     async #createReaderTab() {
         const tab = document.createElement("div");
         tab.id = "reader";
         tab.className = "tab-content";
+
+        /**
+         * Fonts
+         */
+        tab.appendChild(createSeparatorItemWithText("setting_separator_font"));
+
+        const settingTitleFont_ = await createFontSelectorItem("setting_title_font");
+        const settingBodyFont_ = await createFontSelectorItem("setting_body_font");
+        const language = !CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING
+            ? CONFIG.RUNTIME_VARS.STYLE.ui_LANG
+            : this.settingsObj.ui_language;
+        if (language === "zh") {
+            tab.appendChild(settingTitleFont_[1]);
+            tab.appendChild(settingBodyFont_[1]);
+        } else {
+            tab.appendChild(settingTitleFont_[0]);
+            tab.appendChild(settingBodyFont_[0]);
+        }
+
+        tab.appendChild(
+            createRangeItem(
+                "setting_p_fontSize",
+                parseFloat(this.settingsObj.p_fontSize),
+                1,
+                3,
+                0.5,
+                "em",
+                this.settingsObj.saveSettings.bind(this.settingsObj)
+            )
+        );
+
+        /**
+         * Paragraph
+         */
+        tab.appendChild(createSeparatorItemWithText("setting_separator_paragraph"));
+        // tab.appendChild(createSeparatorItem());
 
         tab.appendChild(
             createRangeItem(
@@ -479,8 +587,8 @@ class SettingsMenu {
 
         tab.appendChild(
             createRangeItem(
-                "setting_p_fontSize",
-                parseFloat(this.settingsObj.p_fontSize),
+                "setting_p_paragraphSpacing",
+                parseFloat(this.settingsObj.p_paragraphSpacing),
                 1,
                 3,
                 0.5,
@@ -489,18 +597,27 @@ class SettingsMenu {
             )
         );
 
-        const settingTitleFont_ = await createFontSelectorItem("setting_title_font");
-        const settingBodyFont_ = await createFontSelectorItem("setting_body_font");
-        const language = !CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING
-            ? CONFIG.RUNTIME_VARS.STYLE.ui_LANG
-            : this.settingsObj.ui_language;
-        if (language === "zh") {
-            tab.appendChild(settingTitleFont_[1]);
-            tab.appendChild(settingBodyFont_[1]);
-        } else {
-            tab.appendChild(settingTitleFont_[0]);
-            tab.appendChild(settingBodyFont_[0]);
-        }
+        tab.appendChild(
+            createCheckboxItem(
+                "setting_p_paragraphIndent",
+                this.settingsObj.p_paragraphIndent,
+                this.settingsObj.saveSettings.bind(this.settingsObj)
+            )
+        );
+
+        tab.appendChild(
+            createCheckboxItem(
+                "setting_p_textAlign",
+                this.settingsObj.p_textAlign,
+                this.settingsObj.saveSettings.bind(this.settingsObj)
+            )
+        );
+
+        /**
+         * Pagination
+         */
+        tab.appendChild(createSeparatorItemWithText("setting_separator_pagination"));
+        // tab.appendChild(createSeparatorItem());
 
         tab.appendChild(
             createRangeItem(
@@ -539,30 +656,69 @@ class SettingsMenu {
         tab.className = "tab-content";
 
         tab.innerHTML = `
-            <div class="about-container">
-                <img src="./client/images/logo.png" alt="Logo" class="about-icon">
+            <div class="about-container prevent-select">
+                <img class="about-icon" src="./client/images/icon.png" alt="Logo">
                 <h2 class="about-title" id="settingLabel-about_title"></h2>
-                <!--<p class="about-version"><span id="settingLabel-about_version"></span> ${CONFIG.RUNTIME_VARS.APP_VERSION} • <span id="settingLabel-about_release_date"></span> ${CONFIG.RUNTIME_VARS.APP_VERSION_DATE}</p>-->
-                <p class="about-version">v${CONFIG.RUNTIME_VARS.APP_VERSION} (${CONFIG.RUNTIME_VARS.APP_VERSION_DATE})</p>
+                <p class="about-version noIndent">v${CONFIG.RUNTIME_VARS.APP_VERSION} (${CONFIG.RUNTIME_VARS.APP_VERSION_DATE})</p>
 
                 <hr class="about-divider">
                 
-                <p class="about-text">
-                    <span id="settingLabel-about_github"></span>: <a href="https://github.com/henryxrl/SimpleTextReader" target="_blank" class="about-link">github.com/henryxrl/SimpleTextReader</a>
+                <p class="about-text noIndent">
+                    <span id="settingLabel-about_github"></span>
+                    <span class="about-btns">
+                        <button class="about-btn">
+                            ${ICONS.GITHUB}
+                            <a href="https://github.com/henryxrl/SimpleTextReader" target="_blank" class="about-link">SimpleTextReader</a>
+                        </button>
+                    </span>
                 </p>
 
-                <p class="about-text">
-                    <span id="settingLabel-about_extensions"></span>: 
-                    <a href="https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf" target="_blank" class="about-link">Chrome</a> | 
-                    <a href="https://addons.mozilla.org/zh-CN/firefox/addon/yijian/" target="_blank" class="about-link">Firefox</a> | 
-                    <a href="https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak" target="_blank" class="about-link">Edge</a>
+                <p class="about-text noIndent">
+                    <span id="settingLabel-about_extensions"></span>
+                    <span class="about-btns">
+                        <button class="about-btn">
+                            ${ICONS.CHROME}
+                            <a href="https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf" target="_blank" class="about-link">Chrome</a>
+                        </button>
+                        <span class="about-btn-separator">|</span>
+                        <button class="about-btn">
+                            ${ICONS.FIREFOX}
+                            <a href="https://addons.mozilla.org/firefox/addon/yijian/" target="_blank" class="about-link">Firefox</a>
+                        </button>
+                        <span class="about-btn-separator">|</span>
+                        <button class="about-btn">
+                            ${ICONS.EDGE}
+                            <a href="https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak" target="_blank" class="about-link">Edge</a>
+                        </button>
+                    </span>
                 </p>
 
-                <p class="about-text">© 2025 <a href="https://github.com/henryxrl" target="_blank" class="about-link">Henry Xu</a> • <span id="settingLabel-about_license"></span></p>
+                <p class="about-text noIndent">
+                    <span id="settingLabel-about_copyright"></span>
+                    <span class="about-btns">
+                        <button class="about-btn">
+                            <!--${ICONS.GITHUB}-->
+                            <a href="https://github.com/henryxrl" target="_blank" class="about-link">Henry Xu</a>
+                        </button>
+                    </span>
+                    <!--<span class="about-btn-separator">•</span>
+                    <span id="settingLabel-about_license"></span>-->
+                </p>
             </div>
         `;
 
         return tab;
+    }
+
+    /**
+     * Creates the top row of the settings menu.
+     * This creates a spacer element at the top of the settings modal.
+     * @returns {HTMLElement} The created top row element
+     */
+    #createTopRow() {
+        const topRow = document.createElement("div");
+        topRow.setAttribute("id", "settings-top-row");
+        return topRow;
     }
 
     /**
@@ -571,7 +727,7 @@ class SettingsMenu {
      */
     #createBottomRow() {
         const bottomRow = document.createElement("div");
-        bottomRow.id = "setting-bottom-row";
+        bottomRow.id = "settings-bottom-row";
 
         bottomRow.appendChild(this.#createResetButton());
         bottomRow.appendChild(this.#createVersionDisplay());
@@ -585,7 +741,8 @@ class SettingsMenu {
      */
     #createResetButton() {
         const resetButton = document.createElement("button");
-        resetButton.setAttribute("id", "setting-reset-btn");
+        resetButton.setAttribute("id", "settings-reset-btn");
+        resetButton.setAttribute("aria-label", "settings-reset-btn");
         resetButton.addEventListener("click", (e) => {
             this.settingsObj.loadDefaultSettings();
             this.settingsObj.saveSettings(true, true);
@@ -751,9 +908,6 @@ class SettingsMenu {
 
     /**
      * Handles closing events for the settings menu (click outside or ESC key).
-     *
-     * @private
-     * @method
      * @param {Event} e - The event object (either mouse click or keydown)
      */
     #handleClose = (e) => {
@@ -814,7 +968,19 @@ class SettingsMenu {
     };
 
     /**
+     * Handles global wheel events to prevent scrolling when the settings menu is open.
+     * @param {WheelEvent} e - The wheel event object
+     */
+    #handleGlobalWheel = (e) => {
+        if (CONFIG.VARS.SETTINGS_MENU_SHOWN) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    };
+
+    /**
      * Fetches the version number from a JSON file.
+     * @async
      * @returns {Promise<string>} A promise that resolves to the version number, or an empty string if not found.
      */
     async #getVersion() {
@@ -854,6 +1020,9 @@ const settings = {
     respectUserLangSetting_default: CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING,
     ui_language_default: CONFIG.RUNTIME_VARS.STYLE.ui_LANG,
     p_lineHeight_default: CONFIG.RUNTIME_VARS.STYLE.p_lineHeight,
+    p_paragraphSpacing_default: CONFIG.RUNTIME_VARS.STYLE.p_paragraphSpacing,
+    p_paragraphIndent_default: toBool(CONFIG.RUNTIME_VARS.STYLE.p_paragraphIndent),
+    p_textAlign_default: toBool(CONFIG.RUNTIME_VARS.STYLE.p_textAlign),
     p_fontSize_default: CONFIG.RUNTIME_VARS.STYLE.p_fontSize,
     light_mainColor_active_default: CONFIG.RUNTIME_VARS.STYLE.mainColor_active,
     light_mainColor_inactive_default: CONFIG.RUNTIME_VARS.STYLE.mainColor_inactive,
@@ -867,6 +1036,7 @@ const settings = {
     body_font_default: CONFIG.RUNTIME_VARS.STYLE.fontFamily_body,
     pagination_bottom_default: CONFIG.RUNTIME_VARS.STYLE.ui_paginationBottom,
     pagination_opacity_default: CONFIG.RUNTIME_VARS.STYLE.ui_paginationOpacity,
+    show_filter_bar_default: CONFIG.CONST_CONFIG.SHOW_FILTER_BAR,
     auto_open_last_book_default: CONFIG.CONST_CONFIG.AUTO_OPEN_LAST_BOOK,
 
     /*
@@ -875,6 +1045,9 @@ const settings = {
     respectUserLangSetting: null,
     ui_language: null,
     p_lineHeight: null,
+    p_paragraphSpacing: null,
+    p_paragraphIndent: null,
+    p_textAlign: null,
     p_fontSize: null,
     light_mainColor_active: null,
     light_mainColor_inactive: null,
@@ -888,6 +1061,7 @@ const settings = {
     body_font: null,
     pagination_bottom: null,
     pagination_opacity: null,
+    show_filter_bar: null,
     auto_open_last_book: null,
 
     /**
@@ -914,6 +1088,10 @@ const settings = {
             this.ui_language = localStorage.getItem("UILang") || this.ui_language_default;
         }
         this.p_lineHeight = localStorage.getItem("p_lineHeight") || this.p_lineHeight_default;
+        this.p_paragraphSpacing = localStorage.getItem("p_paragraphSpacing") || this.p_paragraphSpacing_default;
+        this.p_paragraphIndent =
+            toBool(localStorage.getItem("p_paragraphIndent"), false) ?? this.p_paragraphIndent_default;
+        this.p_textAlign = toBool(localStorage.getItem("p_textAlign"), false) ?? this.p_textAlign_default;
         this.p_fontSize = localStorage.getItem("p_fontSize") || this.p_fontSize_default;
         this.light_mainColor_active =
             localStorage.getItem("light_mainColor_active") || this.light_mainColor_active_default;
@@ -931,6 +1109,7 @@ const settings = {
         this.body_font = localStorage.getItem("body_font") || this.body_font_default;
         this.pagination_bottom = localStorage.getItem("pagination_bottom") || this.pagination_bottom_default;
         this.pagination_opacity = localStorage.getItem("pagination_opacity") || this.pagination_opacity_default;
+        this.show_filter_bar = toBool(localStorage.getItem("show_filter_bar"), false) ?? this.show_filter_bar_default;
         this.auto_open_last_book =
             toBool(localStorage.getItem("auto_open_last_book"), false) ?? this.auto_open_last_book_default;
 
@@ -941,6 +1120,12 @@ const settings = {
         // console.log(this.ui_language_default);
         // console.log(localStorage.getItem("p_lineHeight"));
         // console.log(this.p_lineHeight_default);
+        // console.log(localStorage.getItem("p_paragraphSpacing"));
+        // console.log(this.p_paragraphSpacing_default);
+        // console.log(localStorage.getItem("p_paragraphIndent"));
+        // console.log(this.p_paragraphIndent_default);
+        // console.log(localStorage.getItem("p_textAlign"));
+        // console.log(this.p_textAlign_default);
         // console.log(localStorage.getItem("p_fontSize"));
         // console.log(this.p_fontSize_default);
         // console.log(localStorage.getItem("light_mainColor_active"));
@@ -967,6 +1152,8 @@ const settings = {
         // console.log(this.pagination_bottom_default);
         // console.log(localStorage.getItem("pagination_opacity"));
         // console.log(this.pagination_opacity_default);
+        // console.log(localStorage.getItem("show_filter_bar"));
+        // console.log(this.show_filter_bar_default);
         // console.log(localStorage.getItem("auto_open_last_book"));
         // console.log(this.auto_open_last_book_default);
     },
@@ -999,6 +1186,9 @@ const settings = {
             this.ui_language = this.ui_language_default;
         }
         this.p_lineHeight = this.p_lineHeight_default;
+        this.p_paragraphSpacing = this.p_paragraphSpacing_default;
+        this.p_paragraphIndent = this.p_paragraphIndent_default;
+        this.p_textAlign = this.p_textAlign_default;
         this.p_fontSize = this.p_fontSize_default;
         this.light_mainColor_active = this.light_mainColor_active_default;
         this.light_mainColor_inactive = this.light_mainColor_inactive_default;
@@ -1012,6 +1202,7 @@ const settings = {
         this.body_font = this.body_font_default;
         this.pagination_bottom = this.pagination_bottom_default;
         this.pagination_opacity = this.pagination_opacity_default;
+        this.show_filter_bar = this.show_filter_bar_default;
         this.auto_open_last_book = this.auto_open_last_book_default;
 
         if (this.respectUserLangSetting) {
@@ -1023,6 +1214,9 @@ const settings = {
             setSelectorValue("setting_uilanguage", 0);
         }
         setRangeValue("setting_p_lineHeight", this.p_lineHeight);
+        setRangeValue("setting_p_paragraphSpacing", this.p_paragraphSpacing);
+        setCheckboxValue("setting_p_paragraphIndent", this.p_paragraphIndent);
+        setCheckboxValue("setting_p_textAlign", this.p_textAlign);
         setRangeValue("setting_p_fontSize", this.p_fontSize);
         setColorValue("setting_light_mainColor_active", this.light_mainColor_active);
         setColorValue("setting_light_fontColor", this.light_fontColor);
@@ -1034,6 +1228,7 @@ const settings = {
         setSelectorValue("setting_body_font", findFontIndex(this.body_font));
         setRangeValue("setting_pagination_bottom", this.pagination_bottom);
         setRangeValue("setting_pagination_opacity", this.pagination_opacity);
+        setCheckboxValue("setting_show_filter_bar", this.show_filter_bar);
         setCheckboxValue("setting_auto_open_last_book", this.auto_open_last_book);
     },
 
@@ -1062,6 +1257,15 @@ const settings = {
             CONFIG.RUNTIME_VARS.STYLE.ui_LANG = this.ui_language;
         }
         CONFIG.RUNTIME_VARS.STYLE.p_lineHeight = this.p_lineHeight;
+        CONFIG.RUNTIME_VARS.STYLE.p_paragraphSpacing = this.p_paragraphSpacing;
+        CONFIG.RUNTIME_VARS.STYLE.p_paragraphIndent = this.p_paragraphIndent;
+        CONFIG.RUNTIME_VARS.STYLE.p_paragraphIndent_value = this.p_paragraphIndent
+            ? CONFIG.RUNTIME_VARS.STYLE.p_paragraphIndent_value_true
+            : CONFIG.RUNTIME_VARS.STYLE.p_paragraphIndent_value_false;
+        CONFIG.RUNTIME_VARS.STYLE.p_textAlign = this.p_textAlign;
+        CONFIG.RUNTIME_VARS.STYLE.p_textAlign_value = this.p_textAlign
+            ? CONFIG.RUNTIME_VARS.STYLE.p_textAlign_value_true
+            : CONFIG.RUNTIME_VARS.STYLE.p_textAlign_value_false;
         CONFIG.RUNTIME_VARS.STYLE.p_fontSize = this.p_fontSize;
         CONFIG.RUNTIME_VARS.STYLE.mainColor_active = this.light_mainColor_active;
         CONFIG.RUNTIME_VARS.STYLE.mainColor_inactive = this.light_mainColor_inactive;
@@ -1081,6 +1285,7 @@ const settings = {
         CONFIG.RUNTIME_VARS.STYLE.fontFamily_body_en = this.body_font;
         CONFIG.RUNTIME_VARS.STYLE.ui_paginationBottom = this.pagination_bottom;
         CONFIG.RUNTIME_VARS.STYLE.ui_paginationOpacity = this.pagination_opacity;
+        CONFIG.CONST_CONFIG.SHOW_FILTER_BAR = this.show_filter_bar;
         CONFIG.CONST_CONFIG.AUTO_OPEN_LAST_BOOK = this.auto_open_last_book;
 
         if (CONFIG.RUNTIME_VARS.STYLE.ui_Mode === "dark") {
@@ -1089,6 +1294,9 @@ const settings = {
             CONFIG.RUNTIME_VARS.STYLE.fontColor = CONFIG.RUNTIME_VARS.STYLE.darkMode_fontColor;
             CONFIG.RUNTIME_VARS.STYLE.bgColor = CONFIG.RUNTIME_VARS.STYLE.darkMode_bgColor;
         }
+
+        // Apply UI changes
+        triggerCustomEvent("toggleFilterBar");
     },
 
     /**
@@ -1131,6 +1339,9 @@ const settings = {
                     .attr("rel") || this.ui_language_default;
         }
         this.p_lineHeight = $("#setting_p_lineHeight").val() + "em" || this.p_lineHeight_default;
+        this.p_paragraphSpacing = $("#setting_p_paragraphSpacing").val() + "em" || this.p_paragraphSpacing_default;
+        this.p_paragraphIndent = $("#setting_p_paragraphIndent").is(":checked") ?? this.p_paragraphIndent_default;
+        this.p_textAlign = $("#setting_p_textAlign").is(":checked") ?? this.p_textAlign_default;
         this.p_fontSize = $("#setting_p_fontSize").val() + "em" || this.p_fontSize_default;
         this.light_mainColor_active = $("#setting_light_mainColor_active").val() || this.light_mainColor_active_default;
         this.light_mainColor_inactive = HSLToHex(
@@ -1160,6 +1371,7 @@ const settings = {
                 .attr("rel") || this.body_font_default;
         this.pagination_bottom = $("#setting_pagination_bottom").val() + "px" || this.pagination_bottom_default;
         this.pagination_opacity = $("#setting_pagination_opacity").val() || this.pagination_opacity_default;
+        this.show_filter_bar = $("#setting_show_filter_bar").is(":checked") ?? this.show_filter_bar_default;
         this.auto_open_last_book = $("#setting_auto_open_last_book").is(":checked") ?? this.auto_open_last_book_default;
 
         // Save settings to local storage
@@ -1187,6 +1399,9 @@ const settings = {
             localStorage.setItem("UILang", this.ui_language);
         }
         localStorage.setItem("p_lineHeight", this.p_lineHeight);
+        localStorage.setItem("p_paragraphSpacing", this.p_paragraphSpacing);
+        localStorage.setItem("p_paragraphIndent", this.p_paragraphIndent);
+        localStorage.setItem("p_textAlign", this.p_textAlign);
         localStorage.setItem("p_fontSize", this.p_fontSize);
         localStorage.setItem("light_mainColor_active", this.light_mainColor_active);
         localStorage.setItem("light_mainColor_inactive", this.light_mainColor_inactive);
@@ -1200,6 +1415,7 @@ const settings = {
         localStorage.setItem("body_font", this.body_font);
         localStorage.setItem("pagination_bottom", this.pagination_bottom);
         localStorage.setItem("pagination_opacity", this.pagination_opacity);
+        localStorage.setItem("show_filter_bar", this.show_filter_bar);
         localStorage.setItem("auto_open_last_book", this.auto_open_last_book);
 
         this.applySettings();
@@ -1277,6 +1493,7 @@ const settings = {
      * Only performs these actions if the module is not already enabled.
      *
      * @public
+     * @async
      * @method enable
      * @memberof settings
      * @instance
@@ -1376,6 +1593,7 @@ const settings = {
      * visual elements, ready to be used for opening/closing the settings menu.
      *
      * @public
+     * @async
      * @method init
      * @memberof settings
      * @instance
@@ -1408,6 +1626,7 @@ const settings = {
 /**
  * Initializes the settings module
  * @public
+ * @async
  */
 export async function initSettings() {
     // Enable settings functionality

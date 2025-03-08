@@ -1,0 +1,51 @@
+@charset "UTF-8";
+.switch {
+    overflow-y: unset;
+    user-select: none;
+    cursor: pointer;
+    display: inline-grid;
+    position: relative;
+    /* font-size: var(--ui_settingMenuFontSize); */
+    width: var(--ui_settingContentWidth);
+    justify-items: right;
+    --color-bg-on: var(--mainColor_active);
+    --color-bg: var(--fontInfoColor);
+    --thumb-color-on: var(--bgColor);
+    --thumb-color-off: var(--bgColor);
+
+    /**
+     * Match the style of the range slider
+     * by enlarging the thumb, adding a border to the thumb,
+     * reducing the track height, and reducing the movement range
+     */
+    --thumb-animation-pad: 0;
+    --thumb-scale: 3;
+    --size: 5px;
+    --width-multiplier: 6;
+    --thumb-left: 10%; /* Reduce movement range */
+    --thumb-left-checked: 90%; /* Reduce movement range */
+}
+
+/* Add a border to the thumb */
+.switch__gfx {
+    overflow: visible;
+    height: calc(var(--size) * 1); /* Reduce the track height */
+    width: calc(var(--size) * var(--width-multiplier)); /* Keep width unchanged */
+    padding: calc((var(--size) - var(--size) * 0.5) / 2) 3px; /* Center track vertically */
+}
+.switch__gfx::before {
+    box-shadow: 0 0 0 1px var(--mainColor_active);
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+}
+
+/* Reduce movement range */
+.switch input:checked + div {
+    --thumb-left: var(--thumb-left-checked);
+}
+
+/* Stop animation from running on load */
+.switch__gfx::before {
+    animation: none;
+}

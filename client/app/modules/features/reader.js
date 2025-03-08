@@ -271,7 +271,7 @@ export const reader = {
                 tempInput.classList.add("jumpInput");
                 tempInput.placeholder = "···";
                 tempInput.size = 1;
-                tempInput.id = tempInput.name = `pageJumpInput_${i - 1}`;
+                tempInput.id = tempInput.name = `pageJumpInput_input_${i - 1}`;
 
                 tempInput.addEventListener("input", (e) => {
                     e.target.size = e.target.value.length || 1;

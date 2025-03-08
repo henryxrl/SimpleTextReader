@@ -44,6 +44,7 @@ svg.icon {
     display: flex;
     align-items: center;
     gap: var(--ui_btnSize);
+    -webkit-transform: translateY(var(--ui_btnSize)) rotate(90deg);
     transform: translateY(var(--ui_btnSize)) rotate(90deg);
     user-select: none;
     color: var(--mainColor_active);
@@ -58,6 +59,7 @@ svg.icon {
 }
 
 #toggle:checked ~ #toggle-btn label .icons {
+    -webkit-transform: translateX(calc(-1 * var(--ui_btnSize)));
     transform: translateX(calc(-1 * var(--ui_btnSize)));
 }
 

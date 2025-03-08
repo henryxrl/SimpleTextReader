@@ -44,20 +44,31 @@ import {
     resetUI,
 } from "./utils/helpers-ui.js";
 
+/**
+ * Update Open Graph meta tags dynamically
+ */
+document.addEventListener("DOMContentLoaded", () => {
+    function updateMetaTag(id, content) {
+        const metaTag = document.getElementById(id);
+        if (metaTag) {
+            metaTag.setAttribute("content", content);
+        }
+    }
+
+    const currentUrl = window.location.href;
+    updateMetaTag("og-title", CONFIG.RUNTIME_VARS.STYLE.ui_title);
+    updateMetaTag("og-description", CONFIG.RUNTIME_VARS.STYLE.ui_description);
+    updateMetaTag("og-url", currentUrl);
+    updateMetaTag("og-image", new URL("/client/images/icon.png", currentUrl).href);
+});
+
 /*
- * Show changelog popup
+ * Get app version data
  */
 const versionData = await fetchVersionData();
-CONFIG.RUNTIME_VARS.APP_VERSION = versionData.version;
-CONFIG.RUNTIME_VARS.APP_VERSION_DATE = versionData.changelog[versionData.version].date;
-if (versionData) {
-    PopupManager.showChangelogPopup({
-        version: versionData.version,
-        changelog: versionData.changelog,
-        previousVersions: 2,
-        forceShow: false,
-    });
-}
+CONFIG.RUNTIME_VARS.APP_VERSION = versionData?.version ?? "";
+CONFIG.RUNTIME_VARS.APP_VERSION_DATE =
+    (versionData?.version && versionData?.changelog?.[versionData.version]?.date) || "Unknown Date";
 
 /**
  * Log the app language, respect user language setting, and extension mode
@@ -74,6 +85,18 @@ if (openedAsNoUI) {
 await initFontpool();
 await initSettings();
 await initBookshelf(!openedAsNoUI);
+
+/*
+ * Show changelog popup
+ */
+if (versionData) {
+    PopupManager.showChangelogPopup({
+        version: versionData.version,
+        changelog: versionData.changelog,
+        previousVersions: 2,
+        forceShow: false,
+    });
+}
 
 /**
  * Set up event listeners for drag and drop functionality

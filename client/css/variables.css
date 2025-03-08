@@ -1,7 +1,8 @@
 @charset "UTF-8";
 @font-face {
     font-family: "wenkai";
-    src: local("霞鹜文楷"), local("LXGW WenKai"), url(../fonts/LXGWWenKai-Regular.woff) format("woff");
+    src: local("霞鹜文楷 屏幕阅读版"), local("霞鹜文楷 GB 屏幕阅读版"), local("LXGW WenKai Screen"),
+        local("LXGW WenKai GB Screen"), url(../fonts/LXGWWenKaiScreen.woff) format("woff");
     font-display: swap;
 }
 @font-face {
@@ -31,20 +32,21 @@
 }
 @font-face {
     font-family: "ui";
-    src: local("霞鹜文楷"), local("LXGW WenKai"), url(../fonts/LXGWWenKai-Regular.woff) format("woff");
+    src: local("霞鹜文楷 屏幕阅读版"), local("霞鹜文楷 GB 屏幕阅读版"), local("LXGW WenKai Screen"),
+        local("LXGW WenKai GB Screen"), url(../fonts/LXGWWenKaiScreen.woff) format("woff");
     font-display: swap;
 }
 @font-face {
     font-family: "title";
     src: local("京華老宋体"), local("京华老宋体"), local("KingHwa"), local("KingHwa_OldSong"),
-    url(../fonts/KingHwa_OldSong.woff) format("woff");
+        url(../fonts/KingHwa_OldSong.woff) format("woff");
     font-display: swap;
     size-adjust: 95%;
 }
 @font-face {
     font-family: "body";
     src: local("京華老宋体"), local("京华老宋体"), local("KingHwa"), local("KingHwa_OldSong"),
-    url(../fonts/KingHwa_OldSong.woff) format("woff");
+        url(../fonts/KingHwa_OldSong.woff) format("woff");
     font-display: swap;
     size-adjust: 95%;
 }
@@ -94,6 +96,9 @@
     --ui_title: "";
     --ui_title_zh: 易笺;
     --ui_title_en: SimpleTextReader;
+    --ui_description: "";
+    --ui_description_zh: 易笺是一款简单纯粹的 TXT 阅读器，让朴素的纯文本书籍拥有精致优雅的阅读体验。;
+    --ui_description_en: SimpleTextReader enhances plain TXT reading with a refined, elegant experience.;
     --ui_tooltip_dropZone: "";
     --ui_tooltip_dropZone_zh: 拖拽或双击此处选择 txt 书籍;
     --ui_tooltip_dropZone_en: Drag & drop or double click to select txt files;
@@ -129,6 +134,8 @@
     --ui_settingMenuWidth_en: 16rem;
     --ui_settingContentWidth: 200px;
     --ui_settingContentHeight: 20px;
+    --ui_settingMenuSeparatorWidth_zh: 84%;
+    --ui_settingMenuSeparatorWidth_en: 94%;
 
     /* UI settings strings */
     --ui_setting_tab_general_zh: "更多设置";
@@ -145,10 +152,12 @@
     --ui_setting_tab_about_version_en: "Version";
     --ui_setting_tab_about_release_date_zh: "更新";
     --ui_setting_tab_about_release_date_en: "Updated";
-    --ui_setting_tab_about_github_zh: "GitHub";
-    --ui_setting_tab_about_github_en: "GitHub";
-    --ui_setting_tab_about_extensions_zh: "扩展";
+    --ui_setting_tab_about_github_zh: "源码";
+    --ui_setting_tab_about_github_en: "Source Code";
+    --ui_setting_tab_about_extensions_zh: "插件";
     --ui_setting_tab_about_extensions_en: "Extensions";
+    --ui_setting_tab_about_copyright_zh: "版权";
+    --ui_setting_tab_about_copyright_en: "Copyright";
     --ui_setting_tab_about_license_zh: "MIT 开源协议";
     --ui_setting_tab_about_license_en: "MIT Licensed";
     --ui_reset_zh: "重置";
@@ -160,10 +169,16 @@
     --ui_language_text: "";
     --ui_language_text_zh: 自动检测;
     --ui_language_text_en: Auto Detect;
-    --ui_lightHeight_zh: "行高";
-    --ui_lightHeight_en: "Line Height";
-    --ui_fontSize_zh: "字号";
+    --ui_lightHeight_zh: "行间距";
+    --ui_lightHeight_en: "Line Spacing";
+    --ui_fontSize_zh: "字体大小";
     --ui_fontSize_en: "Font Size";
+    --ui_paragraphSpacing_zh: "段落间距";
+    --ui_paragraphSpacing_en: "Paragraph Spacing";
+    --ui_paragraphIndent_zh: "段落首行缩进";
+    --ui_paragraphIndent_en: "First-Line Indent";
+    --ui_textAlign_zh: "文字两端对齐";
+    --ui_textAlign_en: "Justified Text";
     --ui_lightMode_mainColor_zh: "日间主题颜色";
     --ui_lightMode_mainColor_en: "Light Mode Theme Color";
     --ui_lightMode_fontColor_zh: "日间字体颜色";
@@ -184,8 +199,26 @@
     --ui_pagination2pageBottom_dist_en: "Pagination-Bottom Distance";
     --ui_pagination_opacity_zh: "分页条透明度";
     --ui_pagination_opacity_en: "Pagination Opacity";
+    --ui_show_filter_bar_zh: "显示书架筛选栏";
+    --ui_show_filter_bar_en: "Show Bookshelf Filter Bar";
     --ui_auto_open_last_book_zh: "自动打开上次阅读的书籍";
     --ui_auto_open_last_book_en: "Auto-open Last Read Book";
+
+    /* UI settings separator strings */
+    --ui_separator_font_zh: "字体";
+    --ui_separator_font_en: "Font";
+    --ui_separator_paragraph_zh: "段落";
+    --ui_separator_paragraph_en: "Paragraph";
+    --ui_separator_pagination_zh: "分页";
+    --ui_separator_pagination_en: "Pagination";
+    --ui_separator_light_zh: "日间主题";
+    --ui_separator_light_en: "Light Mode";
+    --ui_separator_dark_zh: "夜间主题";
+    --ui_separator_dark_en: "Dark Mode";
+    --ui_separator_ui_zh: "界面";
+    --ui_separator_ui_en: "UI";
+    --ui_separator_behavior_zh: "行为";
+    --ui_separator_behavior_en: "Behavior";
 
     /* UI font settings strings */
     --ui_font_group_system: "";
@@ -356,6 +389,15 @@
     /* Passage variables */
     --p_lineHeight: 1.5em;
     --p_fontSize: 1.5em;
+    --p_paragraphSpacing: 1em;
+    --p_paragraphIndent: true;
+    --p_paragraphIndent_value: 2em;
+    --p_paragraphIndent_value_true: 2em;
+    --p_paragraphIndent_value_false: 0em;
+    --p_textAlign: true;
+    --p_textAlign_value: justify;
+    --p_textAlign_value_true: justify;
+    --p_textAlign_value_false: left;
     --h1_lineHeight: 1.6em;
     --h1_margin: 2.5em;
     --h1_fontSize: 3.25em;
@@ -457,6 +499,7 @@
 [data-lang="zh"] {
     --ui_loading_text: var(--ui_loading_text_zh);
     --ui_title: var(--ui_title_zh);
+    --ui_description: var(--ui_description_zh);
     --ui_tooltip_dropZone: var(--ui_tooltip_dropZone_zh);
     --ui_titlePage: var(--ui_titlePage_zh);
     --ui_endPage: var(--ui_endPage_zh);
@@ -481,12 +524,13 @@
     --ui_setting_tab_about_release_date: var(--ui_setting_tab_about_release_date_zh);
     --ui_setting_tab_about_github: var(--ui_setting_tab_about_github_zh);
     --ui_setting_tab_about_extensions: var(--ui_setting_tab_about_extensions_zh);
+    --ui_setting_tab_about_copyright: var(--ui_setting_tab_about_copyright_zh);
     --ui_setting_tab_about_license: var(--ui_setting_tab_about_license_zh);
-    --ui_setting_tab_about_chrome: var(--ui_setting_tab_about_chrome_zh);
-    --ui_setting_tab_about_firefox: var(--ui_setting_tab_about_firefox_zh);
-    --ui_setting_tab_about_edge: var(--ui_setting_tab_about_edge_zh);
     --ui_lightHeight: var(--ui_lightHeight_zh);
     --ui_fontSize: var(--ui_fontSize_zh);
+    --ui_paragraphSpacing: var(--ui_paragraphSpacing_zh);
+    --ui_paragraphIndent: var(--ui_paragraphIndent_zh);
+    --ui_textAlign: var(--ui_textAlign_zh);
     --ui_lightMode_mainColor: var(--ui_lightMode_mainColor_zh);
     --ui_lightMode_fontColor: var(--ui_lightMode_fontColor_zh);
     --ui_lightMode_bgColor: var(--ui_lightMode_bgColor_zh);
@@ -500,9 +544,18 @@
     --ui_font_group_custom: var(--ui_font_group_custom_zh);
     --ui_pagination2pageBottom_dist: var(--ui_pagination2pageBottom_dist_zh);
     --ui_pagination_opacity: var(--ui_pagination_opacity_zh);
+    --ui_show_filter_bar: var(--ui_show_filter_bar_zh);
     --ui_auto_open_last_book: var(--ui_auto_open_last_book_zh);
+    --ui_separator_font: var(--ui_separator_font_zh);
+    --ui_separator_paragraph: var(--ui_separator_paragraph_zh);
+    --ui_separator_pagination: var(--ui_separator_pagination_zh);
+    --ui_separator_light: var(--ui_separator_light_zh);
+    --ui_separator_dark: var(--ui_separator_dark_zh);
+    --ui_separator_ui: var(--ui_separator_ui_zh);
+    --ui_separator_behavior: var(--ui_separator_behavior_zh);
     --ui_settingMenuFontSize: var(--ui_settingMenuFontSize_zh);
     --ui_settingMenuWidth: var(--ui_settingMenuWidth_zh);
+    --ui_settingMenuSeparatorWidth: var(--ui_settingMenuSeparatorWidth_zh);
     --ui_tooltip_removeBook: var(--ui_tooltip_removeBook_zh);
     --ui_tooltip_bookInfo: var(--ui_tooltip_bookInfo_zh);
     --ui_bookFinished: var(--ui_bookFinished_zh);
@@ -558,6 +611,7 @@
 [data-lang="en"] {
     --ui_loading_text: var(--ui_loading_text_en);
     --ui_title: var(--ui_title_en);
+    --ui_description: var(--ui_description_en);
     --ui_tooltip_dropZone: var(--ui_tooltip_dropZone_en);
     --ui_titlePage: var(--ui_titlePage_en);
     --ui_endPage: var(--ui_endPage_en);
@@ -582,12 +636,13 @@
     --ui_setting_tab_about_release_date: var(--ui_setting_tab_about_release_date_en);
     --ui_setting_tab_about_github: var(--ui_setting_tab_about_github_en);
     --ui_setting_tab_about_extensions: var(--ui_setting_tab_about_extensions_en);
+    --ui_setting_tab_about_copyright: var(--ui_setting_tab_about_copyright_en);
     --ui_setting_tab_about_license: var(--ui_setting_tab_about_license_en);
-    --ui_setting_tab_about_chrome: var(--ui_setting_tab_about_chrome_en);
-    --ui_setting_tab_about_firefox: var(--ui_setting_tab_about_firefox_en);
-    --ui_setting_tab_about_edge: var(--ui_setting_tab_about_edge_en);
     --ui_lightHeight: var(--ui_lightHeight_en);
     --ui_fontSize: var(--ui_fontSize_en);
+    --ui_paragraphSpacing: var(--ui_paragraphSpacing_en);
+    --ui_paragraphIndent: var(--ui_paragraphIndent_en);
+    --ui_textAlign: var(--ui_textAlign_en);
     --ui_lightMode_mainColor: var(--ui_lightMode_mainColor_en);
     --ui_lightMode_fontColor: var(--ui_lightMode_fontColor_en);
     --ui_lightMode_bgColor: var(--ui_lightMode_bgColor_en);
@@ -601,9 +656,18 @@
     --ui_font_group_custom: var(--ui_font_group_custom_en);
     --ui_pagination2pageBottom_dist: var(--ui_pagination2pageBottom_dist_en);
     --ui_pagination_opacity: var(--ui_pagination_opacity_en);
+    --ui_show_filter_bar: var(--ui_show_filter_bar_en);
     --ui_auto_open_last_book: var(--ui_auto_open_last_book_en);
+    --ui_separator_font: var(--ui_separator_font_en);
+    --ui_separator_paragraph: var(--ui_separator_paragraph_en);
+    --ui_separator_pagination: var(--ui_separator_pagination_en);
+    --ui_separator_light: var(--ui_separator_light_en);
+    --ui_separator_dark: var(--ui_separator_dark_en);
+    --ui_separator_ui: var(--ui_separator_ui_en);
+    --ui_separator_behavior: var(--ui_separator_behavior_en);
     --ui_settingMenuFontSize: var(--ui_settingMenuFontSize_en);
     --ui_settingMenuWidth: var(--ui_settingMenuWidth_en);
+    --ui_settingMenuSeparatorWidth: var(--ui_settingMenuSeparatorWidth_en);
     --ui_tooltip_removeBook: var(--ui_tooltip_removeBook_en);
     --ui_tooltip_bookInfo: var(--ui_tooltip_bookInfo_en);
     --ui_bookFinished: var(--ui_bookFinished_en);
@@ -674,7 +738,7 @@
 #setting-tab-about::before {
     content: var(--ui_setting_tab_about);
 }
-#setting-reset-btn::before {
+#settings-reset-btn::before {
     content: var(--ui_reset);
 }
 #settingLabel-setting_uilanguage::before {
@@ -682,6 +746,15 @@
 }
 #settingLabel-setting_p_lineHeight::before {
     content: var(--ui_lightHeight);
+}
+#settingLabel-setting_p_paragraphSpacing::before {
+    content: var(--ui_paragraphSpacing);
+}
+#settingLabel-setting_p_paragraphIndent::before {
+    content: var(--ui_paragraphIndent);
+}
+#settingLabel-setting_p_textAlign::before {
+    content: var(--ui_textAlign);
 }
 #settingLabel-setting_p_fontSize::before {
     content: var(--ui_fontSize);
@@ -725,8 +798,32 @@
 #settingLabel-setting_pagination_opacity::before {
     content: var(--ui_pagination_opacity);
 }
+#settingLabel-setting_show_filter_bar::before {
+    content: var(--ui_show_filter_bar);
+}
 #settingLabel-setting_auto_open_last_book::before {
     content: var(--ui_auto_open_last_book);
+}
+#settingLabel-setting_separator_font::before {
+    content: var(--ui_separator_font);
+}
+#settingLabel-setting_separator_paragraph::before {
+    content: var(--ui_separator_paragraph);
+}
+#settingLabel-setting_separator_pagination::before {
+    content: var(--ui_separator_pagination);
+}
+#settingLabel-setting_separator_light::before {
+    content: var(--ui_separator_light);
+}
+#settingLabel-setting_separator_dark::before {
+    content: var(--ui_separator_dark);
+}
+#settingLabel-setting_separator_ui::before {
+    content: var(--ui_separator_ui);
+}
+#settingLabel-setting_separator_behavior::before {
+    content: var(--ui_separator_behavior);
 }
 #settingLabel-about_title::before {
     content: var(--ui_setting_tab_about_title);
@@ -740,8 +837,20 @@
 #settingLabel-about_github::before {
     content: var(--ui_setting_tab_about_github);
 }
+#settingLabel-about_github::after {
+    content: ":";
+}
 #settingLabel-about_extensions::before {
     content: var(--ui_setting_tab_about_extensions);
+}
+#settingLabel-about_extensions::after {
+    content: ":";
+}
+#settingLabel-about_copyright::before {
+    content: var(--ui_setting_tab_about_copyright);
+}
+#settingLabel-about_copyright::after {
+    content: " © 2025";
 }
 #settingLabel-about_license::before {
     content: var(--ui_setting_tab_about_license);

@@ -98,8 +98,6 @@
     margin: auto;
     overflow: visible;
     border-radius: 3px 5px 5px 3px;
-    -moz-border-radius: 3px 5px 5px 3px;
-    -webkit-border-radius: 3px 5px 5px 3px;
     z-index: 1;
 }
 .bookshelf .book .coverContainer::after {
@@ -140,8 +138,6 @@
     width: var(--ui_bookCoverWidth);
     height: var(--ui_bookCoverHeight);
     border-radius: 3px 5px 5px 3px;
-    -moz-border-radius: 3px 5px 5px 3px;
-    -webkit-border-radius: 3px 5px 5px 3px;
 }
 .bookshelf .book .bookInfoMenuBtn {
     position: absolute;
@@ -223,6 +219,7 @@
     width: 20px;
     height: 20px;
     background: var(--bgColor);
+    -webkit-transform: rotate(135deg);
     transform: rotate(135deg);
     border: 1px solid var(--borderColor);
     box-shadow: 0 0 5px var(--shadowColor);
@@ -410,7 +407,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--ui_btnGap);
-    padding-top: 1rem;
+    padding: 1rem 0;
     margin: 0 calc(var(--ui_windowLeftRightMargin) * 1% + 2rem);
     align-items: center;
     justify-content: space-between;
@@ -445,9 +442,6 @@
 .booklist-filter-btn:hover {
     background: var(--btnHoverColor);
 }
-.booklist-filter-btn:focus {
-    outline: none;
-}
 .booklist-filter-btn.active {
     /* background: var(--mainColor_inactive); */
     /* color: var(--bgColor); */
@@ -461,6 +455,11 @@
     opacity: 1;
     left: auto; /* Remove the initial -9999px position */
     pointer-events: auto;
+}
+.booklist-filter-bar.hidden {
+    opacity: 0;
+    pointer-events: none;
+    display: none;
 }
 .booklist-filter-buttons {
     display: flex;
@@ -482,16 +481,12 @@
     font-size: 0.9rem;
     white-space: nowrap;
     font-family: var(--fontFamily_ui);
-    font-size: 0.9rem;
 }
 .booklist-filter-counter {
     pointer-events: none;
 }
 .booklist-remove-all:hover {
     background: var(--btnHoverColor);
-}
-.booklist-remove-all:focus {
-    outline: none;
 }
 .booklist-remove-all svg {
     width: 1.4rem;

@@ -1,23 +1,56 @@
 <!-- markdownlint-disable MD033 MD041 -->
 <div align="center">
-<img width="200" src="assets/0_icon.png" alt="SimpleTextReader Logo" />
-<br/>
-<h1>SimpleTextReader - 易笺</h1>
+
+<!-- Project Logo -->
+<a href="https://reader.yijian.app" target="_blank">
+    <img height="150" src="assets/0_logo.png" alt="易笺 Logo" />
+</a>
+
+<br>
+
+<!-- Project Badges -->
+
+<!-- MIT License -->
+<a href="https://opensource.org/licenses/MIT" target="_blank">
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
+</a>
+
+<!-- Chrome Users -->
+<a href="https://chrome.google.com/webstore/detail/dbanahlbopbjpgdkecmclbbonhpohcaf" target="_blank">
+    <img src="https://img.shields.io/chrome-web-store/users/dbanahlbopbjpgdkecmclbbonhpohcaf?label=Chrome%20Users&color=4C8BF5" alt="Chrome Users">
+</a>
+
+<!-- Firefox Users -->
+<a href="https://addons.mozilla.org/zh-CN/firefox/addon/yijian/" target="_blank">
+    <img src="https://img.shields.io/amo/users/yijian?label=Firefox%20Users&color=e66000" alt="Firefox Users">
+</a>
+
+<!-- Edge Users -->
+<a href="https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak" target="_blank">
+    <img src="https://img.shields.io/badge/dynamic/json?label=Edge%20Users&query=%24.activeInstallCount&url=https%3A%2F%2Fmicrosoftedge.microsoft.com%2Faddons%2Fgetproductdetailsbycrxid%2Fpabihehbdhldbdliffaddllmjlknmpak&color=61C250" alt="Edge Users">
+</a>
+
+<!-- Docker Pulls -->
+<a href="https://hub.docker.com/r/henryxrl/simpletextreader" target="_blank">
+    <img src="https://img.shields.io/docker/pulls/henryxrl/simpletextreader?label=Docker%20Users&color=0db7ed" alt="Docker Pulls">
+</a>
+
+<br/><br/>
+
+<!-- Project README's -->
+<a href="README.md">中文</a> | <a href="README_EN.md">English</a>
+
 </div>
 
-<div align="center">
-<br/>
-中文 | <a href="README_EN.md">English</a>
-<br/><br/>
-</div>
+易笺是一款简单纯粹的 TXT 阅读器，让朴素的纯文本书籍拥有精致优雅的阅读体验。
 
 ![主界面](assets/0_intro_zh.png)
 
-易笺是一款简单纯粹的文本文件阅读器（Web App）
-
 官网: [https://reader.yijian.app](https://reader.yijian.app)
 
-非常感谢 [Manjusaka](https://github.com/Zheaoli) 大佬帮忙大佬的热心帮助以及帮忙 host 易笺！鞠躬！
+测试: [https://beta.yijian.app](https://beta.yijian.app)
+
+非常感谢 [CataeroGong](https://github.com/cataerogong) 大佬的热心帮助以及 [Manjusaka](https://github.com/Zheaoli) 大佬帮忙托管易笺！鞠躬！
 
 ## 特性
 
@@ -45,23 +78,25 @@
 
 9. 书架功能，自动生成书籍封面
 
-10. 颜值高，颜值高，颜值高
+10. 可添加最多 3 种自定义字体（支持 TTF 或 OTF 格式）
+
+11. 颜值高，颜值高，颜值高
 
 ## 使用
 
 **注：如果需要直接访问拖入浏览器中的本地 txt 文件（`file://*.txt`）（相当于以前的无界面模式），需要在扩展管理界面中打开`允许访问文件 URL`**
 
-### 火狐插件
-
-- [易笺 (v1.6.9)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
-
 ### Chrome 插件
 
-- [易笺 (v1.6.9)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
+- [易笺 (v1.6.9.1)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
+
+### 火狐插件
+
+- [易笺 (v1.6.9.1)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
 
 ### Edge 插件
 
-- [易笺 (v1.6.9)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
+- [易笺 (v1.6.9.1)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
 
 ### Docker
 

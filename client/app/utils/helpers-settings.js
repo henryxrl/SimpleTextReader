@@ -80,6 +80,7 @@ export function createSelectorItem(id, values, texts) {
 
     const settingItemInput = document.createElement("select");
     settingItemInput.setAttribute("id", id);
+    settingItemInput.setAttribute("aria-label", id);
 
     values.forEach((value, i) => {
         const option = document.createElement("option");
@@ -115,6 +116,7 @@ function createSelectorWithGroupItem(id, values, texts, groups, isFont = false) 
 
     const settingItemInput = document.createElement("select");
     settingItemInput.setAttribute("id", id);
+    settingItemInput.setAttribute("aria-label", id);
 
     groups.forEach((group, i) => {
         const optgroup = document.createElement("optgroup");
@@ -658,6 +660,34 @@ export function createCheckboxItem(id, value, func) {
     settingItem.appendChild(settingItemInput);
 
     return settingItem;
+}
+
+/**
+ * Creates a separator item element
+ * @param {string} id - Element ID
+ * @returns {HTMLElement} Created separator item element
+ */
+export function createSeparatorItem() {
+    const separator = document.createElement("div");
+    separator.setAttribute("class", "settingItem-divider");
+    return separator;
+}
+
+/**
+ * Creates a separator item element with text in the middle
+ * @param {string} id - Element ID
+ * @returns {HTMLElement} Created separator item element
+ */
+export function createSeparatorItemWithText(id) {
+    const separator = document.createElement("div");
+    separator.setAttribute("class", "settingItem-separator");
+
+    const separatorText = document.createElement("span");
+    separatorText.setAttribute("class", "settingItem-separator-span");
+    separatorText.setAttribute("id", `settingLabel-${id}`);
+
+    separator.appendChild(separatorText);
+    return separator;
 }
 
 /**

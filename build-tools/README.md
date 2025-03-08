@@ -1,30 +1,47 @@
 # Build-Tools Directory
 
-The `build-tools/` directory contains scripts designed to automate and simplify key project management tasks, such as building browser extensions and generating changelogs. These tools enhance efficiency and reduce manual effort during the development and deployment process.
+The `build-tools/` directory contains scripts that automate key project management tasks, including building browser extensions, Docker containers, and generating changelogs. These tools streamline development and deployment, reducing manual effort.
 
 ---
 
 ## Structure Overview
 
-### 1. `build_extensions.py`
+### 1. `build.py`
 
-**Purpose**: Automates the process of building Chrome and Firefox extensions.
+**Purpose**: Automates the build process for Chrome and Firefox extensions, as well as Docker containers.
 
 **Responsibilities**:
 
-- Copies all necessary files to the `dist/` directory.
-- Updates version numbers in `version.json` and `manifest.json` files.
-- Packages the extensions into `.zip` files for Chrome and `.xpi` files for Firefox.
+- Copies necessary files to the `dist/` directory for extension builds.
+- Prepares files according to `Dockerfile` and `.dockerignore` for container builds.
+- Updates version numbers in `version.json` and `manifest.json`.
+- Packages extensions into `.zip` files.
+- Builds and pushes Docker containers to Docker Hub.
 
 **Usage**:
 
-- To run the script and build extensions, use the following command:
+- Build extensions and Docker containers:
 
   ```bash
-  python build_extensions.py
+  python build.py
   ```
 
-- The resulting extension files will be stored in the `dist/` directory.
+- Build with a specific version:
+
+  ```bash
+  python build.py -v ${VERSION}
+  ```
+
+- Display help:
+
+  ```bash
+  python build.py -h
+  ```
+
+- Output:
+
+  - Browser extensions are stored in the `dist/` directory.
+  - Docker images are automatically pushed to Docker Hub.
 
 ---
 
@@ -36,17 +53,17 @@ The `build-tools/` directory contains scripts designed to automate and simplify 
 
 - Retrieves commit messages from the Git repository.
 - Formats the messages into a readable changelog.
-- Outputs the result as a `CHANGELOG.md` file.
+- Outputs the result as `CHANGELOG.md`.
 
 **Usage**:
 
-- To generate a changelog, use the following command:
+- Generate the changelog:
 
   ```bash
   python generate_changelog.py
   ```
 
-- Ensure that you have an active Git repository with meaningful commit messages.
+- **Note:** Ensure your Git repository contains meaningful commit messages.
 
 ---
 
@@ -73,5 +90,5 @@ The `build-tools/` directory contains scripts designed to automate and simplify 
 ## Notes
 
 - The `build-tools/` directory is critical for automating development and deployment workflows.
-- Ensure that Python 3 is installed on your system before running the scripts.
+- Ensure Python 3 is installed before running the scripts.
 - For additional help or script modifications, refer to the script-specific comments and documentation.

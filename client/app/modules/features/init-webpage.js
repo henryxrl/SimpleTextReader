@@ -59,6 +59,7 @@ import { toBool } from "../../utils/base.js";
     /**
      * Set the web language attribute on the HTML document element
      */
+    document.documentElement.setAttribute("lang", webLANG);
     document.documentElement.setAttribute("webLANG", webLANG);
     document.documentElement.setAttribute("data-lang", webLANG);
     console.log("App set to language: " + webLANG);
