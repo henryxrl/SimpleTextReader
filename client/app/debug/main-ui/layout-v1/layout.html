@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Flex Layout Example</title>
+        <script>
+            (function () {
+                const saved = localStorage.getItem("sidebarWidth");
+                const root = document.documentElement;
+
+                if (saved) {
+                    root.style.setProperty("--sidebar-width", `${saved}%`);
+                }
+            })();
+        </script>
+        <style>
+            :root {
+                --sidebar-width-default: 15.5%;
+                --sidebar-width: 15.5%;
+                --gap-width: 2.5%;
+                --sidebar-inner-width: 75%;
+                --main-inner-width: 80%;
+                --main-inner-height: 90%;
+                --margin-width: 5%;
+            }
+
+            html,
+            body {
+                margin: 0;
+                height: 100%;
+            }
+
+            .outer-container {
+                height: 100vh;
+                padding: 0 var(--margin-width);
+                box-sizing: border-box;
+                visibility: hidden;
+                opacity: 0;
+                transition: opacity 0.2s ease;
+            }
+
+            .outer-container[style*="visibility: visible"] {
+                opacity: 1;
+            }
+
+            .container {
+                display: grid;
+                grid-template-columns: var(--sidebar-width, var(--sidebar-width-default)) var(--gap-width) 1fr;
+                height: 100%;
+                transition: grid-template-columns 0.25s ease;
+            }
+
+            .container.resizing {
+                transition: none !important;
+            }
+
+            /* Sidebar */
+            .sidebar {
+                background-color: #f0f0f0;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .sidebar-inner {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: var(--sidebar-inner-width);
+                max-width: 1200px;
+                min-width: 200px;
+            }
+
+            .child-1 {
+                height: 50vh;
+                width: 100%;
+                background-color: red;
+                margin-bottom: 1em;
+            }
+
+            .child-2 {
+                height: 4em;
+                width: 100%;
+                background-color: dodgerblue;
+            }
+
+            /* Divider inside the 2.5% gap */
+            .gap {
+                position: relative;
+            }
+
+            .divider {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 50%;
+                width: 6px;
+                transform: translateX(-50%);
+                background-color: #999;
+                cursor: col-resize;
+            }
+
+            .divider:hover {
+                background-color: #666;
+                box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+            }
+
+            .collapse-toggle {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 16px;
+                height: 16px;
+                background-color: #fff;
+                border: 1px solid #ccc;
+                border-radius: 50%;
+                cursor: pointer;
+                z-index: 10;
+                padding: 0;
+            }
+
+            .collapse-toggle:hover {
+                background-color: #eee;
+            }
+
+            .collapse-toggle::before {
+                content: "«";
+                display: block;
+                font-size: 12px;
+                line-height: 16px;
+                text-align: center;
+                color: #333;
+            }
+
+            .collapse-toggle.collapsed::before {
+                content: "»";
+            }
+
+            /* Main */
+            .main {
+                background-color: #fff5cc;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .main-inner {
+                width: var(--main-inner-width);
+                height: var(--main-inner-height);
+                max-width: 2000px;
+                min-width: 500px;
+                background-color: #ffe;
+                padding: 2em;
+                border: 2px dashed #ccc;
+            }
+
+            .sidebar-tooltip {
+                position: fixed;
+                padding: 4px 8px;
+                background-color: #333;
+                color: #fff;
+                font-size: 12px;
+                border-radius: 4px;
+                pointer-events: none;
+                z-index: 1000;
+                transform: translate(-50%, -150%);
+                white-space: nowrap;
+                font-family: sans-serif;
+                opacity: 0;
+                transition: opacity 0.1s ease;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="outer-container">
+            <div class="container">
+                <div class="sidebar">
+                    <div class="sidebar-inner">
+                        <div class="child-1">Child 1</div>
+                        <div class="child-2">Child 2</div>
+                    </div>
+                </div>
+                <div class="gap">
+                    <button class="collapse-toggle" title="Toggle Sidebar"></button>
+                    <div class="divider"></div>
+                </div>
+                <div class="main">
+                    <div class="main-inner">Main Content (inner)</div>
+                </div>
+            </div>
+            <div class="sidebar-tooltip" hidden></div>
+        </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                // ---- Elements ----
+                const container = document.querySelector(".container");
+                const divider = document.querySelector(".divider");
+                const tooltip = document.querySelector(".sidebar-tooltip");
+                const toggleButton = document.querySelector(".collapse-toggle");
+
+                // ---- Layout variables ----
+                const rootStyles = getComputedStyle(document.documentElement);
+                const defaultSidebarWidth = parseFloat(rootStyles.getPropertyValue("--sidebar-width-default"));
+                const gapWidth = parseFloat(rootStyles.getPropertyValue("--gap-width"));
+                const minSidebarWidth = defaultSidebarWidth;
+                const maxSidebarWidth = 50 - gapWidth;
+
+                // ---- Load saved width ----
+                const saved = localStorage.getItem("sidebarWidth");
+                let sidebarWidthToUse = defaultSidebarWidth;
+
+                if (saved !== null) {
+                    const num = parseFloat(saved);
+                    if (!isNaN(num) && num >= minSidebarWidth && num <= maxSidebarWidth) {
+                        sidebarWidthToUse = num;
+                    } else {
+                        localStorage.removeItem("sidebarWidth");
+                        console.warn("Invalid sidebar width detected in localStorage. Resetting to default.");
+                    }
+                }
+
+                container.style.setProperty("--sidebar-width", `${sidebarWidthToUse}%`);
+
+                // ---- Drag state ----
+                let isResizing = false;
+                let startX = 0;
+                let startWidth = 0;
+
+                // ---- Mouse down ----
+                divider.addEventListener("mousedown", (e) => {
+                    tooltip.hidden = false;
+                    tooltip.style.opacity = "1";
+                    container.classList.add("resizing");
+                    isResizing = true;
+                    startX = e.clientX;
+
+                    const containerWidth = container.getBoundingClientRect().width;
+                    const currentSidebarWidth = parseFloat(
+                        getComputedStyle(container).getPropertyValue("--sidebar-width")
+                    );
+                    startWidth = (currentSidebarWidth / 100) * containerWidth;
+
+                    document.body.style.cursor = "col-resize";
+                    e.preventDefault();
+                });
+
+                // ---- Mouse move ----
+                document.addEventListener("mousemove", (e) => {
+                    if (!isResizing) return;
+
+                    const dx = e.clientX - startX;
+                    const containerWidth = container.getBoundingClientRect().width;
+                    let newWidthPx = startWidth + dx;
+                    let newWidthPercent = (newWidthPx / containerWidth) * 100;
+
+                    newWidthPercent = Math.max(minSidebarWidth, Math.min(maxSidebarWidth, newWidthPercent));
+                    container.style.setProperty("--sidebar-width", `${newWidthPercent}%`);
+                    localStorage.setItem("sidebarWidth", newWidthPercent);
+
+                    tooltip.style.left = `${e.clientX}px`;
+                    tooltip.style.top = `${e.clientY}px`;
+                    tooltip.textContent = `${newWidthPercent.toFixed(1)}%`;
+                });
+
+                // ---- Mouse up ----
+                document.addEventListener("mouseup", () => {
+                    if (isResizing) {
+                        tooltip.hidden = true;
+                        tooltip.style.opacity = "0";
+                        isResizing = false;
+                        container.classList.remove("resizing");
+                        document.body.style.cursor = "default";
+                    }
+                });
+
+                // ---- Toggle collapse ----
+                let lastExpandedWidth = sidebarWidthToUse; // Track last expanded width
+                toggleButton.addEventListener("click", () => {
+                    const currentWidth = parseFloat(getComputedStyle(container).getPropertyValue("--sidebar-width"));
+                    const isCollapsed = currentWidth <= 0.1;
+
+                    if (isCollapsed) {
+                        // Expand to previous width
+                        container.style.setProperty("--sidebar-width", `${lastExpandedWidth}%`);
+                        localStorage.setItem("sidebarWidth", lastExpandedWidth);
+                        toggleButton.classList.remove("collapsed");
+                    } else {
+                        // Collapse
+                        lastExpandedWidth = currentWidth;
+                        container.style.setProperty("--sidebar-width", `0%`);
+                        localStorage.setItem("sidebarWidth", 0);
+                        toggleButton.classList.add("collapsed");
+                    }
+                });
+
+                // ---- Double-click reset ----
+                divider.addEventListener("dblclick", () => {
+                    container.style.setProperty("--sidebar-width", `${defaultSidebarWidth}%`);
+                    localStorage.setItem("sidebarWidth", defaultSidebarWidth);
+                    lastExpandedWidth = defaultSidebarWidth;
+                    toggleButton.classList.remove("collapsed");
+                });
+
+                // ---- Set Outer Container Visibility ----
+                document.querySelector(".outer-container").style.visibility = "visible";
+            });
+        </script>
+    </body>
+</html>

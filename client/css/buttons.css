@@ -1,17 +1,26 @@
 @charset "UTF-8";
-#toggle {
+#darkmode-toggle {
     display: none;
 }
 
-#toggle-btn label {
+#darkmode-toggle-btn label {
     width: 2rem;
     height: 2rem;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
     cursor: pointer;
     transition: var(--darkMode_animation);
+}
+
+#darkmode-toggle-btn {
+    visibility: hidden;
+}
+
+#darkmode-toggle-btn label:focus-visible {
+    outline: none;
 }
 
 .btn-icon {
@@ -54,29 +63,30 @@ svg.icon {
     overflow-y: unset;
 }
 
-#toggle:checked ~ #toggle-btn {
+#darkmode-toggle:checked ~ #darkmode-toggle-btn {
     transition: var(--darkMode_animation);
 }
 
-#toggle:checked ~ #toggle-btn label .icons {
+#darkmode-toggle:checked ~ #darkmode-toggle-btn label .icons {
     -webkit-transform: translateX(calc(-1 * var(--ui_btnSize)));
     transform: translateX(calc(-1 * var(--ui_btnSize)));
 }
 
-#toggle:hover ~ #toggle-btn label .icons .tofill,
+#darkmode-toggle:hover ~ #darkmode-toggle-btn label .icons .tofill,
 .btn-icon:hover:not(:focus) svg .tofill {
     fill: var(--mainColor_inactive);
     stroke: var(--mainColor_inactive);
     opacity: 1;
 }
 
-#toggle:hover ~ #toggle-btn label .icons .tofill-inverse,
+#darkmode-toggle:hover ~ #darkmode-toggle-btn label .icons .tofill-inverse,
 .btn-icon:hover:not(:focus) svg .tofill-inverse {
-    fill: var(--bgColor);
-    /* stroke: var(--bgColor); */
+    /* fill: var(--bgColor); */
+    stroke: var(--bgColor);
+    opacity: 1;
 }
 
-#toggle:hover ~ #toggle-btn label .icons,
+#darkmode-toggle:hover ~ #darkmode-toggle-btn label .icons,
 .btn-icon:hover:not(:focus) svg {
     --icon-fill: var(--mainColor_inactive);
     --icon-stroke: var(--mainColor_inactive);
@@ -84,6 +94,14 @@ svg.icon {
 
 .btn-icon:focus {
     background: var(--mainColor_active);
+    stroke: var(--bgColor);
+    --icon-stroke: var(--bgColor);
+}
+
+.btn-icon:focus-visible {
+    background: var(--mainColor_active);
+    outline: none;
+    stroke: var(--bgColor);
 }
 
 .btn-icon:focus svg .tofill {
@@ -93,13 +111,20 @@ svg.icon {
     --icon-stroke: var(--bgColor);
 }
 
-#toggle:hover ~ #toggle-btn label,
+.btn-icon:focus svg .tofill-inverse {
+    /* fill: var(--mainColor_active); */
+    stroke: var(--mainColor_active);
+    /* --icon-fill: var(--mainColor_active); */
+    --icon-stroke: var(--mainColor_active);
+}
+
+#darkmode-toggle:hover ~ #darkmode-toggle-btn label,
 .btn-icon:hover:not(:focus) {
     /* light mode */
     background: var(--btnHoverColor);
 }
 
-.btn-group {
+.main-btn-group {
     display: flex;
     flex-flow: column;
     gap: var(--ui_btnGap);
@@ -120,6 +145,11 @@ svg.icon {
 }
 
 svg .tofill {
+    stroke-dasharray: var(--ui_svgPathLength);
+    stroke-dashoffset: var(--ui_svgPathLength);
+    animation: stroke 2s forwards;
+}
+svg .tofill-inverse {
     stroke-dasharray: var(--ui_svgPathLength);
     stroke-dashoffset: var(--ui_svgPathLength);
     animation: stroke 2s forwards;

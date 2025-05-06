@@ -1,0 +1,230 @@
+:root {
+    --sidebar-splitview-sidebar-width-min: 10vw;
+    --sidebar-splitview-sidebar-width-max: 40vw;
+    --sidebar-splitview-sidebar-width-default: 15.5vw;
+    --sidebar-splitview-sidebar-width: 15.5vw;
+    --sidebar-splitview-gap-width-default: 2.5vw;
+    --sidebar-splitview-gap-width: 2.5vw;
+    --sidebar-splitview-margin-width: 5vw;
+    --sidebar-splitview-sidebar-inner-width-default: 100%;
+    --sidebar-splitview-sidebar-inner-width: 55%;
+    --sidebar-splitview-content-inner-width-default: 100%;
+    --sidebar-splitview-content-inner-width: 30%;
+    --sidebar-splitview-content-inner-height-default: 100%;
+    --sidebar-splitview-content-inner-height: 50%;
+    --sidebar-splitview-divider-width: 6px;
+    --sidebar-splitview-dragTooltip-triangle-size: 7px;
+}
+
+html,
+body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+.sidebar-splitview-outer {
+    height: 100vh;
+    padding: 0 var(--sidebar-splitview-margin-width);
+    box-sizing: border-box;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.sidebar-splitview-outer[style*="visibility: visible"] {
+    opacity: 1;
+}
+
+.sidebar-splitview-container {
+    display: grid;
+    grid-template-columns:
+        var(--sidebar-splitview-sidebar-width, var(--sidebar-splitview-sidebar-width-default)) var(
+            --sidebar-splitview-gap-width
+        )
+        1fr;
+    height: 100%;
+    transition: grid-template-columns 0.25s ease;
+}
+
+.sidebar-splitview-container.resizing {
+    transition: none !important;
+}
+
+/* Sidebar */
+.sidebar-splitview-sidebar {
+    background-color: #f0f0f0;
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-splitview-sidebar-inner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: var(--sidebar-splitview-sidebar-inner-width);
+    max-width: 1200px;
+    min-width: 200px;
+}
+
+.sidebar-splitview-sidebar-child-1 {
+    height: 50vh;
+    width: 100%;
+    background-color: red;
+    margin-bottom: 1em;
+}
+
+.sidebar-splitview-sidebar-child-2 {
+    height: 4em;
+    width: 100%;
+    background-color: dodgerblue;
+}
+
+/* Gap + Divider */
+.sidebar-splitview-gap {
+    position: relative;
+}
+
+.sidebar-splitview-divider {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 6px;
+    transform: translateX(-50%);
+    background-color: #999;
+    cursor: col-resize;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.sidebar-splitview-divider:hover,
+.sidebar-splitview-divider.hover-simulated {
+    background-color: #666;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Toggle Button */
+.sidebar-splitview-toggle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 16px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    padding: 0;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.sidebar-splitview-toggle:hover {
+    background-color: #eee;
+}
+
+.sidebar-splitview-toggle::before {
+    content: "«";
+    display: block;
+    font-size: 12px;
+    line-height: 16px;
+    text-align: center;
+    color: #333;
+}
+
+.sidebar-splitview-toggle.collapsed::before {
+    content: "»";
+}
+
+/* Content */
+.sidebar-splitview-content {
+    background-color: #fff5cc;
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-splitview-content-inner {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    width: var(--sidebar-splitview-content-inner-width);
+    height: var(--sidebar-splitview-content-inner-height);
+    max-width: 2000px;
+    min-width: 500px;
+    background-color: #ffe;
+    padding: 2em;
+    border: 2px dashed #ccc;
+    box-sizing: border-box;
+    top: 0;
+    transform: translateY(50%);
+}
+
+.sidebar-splitview-content-overlay {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    background-color: rgba(29, 196, 104, 0.8);
+    color: white;
+    padding: 1em 1.5em;
+    font-size: 0.9em;
+}
+
+.sidebar-splitview-content-message-indicator {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    background-color: rgba(240, 227, 110, 0.8);
+    color: black;
+    padding: 1em 1.5em;
+    font-size: 1em;
+    width: calc(min(30vw, 30vh, 200px));
+    height: calc(min(30vw, 30vh, 200px));
+    min-width: 180px;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* dragTooltip */
+.sidebar-splitview-dragTooltip {
+    position: fixed;
+    padding: 4px 8px;
+    background-color: #333;
+    color: #fff;
+    font-size: 12px;
+    border-radius: 4px;
+    pointer-events: none;
+    z-index: 1000;
+    transform: translate(-50%, -150%);
+    white-space: nowrap;
+    font-family: sans-serif;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.sidebar-splitview-dragTooltip::after {
+    content: "";
+    position: absolute;
+    bottom: calc(var(--sidebar-splitview-dragTooltip-triangle-size) * -1);
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: var(--sidebar-splitview-dragTooltip-triangle-size) var(--sidebar-splitview-dragTooltip-triangle-size)
+        0 var(--sidebar-splitview-dragTooltip-triangle-size);
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}

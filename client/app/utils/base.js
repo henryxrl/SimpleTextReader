@@ -20,6 +20,7 @@ import * as CONFIG_CONST from "../config/constants.js";
 
 /**
  * Removes the hashbang (#!) from the current URL using the History API.
+ * @public
  * @throws {Error} If History API is not supported by the browser
  * @see {@link https://developer.mozilla.org/docs/Web/API/History/pushState}
  */
@@ -32,6 +33,7 @@ export function removeHashbang() {
 
 /**
  * Removes file extension from a filename
+ * @public
  * @param {string} filename - The filename to process
  * @returns {string} Filename without extension
  */
@@ -41,6 +43,7 @@ export function removeFileExtension(filename) {
 
 /**
  * Formats byte size to human readable format using SI or IEC units
+ * @public
  * @param {number} bytes - The size in bytes
  * @param {string} units - Unit system to use ('si' or 'iec')
  * @returns {string} Formatted size string (e.g., "1.5 MB" or "1.5 MiB")
@@ -72,6 +75,7 @@ export function formatBytes(bytes, units = "si") {
 
 /**
  * Simplified version of byte size formatting using SI units
+ * @public
  * @param {number} bytes - The size in bytes
  * @param {number} decimals - Number of decimal places to show
  * @returns {string} Formatted size string
@@ -91,6 +95,7 @@ export function formatBytes_simple(bytes, decimals = 2) {
 /**
  * Gets the size of an element in pixels
  * Credit: https://stackoverflow.com/questions/10463518/converting-em-to-px-in-javascript-and-getting-default-font-size
+ * @public
  * @param {string} size - CSS size value (e.g., "1em")
  * @param {HTMLElement} parent - Parent element for context
  * @returns {number} Size in pixels
@@ -110,6 +115,7 @@ export function getSize(size = "1em", parent = document.body) {
 
 /**
  * Gets precise size measurement in pixels with better accuracy for large values
+ * @public
  * @param {string} size - CSS size value (e.g., "1em")
  * @param {HTMLElement} parent - Parent element for context
  * @returns {number} Precise size in pixels, or -1 if parent is undefined
@@ -145,6 +151,7 @@ export function getSizePrecise(size = "1em", parent = document.body) {
 
 /**
  * Checks if a variable is defined and has a valid value
+ * @public
  * @param {*} v - The variable to check
  * @returns {boolean} True if variable is defined and valid
  */
@@ -154,6 +161,7 @@ export function isVariableDefined(v) {
 
 /**
  * Converts UTC timestamp to local date/time string
+ * @public
  * @param {string|number} utcTimestamp - UTC timestamp to convert
  * @returns {string} Localized date/time string
  */
@@ -163,6 +171,7 @@ export function convertUTCTimestampToLocalString(utcTimestamp) {
 
 /**
  * Generates a random float between two numbers
+ * @public
  * @param {number} min - Minimum value
  * @param {number} max - Maximum value
  * @returns {number} Random float between min and max
@@ -173,6 +182,7 @@ export function randomFloatFromInterval(min, max) {
 
 /**
  * Finds the index of a string within concatenated arrays
+ * @public
  * @param {Array<string>[]} arrays - Array of string arrays to search in
  * @param {string} searchString - String to search for
  * @returns {number} Index of the string, or -1 if not found
@@ -200,6 +210,7 @@ export function findStringIndex(arrays, searchString) {
 
 /**
  * Converts hex color to RGB array
+ * @public
  * @param {string} hex - Hex color string (e.g., "#FF0000")
  * @returns {number[]|null} Array of [r,g,b] values or null if invalid
  */
@@ -216,6 +227,7 @@ export function hexToRGB(hex) {
 
 /**
  * Converts hex color to HSL array with optional lightness adjustment
+ * @public
  * @param {string} H - Hex color string
  * @param {number} lightness_percent - Lightness adjustment factor (default: 1)
  * @returns {number[]} Array of [hue, saturation, lightness] values
@@ -267,6 +279,7 @@ export function hexToHSL(H, lightness_percent = 1) {
 
 /**
  * Converts HSL values to hex color string
+ * @public
  * @param {number} h - Hue value (0-360)
  * @param {number} s - Saturation value (0-100)
  * @param {number} l - Lightness value (0-100)
@@ -325,6 +338,7 @@ export function HSLToHex(h, s, l) {
  * Shade, Blend and Convert a Web Color
  * Credit: https://github.com/PimpTrizkit/PJs/wiki/12.-Shade,-Blend-and-Convert-a-Web-Color-(pSBC.js)#stackoverflow-archive-begin
  * Version 4.1
+ * @public
  * @param {number} p - Amount to shade (-1 to 1)
  * @param {string} c0 - First color
  * @param {string} c1 - Second color (optional)
@@ -376,6 +390,7 @@ export const pSBC = (p, c0, c1, l) => {
 
 /**
  * Helper function for pSBC to parse color values
+ * @private
  * @param {string} d - Color string to parse
  * @returns {Object|null} Color object or null if invalid
  */
@@ -404,6 +419,7 @@ pSBC.pSBCr = (d) => {
 
 /**
  * Inverts a hex color with optional black/white mode and alpha
+ * @public
  * @param {string} hex - Hex color to invert
  * @param {boolean} bw - Black/white mode
  * @param {number} alpha - Alpha value (0-1)
@@ -445,6 +461,7 @@ export function invertColor(hex, bw, alpha = 1) {
 /**
  * Checks if an element is visible in the viewport
  * Credit: https://www.javascripttutorial.net/dom/css/check-if-an-element-is-visible-in-the-viewport/
+ * @public
  * @param {HTMLElement} el - Element to check
  * @returns {boolean} True if element is visible
  */
@@ -482,6 +499,7 @@ export function isInViewport(el) {
 
 /**
  * Checks if an element is visible within a container's viewport
+ * @public
  * @param {HTMLElement} container - Container element
  * @param {HTMLElement} el - Element to check
  * @param {number} margin - Margin to consider (default: 0)
@@ -499,6 +517,7 @@ export function isInContainerViewport(container, el, margin = 0) {
 
 /**
  * Creates an HTML element from a string
+ * @public
  * @param {string} htmlString - HTML string to convert
  * @returns {HTMLElement} Created element
  */
@@ -510,6 +529,7 @@ export function createElementFromHTML(htmlString) {
 
 /**
  * Pads a string with leading zeros
+ * @public
  * @param {string|number} str - String to pad
  * @param {number} len - Desired length (default: 2)
  * @returns {string} Padded string
@@ -522,6 +542,7 @@ export function padZero(str, len) {
 
 /**
  * Simulates a click event on an element
+ * @public
  * @param {HTMLElement} elem - Element to click
  * @returns {boolean} True if event was dispatched successfully
  */
@@ -536,18 +557,16 @@ export function simulateClick(elem) {
 }
 
 /**
- * Checks if text ellipsis is active on a jQuery element
- * @param {jQuery} $jQueryObject - jQuery element to check
+ * Checks if text ellipsis is active on an element
+ * @public
+ * @param {HTMLElement} element - Element to check
  * @returns {boolean} True if ellipsis is active
  */
-export function isEllipsisActive($jQueryObject) {
-    if (!$jQueryObject || !$jQueryObject.jquery) {
-        console.warn("Invalid jQuery object provided to isEllipsisActive");
+export function isEllipsisActive(element) {
+    if (!(element instanceof HTMLElement)) {
+        console.warn("Invalid element provided to isEllipsisActive");
         return false;
     }
-    const element = $jQueryObject[0];
-
-    if (!element) return false;
 
     // Get the computed styles
     const computedStyle = window.getComputedStyle(element);
@@ -569,7 +588,7 @@ export function isEllipsisActive($jQueryObject) {
 /**
  * Calculates the similarity between two rectangles A (reference) and B (incoming)
  * based on area and aspect ratio.
- *
+ * @public
  * @param {Object} rectA - The reference rectangle with fixed dimensions.
  * @param {number} rectA.width - The width of rectangle A.
  * @param {number} rectA.height - The height of rectangle A.
@@ -604,6 +623,7 @@ export function calculateRectangleSimilarity(rectA, rectB) {
 
 /**
  * Returns the element height including margins
+ * @public
  * @param {HTMLElement} element - Element to measure
  * @returns {number} Element height including margins
  */
@@ -621,6 +641,7 @@ export function outerHeight(element) {
 
 /**
  * Adds footnotes to the DOM
+ * @public
  * @param {Array<string>} footnotes - Array of footnote strings
  * @param {HTMLElement} footnoteContainer - Footnote container element
  */
@@ -638,6 +659,7 @@ export function addFootnotesToDOM(footnotes, footnoteContainer) {
 
 /**
  * Triggers a custom event
+ * @public
  * @param {string} eventName - Event name
  * @param {Object} detail - Event detail
  * @param {boolean} bubbles - Whether to bubble the event
@@ -655,6 +677,7 @@ export function triggerCustomEvent(eventName, detail = {}, bubbles = true, cance
 
 /**
  * Dynamically sets the stroke-dasharray and stroke-dashoffset for SVG paths for animation
+ * @public
  * @param {HTMLElement} container - Container element
  */
 export function setSvgPathLength(container) {
@@ -667,7 +690,7 @@ export function setSvgPathLength(container) {
 
 /**
  * Constructs a notification message from an array of items.
- *
+ * @public
  * @param {string} baseText - The base notification text.
  * @param {Array<string>} itemList - The list of items to include in the message.
  * @param {Object} [options={}] - Additional options.
@@ -701,61 +724,92 @@ export function constructNotificationMessageFromArray(baseText, itemList, option
 }
 
 /**
+ * Fetches JSON data from a URL
+ * @private
+ * @async
+ * @param {string} url - The URL of the JSON file to fetch
+ * @param {Object} [options={}] - Additional options
+ * @param {Function} [options.transform] - Function to transform the fetched data
+ * @param {*} [options.defaultValue] - Default value to return if the fetch fails
+ * @param {string} [options.errorPrefix="Error fetching data"] - Error prefix for console logs
+ * @returns {Promise<*>} A promise that resolves to the fetched data, or the default value if the fetch fails
+ */
+async function fetchJSON(
+    url,
+    { transform = (data) => data, defaultValue = null, errorPrefix = "Error fetching data" } = {}
+) {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return transform(data);
+    } catch (error) {
+        console.error(`${errorPrefix}:`, error);
+        return defaultValue;
+    }
+}
+
+/**
  * Fetches the version number from a JSON file.
+ * @public
+ * @async
  * @param {string} url - The URL of the JSON file containing the version.
  * @returns {Promise<string>} A promise that resolves to the version number, or an empty string if not found.
  */
 export async function fetchVersion(url = "version.json") {
-    return fetch(url)
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data.version ? `v${data.version}` : "";
-        })
-        .catch((error) => {
-            console.error("Error fetching version:", error);
-            return ""; // Return an empty string in case of an error
-        });
+    return fetchJSON(url, {
+        transform: (data) => (data?.version ? `v${data?.version}` : ""),
+        defaultValue: "",
+        errorPrefix: "Error fetching version",
+    });
 }
 
 /**
  * Fetches the complete version data from a JSON file.
+ * @public
+ * @async
  * @param {string} url - The URL of the JSON file containing the version data.
  * @returns {Promise<Object>} A promise that resolves to the version data object, or null if not found.
  */
 export async function fetchVersionData(url = "version.json") {
-    return fetch(url)
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data ?? null;
-        })
-        .catch((error) => {
-            console.error("Error fetching version data:", error);
-            return null; // Return null in case of an error
-        });
+    return fetchJSON(url, {
+        transform: (data) => data ?? null,
+        defaultValue: null,
+        errorPrefix: "Error fetching version data",
+    });
+}
+
+/**
+ * Fetches the help text from a JSON file.
+ * @public
+ * @async
+ * @param {string} url - The URL of the JSON file containing the help text.
+ * @returns {Promise<Object>} A promise that resolves to the help text object, or null if not found.
+ */
+export async function fetchHelpText(url = "help.json") {
+    return fetchJSON(url, {
+        transform: (data) => data ?? null,
+        defaultValue: null,
+        errorPrefix: "Error fetching help text",
+    });
 }
 
 /**
  * Gets the canvas element associated with the current book
+ * @public
  * @param {string} bookName - The name of the book
  * @returns {HTMLCanvasElement|null}
  */
 export function getBookCoverCanvas(bookName) {
     const bookElement = document.querySelector(`.book[data-filename="${bookName}"]`);
-    return bookElement?.querySelector(".coverCanvas");
+    return bookElement?.querySelector(".cover-canvas");
 }
 
 /**
  * Compares two dates
+ * @public
  * @param {string} dateString1 - The first date string
  * @param {string} dateString2 - The second date string
  * @returns {boolean} true if dateString1 is later, false if dateString1 is earlier, null if both dates are invalid
@@ -785,6 +839,7 @@ export function compareDates(dateString1, dateString2) {
 
 /**
  * Converts a value to a boolean
+ * @public
  * @param {*} val - The value to convert
  * @param {boolean} [forceConvert=true] - Whether to force conversion
  * @returns {boolean} The converted boolean value
@@ -797,4 +852,187 @@ export function toBool(val, forceConvert = true) {
         if (str === "false") return false;
     }
     return forceConvert ? Boolean(val) : val;
+}
+
+/**
+ * Enables scrolling on the document
+ * @public
+ */
+export function enableScroll() {
+    document.body.style.overflow = "";
+    document.documentElement.style.overflow = "";
+    document.body.style.overscrollBehavior = "";
+    document.documentElement.style.overscrollBehavior = "";
+}
+
+/**
+ * Disables scrolling on the document
+ * @public
+ */
+export function disableScroll() {
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overscrollBehavior = "none";
+    document.documentElement.style.overscrollBehavior = "none";
+}
+
+/**
+ * Checks if an element is within a specified container or an array of containers
+ * @public
+ * @param {Element} element - The element to check
+ * @param {Element|Element[]|HTMLCollection|(Element|HTMLCollection)[]} containers - The container or an array of containers
+ * @returns {boolean} true if the element is within the container, false otherwise
+ */
+export function isElementInContainer(element, containers) {
+    // Prevent errors if element is null/undefined
+    if (!element) return false;
+
+    // Convert input to a flat array, filtering out invalid values
+    const flatContainers = []
+        .concat(containers || [])
+        .flatMap((container) => (container instanceof HTMLCollection ? Array.from(container) : container))
+        .filter(Boolean);
+
+    // Check if the element is inside any of the containers
+    return flatContainers.some((container) =>
+        container && typeof container.contains === "function"
+            ? element === container || container.contains(element)
+            : false
+    );
+}
+
+/**
+ * Kills inertia scrolling
+ * @private
+ * @param {number} [duration=100] - The duration to keep the document body from scrolling
+ */
+function killInertiaScrolling(duration = 100) {
+    document.body.style.overflow = "hidden";
+    clearTimeout(window.scrollResetTimer);
+    window.scrollResetTimer = setTimeout(() => {
+        // Re-enable scrolling after a short delay
+        document.body.style.overflow = "";
+    }, duration);
+}
+
+/**
+ * Handles global wheel events, preventing scroll on all elements except the element
+ * @public
+ * @param {WheelEvent} e - The wheel event
+ * @param {Element} element - The element to check
+ * @param {number} [duration=100] - The duration to keep the document body from scrolling
+ */
+export function handleGlobalWheel(e, element, duration = 100) {
+    if (element && !isElementInContainer(e.target, element)) {
+        e.preventDefault();
+        e.stopPropagation();
+        killInertiaScrolling(duration);
+    }
+}
+
+/**
+ * Shows a Unicode clock on the dropzone text
+ * @public
+ * @param {number} [quarter=1] - The quarter of the clock to show
+ */
+export function showUnicodeClock(quarter = 1) {
+    const sanitizedQuarter = quarter % 4;
+    console.log("showUnicodeClock", quarter);
+    const dropzoneText = document.getElementById("dropzone-text");
+    dropzoneText.classList.remove(
+        "dropzone-text-loading-text",
+        "dropzone-text-loading-text-1",
+        "dropzone-text-loading-text-2",
+        "dropzone-text-loading-text-3",
+        "dropzone-text-loading-text-4"
+    );
+    dropzoneText.classList.add(`dropzone-text-loading-text-${sanitizedQuarter}`);
+}
+
+/**
+ * Debounces a function
+ * @public
+ * @param {Function} func - The function to debounce
+ * @param {number} wait - The wait time in milliseconds
+ * @returns {Function} The debounced function
+ */
+export function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const context = this;
+        const later = () => {
+            clearTimeout(timeout);
+            func.apply(context, args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+/**
+ * Retrieves the stylesheet object for a given name
+ * @param {string} name - The name of the stylesheet to retrieve
+ * @returns {CSSStyleSheet | null} The stylesheet object, or null if not found.
+ */
+export function getStylesheet(name = "variables.css") {
+    for (const sheet of document.styleSheets) {
+        try {
+            if (sheet.href && sheet.href.includes(name)) {
+                return sheet;
+            }
+        } catch (e) {
+            console.warn("Cannot access stylesheet:", sheet.href, e);
+        }
+    }
+    return null;
+}
+
+/**
+ * Polyfill for requestIdleCallback because Safari does not support it
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback
+ */
+export function requestIdleCallbackPolyfill() {
+    if (typeof window.requestIdleCallback === "undefined") {
+        window.requestIdleCallback = function (cb) {
+            const start = Date.now();
+            return setTimeout(() => {
+                cb({
+                    didTimeout: false,
+                    timeRemaining: () => Math.max(0, 50 - (Date.now() - start)),
+                });
+            }, 1);
+        };
+
+        window.cancelIdleCallback = function (id) {
+            clearTimeout(id);
+        };
+    }
+}
+
+/**
+ * Adds a callback to be executed when the DOM is ready
+ * @public
+ * @param {Function} callback - The callback to execute
+ */
+export function onReady(callback) {
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", callback);
+    } else {
+        callback(); // Already loaded, just run it
+    }
+}
+
+/**
+ * Gets the scroll position of the book content
+ * @public
+ * @returns {number} The scroll position of the book content
+ */
+export function getScrollY() {
+    if (typeof window.scrollY === "number") {
+        return window.scrollY || document.documentElement.scrollTop;
+    } else if (typeof window.__scrollY__ === "function") {
+        return window.__scrollY__();
+    } else {
+        return document.documentElement.scrollTop || 0;
+    }
 }

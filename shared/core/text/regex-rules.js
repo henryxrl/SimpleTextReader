@@ -30,10 +30,11 @@ export const REGEX_COMPONENTS = {
         POST_2: "\\s/\\.、\\]】]+)\\s*",
     },
     TITLES_CHINESE_OTHER:
-        "内容简介|內容簡介|内容介绍|內容介紹|内容梗概|内容大意|小说简介|小說簡介|小说介绍|小說介紹|小说大意|小說大意|书籍简介|書籍簡介|书籍介绍|書籍介紹|书籍大意|書籍大意|作品简介|作品簡介|作品介绍|作品介紹|作品大意|作品相关|作者简介|作者簡介|作者介绍|作者介紹|作品相關|简介|簡介|大意|梗概|序|代序|自序|序言|序章|序幕|前言|楔子|引言|引子|终章|終章|大结局|结局|结尾|尾声|尾聲|后记|後記|完本|完本感言|完结|完结感言|出版后记|出版後記|谢辞|謝辭|番外|番外篇|编辑推荐|編輯推薦|书籍相关|書籍相關|作者声明|作者聲明|译者序|譯者序|外篇|附錄|附录|短篇|创作背景|創作背景|作品原文|白话译文|白話譯文|献言|獻言|编辑评价|編輯評價|作品简评|作品簡評|文案|外传|外傳|写作杂谈|寫作雜談|写作感言|寫作感言",
+        "内容简介|內容簡介|内容介绍|內容介紹|内容梗概|內容梗概|内容大意|內容大意|内容提要|內容提要|小说简介|小說簡介|小说介绍|小說介紹|小说梗概|小說梗概|小说大意|小說大意|小说提要|小說提要|书籍简介|書籍簡介|书籍介绍|書籍介紹|书籍梗概|書籍梗概|书籍大意|書籍大意|书籍提要|書籍提要|作品简介|作品簡介|作品介绍|作品介紹|作品梗概|作品大意|作品提要|作品相关|作品相關|作者简介|作者簡介|作者介绍|作者介紹|简介|簡介|大意|梗概|序|代序|自序|序言|序章|序幕|前言|楔子|引言|引子|终章|終章|大结局|结局|结尾|尾声|尾聲|后记|後記|完本|完本感言|完结|完结感言|出版后记|出版後記|谢辞|謝辭|番外|番外篇|编辑推荐|編輯推薦|书籍相关|書籍相關|作者声明|作者聲明|译者序|譯者序|外篇|附錄|附录|短篇|创作背景|創作背景|作品原文|白话译文|白話譯文|献言|獻言|编辑评价|編輯評價|作品简评|作品簡評|文案|外传|外傳|写作杂谈|寫作雜談|写作感言|寫作感言",
     TITLES_ENGLISH: "chapter|part|section|subsection|appendix|note|reference|addendum",
     TITLES_ENGLISH_OTHER:
         "accolades|appendices|addenda|addendums|preface|foreword|introduction|prologue|epigraph|table of contents|epilogue|afterword|conclusion|glossary|acknowledgements|bibliography|index|errata|colophon|abstract|postscript|contents|list of illustrations|list of tables|notes|note|references|reference|title page|copyright page|dedication|about the author|about the translator|about the editor|about the illustrator|about the publisher|about the series|about the book|credits|credit|prefatory note|prefatory notes|proem|prolegomenon|prefatory material|prefatory matter|endpapers|endpaper|endnotes|endnote|edition",
+    TITLE_USER_INDICATOR: "\\[::\\]",
 };
 
 /**
@@ -50,6 +51,7 @@ const buildTitleRules = (detectTitlePatterns = []) => {
         TITLES_CHINESE_OTHER,
         TITLES_ENGLISH,
         TITLES_ENGLISH_OTHER,
+        TITLE_USER_INDICATOR,
     } = REGEX_COMPONENTS;
     const TITLES_CHINESE_1 = TITLES_CHINESE.PRE_1 + NUMBER_CHINESE + TITLES_CHINESE.POST_1;
     const TITLES_CHINESE_2 = TITLES_CHINESE.PRE_2 + NUMBER_CHINESE + TITLES_CHINESE.POST_2;
@@ -78,6 +80,7 @@ const buildTitleRules = (detectTitlePatterns = []) => {
         `^(\\s*((${TITLES_ENGLISH})[\\.:\\s]?\\s*(${NUMBER_ENGLISH_AND_ROMAN_NUMERALS}))[:\\.\\s]?\\s*(.{0,50})$)`,
         `^(\\s*(${TITLES_ENGLISH_OTHER})[:\\.\\s]?\\s*$)`,
         `^(\\s*(${TITLES_ENGLISH_OTHER})[:\\.\\s]?\\s*(.{0,50})$)`,
+        `^(\\s*(${TITLE_USER_INDICATOR})\\s*(.*)$)`,
     ];
 
     const namedBaselineRules = baselineRules.map((rule, index) => {
@@ -115,6 +118,7 @@ export const updateTitleRules = (detectTitlePatterns = []) => {
  */
 export const REGEX_RULES = {
     TITLES: buildTitleRules(),
+    TITLE_USER_INDICATOR: REGEX_COMPONENTS.TITLE_USER_INDICATOR.split("\\").join(""),
     LANGUAGE: /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f\u3131-\uD79D]+/,
     PUNCTUATION: /\p{P}|\p{S}/u,
     FOOTNOTE: /[\u24EA\u2460-\u2473\u3251-\u325F\u32B1-\u32BF]/gu,

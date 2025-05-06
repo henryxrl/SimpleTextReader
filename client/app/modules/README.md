@@ -36,6 +36,8 @@ The `modules/` directory contains the core application logic, organized into spe
 
 - `popup-manager.js`: A utility for displaying user-friendly popups and notifications with customizable content and behavior.
 
+- `message-indicator.js`: A utility for displaying a message indicator on the screen with an icon and text.
+
 ---
 
 ### 3. `database/`

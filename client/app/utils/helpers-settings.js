@@ -13,7 +13,7 @@
  */
 
 import * as CONFIG from "../config/index.js";
-import { findStringIndex, isVariableDefined, simulateClick, toBool } from "./base.js";
+import { findStringIndex, isVariableDefined, simulateClick, toBool, getStylesheet } from "./base.js";
 
 /**
  * Cache for loaded fonts
@@ -100,11 +100,12 @@ export function createSelectorItem(id, values, texts) {
  * @param {Array<Array<string>>} values - Array of option value groups
  * @param {Array<Array<string>>} texts - Array of option text groups
  * @param {Array<string>} groups - Array of group labels
+ * @param {Array<string>} statuses - Array of font statuses
  * @param {boolean} isFont - Whether this is a font selector
  * @returns {HTMLElement} Created grouped selector element
  * @private
  */
-function createSelectorWithGroupItem(id, values, texts, groups, isFont = false) {
+function createSelectorWithGroupItem(id, values, texts, groups, statuses, isFont = false) {
     const settingItem = document.createElement("div");
     settingItem.setAttribute("class", "settingItem-wrapper");
 
@@ -125,10 +126,13 @@ function createSelectorWithGroupItem(id, values, texts, groups, isFont = false) 
         values[i].forEach((value, j) => {
             const option = document.createElement("option");
             option.setAttribute("value", value);
+            if (statuses[i]?.[j] !== undefined && statuses[i][j] !== true) {
+                option.setAttribute("data-status", statuses[i][j]);
+            }
             option.innerText = texts[i][j];
 
             if (isFont) {
-                option.style.fontFamily = value;
+                option.style.fontFamily = `${value}, ${CONFIG.CONST_FONT.FALLBACK_FONTS.join(",")}`;
             }
 
             optgroup.appendChild(option);
@@ -172,12 +176,11 @@ export function changeLanguageSelectorItemLanguage($selector, lang) {
 
 /**
  * Checks if a font is available in the system
- * @async
  * @param {string} font - Font name to check
  * @returns {boolean} True if font is available
  * @private
  */
-async function isFontAvailable(font) {
+function isFontAvailable(font) {
     // If the font is not defined, return false
     if (!font || font === "" || font === "undefined") {
         return false;
@@ -185,16 +188,29 @@ async function isFontAvailable(font) {
 
     // If the font is already cached, return the cached result
     if (fontCache.has(font)) {
+        // Update the cache based on the font status
+        if (window.FONT_STATUS[font] === "loaded") {
+            fontCache.set(font, true);
+        }
+        if (window.FONT_STATUS[font] === "failed") {
+            fontCache.set(font, false);
+        }
+        if (window.FONT_STATUS[font] === "loading") {
+            fontCache.set(font, "loading");
+        }
         return fontCache.get(font);
     }
 
-    // First check if the font is defined in the CSS @font-face
+    // Step 1: Check if the font is defined in @font-face in CSS
     let isFontFaceDefined = false;
-    for (const sheet of document.styleSheets) {
+    const variablesStylesheet = getStylesheet();
+    if (variablesStylesheet) {
         try {
-            for (const rule of sheet.cssRules) {
+            // Loop through all the rules in variables.css
+            for (const rule of variablesStylesheet.cssRules) {
+                // Check if the rule is a CSSFontFaceRule
                 if (rule instanceof CSSFontFaceRule) {
-                    const fontFamily = rule.style.getPropertyValue("font-family").replace(/['"]/g, "");
+                    const fontFamily = rule.style.getPropertyValue("font-family").replace(/['"]/g, "").trim();
                     if (fontFamily === font) {
                         isFontFaceDefined = true;
                         break;
@@ -202,16 +218,16 @@ async function isFontAvailable(font) {
                 }
             }
         } catch (e) {
-            // Cross-origin style sheets will throw a security error, ignore
-            console.warn("Cannot read cssRules from stylesheet:", e);
-            continue;
+            console.warn("Cannot read cssRules from variables.css:", e);
         }
+    } else {
+        console.warn("variables.css not found.");
     }
 
     try {
-        // Check if font is already available using the Font Loading API
+        // Step 2: Check if font is already available using the Font Loading API
         // console.log(`${font}: ${document.fonts.check(`12px "${font}"`)}`);
-        if (document.fonts.check(`12px "${font}"`)) {
+        if (document.fonts.check(`12px "${font}"`) && !isFontFaceDefined) {
             // Additional check to confirm no fallback
             const fallbackWidth = measureText(CONFIG.CONST_FONT.FALLBACK_FONTS.join(",")); // Known fallback font
             const testWidth = measureText(`${font}, ${CONFIG.CONST_FONT.FALLBACK_FONTS.join(",")}`);
@@ -226,13 +242,30 @@ async function isFontAvailable(font) {
             return true;
         }
 
-        // If font is defined in @font-face but not loaded yet, try loading it
+        // Step 3: If font is defined in @font-face but not loaded yet, try loading it
         if (isFontFaceDefined) {
             try {
-                await document.fonts.load(`12px "${font}"`);
-                const isLoaded = document.fonts.check(`12px "${font}"`);
-                fontCache.set(font, isLoaded);
-                return isLoaded;
+                // Don't load the font if it's already loaded
+                if (document.fonts.check(`12px "${font}"`)) {
+                    fontCache.set(font, true);
+                    return true;
+                }
+
+                // Check the font status
+                if (window.FONT_STATUS[font] === "loaded") {
+                    fontCache.set(font, true);
+                    return true;
+                }
+
+                if (window.FONT_STATUS[font] === "failed") {
+                    fontCache.set(font, false);
+                    return false;
+                }
+
+                if (window.FONT_STATUS[font] === "loading") {
+                    fontCache.set(font, "loading");
+                    return "loading";
+                }
             } catch (e) {
                 // console.warn(`Failed to load font ${font}:`, e);
                 fontCache.set(font, false);
@@ -244,7 +277,7 @@ async function isFontAvailable(font) {
         fontCache.set(font, false);
         return false;
     } catch {
-        // Fallback to measureText if Font Loading API is not available
+        // Step 4: Fallback to measureText if Font Loading API is not available
         // console.warn("Font Loading API not available, falling back to measureText");
 
         const fallbackWidth = measureText(CONFIG.CONST_FONT.FALLBACK_FONTS.join(","));
@@ -269,38 +302,45 @@ async function isFontAvailable(font) {
 }
 
 /**
- * Measures the width of a text string
+ * Measures the width of a text string (Optimized with cached canvas)
  * @param {string} font - Font name
  * @returns {number} Width of the text string
  * @private
  */
-function measureText(font) {
-    const testString = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+const measureText = (() => {
+    const testString =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789零一二三四五六七八九十百千万亿易笺藏书";
     const testSize = "72px";
+
+    // Cache the canvas for reuse
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d");
-    context.font = `${testSize} ${font}`;
-    return context.measureText(testString).width;
-}
+
+    return function (font) {
+        context.font = `${testSize} ${font}`;
+        return context.measureText(testString).width;
+    };
+})();
 
 /**
  * Gets valid font information from a list of fonts
  * Validates font availability and formats labels
- * @async
  * @param {Array<{en: string, zh: string, label_en?: string, label_zh?: string}>} fontList - List of font objects
  * @param {boolean} checkAvailability - Whether to check if fonts are available in system
  * @returns {Array<Array<string>>} Array containing [names, labels, labels_zh]
  * @private
  */
-async function getValidFontInfo(fontList, checkAvailability = true) {
+function getValidFontInfo(fontList, checkAvailability = true) {
     const fontInfo = {
         names: [],
         labels: [],
         labels_zh: [],
+        statuses: [],
     };
 
     for (const font of fontList) {
         let fontName = null;
+        let fontStatus = false; // Default status if font isn't found
         const displayLabel = font.label_en || font.en; // Use the localized name if available
         const displayLabel_zh = font.label_zh || font.zh; // Use the localized name if available
 
@@ -314,23 +354,41 @@ async function getValidFontInfo(fontList, checkAvailability = true) {
             //         (await isFontAvailable(font.linuxVariant))
             //     }`
             // );
-            if (await isFontAvailable(font.en)) {
+
+            let status = isFontAvailable(font.en);
+            if (status !== false) {
                 fontName = font.en;
-            } else if (await isFontAvailable(font.zh)) {
-                fontName = font.zh;
+                fontStatus = status;
+            }
+
+            if (!fontName) {
+                status = isFontAvailable(font.zh);
+                if (status !== false) {
+                    fontName = font.zh;
+                    fontStatus = status;
+                }
             }
 
             // macOS-specific font check
-            if (!fontName && font.macVariant && (await isFontAvailable(font.macVariant))) {
-                fontName = font.macVariant;
+            if (!fontName && font.macVariant) {
+                status = isFontAvailable(font.macVariant);
+                if (status !== false) {
+                    fontName = font.macVariant;
+                    fontStatus = status;
+                }
             }
 
             // Linux-specific font check
-            if (!fontName && font.linuxVariant && (await isFontAvailable(font.linuxVariant))) {
-                fontName = font.linuxVariant;
+            if (!fontName && font.linuxVariant) {
+                status = isFontAvailable(font.linuxVariant);
+                if (status !== false) {
+                    fontName = font.linuxVariant;
+                    fontStatus = status;
+                }
             }
         } else {
             fontName = font.en; // For custom fonts, use the name directly since they exist in the CSS
+            fontStatus = true;
         }
 
         // If a valid font name is found, add it along with the display labels
@@ -338,10 +396,11 @@ async function getValidFontInfo(fontList, checkAvailability = true) {
             fontInfo.names.push(fontName);
             fontInfo.labels.push(displayLabel);
             fontInfo.labels_zh.push(displayLabel_zh);
+            fontInfo.statuses.push(fontStatus);
         }
     }
 
-    return [fontInfo.names, fontInfo.labels, fontInfo.labels_zh];
+    return [fontInfo.names, fontInfo.labels, fontInfo.labels_zh, fontInfo.statuses];
 }
 
 /**
@@ -427,15 +486,14 @@ export function changeFontSelectorItemLanguage($selector, lang) {
 
 /**
  * Creates font selector elements for both English and Chinese
- * @async
  * @param {string} id - Element ID
  * @returns {Array<HTMLElement>} Array containing [englishSelector, chineseSelector]
  * @public
  */
-export async function createFontSelectorItem(id) {
+export function createFontSelectorItem(id) {
     // Get valid font info
-    const system_fonts_info = await getValidFontInfo(CONFIG.CONST_FONT.SYSTEM_FONTS, true);
-    const app_fonts_info = await getValidFontInfo(CONFIG.CONST_FONT.APP_FONTS, true);
+    const system_fonts_info = getValidFontInfo(CONFIG.CONST_FONT.SYSTEM_FONTS, true);
+    const app_fonts_info = getValidFontInfo(CONFIG.CONST_FONT.APP_FONTS, true);
     const custom_fonts_info = getValidCustomFontInfo(CONFIG.VARS.CUSTOM_FONTS);
 
     // Create the font values array
@@ -446,6 +504,7 @@ export async function createFontSelectorItem(id) {
         names: [app_fonts_info[0], system_fonts_info[0]],
         labels: [app_fonts_info[1], system_fonts_info[1]],
         labels_zh: [app_fonts_info[2], system_fonts_info[2]],
+        statuses: [app_fonts_info[3], system_fonts_info[3]],
         groups_en: [CONFIG.RUNTIME_VARS.STYLE.ui_font_group_app_en, CONFIG.RUNTIME_VARS.STYLE.ui_font_group_system_en],
         groups_zh: [CONFIG.RUNTIME_VARS.STYLE.ui_font_group_app_zh, CONFIG.RUNTIME_VARS.STYLE.ui_font_group_system_zh],
     };
@@ -455,6 +514,7 @@ export async function createFontSelectorItem(id) {
         fontArrays.names.splice(1, 0, custom_fonts_info[0]);
         fontArrays.labels.splice(1, 0, custom_fonts_info[1]);
         fontArrays.labels_zh.splice(1, 0, custom_fonts_info[2]);
+        fontArrays.statuses.splice(1, 0, custom_fonts_info[3]);
         fontArrays.groups_en.splice(1, 0, CONFIG.RUNTIME_VARS.STYLE.ui_font_group_custom_en);
         fontArrays.groups_zh.splice(1, 0, CONFIG.RUNTIME_VARS.STYLE.ui_font_group_custom_zh);
     }
@@ -466,21 +526,24 @@ export async function createFontSelectorItem(id) {
         FILTERED_FONT_LABELS_ZH: fontArrays.labels_zh,
         FONT_GROUPS: fontArrays.groups_en,
         FONT_GROUPS_ZH: fontArrays.groups_zh,
+        FONT_STATUS: fontArrays.statuses,
     });
 
     // Create the font selector element
-    let fontSelector = createSelectorWithGroupItem(
+    const fontSelector = createSelectorWithGroupItem(
         id,
         CONFIG.VARS.FILTERED_FONT_NAMES,
         CONFIG.VARS.FILTERED_FONT_LABELS,
         CONFIG.VARS.FONT_GROUPS,
+        CONFIG.VARS.FONT_STATUS,
         true
     );
-    let fontSelector_zh = createSelectorWithGroupItem(
+    const fontSelector_zh = createSelectorWithGroupItem(
         id,
         CONFIG.VARS.FILTERED_FONT_NAMES,
         CONFIG.VARS.FILTERED_FONT_LABELS_ZH,
         CONFIG.VARS.FONT_GROUPS_ZH,
+        CONFIG.VARS.FONT_STATUS,
         true
     );
 
@@ -522,15 +585,34 @@ export function findFontIndex(fontName) {
  * Creates a range slider element
  * @param {string} id - Element ID
  * @param {number} value - Initial value
- * @param {number} min - Minimum value
- * @param {number} max - Maximum value
- * @param {number} step - Step increment
- * @param {string} unit - Unit suffix (e.g., 'px', 'em')
+ * @param {Object} rangeConfig - Range configuration object
+ * @param {number} rangeConfig.min - Minimum value
+ * @param {number} rangeConfig.max - Maximum value
+ * @param {number} rangeConfig.step - Step increment
+ * @param {string} rangeConfig.unit - Unit suffix (e.g., 'px', 'em')
+ * @param {Array<string>} [rangeConfig.textValues] - Array of text values for the slider (optional)
  * @param {Function} func - Callback function to execute on input change
+ * @param {boolean} note - Whether to display a note in the tooltip
  * @returns {HTMLElement} Created range slider element
  * @public
  */
-export function createRangeItem(id, value, min, max, step, unit, func) {
+export function createRangeItem(id, value, rangeConfig, func, note = false) {
+    const { min, max, step, unit, textValues = null } = rangeConfig;
+
+    const rangeLength = Math.floor((max - min) / step) + 1;
+    const isValidTextValues = Array.isArray(textValues) && textValues.length === rangeLength;
+
+    const getTextValue = (value) => {
+        if (!isValidTextValues) return String(value);
+        const index = Math.floor((value - min) / step);
+        return textValues[index];
+    };
+
+    const getUnitValue = () => {
+        if (!isValidTextValues) return unit;
+        return "";
+    };
+
     const settingItem = document.createElement("div");
     settingItem.setAttribute("class", "settingItem-wrapper");
     const settingItemText = document.createElement("span");
@@ -538,12 +620,21 @@ export function createRangeItem(id, value, min, max, step, unit, func) {
     settingItemText.setAttribute("id", `settingLabel-${id}`);
     settingItemText.onselectstart = () => false;
     settingItemText.onmousedown = () => false;
+
+    if (note) {
+        settingItemText.innerHTML = `<span class='tooltip-icon'>${CONFIG.RUNTIME_VARS.STYLE.ui_setting_note_indicator}</span>`;
+        const tooltip = document.createElement("div");
+        tooltip.setAttribute("class", "tooltip");
+        tooltip.setAttribute("id", `tooltip-${id}`);
+        settingItemText.appendChild(tooltip);
+    }
+
     const settingItemInput = document.createElement("div");
     settingItemInput.setAttribute("class", "range-slider");
     settingItemInput.setAttribute(
         "style",
         `--min:${min}; --max:${max}; --step:${step};` +
-            `--value:${value}; --text-value:"${JSON.stringify(value)}"; --suffix:"${unit}";` +
+            `--value:${value}; --text-value:${JSON.stringify(getTextValue(value))}; --suffix:"${getUnitValue()}";` +
             `--ticks-color:${CONFIG.RUNTIME_VARS.STYLE.bgColor};`
     );
     const settingItemInputRange = document.createElement("input");
@@ -555,8 +646,9 @@ export function createRangeItem(id, value, min, max, step, unit, func) {
     settingItemInputRange.setAttribute("max", max);
     settingItemInputRange.setAttribute("step", step);
     settingItemInputRange.addEventListener("input", (e) => {
-        e.target.parentNode.style.setProperty("--value", e.target.value);
-        e.target.parentNode.style.setProperty("--text-value", JSON.stringify(e.target.value));
+        const value = e.target.value;
+        e.target.parentNode.style.setProperty("--value", value);
+        e.target.parentNode.style.setProperty("--text-value", JSON.stringify(getTextValue(value)));
         func();
     });
     const settingItemInputOutput = document.createElement("output");
@@ -578,11 +670,12 @@ export function createRangeItem(id, value, min, max, step, unit, func) {
  * @param {string} value - Initial color value
  * @param {Array<string>} savedValues - Array of preset color values
  * @param {Function} func - Callback function to execute on input change
+ * @param {boolean} note - Whether to display a note in the tooltip
  * @returns {HTMLElement} Created color picker element
  * @throws {TypeError} If savedValues is not an array
  * @public
  */
-export function createColorItem(id, value, savedValues, func) {
+export function createColorItem(id, value, savedValues, func, note = false) {
     // Check if savedValues is an array
     if (!Array.isArray(savedValues)) {
         throw new TypeError("savedValues must be an array");
@@ -599,6 +692,15 @@ export function createColorItem(id, value, savedValues, func) {
     settingItemText.onmousedown = function () {
         return false;
     };
+
+    if (note) {
+        settingItemText.innerHTML = `<span class='tooltip-icon'>${CONFIG.RUNTIME_VARS.STYLE.ui_setting_note_indicator}</span>`;
+        const tooltip = document.createElement("div");
+        tooltip.setAttribute("class", "tooltip");
+        tooltip.setAttribute("id", `tooltip-${id}`);
+        settingItemText.appendChild(tooltip);
+    }
+
     let settingItemInput = document.createElement("input");
     settingItemInput.setAttribute("id", id);
     settingItemInput.setAttribute("class", "myColor"); // use yaireo's color picker; at the moment, it doesn't work with the oninput event.
@@ -625,9 +727,10 @@ export function createColorItem(id, value, savedValues, func) {
  * @param {string} id - Element ID
  * @param {boolean} value - New boolean value
  * @param {function} func - Function to call when the checkbox is clicked
+ * @param {boolean} note - Whether to display a note in the tooltip
  * @returns {HTMLElement} Created checkbox item element
  */
-export function createCheckboxItem(id, value, func) {
+export function createCheckboxItem(id, value, func, note = false) {
     const settingItem = document.createElement("div");
     settingItem.setAttribute("class", "settingItem-wrapper");
 
@@ -636,6 +739,14 @@ export function createCheckboxItem(id, value, func) {
     settingItemText.setAttribute("id", `settingLabel-${id}`);
     settingItemText.onselectstart = () => false;
     settingItemText.onmousedown = () => false;
+
+    if (note) {
+        settingItemText.innerHTML = `<span class='tooltip-icon'>${CONFIG.RUNTIME_VARS.STYLE.ui_setting_note_indicator}</span>`;
+        const tooltip = document.createElement("div");
+        tooltip.setAttribute("class", "tooltip");
+        tooltip.setAttribute("id", `tooltip-${id}`);
+        settingItemText.appendChild(tooltip);
+    }
 
     const settingItemInput = document.createElement("label");
     settingItemInput.setAttribute("class", "switch");
@@ -805,8 +916,8 @@ export function handleSettingsClose(e, isEscKey = false) {
     // console.log("CONFIG.VARS.IS_COLOR_PICKER_OPEN[0]:", CONFIG.VARS.IS_COLOR_PICKER_OPEN[0]);
     if (!settingsMenu) return;
     if ((!settingsMenu.contains(e.target) && !settingsBtn.contains(e.target)) || isEscKey) {
-        // console.log("CONFIG.VARS.SETTINGS_MENU_SHOWN:", CONFIG.VARS.SETTINGS_MENU_SHOWN);
-        if (CONFIG.VARS.SETTINGS_MENU_SHOWN) {
+        // console.log("CONFIG.VARS.IS_SETTINGS_MENU_SHOWN:", CONFIG.VARS.IS_SETTINGS_MENU_SHOWN);
+        if (CONFIG.VARS.IS_SETTINGS_MENU_SHOWN) {
             if (CONFIG.VARS.IS_COLOR_PICKER_OPEN[0]) {
                 // console.log("color picker was open before the click");
                 // if color picker was open before the click

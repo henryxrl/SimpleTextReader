@@ -66,7 +66,9 @@ Big thanks to [CataeroGong](https://github.com/cataerogong) for his amazing help
 
 3. Auto detection of chapter titles using Regular Expressions
 
-4. Auto styling of footnotes
+    - In a TXT file, add `[::]` marker at the beginning of a line to manually designate it as a title line.
+
+4. Auto styling of footnotes (See [Using Footnotes](#2-using-footnotes) for details)
 
 5. UI language depends on the text file opened in SimpleTextReader (English vs. Chinese)
 
@@ -84,38 +86,107 @@ Big thanks to [CataeroGong](https://github.com/cataerogong) for his amazing help
 
 ## Usage
 
+### 1. **Add Books**
+
+- Drag and drop **TXT books** into the interface to import multiple books at once.  
+
+- Alternatively, double-click the interface to manually select book files for import.  
+
+### 2. **Add Fonts**
+
+- Supports up to **three font files** (TTF or OTF), which can be directly dragged into the interface for import.  
+
+- Alternatively, double-click the interface to manually select font files.  
+
+### 3. **Bookshelf Management**
+
+- Click on a book cover to open the corresponding book.
+
+- Hold down **Alt/Option** and click the book cover to **force reprocess** the book.  
+
+- Use the **filter bar** at the top of the bookshelf to filter books.  
+
+- Books can be deleted in two ways:
+
+  - **Delete all books** at once via the filter bar.  
+
+  - **Delete individual books** (hover over the book cover to display the delete icon).  
+
+### 4. **Reading Features**
+
+- Click on the **Table of Contents** section on the left side to jump to a specific chapter.  
+
+- Use the **left and right arrow keys** on the keyboard to turn pages (or enable inifinite scroll mode in settings).
+
+- Use the **Page Up / Page Down keys** to jump to the previous or next chapter.
+
+- Use the **Esc key** to return to the bookshelf.
+
+### 5. **Advanced Usage (Modifying TXT Source File)**
+
+#### (1) Manually marking titles
+
+- Add the **`[::]`** marker at the beginning of a line to manually designate it as a **title line**.
+
+- Example:
+
+    ```txt
+    [::] I am a chapter title!
+    ```
+
+#### (2) Using footnotes
+
+- Insert **① to ㊿** into the text to **reference footnotes**. Each paragraph can restart numbering from **①**.
+
+- Footnote line must start with the **corresponding numbered symbol**
+
+- Example:
+
+    ```txt
+    In the Northern Ocean①, there is a fish called Kun②. Kun is so large that its size is unknown③, spanning thousands of miles④. It transforms into a bird called Peng⑤.
+    ① Northern Ocean: A vast sea, named for its deep and dark waters. "冥" (Míng) means "deep and vast sea."
+    ② Kun (kūn): Originally meant "fish fry" (small fish), but here, Zhuangzi uses it to mean a giant fish.
+    ③ "Ji" (几): Originally means "tiny," but extends to mean "extremely close."
+    ④ "Thousands of miles": Indicates its immense size.
+    ⑤ Peng: A legendary giant bird.
+    ```
+
+- Reference example：*Xiaoyao You (The Happy Excursion)* [Baidu Cloud｜Code: qehd](https://pan.baidu.com/s/1p8WAzB8dMWW7WH6Acf3Ulw?pwd=qehd)
+
+## Downloads
+
 **Note: To view the local text files (`file://*.txt`) directly dragged into the browser (no-ui mode), please enable "Allow access to file URLs" in the extension management page.**
 
 ### Chrome
 
-- [SimpleTextReader (v1.6.9.1)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
+- [SimpleTextReader (v1.6.9.2)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
 
 ### Firefox
 
-- [SimpleTextReader (v1.6.9.1)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
+- [SimpleTextReader (v1.6.9.2)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
 
 ### Edge
 
-- [SimpleTextReader (v1.6.9.1)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
+- [SimpleTextReader (v1.6.9.2)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
 
 ### Docker
 
 ```bash
 # Basic Docker run command
 docker run -d --name simpletextreader \
-  -p 8866:8866 \
-  --restart unless-stopped \
-  henryxrl/simpletextreader:latest
+-p 8866:8866 \
+--restart unless-stopped \
+henryxrl/simpletextreader:latest
 
 # Run the container with a library directory (experimental - prone to bugs)
 docker run -d --name simpletextreader \
-  -p 8866:8866 \
-  -v /path/to/your/books:/app/books \
-  --restart unless-stopped \
-  henryxrl/simpletextreader:latest
+-p 8866:8866 \
+-v /path/to/your/books:/app/books \
+--restart unless-stopped \
+henryxrl/simpletextreader:latest
 ```
 
-### URL Parameters (For debug purposes)
+## URL Parameters (For debug purposes)
 
 To use URL parameters, append `?param` to the end of the URL. To use multiple parameters simultaneously, append `?param1&param2&param3`. Ensure you do not add a slash (`/`) before the parameters.
 
@@ -129,9 +200,9 @@ To use URL parameters, append `?param` to the end of the URL. To use multiple pa
 
 5. `always-process`: Forces the book to reprocess upon opening, ignoring any previously saved processed book.
 
-6. `print-db`: Prints the current database(s) of saved books. [For debugging purposes]
+6. `print-db`: Prints the current database(s) of saved books.
 
-7. `upgrade-db`: Upgrades or cleans the current database(s) manually. [For debugging purposes]
+7. `upgrade-db`: Upgrades or cleans the current database(s) manually.
 
 ## Important Updates
 
@@ -153,7 +224,15 @@ To use URL parameters, append `?param` to the end of the URL. To use multiple pa
 
     - In addition to predefined regular expressions, v1.6.4 introduces the ability to automatically detect title patterns from the text file and dynamically add them to the regex rule library, significantly improving the accuracy of title extraction.
 
+    - v1.6.9.2 introduced the feature of manually designating a chapter title by adding the **`[::]`** marker at the beginning of the line (See [Manually marking titles](#1-manually-marking-titles) for details).
+
 4. New pagination logic.
+
+    - Keyboard shortcuts:
+
+        - **← → arrow keys** to turn pages, or enable **infinite scroll mode** in settings (added in v1.6.9.2).
+
+        - **Page Up / Page Down keys** to jump to the previous or next chapter (added in v1.6.9.2).
 
 5. New table of contents display: When the cursor is outside the table of contents area, only the simplified chapter title is displayed, applicable to both Chinese and English novels. For example, `Chapter 6. The Deputy Procureur du Roi.` will be simplified to `The Deputy Procureur du Roi.`. When the cursor moves back into the table of contents area, the full chapter title will be displayed.
 
@@ -244,7 +323,7 @@ To use URL parameters, append `?param` to the end of the URL. To use multiple pa
 
 4. Other stability bug fixes.
 
-**_NOTE: The bookshelf feature is incompatible with browsers' private/incognito mode and will be automatically deactivated._**
+**NOTE: The bookshelf feature is incompatible with browsers' private/incognito mode and will be automatically deactivated.**
 
 <div float="left">
     <img src="assets/4_bookshelf1.png" width="49%" alt="Bookshelf1"/>

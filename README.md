@@ -66,7 +66,9 @@
 
 3. 中英文标题正则自动识别 —— 自信的说，标题抓取几乎很少有超过易笺的了，看官们可以自行和别的阅读器对比
 
-4. 支持自动抓取小说中的脚注（支持的脚注格式可以参考我修改的《逍遥游》[百度网盘｜提取码: qehd](https://pan.baidu.com/s/1p8WAzB8dMWW7WH6Acf3Ulw?pwd=qehd)）
+    - 在 TXT 文件中，在任意行的行首添加 `[::]` 标记，可手动指定该行为标题行
+
+4. 支持自动抓取小说中的脚注（详见 [使用脚注](#2使用脚注)）
 
 5. 界面语言随着拖进来的文件而改变（中英自动切换，别的语言咱也不会……）
 
@@ -84,38 +86,107 @@
 
 ## 使用
 
+### 1. **添加书籍**
+
+- 将 **TXT 格式的书籍**拖入界面，可一次性导入多本书籍
+
+- 也可双击界面，手动选择书籍文件进行添加
+
+### 2. **添加字体**
+
+- 支持**最多 3 个字体文件**（TTF 或 OTF），可直接拖入界面进行导入
+
+- 也可双击界面，手动选择字体文件进行添加
+
+### 3. **书架管理**
+
+- 点击书籍封面可打开相应书籍
+
+- 按住 **Alt/Option 键**点击书籍封面，可**强制重新处理**该书籍
+
+- 使用书架顶部的**筛选栏**进行书籍筛选
+
+- 删除书籍：
+
+  - 在筛选栏中**删除所有书籍**
+
+  - 也可**单独删除**书籍（将鼠标移至书籍封面，即可看到删除图标）
+
+### 4. **阅读功能**
+
+- 点击**左侧目录**可跳转至指定章节
+
+- 使用键盘**左右方向键**进行前后翻页（或在设置菜单中开启无限滚动模式）
+
+- 使用键盘 **Page Up / Page Down 键**跳转至上一章节或下一章节
+
+- 使用 **Esc 键** 返回书架
+
+### 5. **进阶使用（修改 TXT 源文件）**
+
+#### （1）手动标记标题
+
+- 在任意行的行首添加 **`[::]`** 标记，可手动指定该行为**标题行**
+
+- 示例：
+
+    ```txt
+    [::] 写在故事的最后
+    ```
+
+#### （2）使用脚注
+
+- 在文本中插入 **① 到 ㊿** 以**引用脚注**。每个段落都可以从 **①** 开始重新编号
+
+- 脚注内容行需使用**对应的数字符号**开头
+
+- 示例：
+
+    ```txt
+    北冥①有鱼，其名为鲲②。鲲之大，不知其几③千里也④；化而为鸟，其名为鹏⑤。
+    ①北冥：北海，因海水深黑而得名。冥，通“溟”，指广阔幽深的大海。
+    ②鲲（kūn）：本义鱼子，小鱼。在此被庄子借用为大鱼之义。
+    ③几：本义为极微小，引申为“极为接近”。
+    ④千里也：应有千里之大。
+    ⑤鹏：传说中的大鸟。
+    ```
+
+- 参考示例：《逍遥游》[百度网盘｜提取码: qehd](https://pan.baidu.com/s/1p8WAzB8dMWW7WH6Acf3Ulw?pwd=qehd)
+
+## 下载
+
 **注：如果需要直接访问拖入浏览器中的本地 txt 文件（`file://*.txt`）（相当于以前的无界面模式），需要在扩展管理界面中打开`允许访问文件 URL`**
 
 ### Chrome 插件
 
-- [易笺 (v1.6.9.1)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
+- [易笺 (v1.6.9.2)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
 
 ### 火狐插件
 
-- [易笺 (v1.6.9.1)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
+- [易笺 (v1.6.9.2)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
 
 ### Edge 插件
 
-- [易笺 (v1.6.9.1)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
+- [易笺 (v1.6.9.2)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
 
 ### Docker
 
 ```bash
 # 基础运行命令
 docker run -d --name simpletextreader \
-  -p 8866:8866 \
-  --restart unless-stopped \
-  henryxrl/simpletextreader:latest
+-p 8866:8866 \
+--restart unless-stopped \
+henryxrl/simpletextreader:latest
 
 # 带图书库目录的运行命令（实验性功能 - 可能存在 bug）
 docker run -d --name simpletextreader \
-  -p 8866:8866 \
-  -v /path/to/your/books:/app/books \
-  --restart unless-stopped \
-  henryxrl/simpletextreader:latest
+-p 8866:8866 \
+-v /path/to/your/books:/app/books \
+--restart unless-stopped \
+henryxrl/simpletextreader:latest
 ```
 
-### URL 参数（调试用）
+## URL 参数（调试用）
 
 使用 URL 参数时，在 URL 末尾添加 `?param`。若要同时使用多个参数，请添加 `?param1&param2&param3`。请确保不要在参数前添加斜杠 (`/`)。
 
@@ -129,9 +200,9 @@ docker run -d --name simpletextreader \
 
 5. `always-process`：强制在打开书籍时重新处理，忽略已保存的处理结果
 
-6. `print-db`：打印当前保存书籍的数据库。 【用于调试】
+6. `print-db`：打印当前保存书籍的数据库
 
-7. `upgrade-db`：手动升级或清理当前数据库。 【用于调试】
+7. `upgrade-db`：手动升级或清理当前数据库
 
 ## 重大更新
 
@@ -153,7 +224,15 @@ docker run -d --name simpletextreader \
 
     - 除了使用预定义的正则表达式外，v1.6.4 增加了自动从文档中识别标题规律的功能，大幅提升了标题提取的准确率。
 
+    - v1.6.9.2 中新增了在源 TXT 文件中手动标记标题的功能（详见 [手动标记标题](#1手动标记标题)）。
+
 4. 全新的分页逻辑
+
+    - 快捷键：
+
+        - **← → 方向键** 翻页，或在设置中开启 **无限滚动模式**（v1.6.9.2 中新增）
+
+        - **Page Up / Page Down 键** 跳转至上或下一章节（v1.6.9.2 中新增）
 
 5. 全新的目录显示：当鼠标指针位于目录区域外时，仅显示当前章节的简化名称，对中英文小说均有效。例如，`正文 第一卷 原上草 第一章 秦少爷初临宝地 防狼术小试牛刀` 将简化为 `秦少爷初临宝地 防狼术小试牛刀`。当鼠标移入目录区域时，会显示完整的章节名称。
 

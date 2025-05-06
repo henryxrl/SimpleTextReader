@@ -41,7 +41,7 @@ import {
 import {
     hideDropZone,
     resetDropZoneState,
-    updateTOCUI,
+    updatePaginationCalculations,
     showLoadingScreen,
     hideLoadingScreen,
     hideContent,
@@ -520,19 +520,19 @@ export class FileHandler {
             CONFIG.VARS.INIT = false;
             reader.showCurrentPageContent();
             reader.generatePagination();
-            updateTOCUI(false);
+            updatePaginationCalculations(false);
             GetScrollPositions(false);
             logTiming("Initial UI update", initialUIStart);
 
             // If bookshelf and fast open are enabled and history is found within 90% of the initial chunk, show content early without waiting for processing to complete
             const hasHistoryBeyondInitChunk =
-                getHistory(CONFIG.VARS.FILENAME) > CONFIG.VARS.FILE_CONTENT_CHUNKS.length * 0.9;
+                (await getHistory(CONFIG.VARS.FILENAME)) > CONFIG.VARS.FILE_CONTENT_CHUNKS.length * 0.9;
             if (
                 CONFIG.RUNTIME_CONFIG.ENABLE_BOOKSHELF &&
                 CONFIG.RUNTIME_CONFIG.ENABLE_FAST_OPEN &&
                 !hasHistoryBeyondInitChunk
             ) {
-                getHistoryAndSetChapterTitleActive(reader.gotoLine.bind(reader));
+                await getHistoryAndSetChapterTitleActive(reader.gotoLine.bind(reader));
 
                 // Hide loading screen
                 hideDropZone(false);
@@ -553,13 +553,13 @@ export class FileHandler {
                 if (paginationElement) {
                     const existingIndicator = CONFIG.DOM_ELEMENT.PAGINATION_INDICATOR;
                     if (!existingIndicator) {
-                        const processingItem = document.createElement("div");
-                        processingItem.id = "pageProcessing";
-                        const processingSpan = document.createElement("span");
-                        processingSpan.classList.add("pagination-processing", "prevent-select");
-                        processingSpan.textContent = CONFIG.RUNTIME_VARS.STYLE.ui_pagination_processing;
-                        processingItem.appendChild(processingSpan);
-                        paginationElement.appendChild(processingItem);
+                        const paginationIndicator = document.createElement("div");
+                        paginationIndicator.id = "pagination-indicator";
+                        const paginationIndicatorSpan = document.createElement("span");
+                        paginationIndicatorSpan.classList.add("pagination-processing", "prevent-select");
+                        paginationIndicatorSpan.textContent = CONFIG.RUNTIME_VARS.STYLE.ui_pagination_processing;
+                        paginationIndicator.appendChild(paginationIndicatorSpan);
+                        paginationElement.appendChild(paginationIndicator);
 
                         // const paginationBorder = document.querySelector("#pagination");
                         // paginationBorder.style.borderColor = CONFIG.RUNTIME_VARS.STYLE.mainColor_active;
@@ -589,9 +589,9 @@ export class FileHandler {
 
                         // Remove the existing processing indicator
                         FileHandler.#deferUIUpdate(() => {
-                            const processingItem = CONFIG.DOM_ELEMENT.PAGINATION_INDICATOR;
-                            if (processingItem) {
-                                processingItem.remove();
+                            const paginationIndicator = CONFIG.DOM_ELEMENT.PAGINATION_INDICATOR;
+                            if (paginationIndicator) {
+                                paginationIndicator.remove();
                             }
                         });
 
@@ -604,7 +604,7 @@ export class FileHandler {
                                     reader.generatePagination();
 
                                     requestAnimationFrame(() => {
-                                        updateTOCUI(false);
+                                        updatePaginationCalculations(false);
 
                                         requestAnimationFrame(() => {
                                             GetScrollPositions(false);
@@ -635,7 +635,7 @@ export class FileHandler {
             }
 
             // Retrieve reading history
-            getHistoryAndSetChapterTitleActive(reader.gotoLine.bind(reader));
+            await getHistoryAndSetChapterTitleActive(reader.gotoLine.bind(reader));
 
             // Complete initial processing
             await finalProcessing();
@@ -701,11 +701,11 @@ export class FileHandler {
             CONFIG.VARS.INIT = false;
             reader.showCurrentPageContent();
             reader.generatePagination();
-            updateTOCUI(false);
+            updatePaginationCalculations(false);
             GetScrollPositions(false);
 
             // Retrieve reading history
-            getHistoryAndSetChapterTitleActive(reader.gotoLine.bind(reader));
+            await getHistoryAndSetChapterTitleActive(reader.gotoLine.bind(reader));
 
             // Hide loading screen
             hideDropZone();
@@ -755,7 +755,7 @@ export class FileHandler {
                         "🔄 Heavy UI Updates: " + operationName.match(/reader\.\w+|update\w+|Get\w+/g)?.join(" → ");
                 } else if (operationName?.includes("hideDropZone") || operationName?.includes("showContent")) {
                     formattedOperation = "👁️ Visibility: " + operationName.match(/hide\w+|show\w+/g)?.join(", ");
-                } else if (operationName?.includes("processingItem")) {
+                } else if (operationName?.includes("paginationIndicator")) {
                     formattedOperation = "🧹 Cleanup: remove pagination indicator";
                 } else if (operationName?.includes("triggerCustomEvent")) {
                     formattedOperation = "🔔 Event: " + operationName.match(/"([^"]+)"/)?.[1];

@@ -34,7 +34,17 @@ This folder contains third-party libraries and external utilities used in the pr
 
 ---
 
-### 4. `jquery.min.js`
+### 4. `ipad-cursor.js`
+
+**Description**: A customizable cursor replacement component inspired by the iPad Pro’s adaptive cursor.
+
+**Original Source**: [IMouse](https://github.com/rikumi/imouse)
+
+**Notes**: This component is a modified and extended version of the sources above, redesigned to support more advanced interactions, smoother animations, and greater customization.
+
+---
+
+### 5. `jquery.min.js`
 
 **Description**: A popular JavaScript library for DOM manipulation and AJAX calls.
 
@@ -42,7 +52,7 @@ This folder contains third-party libraries and external utilities used in the pr
 
 ---
 
-### 5. `jschardet.min.js`
+### 6. `jschardet.min.js`
 
 **Description**: A JavaScript library for character set detection.
 
@@ -50,7 +60,7 @@ This folder contains third-party libraries and external utilities used in the pr
 
 ---
 
-### 6. `sweetalert2/sweetalert2.js`
+### 7. `sweetalert2.js`
 
 **Description**: A beautiful, responsive, customizable, accessible (WAI-ARIA) replacement for JavaScript's popup boxes.
 
@@ -58,7 +68,7 @@ This folder contains third-party libraries and external utilities used in the pr
 
 ---
 
-### 7. `yaireo/`
+### 8. `yaireo/`
 
 **color-picker.js** and **position.js**
 

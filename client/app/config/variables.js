@@ -62,9 +62,11 @@ class AppVariables {
         /** @type {Object} Object of custom fonts */
         this.CUSTOM_FONTS = {};
         /** @type {boolean} Whether settings menu is shown */
-        this.SETTINGS_MENU_SHOWN = false;
+        this.IS_SETTINGS_MENU_SHOWN = false;
         /** @type {Array<boolean>} Color picker open states */
         this.IS_COLOR_PICKER_OPEN = [false, false];
+        /** @type {boolean} Whether the popup window is shown */
+        this.IS_POPUP_WINDOW_SHOWN = false;
 
         // Pagination-related variables
         /** @type {number} Current page number */

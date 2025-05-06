@@ -1,9 +1,6 @@
 @charset "UTF-8";
 body {
-    margin-top: 0%;
-    margin-bottom: 4.5em;
-    margin-left: 0%;
-    margin-right: 0%;
+    margin: 0;
 }
 img {
     max-width: 100%;
@@ -12,9 +9,9 @@ img {
     overflow: auto;
 }
 #content {
-    height: 100%;
-    display: block;
+    /* height: 100%; */
     overflow-x: hidden;
+    padding-bottom: 6em;
 }
 .columns-1,
 .columns-2 {
@@ -44,19 +41,21 @@ p {
     text-align: var(--p_textAlign_value);
     text-indent: var(--p_paragraphIndent_value);
     line-height: var(--p_lineHeight);
-    margin: var(--p_paragraphSpacing);
+    margin: 0;
 }
 p.first,
 p.noIndent {
     text-indent: 0em !important;
 }
 p::selection {
-    background-color: var(--mainColor_active);
-    color: var(--bgColor);
+    background-color: var(--mainColor_active) !important;
+    background: var(--mainColor_active) !important;
+    color: var(--bgColor) !important;
 }
 p::-moz-selection {
-    background-color: var(--mainColor_active);
-    color: var(--bgColor);
+    background-color: var(--mainColor_active) !important;
+    background: var(--mainColor_active) !important;
+    color: var(--bgColor) !important;
 }
 .cover {
     width: 100%;
@@ -163,17 +162,13 @@ h6 {
 }
 
 /* TOC */
-#tocContent {
+#toc-content {
     /* border: var(--mainColor_active) solid 1px; */
     /* width: 16%; */
     /* height: 50%; */
     /* margin: 0 0 0 3%; */
     padding-right: 0;
     transition: padding-right 0.3s ease;
-    position: fixed;
-    top: 50%;
-    -webkit-transform: translate(0%, -50%);
-    transform: translate(0%, -50%);
     line-height: 1em;
     font-size: 1.2em;
     overflow-x: hidden;
@@ -181,7 +176,7 @@ h6 {
     font-family: var(--fontFamily_title);
     z-index: 100;
 }
-#tocList {
+#toc-list {
     overscroll-behavior: contain;
 }
 /* Credit: https://stackoverflow.com/questions/3874602/elements-to-look-like-a-bullet-point-list-inside-an-anchor-link */
@@ -230,11 +225,11 @@ h6 {
     display: none !important;
 }
 /* Credit: https://www.taccgl.org/blog/css-transition-visibility.html */
-/* #tocContent:hover > .chapter-title-container > .toc-text {
+/* #toc-content:hover > .chapter-title-container > .toc-text {
     visibility: visible;
     opacity: 1;
 } */
-#tocContent:hover {
+#toc-content:hover {
     padding-right: 1em; /* Leave space for the text */
     .chapter-title-container .toc-text {
         opacity: 1;
@@ -287,7 +282,6 @@ a.toc-active::before {
 /* Pagination */
 #pagination {
     opacity: var(--ui_paginationOpacity);
-    position: fixed;
     bottom: var(--ui_paginationBottom);
     background-color: var(--bgColor);
     border: 1px dashed var(--borderColor);
@@ -331,7 +325,7 @@ a.toc-active::before {
 #pagination:hover {
     opacity: 1;
 }
-.jumpInput {
+.page-jump-input {
     text-align: center;
     color: var(--paginationFontColor);
     font-family: var(--fontFamily_ui);
@@ -339,7 +333,7 @@ a.toc-active::before {
     outline: 0;
     background-color: var(--bgColor) !important;
 }
-.disabledbutton {
+.disabled-btn {
     pointer-events: none;
     opacity: 0.4;
 }
@@ -356,15 +350,11 @@ a.toc-active::before {
 
 /* Progress */
 #progress {
-    position: fixed;
     white-space: nowrap;
     text-overflow: ellipsis;
-    /* width: 16%; */
     height: 3.6em;
     line-height: 2em;
-    /* margin: 0 0 0 3%; */
     color: var(--fontInfoColor);
-    /* top: 75%; */
     font-size: 0.9em;
     z-index: 101;
 }
@@ -401,4 +391,49 @@ img#seal_end {
     height: auto;
     left: calc(100% - var(--seal_width) / 2);
     position: relative;
+}
+
+/* Message indicator styles */
+#message-indicator {
+    -webkit-transform: translate(-50%, calc(-60% - var(--ui_paginationBottom)));
+    transform: translate(-50%, calc(-60% - var(--ui_paginationBottom)));
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px var(--shadowColor);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    width: calc(min(30vw, 30vh, 200px));
+    height: calc(min(30vw, 30vh, 200px));
+    min-width: 180px;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    display: none;
+    overflow: hidden;
+    pointer-events: none !important;
+}
+#message-indicator::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: color-mix(in srgb, var(--mainColor_active), transparent 15%);
+    backdrop-filter: blur(15px);
+    z-index: -1;
+}
+#message-indicator .icon {
+    fill: var(--bgColor);
+    width: 120px;
+    height: 120px;
+    overflow: hidden;
+}
+#message-indicator .text {
+    font-size: 1rem;
+    font-weight: normal;
+    font-family: var(--fontFamily_ui);
+    text-align: center;
+    color: var(--bgColor);
+    overflow: hidden;
 }

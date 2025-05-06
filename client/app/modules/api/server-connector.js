@@ -65,7 +65,7 @@ class ServerConnector {
                 const data = await response.json();
                 if (data.status === "ok" && data.services?.library?.status === "ok") {
                     this.isFrontendMode = false;
-                    // console.log("Server mode activated:", data.services.library);
+                    logger.log("Server mode activated:", data.services.library);
                 }
             }
         } catch (e) {
@@ -159,9 +159,9 @@ class ServerConnector {
 
             for (const bookName of bookPaths) {
                 try {
-                    // console.log("Requesting token for book:", bookName);
+                    logger.log("Requesting token for book:", bookName);
                     const book = await fetchAuthenticatedFile(bookName, false);
-                    // console.log("Book metadata:", book);
+                    logger.log("Book metadata:", book);
                     books.push(book);
                 } catch (err) {
                     console.error(`Error loading book ${bookName}:`, err);
@@ -210,9 +210,9 @@ class ServerConnector {
                 STYLE: RUNTIME_VARS.STYLE,
             };
 
-            // console.log("Session ID:", this.sessionId);
-            // console.log("Sending runtime config:", config);
-            // console.log("Sending to:", `${this.config.API.URL.BASE}/config/update`);
+            logger.log("Session ID:", this.sessionId);
+            logger.log("Sending runtime config:", config);
+            logger.log("Sending to:", `${this.config.API.URL.BASE}/config/update`);
 
             const response = await fetch(`${this.config.API.URL.CONFIG_UPDATE}`, {
                 method: "POST",
@@ -231,7 +231,7 @@ class ServerConnector {
                 throw new Error(`Failed to send runtime config: ${response.statusText}`);
             }
 
-            // console.log("Runtime config sent to server successfully");
+            logger.log("Runtime config sent to server successfully");
         } catch (error) {
             console.error("Error sending runtime config:", error);
         }
@@ -287,11 +287,11 @@ export async function initServerConnector() {
     try {
         // Initialize WebSocket connection
         await WebSocketClient.getInstance();
-        // console.log("WebSocket connection initialized");
+        logger.log("WebSocket connection initialized");
 
         // Add global progress listener
         WebSocketClient.addListener("processingProgress", (data) => {
-            // console.log("Processing progress:", data);
+            logger.log("Processing progress:", data);
             const { bookName, percentage } = data;
 
             // Find the corresponding book's canvas

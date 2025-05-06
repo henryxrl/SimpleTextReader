@@ -87,17 +87,10 @@ export class TextProcessorDOM {
      * @private
      */
     static #addTitleClickHandler(anchor) {
-        anchor.addEventListener("click", function (e) {
+        anchor.addEventListener("click", async function (e) {
             e.preventDefault();
             const lineID = parseInt(this.parentElement.id.slice(4));
-            reader.gotoLine(lineID);
-            const line = CONFIG_DOM.DOM_ELEMENT.GET_LINE(lineID);
-            const top = line.offsetTop;
-            const style = line.currentStyle || window.getComputedStyle(line);
-            const top_margin = parseFloat(style.marginTop);
-            window.scrollTo(0, top - top_margin, {
-                behavior: "instant",
-            });
+            await reader.gotoChapterTitleLine(lineID);
         });
     }
 }

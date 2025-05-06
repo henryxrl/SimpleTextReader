@@ -7,6 +7,27 @@
     width: 100vw;
     height: 100vh;
     background: rgba(0, 0, 0, 0.4);
+    /* animation */
+    opacity: 0;
+    transition: transform 0.15s ease-out, opacity 0.15s ease-out;
+    pointer-events: none;
+}
+.settings-overlay.show {
+    animation: fadeIn 0.1s ease-in-out forwards;
+    pointer-events: auto;
+}
+.settings-overlay.hide {
+    animation: fadeOut 0.15s ease-in-out forwards;
+}
+.settings-overlay.no-animation.show {
+    opacity: 1 !important;
+    animation: none !important;
+    transition: none !important;
+}
+.settings-overlay.no-animation.hide {
+    opacity: 0 !important;
+    animation: none !important;
+    transition: none !important;
 }
 .settings-modal {
     top: 50%;
@@ -14,7 +35,7 @@
     -webkit-transform: translate(-50%, -50%);
     transform: translate(-50%, -50%);
     width: min(700px, 90vw);
-    height: min(495px, 85vh);
+    height: min(525px, 85vh);
     max-width: 90vw;
     max-height: 85vh;
     overflow: auto;
@@ -23,6 +44,47 @@
     overflow: hidden;
     position: fixed;
     z-index: 1004;
+    /* animation */
+    opacity: 0;
+    transition: transform 0.15s ease-out, opacity 0.15s ease-out;
+    transform-origin: center center;
+    transform: translate(-50%, -50%) scale(1);
+    pointer-events: none;
+}
+.settings-modal.show {
+    transform: translate(-50%, -50%) scale(1);
+    animation: fadeIn 0.1s ease-in-out forwards;
+    pointer-events: auto;
+}
+.settings-modal.hide {
+    transform: translate(-50%, -50%) scale(0.5);
+    animation: fadeOut 0.15s ease-in-out forwards;
+}
+.settings-modal.no-animation.show {
+    opacity: 1 !important;
+    animation: none !important;
+    transform: translate(-50%, -50%) scale(1) !important;
+}
+.settings-modal.no-animation.hide {
+    opacity: 0 !important;
+    animation: none !important;
+    transform: translate(-50%, -50%) scale(0.5) !important;
+}
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
 }
 .settings-container {
     display: flex;
@@ -154,7 +216,7 @@
     -moz-box-shadow: 0 0 5px var(--shadowColor);
     font-family: var(--fontFamily_ui) !important;
     color: var(--mainColor_active) !important;
-    visibility: hidden;
+    /* visibility: hidden; */
     contain: content;
 
     /* Add scroll related styles */
@@ -183,6 +245,40 @@
     display: inline-block;
     width: var(--ui_settingMenuWidth);
     cursor: default;
+}
+.settingItem-span .tooltip-icon {
+    display: inline-block;
+    font-size: 1rem;
+    color: var(--fontInfoColor);
+    cursor: pointer;
+    position: relative;
+    margin-left: 6px;
+    vertical-align: baseline;
+}
+.settingItem-span .tooltip {
+    font-size: 0.9rem;
+    position: absolute;
+    background-color: var(--bgColor);
+    border: 1px solid var(--borderColor);
+    border-radius: 8px;
+    padding: 10px 15px;
+    box-shadow: 0 0 5px var(--shadowColor);
+    -webkit-box-shadow: var(--shadowColor) 0 0 5px;
+    -moz-box-shadow: 0 0 5px var(--shadowColor);
+    font-family: var(--fontFamily_ui) !important;
+    color: var(--fontInfoColor) !important;
+    overflow: unset;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    max-width: 75%;
+    z-index: 5;
+}
+.settingItem-span .tooltip-icon:hover + .tooltip {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
 }
 .settingItem-divider {
     width: 90%;
@@ -393,6 +489,20 @@ input[type="color"]:not(:hover) {
 .select-options li[rel="hide"] {
     display: none;
 }
+.select-options li[data-status="loading"] {
+    color: var(--fontInfoColor) !important;
+    background: none !important;
+
+    &:hover,
+    &:active {
+        background: var(--fontInfoColor) !important;
+        color: var(--bgColor) !important;
+    }
+}
+.select-options li[data-status="loading"]:hover .option-action.loading-button,
+.select-options li[data-status="loading"]:active .option-action.loading-button {
+    stroke: var(--bgColor) !important;
+}
 /* Style the optgroup labels differently */
 .optgroup-label {
     color: var(--fontInfoColor);
@@ -437,6 +547,7 @@ input[type="color"]:not(:hover) {
     position: relative;
     pointer-events: none;
 }
+.option-action.loading-button,
 .option-action.delete-button {
     /* fill: var(--fontInfoColor); */
     stroke: var(--fontInfoColor);
@@ -444,20 +555,31 @@ input[type="color"]:not(:hover) {
     width: 1.2rem;
     display: flex;
     align-items: center;
-    cursor: pointer;
     position: relative;
     z-index: 1;
+}
+.option-action.delete-button {
+    cursor: pointer;
     pointer-events: auto;
 }
+.option-action.loading-button {
+    cursor: default;
+    pointer-events: none;
+    user-select: none;
+}
+.option-action.loading-button:hover,
 .option-action.delete-button:hover {
     stroke: var(--mainColor_active);
 }
-.select-options li:hover:not(.optgroup-label) .option-action.delete-button,
+.select-options li:hover:not(.optgroup-label) .option-action.loading-button,
+.select-options li.is-selected:not(.optgroup-label) .option-action.loading-button .select-options,
+li:hover:not(.optgroup-label) .option-action.delete-button,
 .select-options li.is-selected:not(.optgroup-label) .option-action.delete-button {
     stroke: var(--fontInfoColor);
 }
-
-.select-options li:hover:not(.optgroup-label) .option-action.delete-button:hover,
+.select-options li:hover:not(.optgroup-label) .option-action.loading-button:hover,
+.select-options li.is-selected:not(.optgroup-label) .option-action.loading-button:hover .select-options,
+li:hover:not(.optgroup-label) .option-action.delete-button:hover,
 .select-options li.is-selected:not(.optgroup-label) .option-action.delete-button:hover {
     stroke: var(--bgColor);
 }
@@ -475,14 +597,14 @@ input[type="color"]:not(:hover) {
     overflow: visible;
 }
 .about-icon {
-    width: 90px;
+    width: 110px;
     height: auto;
-    margin: 15px 0 10px 0;
+    margin: 15px 0;
     filter: drop-shadow(2px 2px 5px rgba(0, 0, 0, 0.1));
 }
 .about-title {
     font-weight: bold;
-    font-size: 1.8rem;
+    font-size: 1.9rem;
     font-family: var(--fontFamily_ui) !important;
     margin: 5px 0;
 }
@@ -563,6 +685,14 @@ input[type="color"]:not(:hover) {
     text-decoration: none;
     font-weight: 500;
     transition: color 0.2s ease, text-decoration 0.2s ease;
+}
+#settingLabel-about_version_date {
+    margin: 0;
+    font-size: 0.9rem;
+    font-family: var(--fontFamily_ui) !important;
+}
+#settingLabel-about_version_date:hover {
+    color: var(--mainColor_inactive);
 }
 
 /* Settings menu top row */

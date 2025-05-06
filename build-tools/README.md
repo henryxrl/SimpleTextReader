@@ -1,6 +1,6 @@
 # Build-Tools Directory
 
-The `build-tools/` directory contains scripts that automate key project management tasks, including building browser extensions, Docker containers, and generating changelogs. These tools streamline development and deployment, reducing manual effort.
+The `build-tools/` directory contains scripts that automate key project management tasks, including building browser extensions, Docker containers, subsetting fonts, and generating changelogs. These tools streamline development and deployment, reducing manual effort.
 
 ---
 
@@ -45,7 +45,27 @@ The `build-tools/` directory contains scripts that automate key project manageme
 
 ---
 
-### 2. `generate_changelog.py`
+### 2. `font_subset.py`
+
+**Purpose**: Creates a subset of a font file by extracting only the necessary characters.
+
+**Responsibilities**:
+
+- Scans specified files to collect all characters or only Chinese characters.
+- Uses the extracted characters to generate a subset of the original font.
+- Outputs a new font file containing only the selected characters.
+
+**Usage**:
+
+- Generate a subsetted font:
+
+  ```bash
+  python build-tools/font_subset.py [full-font] [subset-font]
+  ```
+
+---
+
+### 3. `generate_changelog.py`
 
 **Purpose**: Generates a formatted `CHANGELOG.md` file from Git commit messages.
 

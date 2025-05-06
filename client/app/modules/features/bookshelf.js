@@ -1030,7 +1030,7 @@ const bookshelf = {
             bookElm.addClass("read").css("--read-progress", progress);
             if (getIsBookFinished(fname)) {
                 bookElm.data("isFinished", true);
-                // bookElm.find(".progress").html(CONFIG.RUNTIME_VARS.STYLE.ui_bookFinished).attr("title", progress);
+                // bookElm.find(".progress").html(CONFIG.RUNTIME_VARS.STYLE.ui_bookFinished).attr("data-title", progress);
                 // add styling to the text of read
                 const read_text = `<span class="read_text">
                 ${ICONS.FINISHED}
@@ -1040,18 +1040,17 @@ const bookshelf = {
                 // add a badge to the book cover
                 // const badge = `<div class="bookFinished_badge">${ICONS.FINISHED_BADGE_OLD}</div>`;
                 const badge = `<div class="bookFinished_badge">${ICONS.FINISHED_BADGE}</div>`;
-                bookElm.find(".coverContainer").append(badge);
+                bookElm.find(".cover-container").append(badge);
             } else {
                 if (parseInt(progress) >= 99) {
                     bookElm.data("almostDone", true);
                     const almostDone_text = `<span class="almostDone_text">${CONFIG.RUNTIME_VARS.STYLE.ui_bookAlmostDone}</span>`;
-                    bookElm
-                        .find(".progress")
-                        .html(progress + almostDone_text)
-                        .attr("title", progress);
+                    bookElm.find(".progress").html(progress + almostDone_text);
+                    // .attr("data-title", progress);
                 } else {
                     bookElm.data("inProgress", true);
-                    bookElm.find(".progress").html(progress).attr("title", progress);
+                    bookElm.find(".progress").html(progress);
+                    // .attr("data-title", progress);
                 }
             }
         } else {
@@ -1065,7 +1064,7 @@ const bookshelf = {
 
             // add a badge to the book cover
             const badge = `<div class="bookNotRead_badge">${ICONS.NEWBOOK_RIBBON}</div>`;
-            bookElm.find(".coverContainer").append(badge);
+            bookElm.find(".cover-container").append(badge);
         }
     },
 
@@ -1081,21 +1080,23 @@ const bookshelf = {
         const canvasHeight = getSizePrecise(CONFIG.RUNTIME_VARS.STYLE.ui_bookCoverHeight);
         const book = $(
             `<div class="book" data-filename="${bookInfo.name}">
-                <div class="coverContainer">
-                    <span class="coverText">${bookInfo.name}</span>
-                    <canvas class="coverCanvas" width="${canvasWidth}" height="${canvasHeight}"></canvas>
+                <div class="cover-container">
+                    <span class="cover-text">${bookInfo.name}</span>
+                    <canvas class="cover-canvas" width="${canvasWidth}" height="${canvasHeight}"></canvas>
                 </div>
-                <div class="infoContainer">
+                <div class="info-container">
                     <div class="progress"></div>
                     <div class="isOnServer">
                         ${bookInfo.isOnServer && !bookInfo.isFromLocal ? `${ICONS.BOOK_IS_ON_SERVER}` : ""}
                     </div>
                     <div class="delete-btn-wrapper">
-                        <span class="delete-btn hasTitle" title="${CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_removeBook}">
+                        <span class="delete-btn hasTitle" data-title="${
+                            CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_removeBook
+                        }">
                             ${ICONS.DELETE_BOOK}
                         </span>
                     </div>
-                    <div id="bookInfoMenuBtn-${idx}" class="bookInfoMenuBtn hasTitle" title="${
+                    <div id="bookinfo-menu-btn-${idx}" class="bookinfo-menu-btn hasTitle" data-title="${
                 CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_bookInfo
             }">
                         <input id="dot-menu-${idx}" type="checkbox" class="dot-menu__checkbox">
@@ -1105,7 +1106,7 @@ const bookshelf = {
             </div>`
         );
         const currentBookNameAndAuthor = TextProcessor.getBookNameAndAuthor(removeFileExtension(bookInfo.name));
-        const canvas = book.find(".coverCanvas");
+        const canvas = book.find(".cover-canvas");
         const ctx = canvas[0].getContext("2d");
         const coverSettings = this._getCoverSettings({
             width: canvasWidth,
@@ -1114,20 +1115,20 @@ const bookshelf = {
         });
         this._getCoverGenerator().generate(coverSettings, ctx);
         if (currentBookNameAndAuthor.author === "") {
-            book.find(".coverContainer").css("box-shadow", "var(--ui_bookshadow_noAuthor)");
+            book.find(".cover-container").css("box-shadow", "var(--ui_bookshadow_noAuthor)");
         } else {
-            book.find(".coverContainer").css("box-shadow", "var(--ui_bookshadow)");
+            book.find(".cover-container").css("box-shadow", "var(--ui_bookshadow)");
         }
         book.data("isEastern", bookInfo.isEastern);
         book.data("bookNameAndAuthor", currentBookNameAndAuthor);
 
         // add mouseover effect
-        book.find(".coverContainer")
+        book.find(".cover-container")
             .on("mouseenter", function () {
                 book.find(".delete-btn-wrapper").css("opacity", "1");
                 $(this).css("box-shadow", "var(--ui_bookshadow_hover)");
                 // add a tooltip to the book cover
-                $(this).attr("title", CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_book_altClick);
+                $(this).attr("data-title", CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_book_altClick);
             })
             .on("mouseleave", function (e) {
                 if (
@@ -1147,7 +1148,7 @@ const bookshelf = {
                     }
                 }
             });
-        book.find(".infoContainer")
+        book.find(".info-container")
             .on("mouseenter", function () {
                 book.find(".delete-btn-wrapper").css("opacity", "1");
             })
@@ -1156,7 +1157,7 @@ const bookshelf = {
             });
 
         // add click event
-        book.find(".coverContainer").on("click", (e) => {
+        book.find(".cover-container").on("click", (e) => {
             e.originalEvent.stopPropagation();
             if (e.altKey) {
                 // Alt key on Windows/Linux, Option key on Mac
@@ -1195,21 +1196,29 @@ const bookshelf = {
                     removeHistory(bookInfo.name);
                 });
                 // b.animate({width: 0, opacity: 0}, 500, () => b.remove());
+
+                PopupManager.showNotification({
+                    iconName: "DELETE_BOOK",
+                    text: CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_deleteBook.replace(
+                        "xxx",
+                        `"${bookInfo.name}"`
+                    ),
+                });
             });
         });
 
         // update book progress info
         this.updateBookProgressInfo(bookInfo.name, book);
 
-        // add a bookInfoMenuBtn
-        book.find(`#bookInfoMenuBtn-${idx}`).on("click", (e) => {
+        // add a bookinfo-menu-btn
+        book.find(`#bookinfo-menu-btn-${idx}`).on("click", (e) => {
             _handleBookInfoMenu(e, e.currentTarget);
         });
 
         // add right click event
-        book.find(".coverContainer").on("contextmenu", (e) => {
+        book.find(".cover-container").on("contextmenu", (e) => {
             // e.originalEvent.preventDefault();
-            // const targetElement = book.find(`#bookInfoMenuBtn-${idx}`).get(0);
+            // const targetElement = book.find(`#bookinfo-menu-btn-${idx}`).get(0);
             // _handleBookInfoMenu(e, targetElement);
         });
 
@@ -1217,10 +1226,10 @@ const bookshelf = {
         function _handleBookInfoMenu(e, targetElement) {
             e.originalEvent.stopPropagation();
 
-            // remove all bookInfoMenu
-            $(".bookInfoMenu").remove();
+            // remove all bookinfo-menu
+            $(".bookinfo-menu").remove();
 
-            // add bookInfoMenu
+            // add bookinfo-menu
             if (book.find(".dot-menu__checkbox").is(":checked") || e.originalEvent.button === 2) {
                 const tempBookAuthor =
                     book.data("bookNameAndAuthor") ??
@@ -1228,51 +1237,51 @@ const bookshelf = {
                 const tempBookTitle = tempBookAuthor.bookName;
                 const tempBookAuthorName =
                     tempBookAuthor.author === ""
-                        ? `<span class="bookInfoMenu_item_text">${CONFIG.RUNTIME_VARS.STYLE.ui_bookInfo_Unknown}<span>`
-                        : `<span class="bookInfoMenu_item_info">${tempBookAuthor.author}<span>`;
+                        ? `<span class="bookinfo-menu-item-text">${CONFIG.RUNTIME_VARS.STYLE.ui_bookInfo_Unknown}<span>`
+                        : `<span class="bookinfo-menu-item-info">${tempBookAuthor.author}<span>`;
                 const tempBookLastOpenedTimestamp =
                     isVariableDefined(bookInfo.lastOpenedTimestamp) && bookInfo.lastOpenedTimestamp !== ""
-                        ? `<span class="bookInfoMenu_item_info">${convertUTCTimestampToLocalString(
+                        ? `<span class="bookinfo-menu-item-info">${convertUTCTimestampToLocalString(
                               bookInfo.lastOpenedTimestamp
                           )}<span>`
-                        : `<span class="bookInfoMenu_item_text">${CONFIG.RUNTIME_VARS.STYLE.ui_bookInfo_Unknown}<span>`;
+                        : `<span class="bookinfo-menu-item-text">${CONFIG.RUNTIME_VARS.STYLE.ui_bookInfo_Unknown}<span>`;
 
                 // show popup menu
                 const bookInfoMenu = `
-                <div class="bookInfoMenu" id="bookInfoMenu-${idx}">
-                    <div class="bookInfoMenu-clip"></div>
-                    <div class="bookInfoMenu_item">
-                        <span class="bookInfoMenu_item_text">${CONFIG.RUNTIME_VARS.STYLE.ui_bookInfo_bookname}</span>
-                        <span class="bookInfoMenu_item_info bookInfoMenu_item_info_title">${tempBookTitle}</span>
+                <div class="bookinfo-menu" id="bookinfo-menu-${idx}">
+                    <div class="bookinfo-menu-clip"></div>
+                    <div class="bookinfo-menu_item">
+                        <span class="bookinfo-menu-item-text">${CONFIG.RUNTIME_VARS.STYLE.ui_bookInfo_bookname}</span>
+                        <span class="bookinfo-menu-item-info bookinfo-menu-item-info_title">${tempBookTitle}</span>
                     </div>
-                    <div class="bookInfoMenu_item">
-                        <span class="bookInfoMenu_item_text">${CONFIG.RUNTIME_VARS.STYLE.ui_bookInfo_author}</span>
-                        <span class="bookInfoMenu_item_info bookInfoMenu_item_info_author">${tempBookAuthorName}</span>
+                    <div class="bookinfo-menu_item">
+                        <span class="bookinfo-menu-item-text">${CONFIG.RUNTIME_VARS.STYLE.ui_bookInfo_author}</span>
+                        <span class="bookinfo-menu-item-info bookinfo-menu-item-info_author">${tempBookAuthorName}</span>
                     </div>
-                    <div class="bookInfoMenu_item">
-                        <span class="bookInfoMenu_item_text">${CONFIG.RUNTIME_VARS.STYLE.ui_bookInfo_filename}</span>
-                        <span class="bookInfoMenu_item_info bookInfoMenu_item_info_filename">${bookInfo.name}</span>
+                    <div class="bookinfo-menu_item">
+                        <span class="bookinfo-menu-item-text">${CONFIG.RUNTIME_VARS.STYLE.ui_bookInfo_filename}</span>
+                        <span class="bookinfo-menu-item-info bookinfo-menu-item-info_filename">${bookInfo.name}</span>
                     </div>
-                    <div class="bookInfoMenu_item">
-                        <span class="bookInfoMenu_item_text">${CONFIG.RUNTIME_VARS.STYLE.ui_bookInfo_filesize}</span>
-                        <span class="bookInfoMenu_item_info bookInfoMenu_item_info_filesize">${formatBytes(
+                    <div class="bookinfo-menu_item">
+                        <span class="bookinfo-menu-item-text">${CONFIG.RUNTIME_VARS.STYLE.ui_bookInfo_filesize}</span>
+                        <span class="bookinfo-menu-item-info bookinfo-menu-item-info_filesize">${formatBytes(
                             bookInfo.size
                         )}</span>
                     </div>
-                    <div class="bookInfoMenu_item">
-                        <span class="bookInfoMenu_item_text bookInfoMenu_item_info_timestamp">${
+                    <div class="bookinfo-menu_item">
+                        <span class="bookinfo-menu-item-text bookinfo-menu-item-info_timestamp">${
                             CONFIG.RUNTIME_VARS.STYLE.ui_bookInfo_lastopened
                         }</span>
                         ${tempBookLastOpenedTimestamp}
                     </div>
                 </div>`;
 
-                book.find(".infoContainer").append(bookInfoMenu);
+                book.find(".info-container").append(bookInfoMenu);
 
-                // set bookInfoMenu's position to be right above current element
-                const bookInfoMenuWidth = book.find(`#bookInfoMenu-${idx}`).outerWidth();
-                const bookInfoMenuHeight = book.find(`#bookInfoMenu-${idx}`).outerHeight();
-                book.find(`#bookInfoMenu-${idx}`).css(
+                // set bookinfo-menu's position to be right above current element
+                const bookInfoMenuWidth = book.find(`#bookinfo-menu-${idx}`).outerWidth();
+                const bookInfoMenuHeight = book.find(`#bookinfo-menu-${idx}`).outerHeight();
+                book.find(`#bookinfo-menu-${idx}`).css(
                     "top",
                     `${
                         targetElement.getBoundingClientRect().bottom -
@@ -1281,7 +1290,7 @@ const bookshelf = {
                         15
                     }px`
                 );
-                book.find(`#bookInfoMenu-${idx}`).css(
+                book.find(`#bookinfo-menu-${idx}`).css(
                     "left",
                     `${
                         targetElement.getBoundingClientRect().left +
@@ -1292,25 +1301,25 @@ const bookshelf = {
                 );
             } else {
                 // hide popup menu
-                book.find(".bookInfoMenu").remove();
+                book.find(".bookinfo-menu").remove();
             }
 
             // hide popup menu when clicked outside
             document.addEventListener("click", function (e) {
-                const settingsMenu = book.find(`#bookInfoMenu-${idx}`);
+                const settingsMenu = book.find(`#bookinfo-menu-${idx}`);
                 // if (!settingsMenu) return;
                 if ($(e.target).closest(settingsMenu).length) {
                     // clicked inside menu
                 } else {
                     book.find(".dot-menu__checkbox").prop("checked", false);
-                    book.find(".bookInfoMenu").remove();
+                    book.find(".bookinfo-menu").remove();
                 }
             });
 
-            // reset all book cover art when mouseover the bookInfoMenu
-            book.find(".bookInfoMenu").on("mouseenter", function () {
+            // reset all book cover art when mouseover the bookinfo-menu
+            book.find(".bookinfo-menu").on("mouseenter", function () {
                 // $(".delete-btn-wrapper").css("visibility", "hidden");
-                $(".coverContainer").css("box-shadow", "var(--ui_bookshadow)");
+                $(".cover-container").css("box-shadow", "var(--ui_bookshadow)");
             });
         }
 
@@ -1443,7 +1452,7 @@ const bookshelf = {
             }
 
             // Update filter bar
-            await this._updateFilterBar();
+            this._updateFilterBar();
 
             // If there is no book in bookshelf, hide the bookshelf
             // Otherwise, show the bookshelf, but not the bookshelf trigger button
@@ -1552,7 +1561,7 @@ const bookshelf = {
             const booklist = document.querySelector(".bookshelf .booklist");
 
             if (!firstBook || !filterBar || !booklist) {
-                console.warn("Required elements not found.");
+                // console.warn("Required elements not found.");
                 return;
             }
 
@@ -1603,10 +1612,9 @@ const bookshelf = {
 
     /**
      * Updates the filter bar with book list filter buttons, book count, and remove all books button
-     * @async
      * @private
      */
-    async _updateFilterBar() {
+    _updateFilterBar() {
         /**
          * Get all book information and initialize variables
          */
@@ -1739,6 +1747,11 @@ const bookshelf = {
                         $(".booklist").empty();
                         CONFIG.VARS.ALL_BOOKS_INFO = {};
                         $(".booklist").trigger("contentchange");
+
+                        PopupManager.showNotification({
+                            iconName: "DELETE_ALL_BOOKS",
+                            text: CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_deleteAllBooks,
+                        });
                     });
                 },
             });
@@ -1963,9 +1976,9 @@ const bookshelf = {
      */
     hideTriggerBtn(doNotRemove = true) {
         if (!doNotRemove) {
-            $("#STRe-bookshelf-btn").remove();
+            $("#bookshelf-btn").remove();
         } else {
-            $("#STRe-bookshelf-btn").hide();
+            $("#bookshelf-btn").hide();
         }
     },
 
@@ -1973,7 +1986,7 @@ const bookshelf = {
      * Shows the bookshelf trigger button
      */
     showTriggerBtn() {
-        $("#STRe-bookshelf-btn").show();
+        $("#bookshelf-btn").show();
     },
 
     /**
@@ -2229,18 +2242,18 @@ const bookshelf = {
             });
 
             // Create the bookshelf element
-            $(`<div class="bookshelf">
+            $(`<div id="bookshelf" class="bookshelf">
             <div class="title">${CONFIG.RUNTIME_VARS.STYLE.ui_bookshelfCachedStorage}
             <div class="sub-title">${CONFIG.RUNTIME_VARS.STYLE.ui_bookshelfCachedStorage_subTitle}<br/>
                 <span id="bookshelfUsageText">${CONFIG.RUNTIME_VARS.STYLE.ui_bookshelfCachedStorage_usage}&nbsp;<span id="bookshelfUsagePct"></span>% (<span id="bookshelfUsage"></span> / <span id="bookshelfQuota"></span>)</span></div></div>
             <nav class="booklist-filter-bar"></nav>
             <div class="booklist"></div>
             <div class="bookshelf-btn-group">
-                <div id="scrollTop-btn" class="btn-icon hasTitle" title="${CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_bookshelf_scrollTop}" style="visibility:hidden">
-                    ${ICONS.BOOKLIST_SCROLL_TOP}
+                <div id="scroll-top-btn" class="btn-icon hasTitle" data-title="${CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_bookshelf_scrollTop}" style="visibility:hidden">
+                    ${ICONS.SCROLL_TOP}
                 </div>
-                <div id="scrollBottom-btn" class="btn-icon hasTitle" title="${CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_bookshelf_scrollBottom}" style="visibility:hidden">
-                    ${ICONS.BOOKLIST_SCROLL_BOTTOM}
+                <div id="scroll-bottom-btn" class="btn-icon hasTitle" data-title="${CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_bookshelf_scrollBottom}" style="visibility:hidden">
+                    ${ICONS.SCROLL_BOTTOM}
                 </div>
             </div>
             </div>`)
@@ -2257,38 +2270,40 @@ const bookshelf = {
                 const scrollHeight = $booklist[0].scrollHeight;
                 const offsetHeight = $booklist[0].offsetHeight;
 
-                if (scrollTop > 0) {
-                    $("#scrollTop-btn")
-                        .css("visibility", "visible")
-                        .on("click", () => {
-                            // $booklist.scrollTop = 0;
-                            $booklist.stop(true, false);
-                            $booklist.animate({ scrollTop: 0 }, scrollHeight / 10);
-                        });
-                } else {
-                    $("#scrollTop-btn").css("visibility", "hidden");
-                }
-                if (scrollHeight - offsetHeight - scrollTop > 1) {
-                    $("#scrollBottom-btn")
-                        .css("visibility", "visible")
-                        .on("click", () => {
-                            $booklist.stop(true, false);
-                            $booklist.animate(
-                                {
-                                    scrollTop: scrollHeight - offsetHeight,
-                                },
-                                scrollHeight / 10
-                            );
-                        });
-                } else {
-                    $("#scrollBottom-btn").css("visibility", "hidden");
+                if ($booklist.css("visibility") === "visible") {
+                    if (scrollTop > 0) {
+                        $("#scroll-top-btn")
+                            .css("visibility", "visible")
+                            .on("click", () => {
+                                // $booklist.scrollTop = 0;
+                                $booklist.stop(true, false);
+                                $booklist.animate({ scrollTop: 0 }, scrollHeight / 10);
+                            });
+                    } else {
+                        $("#scroll-top-btn").css("visibility", "hidden");
+                    }
+                    if (scrollHeight - offsetHeight - scrollTop > 1) {
+                        $("#scroll-bottom-btn")
+                            .css("visibility", "visible")
+                            .on("click", () => {
+                                $booklist.stop(true, false);
+                                $booklist.animate(
+                                    {
+                                        scrollTop: scrollHeight - offsetHeight,
+                                    },
+                                    scrollHeight / 10
+                                );
+                            });
+                    } else {
+                        $("#scroll-bottom-btn").css("visibility", "hidden");
+                    }
                 }
             }
 
             $(".booklist").on("scroll", () => {
                 defineScrollBtns();
                 $(".dot-menu__checkbox").prop("checked", false);
-                $(".bookInfoMenu").remove();
+                $(".bookinfo-menu").remove();
             });
 
             $(".booklist").on("contentchange", async (e) => {
@@ -2374,25 +2389,25 @@ const bookshelf = {
                     defineScrollBtns();
                 } else {
                     // console.log("not overflown");
-                    $("#scrollTop-btn").css("visibility", "hidden");
-                    $("#scrollBottom-btn").css("visibility", "hidden");
+                    $("#scroll-top-btn").css("visibility", "hidden");
+                    $("#scroll-bottom-btn").css("visibility", "hidden");
                 }
 
                 // Update filter bar
-                await this._updateFilterBar();
+                this._updateFilterBar();
             });
 
             $(window).on("resize", () => {
                 $(".booklist").trigger("contentchange");
                 $(".dot-menu__checkbox").prop("checked", false);
-                $(".bookInfoMenu").remove();
+                $(".bookinfo-menu").remove();
             });
 
             // capable of scrolling booklist within the entire bookshelf
             document.getElementsByClassName("bookshelf")[0].addEventListener("wheel", (e) => {
-                // prevent scrolling booklist when mouse is hovering on bookInfoMenu
-                if ($(".bookInfoMenu").length > 0) {
-                    if ($(".bookInfoMenu").is(":hover")) {
+                // prevent scrolling booklist when mouse is hovering on bookinfo-menu
+                if ($(".bookinfo-menu").length > 0) {
+                    if ($(".bookinfo-menu").is(":hover")) {
                         return;
                     }
                 }
@@ -2401,15 +2416,15 @@ const bookshelf = {
                 document.getElementsByClassName("booklist")[0].scrollTop += e.deltaY;
             });
 
-            // Set tooltip for Dropzone
-            document.getElementsByClassName("bookshelf")[0].addEventListener("mouseenter", () => {
-                CONFIG.DOM_ELEMENT.DROPZONE.title = "";
-            });
+            // // Set tooltip for Dropzone
+            // document.getElementsByClassName("bookshelf")[0].addEventListener("mouseenter", () => {
+            //     CONFIG.DOM_ELEMENT.DROPZONE.dataset.title = "";
+            // });
 
-            // Reset tooltip for Dropzone
-            document.getElementsByClassName("bookshelf")[0].addEventListener("mouseleave", () => {
-                CONFIG.DOM_ELEMENT.DROPZONE.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_dropZone;
-            });
+            // // Reset tooltip for Dropzone
+            // document.getElementsByClassName("bookshelf")[0].addEventListener("mouseleave", () => {
+            //     CONFIG.DOM_ELEMENT.DROPZONE.dataset.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_dropZone;
+            // });
 
             // Create worker
             this.worker = createWorker("client/app/modules/database/bookshelf-db-worker.js", import.meta.url);
@@ -2440,16 +2455,16 @@ const bookshelf = {
     /**
      * Initializes the bookshelf UI by creating the trigger button
      */
-    async init() {
+    init() {
         // Initialize the bookshelf trigger button
         const $button = $(
-            `<div id="STRe-bookshelf-btn" class="btn-icon hasTitle" title="${CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_goToBookshelf}">${ICONS.BOOKSHELF}</div>`
+            `<div id="bookshelf-btn" class="btn-icon hasTitle" data-title="${CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_goToBookshelf}">${ICONS.BOOKSHELF}</div>`
         );
         $button.on("click", async () => {
             // setSvgPathLength($button.get(0));
             await resetUI();
         });
-        $button.prependTo($("#btnWrapper")).hide();
+        $button.prependTo($("#main-btn-wrapper")).hide();
 
         // Handle popstate event
         window.addEventListener("popstate", async (e) => {
@@ -2488,8 +2503,8 @@ const bookshelf = {
 export async function initBookshelf(displayBooks = true) {
     // Enable bookshelf functionality
     if (CONFIG.RUNTIME_CONFIG.ENABLE_BOOKSHELF) {
-        await bookshelf.init();
         await bookshelf.enable();
+        bookshelf.init();
 
         if (displayBooks) {
             // Now whether or not to show bookshelf depends on whether there is a book in bookshelf
@@ -2507,10 +2522,10 @@ export async function initBookshelf(displayBooks = true) {
  * Forces the filter bar to recalculate its width
  * @public
  */
-export async function forceRecalculateFilterBar() {
+export function forceRecalculateFilterBar() {
     if (CONFIG.RUNTIME_CONFIG.ENABLE_BOOKSHELF) {
         if (bookshelf.enabled) {
-            await bookshelf._updateFilterBar();
+            bookshelf._updateFilterBar();
         }
     }
 }

@@ -87,7 +87,7 @@ export class TextProcessorCore {
      * Process text content line by line
      * @param {string} str - The text line to process.
      * @param {number} lineNumber - The current line number.
-     * @param {boolean} isTitleOrEndPage - Whether the line is a title or end page.
+     * @param {boolean} isTitlePageOrEndPage - Whether the line is a title or end page.
      * @param {Object} bookAndAuthor - The book and author information.
      * @param {boolean} isEasternLan - Whether the language is Eastern.
      * @returns {[HTMLElement, string]} Processed DOM element and type identifier.
@@ -96,11 +96,11 @@ export class TextProcessorCore {
     static process(
         str,
         lineNumber,
-        isTitleOrEndPage = false,
+        isTitlePageOrEndPage = false,
         bookAndAuthor = CONFIG_VAR.VARS.BOOK_AND_AUTHOR,
         isEasternLan = CONFIG_VAR.VARS.IS_EASTERN_LAN
     ) {
-        if (isTitleOrEndPage) {
+        if (isTitlePageOrEndPage) {
             const current = str.trim();
             if (current.slice(1, 3) === "h1" || current.slice(1, 5) === "span") {
                 this.#shouldDropCap = false;
@@ -130,7 +130,11 @@ export class TextProcessorCore {
             if (current !== "") {
                 if (this.#REGEX_IS_TITLE.test(current)) {
                     this.#shouldDropCap = true;
-                    const content = current.replace(":", " ").replace("：", " ");
+                    const content = current
+                        .replace(REGEX_RULES.TITLE_USER_INDICATOR, "")
+                        .replace(":", " ")
+                        .replace("：", " ")
+                        .trim();
                     const content2 = this.#removeHtmlTags(content);
                     return {
                         type: "heading",
@@ -279,7 +283,12 @@ export class TextProcessorCore {
         if (isMatch) {
             const { titleGroups, namedGroups, isCustomOnly } = this.#getTitleGroups(current);
             // console.log("titleGroups", { titleGroups, namedGroups, isCustomOnly });
-            return [current.replace(":", " ").replace("：", " "), titleGroups, namedGroups, isCustomOnly];
+            return [
+                current.replace(REGEX_RULES.TITLE_USER_INDICATOR, "").replace(":", " ").replace("：", " ").trim(),
+                titleGroups,
+                namedGroups,
+                isCustomOnly,
+            ];
         } else {
             return ["", [], {}, false];
         }

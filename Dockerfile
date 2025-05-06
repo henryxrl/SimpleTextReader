@@ -25,6 +25,7 @@ COPY client/images/ ./client/images/
 COPY client/app/ ./client/app/
 COPY index.html ./index.html
 COPY version.json ./version.json
+COPY help.json ./help.json
 COPY client/manifests/PWA/manifest.json ./client/manifests/PWA/manifest.json
 
 # Production stage

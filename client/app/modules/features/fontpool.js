@@ -338,7 +338,7 @@ const fontpool = {
 
                 return [true, fontName];
             } catch (e) {
-                console.log(e);
+                console.log("Error saving font:", e);
                 return [false, null];
             }
         }
@@ -692,7 +692,7 @@ const fontpool = {
         if (this.enabled) {
             this.db = null;
             this.enabled = false;
-            console.log("Module <Fontpool> disabled.");
+            console.log("Module disabled.");
         }
         return this;
     },

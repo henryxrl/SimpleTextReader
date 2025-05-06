@@ -1,16 +1,47 @@
 {
-    "version": "1.6.9.1",
+    "version": "1.6.9.2",
     "changelog": {
+        "1.6.9.2": {
+            "date": "2025-04-03",
+            "changes": {
+                "zh": [
+                    "新增 **可拖动的分隔条**，用于调整目录区域和内容区域的宽度比例",
+                    "新增 **目录** 和 **内容** 区域的相关设置",
+                    "新增 **无限滚动模式** （可在设置菜单中开启）",
+                    "新增 **自定义光标** 的设置",
+                    "新增 **手动标记标题** 功能（见帮助中心）",
+                    "新增 **PageUp/PageDown** 快捷键",
+                    "新增 **帮助中心** 按键（可在设置菜单中关闭）",
+                    "移除主界面的 **虚线边框**",
+                    "新增 **带动画效果的虚线边框** （在拖拽或选择文件时显示）",
+                    "优化设置菜单的样式和布局",
+                    "修复了一些 UI 问题"
+                ],
+                "en": [
+                    "Added a **draggable divider** for adjusting the width ratio between TOC and the main content",
+                    "Added settings related to **TOC** and **main content** areas",
+                    "Added **infinite scroll mode** (can be enabled in settings)",
+                    "Added an option to **enable custom cursor**",
+                    "Added **manual title marking** feature (see help center)",
+                    "Added **PageUp/PageDown** shortcut keys",
+                    "Added **help center** button (can be disabled in settings)",
+                    "Removed the **dashed border** from the main interface",
+                    "Added an **animated dashed border** (displayed when dragging or selecting files)",
+                    "Improved settings menu styles and layout",
+                    "Fixed various UI issues"
+                ]
+            }
+        },
         "1.6.9.1": {
             "date": "2025-03-08",
             "changes": {
                 "zh": [
-                    "新增段落间距、首行缩进、两端对齐等排版设置",
+                    "新增 **段落间距**、**首行缩进**、**两端对齐** 等排版设置",
                     "优化设置菜单组件的样式",
                     "调整设置菜单的布局"
                 ],
                 "en": [
-                    "Added options for paragraph spacing, first-line indent, and text alignment",
+                    "Added options for **paragraph spacing**, **first-line indent**, and **text alignment**",
                     "Refined the styling of settings menu components",
                     "Improved the layout of the settings menu"
                 ]
@@ -20,12 +51,12 @@
             "date": "2025-02-28",
             "changes": {
                 "zh": [
-                    "支持浏览器历史导航",
-                    "全新的设置菜单"
+                    "支持 **浏览器历史导航**",
+                    "全新的 **设置菜单**"
                 ],
                 "en": [
-                    "Support for browser history navigation",
-                    "New settings menu interface"
+                    "Support for **browser history navigation**",
+                    "New **settings menu** interface"
                 ]
             }
         },
@@ -33,13 +64,13 @@
             "date": "2025-02-06",
             "changes": {
                 "zh": [
-                    "修复了首字符为标点符号时首字下沉的问题",
-                    "限制书籍文件大小为 128MB",
+                    "修复了 **首字符为标点符号时首字下沉** 的问题",
+                    "限制书籍文件大小为 **128MB**",
                     "修复了 UI 相关问题"
                 ],
                 "en": [
-                    "Fixed an issue with drop cap when the first character is a punctuation",
-                    "Limit the book file size to 128MB",
+                    "Fixed an issue with **drop cap when the first character is a punctuation**",
+                    "Limit the book file size to **128MB**",
                     "Fixed UI related bugs"
                 ]
             }
@@ -48,12 +79,12 @@
             "date": "2024-12-29",
             "changes": {
                 "zh": [
-                    "支持从用户定义的目录加载文本文件（需要通过服务器部署，如使用 Docker）",
+                    "支持 **从用户定义的目录加载文本文件**（需要通过服务器部署，如使用 Docker）",
                     "重构代码以提高可维护性",
                     "修复了书名中包含括号时无法正确处理的问题"
                 ],
                 "en": [
-                    "Support loading text files from a user-defined directory (requires deployment on a server, such as using Docker)",
+                    "Support **loading text files from a user-defined directory** (requires deployment on a server, such as using Docker)",
                     "Refactored code for better maintainability",
                     "Fixed an issue with handling book titles containing brackets"
                 ]
@@ -63,13 +94,13 @@
             "date": "2024-12-22",
             "changes": {
                 "zh": [
-                    "支持加载最多 3 个自定义字体，拖入字体文件即可",
-                    "新增消息提示系统",
+                    "支持加载 **最多 3 个自定义字体**，拖入字体文件即可",
+                    "新增 **消息提示系统**",
                     "修复 UI 相关问题"
                 ],
                 "en": [
-                    "Support loading up to 3 custom fonts by dragging font files into the interface",
-                    "Added message notification system",
+                    "Support loading **up to 3 custom fonts** by dragging font files into the interface",
+                    "Added **message notification system**",
                     "Fixed UI related bugs"
                 ]
             }
@@ -78,14 +109,14 @@
             "date": "2024-12-13",
             "changes": {
                 "zh": [
-                    "新增过滤栏和按钮，用于分类书籍",
-                    "新增“移除所有书籍”功能",
-                    "新增 Alt/Option+点击，强制重新处理书籍"
+                    "新增 **过滤栏**，用于分类书籍",
+                    "新增 **移除所有书籍** 功能",
+                    "新增 **Alt/Option+点击**，强制重新处理书籍"
                 ],
                 "en": [
-                    "Added filter bar and buttons for categorizing books",
-                    "Added 'Remove all books' functionality with confirmation prompt",
-                    "Added Alt/Option+click to force reprocess a book"
+                    "Added **filter bar** for categorizing books",
+                    "Added **Remove all books** functionality with confirmation prompt",
+                    "Added **Alt/Option+click** to force reprocess a book"
                 ]
             }
         },
@@ -93,12 +124,12 @@
             "date": "2024-12-06",
             "changes": {
                 "zh": [
-                    "新增章节标题检测器，自动提取章节标题",
+                    "新增 **章节标题检测器**，自动提取章节标题",
                     "完善新的分页计算逻辑",
                     "移除内嵌的方正字体"
                 ],
                 "en": [
-                    "Added chapter title detector, automatically extract chapter titles",
+                    "Added **chapter title detector**，automatically extract chapter titles",
                     "Improved new pagination calculation logic",
                     "Removed embedded Fang Zheng fonts"
                 ]
@@ -108,19 +139,19 @@
             "date": "2024-12-03",
             "changes": {
                 "zh": [
-                    "全新的主界面设计",
-                    "新增版本号显示功能",
-                    "新增 `no-fast-open` 和 `always-process` URL 参数",
-                    "新增更好的短标题提取功能",
-                    "新增括号平衡检测功能",
+                    "全新的 **主界面设计**",
+                    "新增 **版本号显示** 功能",
+                    "新增 **no-fast-open** 和 **always-process** URL 参数",
+                    "新增更好的 **短标题提取** 功能",
+                    "新增 **括号平衡检测** 功能",
                     "代码重构和优化"
                 ],
                 "en": [
-                    "New main interface design",
-                    "Added version number display",
-                    "Added `no-fast-open` and `always-process` URL parameters",
-                    "Added better short title extraction",
-                    "Added bracket balance detection",
+                    "New **main interface design**",
+                    "Added **version number display**",
+                    "Added **no-fast-open** and **always-process** URL parameters",
+                    "Added better **short title extraction**",
+                    "Added **bracket balance detection**",
                     "Code refactoring and optimization"
                 ]
             }
@@ -140,11 +171,11 @@
             "date": "2024-11-23",
             "changes": {
                 "zh": [
-                    "使用京华老宋体为默认字体",
+                    "使用 **京华老宋体** 为默认字体",
                     "修复下拉菜单相关问题"
                 ],
                 "en": [
-                    "Use Kinghwa as the default font",
+                    "Use **KingHwa Old Song** as the default font",
                     "Fixed the dropdown menu related bugs"
                 ]
             }
@@ -154,15 +185,15 @@
             "changes": {
                 "zh": [
                     "重写代码，提升性能和稳定性",
-                    "新的分页逻辑",
-                    "新增“完成阅读”进度指示器",
+                    "新的 **分页逻辑**",
+                    "新增 **完成阅读** 进度指示器",
                     "优化书籍封面生成逻辑",
                     "优化 UI 语言切换"
                 ],
                 "en": [
                     "Complete code rewrite for improved performance and maintainability",
-                    "New pagination logic",
-                    "Added 'Finishing up' reading progress indicator",
+                    "New **pagination logic**",
+                    "Added **Finishing up** reading progress indicator",
                     "Optimized book cover generation",
                     "Smoother UI language switching"
                 ]

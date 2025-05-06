@@ -1,0 +1,84 @@
+{
+    "zh": [
+        {
+            "title": "添加书籍或字体",
+            "folded": false,
+            "content": [
+                "##支持格式##：支持导入 **TXT** 格式书籍 及 **TTF / OTF** 格式字体",
+                "##拖拽添加##：拖拽 **多本书籍** 或 **3 种字体** 至界面进行添加",
+                "##双击添加##：双击界面，手动选择书籍或字体文件进行添加"
+            ]
+        },
+        {
+            "title": "书架管理",
+            "folded": true,
+            "content": [
+                "##自动生成封面##：请使用规范文件名格式如 **《书名》作者：作者名.txt**，**书名.[作者].txt** 或 **Bookname by author.txt**",
+                "##打开书籍##：点击 **书籍封面** 打开相应书籍",
+                "##强制重新处理##：按住 **Alt/Option** 键并点击书籍封面",
+                "##筛选书籍##：使用书架顶部的 **筛选栏** 按类别筛选书籍",
+                "##删除书籍##：鼠标移至书籍封面，点击下方的 **删除按钮**",
+                "##删除所有书籍##：点击筛选栏右侧的 **删除所有书籍** 按钮"
+            ]
+        },
+        {
+            "title": "阅读快捷键",
+            "folded": false,
+            "content": [
+                "##跳转至指定章节##：点击 **目录** 中指定的章节名称",
+                "##上下翻页##：使用 **← → 方向键** 翻页，或在设置中开启 **无限滚动模式**",
+                "##上下章节跳转##：使用 **Page Up / Page Down 键** 跳转至上或下一章节",
+                "##退出阅读##：按 **Esc** 退出阅读，返回书架"
+            ]
+        },
+        {
+            "title": "进阶使用",
+            "folded": true,
+            "content": [
+                "##手动标记标题##：在 **源 TXT 文本** 中任意行的行首添加 **[::]** 标记，以手动指定该行为标题行",
+                "##使用脚注##：在 **源文本** 中插入 **① 到 ㊿** 以 **引用脚注**。脚注是以**对应的数字符号**开头的内容行，每条脚注占一行。每个段落都可以从 **①** 开始重新编号"
+            ]
+        }
+    ],
+    "en": [
+        {
+            "title": "Adding Books or Fonts",
+            "folded": false,
+            "content": [
+                "##Supported Formats##: Supports importing **TXT** books and **TTF / OTF** fonts.",
+                "##Drag & Drop##: Drag & drop **multiple books** or **up to 3 fonts** to import.",
+                "##Manual Selection##: Double-click in the interface to manually select book or font files."
+            ]
+        },
+        {
+            "title": "Bookshelf Management",
+            "folded": true,
+            "content": [
+                "##Auto-Generate Covers##: Use a standardized file name format such as **《书名》作者：作者名.txt**, **书名.[作者].txt** or **Bookname by author.txt**.",
+                "##Open a Book##: Click a **book cover** to open the book.",
+                "##Force Reprocess##: Hold **Alt/Option** and click a book cover to **force reprocess** it.",
+                "##Filter Books##: Use the **filter bar** at the top of the bookshelf to filter books by categories.",
+                "##Remove a Book##: Hover over a book cover and click the **trash icon** below.",
+                "##Remove All Books##: Click the **Remove All Books** button in the filter bar."
+            ]
+        },
+        {
+            "title": "Reading Shortcuts",
+            "folded": false,
+            "content": [
+                "##Jump to a Chapter##: Click a **chapter title** in the **TOC** to jump to that chapter.",
+                "##Turn Pages##: Use the **← → arrow keys** to turn pages, or enable **infinite scroll mode** in settings.",
+                "##Navigate Chapters##: Use **Page Up / Page Down keys** to jump to the previous or next chapter.",
+                "##Exit Reading##: Press **Esc** to exit reading and return to the bookshelf."
+            ]
+        },
+        {
+            "title": "Advanced Usage",
+            "folded": true,
+            "content": [
+                "##Manually Marking Titles##: Add **[::]** marker at the beginning of a line in the **source TXT file** to manually designate it as a **title line**.",
+                "##Using Footnotes##: Insert **① to ㊿** into the **source text** to **reference footnotes**. Footnotes are lines that begin with the **corresponding numbered symbol**, with each footnote on a separate line. Each paragraph can restart numbering from **①**."
+            ]
+        }
+    ]
+}

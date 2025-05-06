@@ -108,6 +108,7 @@ class DropdownSelector {
                         id: i,
                         rel: $option.val(),
                         style: $option.attr("style"),
+                        "data-status": $option.attr("data-status"),
                     });
 
                     // Add text container

@@ -26,12 +26,38 @@ const SUPPORTED_FONT_EXT = [".ttf", ".otf"];
 /**
  * Configuration constants
  * @type {Object}
+ * @property {number} CHANGELOG_SHOW_PREVIOUS_VERSIONS - Number of previous versions to show in the changelog
+ * @property {boolean} CHANGELOG_FORCE_SHOW - Whether to force show the changelog
  * @property {boolean} SHOW_FILTER_BAR - Whether to show the filter bar
+ * @property {boolean} SHOW_FILTER_BAR_DEFAULT - Whether to show the filter bar (default value)
+ * @property {boolean} SHOW_HELPER_BTN - Whether to show the helper button
+ * @property {boolean} SHOW_HELPER_BTN_DEFAULT - Whether to show the helper button (default value)
  * @property {boolean} AUTO_OPEN_LAST_BOOK - Whether to auto-open last book
+ * @property {boolean} AUTO_OPEN_LAST_BOOK_DEFAULT - Whether to auto-open last book (default value)
+ * @property {boolean} INFINITE_SCROLL_MODE - Whether to use infinite scroll mode
+ * @property {boolean} INFINITE_SCROLL_MODE_DEFAULT - Whether to use infinite scroll mode (default value)
+ * @property {number} INFINITE_SCROLL_MODE_THRESHOLD - Threshold for infinite scroll mode
+ * @property {boolean} SHOW_TOC_AREA - Whether to show the TOC area
+ * @property {boolean} SHOW_TOC_AREA_DEFAULT - Whether to show the TOC area (default value)
+ * @property {boolean} ENABLE_CUSTOM_CURSOR - Whether to enable custom cursor
+ * @property {boolean} ENABLE_CUSTOM_CURSOR_DEFAULT - Whether to enable custom cursor (default value)
  */
 export const CONST_CONFIG = {
+    CHANGELOG_SHOW_PREVIOUS_VERSIONS: 2,
+    CHANGELOG_FORCE_SHOW: false,
     SHOW_FILTER_BAR: true,
+    SHOW_FILTER_BAR_DEFAULT: true,
+    SHOW_HELPER_BTN: true,
+    SHOW_HELPER_BTN_DEFAULT: true,
     AUTO_OPEN_LAST_BOOK: true,
+    AUTO_OPEN_LAST_BOOK_DEFAULT: true,
+    INFINITE_SCROLL_MODE: false,
+    INFINITE_SCROLL_MODE_DEFAULT: false,
+    INFINITE_SCROLL_MODE_THRESHOLD: 1200,
+    SHOW_TOC_AREA: true,
+    SHOW_TOC_AREA_DEFAULT: true,
+    ENABLE_CUSTOM_CURSOR: false,
+    ENABLE_CUSTOM_CURSOR_DEFAULT: false,
 };
 
 /**
@@ -88,12 +114,44 @@ export const CONST_PAGINATION = Object.freeze({
  * UI-related constants
  * @type {Object}
  * @property {Object} LANGUAGE_MAPPING - Mapping of language codes to display names
+ * @property {Object} CUSTOM_TOOLTIP_CONFIG - Configuration for the custom tooltip
+ * @property {Object} SIDEBAR_SPLITVIEW_CONFIG - Configuration for the sidebar splitview
  * @readonly
  */
 export const CONST_UI = Object.freeze({
     LANGUAGE_MAPPING: {
         zh: "简体中文",
         en: "English",
+    },
+    CUSTOM_TOOLTIP_CONFIG: {
+        attribute: "data-title",
+        animation: "scale",
+        animateFill: false,
+        delay: [1000, 0],
+        arrow: false,
+        placement: "top",
+        followCursor: "initial",
+        theme: "custom-tooltip",
+        offset: [0, 16],
+    },
+    SIDEBAR_SPLITVIEW_CONFIG: {
+        elements: {
+            outer: ".sidebar-splitview-outer",
+            container: ".sidebar-splitview-container",
+            divider: ".sidebar-splitview-divider",
+            dragTooltip: ".sidebar-splitview-dragTooltip",
+            toggleButton: ".sidebar-splitview-toggle",
+        },
+        storageKey: "sidebar-splitview-toc-width",
+        sidebarStyle: {
+            showSidebar: true,
+            showDragTooltip: false,
+            showToggleButton: false,
+            autoHide: true,
+            customTitles: true,
+            proxyScroll: true,
+            patchWindowScroll: true,
+        },
     },
 });
 
@@ -171,7 +229,7 @@ export const CONST_FONT = Object.freeze({
             en: "kinghwa",
             zh: "kinghwa",
             label_zh: "京華老宋体",
-            label_en: "KingHwa_OldSong",
+            label_en: "KingHwa OldSong",
         },
         {
             en: "qiji",
@@ -183,7 +241,7 @@ export const CONST_FONT = Object.freeze({
             en: "fzskbxk",
             zh: "fzskbxk",
             label_zh: "方正宋刻本秀楷",
-            label_en: "FZSongKeBenXiuKai",
+            label_en: "FZ SongKeBen XiuKai",
         },
         { en: "fzkai", zh: "fzkai", label_zh: "方正楷体", label_en: "FZKaiTi" },
         {
@@ -193,7 +251,7 @@ export const CONST_FONT = Object.freeze({
             label_en: "LXGW WenKai",
         },
     ],
-    FALLBACK_FONTS: ["ui", "serif", "sans-serif", "monospace"],
+    FALLBACK_FONTS: ["ui", "sans-serif", "serif", "monospace"],
     FONT_MAPPING: {
         ui: "wenkai",
         title: "kinghwa",

@@ -65,7 +65,7 @@ The top-level directory serves as the root of the frontend portion of the projec
 
 **Files**:
 
-- Includes `.woff` files like `KingHwa_OldSong.woff`, `LXGWWenKaiScreen.woff`, and `qiji-combo.woff`.
+- Includes `.woff` files like `KingHwa_OldSong.woff`, `LXGWWenKaiScreen.woff2`, and `qiji-combo.woff`.
 
 **Notes**:
 
@@ -79,7 +79,7 @@ The top-level directory serves as the root of the frontend portion of the projec
 
 **Files**:
 
-- Contains icons (e.g., `icon128.png`, `icon64.png`), animations (e.g., `loading_geometry.gif`), and visual elements like `seal_en.png`.
+- Contains icons (e.g., `icon128.png`, `icon64.png`) and visual elements like `seal_en.png`.
 
 **Notes**:
 

@@ -36,13 +36,13 @@ export class TextProcessor {
      * Process text content line by line and create DOM elements
      * @param {string} str - The text line to process.
      * @param {number} lineNumber - The current line number.
-     * @param {boolean} isTitleOrEndPage - Whether the line is a title or end page.
+     * @param {boolean} isTitlePageOrEndPage - Whether the line is a title or end page.
      * @returns {[HTMLElement, string]} Processed DOM element and type identifier.
      * @public
      */
-    static processAndCreateDOM(str, lineNumber, isTitleOrEndPage = false) {
+    static processAndCreateDOM(str, lineNumber, isTitlePageOrEndPage = false) {
         // 1. Process text and get structure
-        const structure = TextProcessorCore.process(str, lineNumber, isTitleOrEndPage);
+        const structure = TextProcessorCore.process(str, lineNumber, isTitlePageOrEndPage);
 
         // 2. Create DOM elements
         return TextProcessorDOM.createFromStructure(structure);

@@ -156,7 +156,8 @@ class Builder:
     # Constants
     BROWSERS = ['Chrome', 'Firefox']
     DOCKER_IMAGE_NAME = 'henryxrl/simpletextreader'
-    REMOTE_HOST = 'web_server'
+    # REMOTE_HOST = 'web_server'
+    REMOTE_HOST = 'ext-srv-01'
     REMOTE_PROJECT_PATH = '/var/www/simple-text-reader'
     REMOTE_HOST_SCRIPT_PATH = '/var/www/script-to-host-websites/host_website.py'
     REMOTE_HOST_SCRIPT_ARGS = 'simple-text-reader 5001'
@@ -288,7 +289,7 @@ class Builder:
         rmtree(dist_dir / 'client/app/debug', ignore_errors=True)
 
         # Copy individual files
-        files_to_copy = ['index.html', 'version.json']
+        files_to_copy = ['index.html', 'version.json', 'help.json']
         for file_name in files_to_copy:
             copy2(self.root_dir / file_name, dist_dir)
 

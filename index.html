@@ -17,30 +17,21 @@
         <!-- Fonts -->
         <link
             rel="preload"
-            href="./client/fonts/LXGWWenKaiScreen.woff"
+            href="./client/fonts/LXGWWenKaiScreen_sub.woff2"
             as="font"
-            type="font/woff"
+            type="font/woff2"
             crossorigin="anonymous"
         />
-        <link
-            rel="preload"
-            href="./client/fonts/KingHwa_OldSong.woff"
-            as="font"
-            type="font/woff"
-            crossorigin="anonymous"
-        />
-        <link rel="prefetch" href="./client/fonts/qiji-combo.woff" as="font" type="font/woff" crossorigin="anonymous" />
 
         <!-- Images -->
-        <link rel="preload" href="./client/images/drop.png" as="image" type="image/png" />
-        <link rel="preload" href="./client/images/loading_geometry.gif" as="image" type="image/gif" />
+        <link rel="icon" href="./client/images/icon256.png" type="image/png" />
         <link rel="prefetch" href="./client/images/seal_zh.png" as="image" type="image/png" />
         <link rel="prefetch" href="./client/images/seal_en.png" as="image" type="image/png" />
         <link rel="prefetch" href="./client/images/note_zh.png" as="image" type="image/png" />
         <link rel="prefetch" href="./client/images/note_en.png" as="image" type="image/png" />
-        <link rel="icon" type="image/png" href="./client/images/icon.png" />
 
         <!-- CSS -->
+        <link rel="stylesheet" type="text/css" href="./client/css/lib/tippy.css" crossorigin="anonymous" />
         <link rel="stylesheet" type="text/css" href="./client/css/lib/yaireo/ui-range.css" crossorigin="anonymous" />
         <link
             rel="stylesheet"
@@ -72,6 +63,7 @@
         <link rel="stylesheet" type="text/css" href="./client/css/variables.css" crossorigin="anonymous" />
         <link rel="stylesheet" type="text/css" href="./client/css/main.css" crossorigin="anonymous" />
         <link rel="stylesheet" type="text/css" href="./client/css/bookshelf.css" crossorigin="anonymous" />
+        <link rel="stylesheet" type="text/css" href="./client/css/reader-splitview.css" crossorigin="anonymous" />
         <link rel="stylesheet" type="text/css" href="./client/css/reader.css" crossorigin="anonymous" />
         <link rel="stylesheet" type="text/css" href="./client/css/footnotes.css" crossorigin="anonymous" />
         <link rel="stylesheet" type="text/css" href="./client/css/settings.css" crossorigin="anonymous" />
@@ -85,40 +77,197 @@
 
     <body>
         <!-- Drop zone -->
+        <div id="global-drop-overlay"></div>
         <div id="dropZone" class="uifont prevent-select">
-            <div id="dropZoneTextImgWrapper" class="hasTitle">
-                <img
-                    id="dropZoneImg"
-                    class="prevent-select dropzone-img-default"
-                    src="./client/images/drop.png"
-                    alt=""
-                />
-                <h3 id="dropZoneText" class="uifont prevent-select dropzone-text-default"></h3>
+            <div id="dropzone-content-wrapper" class="hasTitle">
+                <div id="dropzone-img" class="uifont prevent-select dropzone-img-default">
+                    <svg version="1.1" class="drop" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <use href="#drop" />
+                    </svg>
+                </div>
+                <h3
+                    id="dropzone-text"
+                    class="uifont prevent-select dropzone-text-default dropzone-text-loading-text"
+                ></h3>
             </div>
         </div>
 
         <!-- Loading screen -->
         <div id="loading" class="uifont prevent-select">
-            <img src="./client/images/loading_geometry.gif" alt="Loading..." />
             <!-- <div class="loader"></div> -->
+            <div id="loading-img">
+                <svg
+                    viewBox="0 0 800 800"
+                    version="1.1"
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                >
+                    <g
+                        id="paths-bg"
+                        class="path-bg"
+                        stroke-width="1.5"
+                        fill="none"
+                        fill-rule="evenodd"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <g id="left">
+                            <polyline points="79.8 212.9 100.7 212.9 166 278.2 259.2 278.2 305.8 324.8 333.8 324.8" />
+                            <polyline points="79.8 266.5 100.7 266.5 147.3 313.1 238.2 313.1 287.2 362.1 333.8 362.1" />
+                            <polyline points="37.8 238.5 100.7 238.5 156.7 294.5 247.6 294.5 296.5 343.4 333.8 343.4" />
+                            <polyline points="205.6 427.3 266.2 427.3 294.2 399.4 333.8 399.4" />
+                            <polyline points="233.6 399.4 268.5 399.4 287.2 380.7 333.8 380.7" />
+                        </g>
+                        <g id="bottom">
+                            <polyline points="361.8 574.2 361.8 564.9 380.5 546.2 380.5 511.3 352.5 483.3 352.5 418" />
+                            <polyline points="399.1 574.2 399.1 501.9 371.1 474 371.1 418" />
+                            <polyline points="415.4 555.5 415.4 490.3 389.7 464.6 389.7 418" />
+                            <polyline points="436.4 574.2 436.4 483.3 408.4 455.3 408.4 418" />
+                            <polyline points="464.3 548.5 464.3 529.9 455 520.6 455 471.6 427 443.7 427 418" />
+                        </g>
+                        <g id="right">
+                            <polyline
+                                points="445.7 399.4 473.6 399.4 510.9 436.7 529.6 436.7 538.9 427.3 566.9 427.3"
+                            />
+                            <polyline points="445.7 380.7 641.5 380.7 650.8 390.1 667.1 390.1" />
+                            <polyline points="445.7 362.1 688.1 362.1 716.1 390.1 716.1 406.4" />
+                            <polyline points="445.7 343.4 697.4 343.4 737 383.1" />
+                            <polyline points="445.7 324.8 706.7 324.8 744 362.1 762.7 362.1" />
+                            <polyline
+                                points="427 303.8 427 287.5 448 266.5 510.9 266.5 548.2 303.8 713.7 303.8 734.7 324.8 762.7 324.8"
+                            />
+                            <polyline points="408.4 303.8 408.4 275.8 445.7 238.6 459.7 238.6" />
+                        </g>
+                        <g id="elements">
+                            <rect x="333.8" y="306.1" width="111.9" height="111.9" rx="4" ry="4" />
+                            <circle cx="221.9" cy="399.4" r="9.3" />
+                            <circle cx="194" cy="427.3" r="9.3" />
+                            <circle cx="70.4" cy="212.9" r="9.3" />
+                            <circle cx="70.4" cy="266.5" r="9.3" />
+                            <circle cx="28.5" cy="238.6" r="9.3" />
+                            <circle cx="469" cy="238.6" r="9.3" />
+                            <circle cx="772" cy="324.8" r="9.3" />
+                            <circle cx="772" cy="362.1" r="9.3" />
+                            <circle cx="744" cy="390.1" r="9.3" />
+                            <circle cx="676.4" cy="390.1" r="9.3" />
+                            <circle cx="436.4" cy="583.5" r="9.3" />
+                            <circle cx="464.3" cy="557.9" r="9.3" />
+                            <circle cx="399.1" cy="583.5" r="9.3" />
+                            <circle cx="361.8" cy="583.5" r="9.3" />
+                            <circle cx="716" cy="415.7" r="9.3" />
+                            <path d="M352.5,303.8v-28" />
+                            <path d="M389.7,303.8v-28" />
+                            <path d="M371.1,303.8v-28" />
+                        </g>
+                    </g>
+                    <g
+                        id="paths"
+                        class="path"
+                        stroke-width="3"
+                        fill-rule="evenodd"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        fill="none"
+                        stroke-opacity="1"
+                        stroke-dasharray="30,150"
+                        stroke-dashoffset="2000"
+                    >
+                        <g id="left">
+                            <polyline points="79.8 212.9 100.7 212.9 166 278.2 259.2 278.2 305.8 324.8 333.8 324.8" />
+                            <polyline points="79.8 266.5 100.7 266.5 147.3 313.1 238.2 313.1 287.2 362.1 333.8 362.1" />
+                            <polyline points="37.8 238.5 100.7 238.5 156.7 294.5 247.6 294.5 296.5 343.4 333.8 343.4" />
+                            <polyline points="205.6 427.3 266.2 427.3 294.2 399.4 333.8 399.4" />
+                            <polyline points="233.6 399.4 268.5 399.4 287.2 380.7 333.8 380.7" />
+                        </g>
+                        <g id="bottom">
+                            <polyline points="361.8 574.2 361.8 564.9 380.5 546.2 380.5 511.3 352.5 483.3 352.5 418" />
+                            <polyline points="399.1 574.2 399.1 501.9 371.1 474 371.1 418" />
+                            <polyline points="415.4 555.5 415.4 490.3 389.7 464.6 389.7 418" />
+                            <polyline points="436.4 574.2 436.4 483.3 408.4 455.3 408.4 418" />
+                            <polyline points="464.3 548.5 464.3 529.9 455 520.6 455 471.6 427 443.7 427 418" />
+                        </g>
+                    </g>
+                    <g
+                        id="paths-2"
+                        class="path-2"
+                        stroke-width="3"
+                        fill-rule="evenodd"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        fill="none"
+                        stroke-opacity="1"
+                        stroke-dasharray="50,150"
+                        stroke-dashoffset="2000"
+                    >
+                        <g id="right">
+                            <polyline
+                                points="445.7 399.4 473.6 399.4 510.9 436.7 529.6 436.7 538.9 427.3 566.9 427.3"
+                            />
+                            <polyline points="445.7 380.7 641.5 380.7 650.8 390.1 667.1 390.1" />
+                            <polyline points="445.7 362.1 688.1 362.1 716.1 390.1 716.1 406.4" />
+                            <polyline points="445.7 343.4 697.4 343.4 737 383.1" />
+                            <polyline points="445.7 324.8 706.7 324.8 744 362.1 762.7 362.1" />
+                            <polyline
+                                points="427 303.8 427 287.5 448 266.5 510.9 266.5 548.2 303.8 713.7 303.8 734.7 324.8 762.7 324.8"
+                            />
+                            <polyline points="408.4 303.8 408.4 275.8 445.7 238.6 459.7 238.6" />
+                        </g>
+                    </g>
+                    <g id="paths-logo" class="path-logo">
+                        <path
+                            d="M386.1,317.6c.6-.2,1.3,0,1.9.4.6.5,1.4.4,1.9,1.1.7.7,1.8.2,2.4,1,.6.8,1.8.3,2.3.8,0,.2.4.4,1,.4.5.1.9.3,1.2.5.6.7,1.3.9,1.2,1.9,0,.9-1.2.8-1.3,1.4-.2.6-1.8.5-2.2,2.3-.2,1.3-.8,1.1-1,2.6-.2,1.5-.4,1.4,1,1.6.5,0,.9,0,1.2-.2.4-.4,1.8-.7,4.1-.8,1.2,0,1.7-.7,2.4-1,.2,0,.5-1.2.9-1.1.2,0,.4-.3.7-.8.2-.9,1.8-2.2,2.7-2.2.5-.1,1.4,1.1,1.7,1.1.2-.1.8,1.7,1,1.7,1,.2,2.3,0,2.6,1,.6,1.3-.5,1.8-1,2.8-.2.5-2.2.5-2.1,1.3-.2.9-1.7.1-2.4.5-.4,0-.5.3-.3.5.2.3.5,0,.8.5.6.9,1.1-1.9,2.2.2.1.7.9,2,.2,2.3-.2,0-.4-.1-.4-.4,0-.3-.3-.4-.5-.3-.6,0-.6.5.1,1.3.6.4.4,2.7,1,2.9l.2-.2c-.3-1.1,1.7-1.2,2.2-1.6.4-.3,3.2-.5,4.2-.5l1-1c1.2-1.2,1.5-.7,2.4-2.1.9-1.6,3.8-1.3,4.6-.3.3.3.5.4.6.4,1.3.5,2.4,2.3,1.1,3.6-.3.5-.4.9-.4,1.1,0,.9-2.2.3-6.5.4-5.1,0-7.9.1-8.2.3-.7,0,.3,1,.2,1.2,0,.4-1.8.8-2.1.8-.7,0-.5,0-.6.8,0,1.4-.3,1-.5,1.7,0,.2-.1.3-.4.4-.3,0-.4.3-.4.5s.4.4,1.1.4c1.2,0,1.9-.6,2.3-1.7,0-.8,1.1-1.1,1.6-.5.3.3.5.4.8.4s.3.1.4.4c.1.3.3.6.7,1.1.8.5.9,2.2.1,2.4-.2.2-5.3,0-5.7-.2-.8-.2-1.3-1.3-2.2-1-1.5.3-.3,1-2.4,1.2-.9,0-1.4.2-1.6.3-.1.1-.4.2-.9.1-.5,0-1.5,0-3,.2-3.2.5-2.9-.5-4.2,2.3-.7,1.2,0,1,0,2.3,0,.6,0,.9.2.9.6.1.9,1,1.8.6.6-.4,1.3.2,1.8-.3.2-.2.9-.2,2.1-.2,1.5,0,5.6-.5,6.5-1.6.4-.5,1.5-.4,1.7-1,0-.2.3-.4.8-.6,1.1-.6,2.5,0,3.3.7.2.3.4.4.6.4.4.1.2.7,1.1,1.3.5.4.8.5,1,.5.6-.2.7,2.2.1,2.1-.4,0-.8.1-1.2.1-2,0-9.5-.1-9.7.4-.1.3-.5.4-1.1.4-1.8,0-.5-.7-3.8-.6-1.5,0-2.3,0-2.4.2,0,.1-.3.2-.8.2s-.8.1-1,.4c-.5.5-.5,2.8-.8,3.3-.6.7-.3,3.4.4,3.9.2.8,8.5-.2,11.5.2,1.7.5,2.7.5,2.9.1,0-.2.8-.3,2.3-.3,1.5,0,2.5-.1,3.1-.5,1.1-.6,1.5-1.5,2.4-1.6.3,0,.8-.5,1.6-1.6.2-.5,2.3-.7,2.7-.5.3.2,1,1.7,1.1,1.6.3.9.6,0,1.7,1.7.6.7.9,1.1,1.1,1.1.4.3.2,1.8-.4,2.3-.8.9-1.8,1.2-2.9,1.1-2.3-.5-3.5-.3-4.7-.9-.2-.2-.7-.1-1.5.1-1,.3-3.6.7-4.4.2-.3-.3-1.2-.3-2.6-.2-1.4.2-2.5.2-3,0-1.2-.4-3.6-.3-7.1.3-5.2.4-10.2,0-15.9.9-1.3.2-9.1.1-10.1.6-.3.2-1,.4-2.3.5-3.8.5-3,.7-8.2.9-3.5,0-5.2.6-6.1-.3-.3-.7-.7,0-1-1.1-.3-.8-.4-2.6.7-2.6,1.4-.4,2.8-.5,4.4-.2,1.3.3,2.3.2,3-.2.7-.5,1.2,0,2.4-.3,1.6-.4,2.1.6,3.7.5,1.8,0,11.8-1,13.9-.8,1.8,0,2.8,0,2.9-.2.7,0,.9-5.7.6-7.8-1.3-.2-3.8-.3-4,.5-.2.4-1.8.5-4.8.5s-1.4,0-1.5.2c0,.1-.4.2-.9.1-.6,0-1.2,0-1.8.2-.8.3-5.2.6-5.9.4-.8,0-.6-1.1-1.1-1.4-.1-.1,0-.4.2-.9.9-1.4,2.2-.8,5.6-1.1,4.2-.2,7.1-.8,10.7-.8,1,0,1.6,0,1.8-.1,1-.4.5-1.3,1.1-2.1.3-.4.4-.7.4-1.1,0-.6.7-1.3.3-1.8-.8-.7.7-1.1.5-2.5,0-2.5-.4-.9-1.4-1.8-.1-.2,0-.5.4-.8.8-.7-.4-2,.8-2.3.6,0,.7-1.4.4-1.7-.2-.2-.7-.3-1.5-.2-.8,0-1.4.3-1.9.5-.6.4-2.5.6-5.5.6-1.3,0-2.1.2-2.3.4-.1.2-1.6.4-4.4.6-4.9.3-3.6.5-7,.9-1.2,0-2,.3-2.5.5-.9.8-3.6,1.1-4.5.4-.6-.2-1.2-2-1.6-2.2-.1,0-.3-.1-.3-.4,0-.2-.3-.3-.5-.3-.4.1-1.7-1.3-1.9-1.3-.3,0-.9-1.5-.8-1.6,0-.3,2-1.1,2.3-1.1.8,0,2.1.3,4,.9.8.3,1.7,0,2.2.5.2.2.4.3.5.3s.4.1.8.4c.3.3,1.4.4,3.3.4s3-.1,3.2-.3c.4-.2,2.3-.3,5.9-.3,6.3,0,9.8-.2,10.5-.9.4-.4.5-.7.5-1.1,0-.8.6-1.2.5-2.1,0-1,.7-1.5-.3-2.5-1.4-1.5-3-.6-6-.5-2.2.2-3.4.4-3.5.5-.3.1-4.2.3-5.2.4-.2-.5-.6-1.6-.9-1.9-.3-.3-.4-1.6-.4-2.2,1.6,0,7.9-.2,8.2.4.2.3.7.3,1.5.1.9-.4,4.6-.5,5.6-.6.7,0,.3-.9.7-1.1.3-.2-.3-2.4-.2-2.8.2-.4.4-3.1.2-3.5-.3-.4-.4-4.4-.5-5.5l.6-.2h0ZM375.1,348c6.5,0,8.4-.6,10.4.3.1,1.7-1.3,1.7-4.3,2.1-3.2.5-3.3.7-7.8.8-2.7,0-4.1,0-4.3,0s-.3-.5-.2-1.1.2-.9.5-1,.5-.2.8-.5,1.9-.5,5-.5h0ZM408.2,370.1c3.6-1.8,2.2,3.1,4.2,3.6.8,0,.3,1.9,1,2.1.6.1,1.1,1.6,1,2.2-.1.4-.4.8-.6,1-1.6,1.3-2.3,3.7-2.1,7.1,0,1.1,0,1.9-.2,2.4-.2.5-.4,1.5-.4,3-.1,3.9-.3,5.9-.4,6.1-.4.3-.6.7-.6,1.2s-.1.6-.4,1.1c-.7,1.3,0,1.1-1.2,2.3-.4.5-.6.8-.6,1s-.1.3-.3.3c-.5,0-.2,1-.6,1.1-.3.1-.5.3-.6.5-.7.9-2.9.4-3.4-.6-.7-1.4-1,0-1.1-3.4,0-1.5-.2-2.4-.6-2.6-.4-.3-2.6,0-6.6.6-1.6.3-2.7.3-3.2.1-1-.6-5.7-.7-6.5.2-.2.1-.9,2.4-.9,2.6-.2.8-2,1.8-2.9,1.7-1.6,0-1.4-.9-2.2-1.1-.7,0-.3-1.5-.9-2.1-.5-.9.3-2.4,0-3.6,0-.7,0-1.2.1-1.4.2-.3.3-3.1.3-8.3,0-2.7-.2-4.2-.4-4.6-.3-.6-.3-6.8-.3-8.6.8,0,3.1,0,3.5.3.5.5.9.1,1.3.6.4.5.5.2,1,.8.4.6,2.5.3,2.9.8-.2.8,8.8.6,9.4,0,.2-.4,3-.6,3.3-.8.1-.1.6-.3,1.4-.4,3.3-.6,1.6-1.1,3.2-1.4,1.3-.1,3.4-3.1,4.6-3.5h0ZM403.1,378c-1.2-.7-2.1.7-3.4.8-1.1.2-11.9,0-12,.4-1.4.3-3.1.2-3.8,1.3-.4.9-.5,3.9.1,4.9,1.7,3.6-.8,2.8-.9,5.1.1,1.6.1,5.6,1.7,5.9.8.1,4.3-.2,10.4-1,2.1-.3,3.5-.3,4.1-.1,2.7.9,2.4-1,2.6-5.4,0-1.7.1-2.7.3-3s.3-1,.3-2.3-.1-2.1-.3-2.5c-.2-.3-.5-2-.1-2.3.3,0,.9-1.6.9-1.8h0ZM390.5,345.5c-.3-.6-.9-.3-1,.5,0,.6-.3,1-.5,1.2-.5.3-.4.5.3.8.5.2.8.2,1,0,.3-.4.9-.1,1.2-.5.3-.5-1-.2-.9-1.1,0-.4,0-.6-.1-.9h0ZM390.7,355.7c0-.5-.5-.6-1.4-.4-1.7.4,1.7,1.7,1.4.4ZM390.8,349.2c-1.3-.7-2.3,0-1.3.9.6.9,2.9-.3,1.3-.9h0ZM390.4,353.8c0-.3-.8-.8-.8-.1,0,.4.3.5.5.3.1,0,.2,0,.2-.2h0ZM390.5,328.2c-.2-.8-1.3.2-.3.2.2,0,.3,0,.3-.2ZM401.1,332.9c-.3-.3-5.2-.2-6.5-.2-.2.7-.4,1.4-.9,2-.3.4-.4.7-.4.8,0,.7-2.3,0-2.8.6,0,0-.1,1.2.1,1.3.4.3,1.5.3,1.9-.2.7-1.1,1.1,1.5,1.5,1.6.2,0,.4.3.5.5.2.7,1.3.9,3.1.5,1.5-.4,2.6.4,3.5-.4.8-.7.4-2.3.9-3.2.3-.6.3-1,.1-1.2-.5-.4-.4-1.9-1.1-2.2h0ZM392.4,358.2c.3-.8,0-.9-.9-1-.5,0-.8,0-.9.1-.3.7,0,1.5,1.2,1.4.2,0,.4-.2.5-.5h0ZM392.5,365.8c0-.8-1.9-.5-1.8.4.1.9,2.1.6,1.8-.4ZM400.6,341.9c0-.3-5.9-.3-6.1,0-.3.1-.4.7-.2,1.6.3,2.3-1.2,2.2,0,4.1.7,1.3.4,1.6,1.3.5.3-.6,4-.9,4.6-1.1,1.6-.7,1.9-2.3,1-3.6-.5-.6-.3-1.1-.6-1.6h0ZM406.9,374.9c-.9-.2-1.6-.2-2.1,0-.5,0-.8.2-.8.4,0,.7-1.8.7-.6,1.3.6.3,1.1.3,1.4,0,.4-.3,1,0,1,.5,0,.8-.8.3-1,.9-.3,1.1,1.8,1,2.3.5.4-.7,1.5,0,1.7-.8.7-1.9-2-1.1-2.1-1.7,0-.2.1-.3.3-.4.5-.3.3-.7-.2-.9h0ZM405.8,382.5c-.3-.7-1.6-.9-1.8-.1-.6,2.2,3.3,2.2,1.8.1ZM405.4,340.4c.2.3-1.3.8-1.3.1-.1-.4,1.3-.4,1.3-.1ZM406.8,339.7c0-1.7-1.4.3-1.1.8.4.2,1.2,0,1.1-.8ZM408.9,385.1c-.3-.5-1.5-.2-1.1.5.4.6,1.5.2,1.1-.5ZM408.7,383.5c0-.1,0-.2-.2-.2,0,0-.1,0-.2,0-.4.4.4.8.4.2h0ZM408.6,388.4c0-.3-.5-.3-.4.1,0,.5.5.1.4-.1ZM391.1,386.1c6.5,0,8.4-.6,10.4.3.1,1.7-1.3,1.7-4.3,2.1-1,.1-1.7,0-2.5,0-.3.4-9.1,1-9.5.6-.4-.1-.3-2.1.3-2.1"
+                        />
+                    </g>
+                </svg>
+            </div>
         </div>
 
-        <!-- Table of contents -->
-        <div id="tocContent"></div>
+        <!-- Reader (Sidebar splitview) -->
+        <div class="sidebar-splitview-outer">
+            <div class="sidebar-splitview-container">
+                <div class="sidebar-splitview-sidebar">
+                    <div class="sidebar-splitview-sidebar-inner">
+                        <!-- Table of contents -->
+                        <div id="toc-content" class="sidebar-splitview-sidebar-child-1"></div>
 
-        <!-- Reading progress -->
-        <div id="progress" class="uifont prevent-select">
-            <span id="progress-title"></span>
-            <br />
-            <span id="progress-content"></span>
+                        <!-- Reading progress -->
+                        <div id="progress" class="uifont prevent-select sidebar-splitview-sidebar-child-2">
+                            <span id="progress-title"></span>
+                            <br />
+                            <span id="progress-content"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="sidebar-splitview-gap">
+                    <button class="sidebar-splitview-toggle"></button>
+                    <div class="sidebar-splitview-divider"></div>
+                </div>
+                <div class="sidebar-splitview-content">
+                    <!-- Main text -->
+                    <div id="content" class="columns-1 sidebar-splitview-content-inner"></div>
+
+                    <!-- Pagination -->
+                    <div id="pagination" class="uifont prevent-select sidebar-splitview-content-overlay"></div>
+
+                    <!-- Footnotes -->
+                    <ol id="footnote-content"></ol>
+
+                    <!-- Message indicator -->
+                    <div
+                        id="message-indicator"
+                        class="uifont prevent-select sidebar-splitview-content-message-indicator"
+                    ></div>
+                </div>
+            </div>
+            <div class="sidebar-splitview-dragTooltip" hidden></div>
         </div>
 
         <!-- Button group -->
-        <div id="btnWrapper" class="btn-group">
+        <div id="main-btn-wrapper" class="main-btn-group">
             <!-- Dark mode toggle -->
-            <input type="checkbox" id="toggle" />
-            <div id="toggle-btn" class="btn-icon hasTitle">
-                <label for="toggle">
+            <input type="checkbox" id="darkmode-toggle" />
+            <div id="darkmode-toggle-btn" class="btn-icon hasTitle">
+                <label for="darkmode-toggle">
                     <div class="icons">
                         <svg
                             version="1.1"
@@ -144,26 +293,26 @@
 
             <!-- Settings button -->
             <!-- Bookshelf button -->
+            <!-- Help button -->
         </div>
-
-        <!-- Main text -->
-        <div id="content" class="columns-1"></div>
-
-        <!-- Pagination -->
-        <div id="pagination" class="uifont prevent-select"></div>
-
-        <!-- Footnotes -->
-        <ol id="footnote-content"></ol>
 
         <!-- Notifications -->
         <div id="notification-container"></div>
 
         <!-- Import dependencies -->
-        <script type="text/javascript" src="./client/app/lib/jquery.min.js"></script>
-        <script type="text/javascript" src="./client/app/lib/jschardet.min.js"></script>
-        <script type="text/javascript" src="./client/app/lib/yaireo/position.js"></script>
-        <script type="text/javascript" src="./client/app/lib/yaireo/color-picker.js"></script>
-        <script type="text/javascript" src="./client/app/lib/hyperlist.js"></script>
+        <script type="text/javascript" src="./client/app/lib/tippy/popper.min.js" crossorigin="anonymous"></script>
+        <script
+            type="text/javascript"
+            src="./client/app/lib/tippy/tippy-bundle.umd.min.js"
+            crossorigin="anonymous"
+        ></script>
+        <script type="text/javascript" src="./client/app/lib/jquery.min.js" crossorigin="anonymous"></script>
+        <script type="text/javascript" src="./client/app/lib/jschardet.min.js" crossorigin="anonymous"></script>
+        <script type="text/javascript" src="./client/app/lib/yaireo/position.js" crossorigin="anonymous"></script>
+        <script type="text/javascript" src="./client/app/lib/yaireo/color-picker.js" crossorigin="anonymous"></script>
+        <script type="text/javascript" src="./client/app/lib/sweetalert2.js" crossorigin="anonymous"></script>
+        <script type="text/javascript" src="./client/app/lib/hyperlist.js" crossorigin="anonymous"></script>
+        <script type="text/javascript" src="./client/app/lib/ipad-cursor.js" crossorigin="anonymous"></script>
 
         <!-- Main entry point -->
         <script type="module" src="./client/app/app.js"></script>

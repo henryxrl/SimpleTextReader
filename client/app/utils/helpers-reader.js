@@ -15,7 +15,7 @@
  */
 
 import * as CONFIG from "../config/index.js";
-import { isInViewport, isInContainerViewport } from "./base.js";
+import { isInViewport, isInContainerViewport, getScrollY } from "./base.js";
 
 /**
  * Global variables for managing title display and keyboard events
@@ -110,7 +110,8 @@ export function GetScrollPositions(toSetHistory = true, gotoPageClicked = false)
     // );
 
     // Get current scroll position
-    // const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    // // const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    // const scrollTop = getScrollY();
     // console.log(`Top: ${scrollTop}px`);
 
     // Get the line number on top of the viewport
@@ -207,7 +208,7 @@ function calculateReadingProgress(curLineNumber) {
     let totalPercentage = (curPagePercentage * scalePercentage + pastPagePercentage) * 100;
 
     // Handle start of document
-    if (curLineNumber === 0 && currentPage === 1 && window.scrollY <= 5) {
+    if (curLineNumber === 0 && currentPage === 1 && getScrollY() <= 5) {
         totalPercentage = 0;
     }
 
@@ -283,6 +284,7 @@ export function showShortenedTitle(titleID, delay = 2000) {
 /**
  * Sets the active chapter title in TOC based on current scroll position
  * @public
+ * @async
  * @param {number} titleID - The line number of the title to activate
  * @returns {Promise<void>}
  */
@@ -437,6 +439,7 @@ function getPercentageOfTitleInAllTitles(target) {
 /**
  * Waits for the TOC to be rendered
  * @private
+ * @async
  * @returns {Promise<void>}
  */
 async function waitForTocRendered() {
@@ -536,12 +539,13 @@ export function setHistory(filename, lineNumber) {
 /**
  * Retrieves reading progress from localStorage
  * @public
+ * @async
  * @param {string} filename - The name of the file for which to get history
- * @param {Function} gotoLineFunc - Function to go to a line
+ * @param {Function} gotoLineFunc - Async function to go to a line
  * @param {boolean} consoleLog - Whether to log retrieval to console
  * @returns {number} The saved line number, or 0 if none found
  */
-export function getHistory(filename, gotoLineFunc = null, consoleLog = false) {
+export async function getHistory(filename, gotoLineFunc = null, consoleLog = false) {
     let tempLine = localStorage.getItem(filename);
     if (tempLine) {
         try {
@@ -552,9 +556,9 @@ export function getHistory(filename, gotoLineFunc = null, consoleLog = false) {
             }
 
             // If gotoLineFunc is provided, try to go to the line
-            if (gotoLineFunc) {
+            if (gotoLineFunc && typeof gotoLineFunc === "function") {
                 try {
-                    let success = gotoLineFunc(tempLine, false);
+                    let success = await gotoLineFunc(tempLine, false);
                     if (success === -1) {
                         tempLine = 0;
                     }
@@ -614,14 +618,42 @@ export function removeHistory(filename) {
 /**
  * Gets reading history and sets the chapter title active in TOC
  * @public
- * @param {Function} gotoLineFunc - Function to go to a line
+ * @async
+ * @param {Function} gotoLineFunc - Async function to go to a line
  * @param {boolean} setActive - Whether to set the chapter title active
  * @param {boolean} consoleLog - Whether to log retrieval to console
  */
-export function getHistoryAndSetChapterTitleActive(gotoLineFunc, setActive = true, consoleLog = true) {
-    CONFIG.VARS.HISTORY_LINE_NUMBER = getHistory(CONFIG.VARS.FILENAME, gotoLineFunc, consoleLog);
-    if (setActive && CONFIG.VARS.CURRENT_PAGE === 1 && CONFIG.VARS.HISTORY_LINE_NUMBER === 0 && window.scrollY === 0) {
+export async function getHistoryAndSetChapterTitleActive(gotoLineFunc, setActive = true, consoleLog = true) {
+    CONFIG.VARS.HISTORY_LINE_NUMBER = await getHistory(CONFIG.VARS.FILENAME, gotoLineFunc, consoleLog);
+    if (setActive && CONFIG.VARS.CURRENT_PAGE === 1 && CONFIG.VARS.HISTORY_LINE_NUMBER === 0 && getScrollY() === 0) {
         // if the first line is a header, it will show up in TOC
-        setChapterTitleActive(CONFIG.VARS.HISTORY_LINE_NUMBER);
+        await setChapterTitleActive(CONFIG.VARS.HISTORY_LINE_NUMBER);
     }
+}
+
+/**
+ * Gets the line number of the current title
+ * @public
+ * @param {number} lineNumber - The line number to get the current title for
+ * @returns {number} The line number of the current title
+ */
+export function getCurrentTitleLineNumber(lineNumber) {
+    const arr = Object.keys(CONFIG.VARS.ALL_TITLES_IND);
+    let left = 0,
+        right = arr.length - 1;
+    let result = -1;
+
+    while (left <= right) {
+        let mid = Math.floor((left + right) / 2);
+        const numMid = parseInt(arr[mid]);
+
+        if (numMid <= lineNumber) {
+            result = numMid;
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+
+    return result;
 }

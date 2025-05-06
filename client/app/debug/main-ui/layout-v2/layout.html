@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Flex Layout Example</title>
+        <script>
+            (function () {
+                const saved = localStorage.getItem("sidebar-splitview-sidebarWidth");
+                const root = document.documentElement;
+
+                if (saved) {
+                    root.style.setProperty("--sidebar-splitview-sidebar-width", `${saved}vw`);
+                }
+            })();
+        </script>
+        <link rel="stylesheet" href="./sidebar-splitview.css" />
+    </head>
+    <body>
+        <div class="sidebar-splitview-outer">
+            <div class="sidebar-splitview-container">
+                <div class="sidebar-splitview-sidebar">
+                    <div class="sidebar-splitview-sidebar-inner">
+                        <div class="sidebar-splitview-sidebar-child-1">Child 1</div>
+                        <div class="sidebar-splitview-sidebar-child-2">Child 2</div>
+                    </div>
+                </div>
+                <div class="sidebar-splitview-gap">
+                    <button class="sidebar-splitview-toggle" title="Toggle Sidebar"></button>
+                    <div class="sidebar-splitview-divider"></div>
+                </div>
+                <div class="sidebar-splitview-content">
+                    <div class="sidebar-splitview-content-inner">Main Content (inner)</div>
+                </div>
+            </div>
+            <div class="sidebar-splitview-tooltip" hidden></div>
+        </div>
+
+        <script type="module" src="./sidebar-splitview.js"></script>
+        <script type="module" src="./use.js"></script>
+    </body>
+</html>

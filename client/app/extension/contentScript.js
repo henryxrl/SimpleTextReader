@@ -35,6 +35,11 @@
                 }
             }
 
+            // For file:// URLs, we can't do a HEAD request
+            if (url.startsWith("file://")) {
+                return true;
+            }
+
             // Perform a HEAD request to check Content-Type
             try {
                 const response = await fetch(url, { method: "HEAD" });
