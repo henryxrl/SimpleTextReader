@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "易笺",
     "description": "txt（小说）阅读器：支持秒开本地的所有txt文件，自动排版，自动分页，自动生成目录，记录阅读进度。",
-    "version": "1.6.9.2",
+    "version": "1.6.9.3",
     "background": {
         "service_worker": "client/app/extension/activate.js",
         "type": "module"

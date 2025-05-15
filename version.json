@@ -1,6 +1,17 @@
 {
-    "version": "1.6.9.2",
+    "version": "1.6.9.3",
     "changelog": {
+        "1.6.9.3": {
+            "date": "2025-05-15",
+            "changes": {
+                "zh": [
+                    "修复了 **颜色选择器** 在某些情况下位置不正确的问题"
+                ],
+                "en": [
+                    "Fixed an issue with the **color picker** not being positioned correctly in some cases"
+                ]
+            }
+        },
         "1.6.9.2": {
             "date": "2025-04-03",
             "changes": {

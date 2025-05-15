@@ -159,15 +159,15 @@ Big thanks to [CataeroGong](https://github.com/cataerogong) for his amazing help
 
 ### Chrome
 
-- [SimpleTextReader (v1.6.9.2)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
+- [SimpleTextReader (v1.6.9.3)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
 
 ### Firefox
 
-- [SimpleTextReader (v1.6.9.2)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
+- [SimpleTextReader (v1.6.9.3)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
 
 ### Edge
 
-- [SimpleTextReader (v1.6.9.2)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
+- [SimpleTextReader (v1.6.9.3)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
 
 ### Docker
 

@@ -159,15 +159,15 @@
 
 ### Chrome 插件
 
-- [易笺 (v1.6.9.2)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
+- [易笺 (v1.6.9.3)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
 
 ### 火狐插件
 
-- [易笺 (v1.6.9.2)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
+- [易笺 (v1.6.9.3)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
 
 ### Edge 插件
 
-- [易笺 (v1.6.9.2)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
+- [易笺 (v1.6.9.3)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
 
 ### Docker
 

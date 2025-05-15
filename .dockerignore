@@ -9,7 +9,6 @@
 
 # assets
 **/assets/
-!**/assets/0_icon.png
 **/dist/
 **/manifests/
 !**/manifests/PWA/
