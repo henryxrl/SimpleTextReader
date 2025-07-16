@@ -6,9 +6,9 @@
  * - Showing confirmation popups with customizable icons, text, and actions
  *
  * @module client/app/modules/components/popup-manager
+ * @requires client/app/lib/sweetalert2
  * @requires client/app/config/index
  * @requires client/app/config/icons
- * @requires client/app/lib/sweetalert2
  * @requires shared/utils/logger
  * @requires client/app/utils/base
  */

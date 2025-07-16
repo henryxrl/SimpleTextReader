@@ -14,7 +14,7 @@
  */
 
 import * as CONFIG_CONST from "../config/constants.js";
-import { removeFileExtension } from "./base.js";
+import { removeFileExtension, isSafari } from "./base.js";
 
 /**
  * Extracts the font name from a font file
@@ -126,7 +126,7 @@ function generateReferenceHash() {
  * @param {string} name - The name of the canvas
  * @param {boolean} consoleLog - Whether to log to the console
  */
-function saveCanvasAsImage(canvas, type, fontName = "", consoleLog = false) {
+export function saveCanvasAsImage(canvas, type, fontName = "", consoleLog = false) {
     // console.log("saveCanvasAsImage", type, fontName);
     try {
         const now = new Date();
@@ -270,6 +270,15 @@ async function isValidFontFile(file, saveCanvas = false, consoleLog = false) {
                 isValid: false,
                 reason: "Invalid file format - must be TXT, TTF or OTF",
                 type: -1,
+            };
+        }
+
+        // 1.1 Check if the browser is Safari
+        if (isSafari()) {
+            return {
+                isValid: false,
+                reason: "Safari does not support uploading custom fonts",
+                type: 0,
             };
         }
 

@@ -42,6 +42,9 @@ p {
     text-indent: var(--p_paragraphIndent_value);
     line-height: var(--p_lineHeight);
     margin: 0;
+    position: relative;
+    top: var(--p_top, 0);
+    left: var(--p_left, 0);
 }
 p.first,
 p.noIndent {
@@ -109,11 +112,17 @@ h1 {
     font-family: var(--fontFamily_title);
     color: var(--mainColor_active);
     margin: var(--h1_margin) 0 var(--h1_margin) 0;
+    position: relative;
+    top: var(--h1_top, 0);
+    left: var(--h1_left, 0);
 }
 h1.author {
     font-size: var(--h1_fontSize_author);
     /* font-style: italic; */
     /* color: var(--mainColor_active) !important; */
+    position: relative;
+    top: var(--h1_author_top, 0);
+    left: var(--h1_author_left, 0);
 }
 h2 {
     line-height: var(--h2_lineHeight);
@@ -123,6 +132,9 @@ h2 {
     font-family: var(--fontFamily_title);
     color: var(--mainColor_active);
     margin: var(--h2_margin) 0 var(--h2_margin) 0;
+    position: relative;
+    top: var(--h2_top, 0);
+    left: var(--h2_left, 0);
 }
 h3 {
     line-height: var(--h3_lineHeight);
@@ -132,6 +144,9 @@ h3 {
     font-family: var(--fontFamily_title);
     color: var(--mainColor_active);
     margin: var(--h3_margin) 0 var(--h3_margin) 0;
+    position: relative;
+    top: var(--h3_top, 0);
+    left: var(--h3_left, 0);
 }
 h4 {
     line-height: var(--h4_lineHeight);
@@ -141,6 +156,9 @@ h4 {
     font-family: var(--fontFamily_title);
     color: var(--mainColor_active);
     margin: var(--h4_margin) 0 var(--h4_margin) 0;
+    position: relative;
+    top: var(--h4_top, 0);
+    left: var(--h4_left, 0);
 }
 h5 {
     line-height: var(--h5_lineHeight);
@@ -150,6 +168,9 @@ h5 {
     font-family: var(--fontFamily_title);
     color: var(--mainColor_active);
     margin: var(--h5_margin) 0 var(--h5_margin) 0;
+    position: relative;
+    top: var(--h5_top, 0);
+    left: var(--h5_left, 0);
 }
 h6 {
     line-height: var(--h6_lineHeight);
@@ -159,6 +180,9 @@ h6 {
     font-family: var(--fontFamily_title);
     color: var(--mainColor_active);
     margin: var(--h6_margin) 0 var(--h6_margin) 0;
+    position: relative;
+    top: var(--h6_top, 0);
+    left: var(--h6_left, 0);
 }
 
 /* TOC */
@@ -169,8 +193,8 @@ h6 {
     /* margin: 0 0 0 3%; */
     padding-right: 0;
     transition: padding-right 0.3s ease;
-    line-height: 1em;
-    font-size: 1.2em;
+    /* line-height: 1em; */
+    font-size: var(--toc_fontSize);
     overflow-x: hidden;
     overflow-y: auto;
     font-family: var(--fontFamily_title);
@@ -181,10 +205,12 @@ h6 {
 }
 /* Credit: https://stackoverflow.com/questions/3874602/elements-to-look-like-a-bullet-point-list-inside-an-anchor-link */
 .chapter-title-container {
+    /* display: block; */
+    display: flex;
+    align-items: center;
     position: relative;
     width: 100%;
     height: auto;
-    display: block;
     margin-bottom: 1em;
 }
 .chapter-title-container:hover:not(.active) > .toc-bullet {
@@ -192,6 +218,12 @@ h6 {
 }
 .chapter-title-container:hover:not(.active) > .toc-text {
     color: var(--mainColor_inactive);
+}
+.chapter-title-container > .toc-bullet {
+    margin: 0;
+}
+.chapter-title-container > .toc-text {
+    position: static;
 }
 .toc-bullet {
     /* position: absolute; */
@@ -261,7 +293,8 @@ a.toc-text,
 a.toc-text:link,
 a.toc-text:visited {
     color: var(--fontInfoColor);
-    margin: 0.3em 0 1.3em 1em;
+    /* margin: 0.15em 0 1.3em 1em; */
+    margin-left: 1em;
 }
 a.toc-text:active {
     color: var(--mainColor_active);
@@ -277,6 +310,11 @@ a.toc-active {
 }
 a.toc-active::before {
     background-color: var(--mainColor_active) !important;
+}
+.toc-text-span {
+    position: relative;
+    top: var(--toc_text_span_top, 0);
+    left: var(--toc_text_span_left, 0);
 }
 
 /* Pagination */
@@ -365,6 +403,8 @@ img.footnote_img {
     width: var(--ui_footnoteImgSize);
     height: var(--ui_footnoteImgSize);
     vertical-align: super;
+    display: inline-block;
+    margin: var(--ui_footnoteMargin);
 }
 ol#footnote-content {
     visibility: hidden;

@@ -41,12 +41,16 @@ class AppVariables {
         this.ACTIVE_TITLE = -1;
         /** @type {Object} Book name and author information */
         this.BOOK_AND_AUTHOR = {};
-        /** @type {Array} List of footnotes */
+        /** @type {Array<Object>} Chronological timeline of all anchor and footnote events in the document */
         this.FOOTNOTES = [];
         /** @type {number} Counter for processed footnotes */
         this.FOOTNOTE_PROCESSED_COUNTER = 0;
         /** @type {boolean} Whether mouse is inside TOC content */
         this.IS_MOUSE_INSIDE_TOC_CONTENT = false;
+        /** @type {boolean} Whether TOC is scrolling */
+        this.IS_TOC_SCROLLING = false;
+        /** @type {Tippy} Tippy instance */
+        this.TIPPY_INSTANCE = null;
 
         // Settings-related variables
         /** @type {Array} Filtered font names */
@@ -55,6 +59,10 @@ class AppVariables {
         this.FILTERED_FONT_LABELS = [];
         /** @type {Array} Filtered font labels in Chinese */
         this.FILTERED_FONT_LABELS_ZH = [];
+        /** @type {Array} Font group types */
+        this.FONT_GROUP_TYPES = [];
+        /** @type {Array} Font group order */
+        this.FONT_GROUP_ORDER = [];
         /** @type {Array} Font groups */
         this.FONT_GROUPS = [];
         /** @type {Array} Font groups in Chinese */
@@ -89,6 +97,12 @@ class AppVariables {
         this.TITLE_PAGE_LINE_NUMBER_OFFSET = 0;
         /** @type {boolean} Whether processing is ongoing */
         this.IS_PROCESSING = false;
+        /** @type {boolean} Whether book is opened */
+        this.IS_BOOK_OPENED = false;
+        /** @type {boolean} Whether settings are initialized */
+        this.SETTINGS_INITIALIZED = false;
+        /** @type {boolean} Whether custom fonts are loaded */
+        this.CUSTOM_FONTS_LOADED = false;
     }
 
     /**
@@ -120,6 +134,7 @@ class AppVariables {
         this.HISTORY_LINE_NUMBER = 0;
         this.TITLE_PAGE_LINE_NUMBER_OFFSET = 0;
         this.IS_PROCESSING = false;
+        this.IS_BOOK_OPENED = false;
     }
 }
 

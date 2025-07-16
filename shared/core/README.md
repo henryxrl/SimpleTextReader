@@ -6,7 +6,18 @@ The `core/` directory contains foundational logic for file handling and text pro
 
 ## Subdirectories
 
-### 1. `file/`
+### 1. `callback/`
+
+**Purpose**: Provides a generic, topic-based callback registry for decoupled event-style logic across the application.
+
+**Examples**:
+
+- **`callback-registry.js`**:
+  Implements a shared callback registry, allowing modules to register, unregister, and invoke callback functions by topic. Supports both chaining (pipeline) and parallel invocation, and works seamlessly across frontend and backend environments.
+
+---
+
+### 2. `file/`
 
 **Purpose**: Handles file-related logic, such as processing and loading files into the application.
 
@@ -15,12 +26,9 @@ The `core/` directory contains foundational logic for file handling and text pro
 - **`file-processor-core.js`**:  
   Provides the core logic for processing files, including validating file contents, extracting metadata, and preparing files for further processing.
 
-- **`fileload-callback.js`**:  
-  Defines shared callback mechanisms for handling file-loading events consistently across the frontend and backend.
-
 ---
 
-### 2. `text/`
+### 3. `text/`
 
 **Purpose**: Responsible for text parsing, processing, and rendering logic.
 

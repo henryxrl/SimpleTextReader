@@ -4,13 +4,13 @@
  *
  * @module client/app/app
  * @requires client/app/config/index
- * @requires client/app/modules/server/server-manager
+ * @requires shared/core/callback/callback-registry
+ * @requires client/app/modules/api/server-connector
  * @requires client/app/modules/features/bookshelf
  * @requires client/app/modules/features/fontpool
  * @requires client/app/modules/features/settings
  * @requires client/app/modules/features/reader
  * @requires client/app/modules/file/file-handler
- * @requires client/app/modules/components/popup-manager
  * @requires client/app/modules/components/sidebar-splitview
  * @requires client/app/utils/base
  * @requires client/app/utils/helpers-reader
@@ -18,24 +18,25 @@
  */
 
 import * as CONFIG from "./config/index.js";
+import { cbReg } from "../../shared/core/callback/callback-registry.js";
 import { initServerConnector } from "./modules/api/server-connector.js";
-import { initBookshelf, forceRecalculateFilterBar } from "./modules/features/bookshelf.js";
+import { initBookshelf } from "./modules/features/bookshelf.js";
 import { initFontpool } from "./modules/features/fontpool.js";
 import { initSettings } from "./modules/features/settings.js";
 import { initReader } from "./modules/features/reader.js";
 import { FileHandler } from "./modules/file/file-handler.js";
-import { PopupManager } from "./modules/components/popup-manager.js";
 import { SidebarSplitView } from "./modules/components/sidebar-splitview.js";
 import {
     isVariableDefined,
     removeHashbang,
     isEllipsisActive,
     fetchVersionData,
+    fetchFontBaselineOffsets,
     debounce,
     requestIdleCallbackPolyfill,
     onReady,
-    triggerCustomEvent,
     toBool,
+    createStylesheet,
 } from "./utils/base.js";
 import { setTitle } from "./utils/helpers-reader.js";
 import {
@@ -54,6 +55,9 @@ import {
     showLoadingScreen,
     hideLoadingScreen,
     resetUI,
+    updateVersionData,
+    updateGlobalFontBaselineOffsets,
+    handleGlobalScrolling,
 } from "./utils/helpers-ui.js";
 
 /*
@@ -71,31 +75,22 @@ import {
      * Fetch version data in the background (non-blocking)
      */
     if (window.consoleTime) console.time("[time][background] Fetch Version Data");
-    fetchVersionData().then((versionData) => {
+    window.fetchVersionDataPromise = fetchVersionData().then((versionData) => {
         if (window.consoleTime) console.timeEnd("[time][background] Fetch Version Data");
-        CONFIG.RUNTIME_VARS.APP_VERSION = versionData?.version ?? CONFIG.RUNTIME_VARS.APP_VERSION;
-        CONFIG.RUNTIME_VARS.APP_VERSION_DATE =
-            (versionData?.version && versionData?.changelog?.[versionData.version]?.date) ||
-            CONFIG.RUNTIME_VARS.APP_VERSION_DATE;
-        CONFIG.RUNTIME_VARS.APP_CHANGELOG = versionData?.changelog ?? CONFIG.RUNTIME_VARS.APP_CHANGELOG;
-
-        // Trigger the updateVersionData event to update the version data in the settings menu
-        triggerCustomEvent("updateVersionData", {
-            version: CONFIG.RUNTIME_VARS.APP_VERSION,
-            date: CONFIG.RUNTIME_VARS.APP_VERSION_DATE,
-            changelog: CONFIG.RUNTIME_VARS.APP_CHANGELOG,
-        });
-
-        //Show changelog popup (only after versionData is available)
-        if (versionData) {
-            PopupManager.showChangelogPopup({
-                version: versionData.version,
-                changelog: versionData.changelog,
-                previousVersions: CONFIG.CONST_CONFIG.CHANGELOG_SHOW_PREVIOUS_VERSIONS,
-                forceShow: CONFIG.CONST_CONFIG.CHANGELOG_FORCE_SHOW,
-            });
-        }
+        updateVersionData(versionData);
     });
+
+    /**
+     * Fetch font baseline offsets in the background (non-blocking)
+     */
+    if (window.consoleTime) console.time("[time][background] Fetch Font Baseline Offsets");
+    window.fetchFontBaselineOffsetsPromise = fetchFontBaselineOffsets(CONFIG.CONST_FONT.FONT_BASELINE_OFFSET_JSON).then(
+        (fontBaselineOffsets) => {
+            updateGlobalFontBaselineOffsets(fontBaselineOffsets);
+            if (window.consoleTime) console.timeEnd("[time][background] Fetch Font Baseline Offsets");
+            return fontBaselineOffsets;
+        }
+    );
 
     /**
      * Initialize core UI components after rendering
@@ -127,7 +122,15 @@ import {
     if (window.consoleTime) console.timeEnd("[time] Check No-UI Mode");
 
     /**
-     * Initialize fontpool, settings, and bookshelf
+     * Load fonts in the background
+     * This is quite fast since we don't use split fonts.
+     */
+    if (window.consoleTime) console.time("[time][background] Load Fonts");
+    await loadFontsInBackground();
+    if (window.consoleTime) console.timeEnd("[time][background] Load Fonts");
+
+    /**
+     * Initialize reader, settings, bookshelf and fontpool
      */
     if (window.consoleTime) console.time("[time] Initialize All Modules");
 
@@ -213,6 +216,168 @@ onReady(() => {
 });
 
 /**
+ * Load fonts in the background
+ */
+async function loadFontsInBackground() {
+    // Define fonts
+    window.localFonts = CONFIG.CONST_FONT.APP_FONTS.filter((font) => !font.isSplitFont).map((font) => font.en);
+    window.localCSSFonts = CONFIG.CONST_FONT.APP_FONTS.filter((font) => font.isSplitFont).map((font) => font.en);
+    window.remoteFonts = CONFIG.CONST_FONT.REMOTE_FONTS.filter((font) => !font.isSplitFont).map((font) => font.en);
+    window.remoteCSSFonts = CONFIG.CONST_FONT.REMOTE_FONTS.filter((font) => font.isSplitFont).map((font) => font.en);
+    const allSingleFonts = [...window.localFonts, ...window.remoteFonts];
+    const allCSSFonts = [...window.localCSSFonts, ...window.remoteCSSFonts];
+    const allFonts = [...allSingleFonts, ...allCSSFonts];
+
+    // Global font status tracker
+    window.FONT_STATUS = {}; // Stores: { "font-name": "loading" | "loaded" | "failed" }
+
+    // Initialize all fonts as "loading"
+    allFonts.forEach((font) => (window.FONT_STATUS[font] = "loading"));
+
+    // Get all split font CSS file paths
+    const splitFontCSSFiles = [
+        ...window.localCSSFonts.map((font) => `./client/fonts/local-${font}.css`),
+        ...window.remoteCSSFonts.map((font) => `./client/fonts/remote-${font}.css`),
+    ];
+
+    // Load all fonts in the background
+    await Promise.allSettled([
+        // Load split font CSS files
+        Promise.allSettled(
+            splitFontCSSFiles.map(async (href, index) => {
+                const font = allCSSFonts[index];
+                try {
+                    const res = await fetch(href);
+                    if (res.ok) {
+                        createStylesheet(href);
+                        window.FONT_STATUS[font] = "loaded";
+                        _finalizeSingleFontLoading(font);
+                    } else {
+                        window.FONT_STATUS[font] = "failed";
+                        console.warn(`[FAILED] "${font}" failed to load`);
+                    }
+                } catch (e) {
+                    window.FONT_STATUS[font] = "failed";
+                    console.warn(`[FAILED] "${font}" failed to load`, e);
+                }
+            })
+        ),
+
+        // Load single file fonts
+        Promise.allSettled(
+            allSingleFonts.map(async (font) => {
+                if (window.consoleTime) console.time(`[time][background] Load Font "${font}"`);
+
+                try {
+                    await document.fonts.load(`12px ${font}`);
+                    window.FONT_STATUS[font] = "loaded";
+                    _finalizeSingleFontLoading(font);
+                } catch (e) {
+                    window.FONT_STATUS[font] = "failed";
+                    console.warn(`[FAILED] "${font}" failed to load`, e);
+                } finally {
+                    if (window.consoleTime) console.timeEnd(`[time][background] Load Font "${font}"`);
+                }
+            })
+        ),
+    ]);
+
+    // Now wait for full loading confirmation
+    console.log("Final font status:", window.FONT_STATUS);
+    requestAnimationFrame(() => {
+        cbReg.go("updateAllBookCovers");
+    });
+
+    /**
+     * Finalizes font loading status and updates the UI accordingly.
+     * @param {string} font - The font to finalize.
+     */
+    function _finalizeSingleFontLoading(font) {
+        if (window.FONT_STATUS[font] !== "failed") {
+            // Remove loading indicators
+            document.querySelectorAll(`option[value="${font}"], li[rel="${font}"]`).forEach((el) => {
+                // Reset data-status attributes
+                el.setAttribute("data-status", "");
+                el.removeAttribute("data-status");
+                el.offsetHeight; // Forces reflow (if needed)
+
+                // If it's an <li>, check for .option-actions and remove loading-button
+                if (el.matches("li[rel]")) {
+                    el.querySelectorAll(".option-actions").forEach((optionAction) => {
+                        if (optionAction.querySelector(".option-action.loading-button")) {
+                            optionAction.remove();
+                        }
+                    });
+                }
+            });
+
+            // Switch to full UI font
+            // if (font === "wenkai") {
+            //     _switchToFullUIFont();
+            // }
+
+            // Trigger custom event
+            requestAnimationFrame(() => {
+                cbReg.go("updateAllBookCovers");
+            });
+        }
+
+        // console.log(`"${font}" is fully loaded`);
+    }
+
+    /**
+     * Switch the UI font from the subset version to the full version dynamically
+     */
+    function _switchToFullUIFont() {
+        console.log("[INFO] Switching UI font to full version...");
+
+        // Firefox-specific fix: Temporarily hide text to prevent multiple flashes
+        const isFirefox = navigator.userAgent.includes("Firefox");
+        if (isFirefox) {
+            document.body.style.visibility = "hidden"; // Hide text to prevent flash
+        }
+
+        // Inject new @font-face rule for full UI font
+        const newFontFaceRule = `
+            @font-face {
+                font-family: "ui";
+                src: local("霞鹜文楷 屏幕阅读版"), local("霞鹜文楷 GB 屏幕阅读版"), local("LXGW WenKai Screen"),
+                    local("LXGW WenKai GB Screen"), url(/client/fonts/LXGWWenKaiScreen.woff2) format("woff2");
+                font-display: swap;
+            }
+        `;
+        document.styleSheets[0].insertRule(newFontFaceRule, document.styleSheets[0].cssRules.length);
+
+        // Slight delay to let rendering stabilize before forcing the font switch
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                document.body.style.fontFamily = "ui"; // Apply full font
+
+                if (isFirefox) {
+                    setTimeout(() => {
+                        document.body.style.visibility = "visible"; // Restore text
+                    }, 50); // Delay un-hiding to ensure stability
+                }
+
+                console.log("[INFO] UI font switched successfully.");
+
+                // // Optional: Remove old subset font rule AFTER transition
+                // setTimeout(() => {
+                //     const existingRules = getStylesheet().cssRules;
+                //     for (let i = 0; i < existingRules.length; i++) {
+                //         if (existingRules[i].cssText.includes("font-family: ui")) {
+                //             console.log("[INFO] Deleting existing subsetted font rule...");
+                //             document.styleSheets[0].deleteRule(i);
+                //             break;
+                //         }
+                //     }
+                // }, 500); // Ensure a smooth transition before removing the subset font
+            }, 50); // Small delay before applying font to prevent flickering
+        });
+    }
+}
+
+/**
  * Handle window resize events for TOC UI updates
  */
 window.addEventListener(
@@ -221,7 +386,8 @@ window.addEventListener(
         const isIncreasing = window.innerWidth >= CONFIG.RUNTIME_VARS.STORE_PREV_WINDOW_WIDTH;
         CONFIG.RUNTIME_VARS.STORE_PREV_WINDOW_WIDTH = window.innerWidth;
         updatePaginationCalculations(isIncreasing);
-        forceRecalculateFilterBar();
+        cbReg.go("updateFilterBar");
+        cbReg.go("footnotes:hide");
     }, 150)
 );
 
@@ -265,6 +431,20 @@ document.body.addEventListener("mouseover", (e) => {
         target.removeAttribute("data-title");
     }
 });
+
+/**
+ * Handle global scroll events to hide tooltips and footnotes
+ */
+window.addEventListener(
+    "scroll",
+    () =>
+        handleGlobalScrolling({
+            isScrolling: true,
+            delay: 150,
+            destroy: true,
+        }),
+    { capture: true }
+);
 
 /**
  * Update Open Graph meta tags dynamically
@@ -373,7 +553,7 @@ function setupReaderUISplitView() {
     //     splitView.setMaxWidth(isNarrow ? 30 : 45);
     // });
 
-    document.addEventListener("toggleTOCArea", () => {
+    cbReg.add("toggleTOCArea", () => {
         splitView.toggleTOCArea(CONFIG.CONST_CONFIG.SHOW_TOC_AREA);
     });
 
@@ -386,22 +566,18 @@ function setupReaderUISplitView() {
  */
 function setupUIEventListeners() {
     // Handle resetUI event
-    document.addEventListener("resetUI", async (e) => {
-        await resetUI(
-            e.detail.refreshBookshelf,
-            e.detail.hardRefresh,
-            e.detail.sortBookshelf,
-            e.detail.inFileLoadCallback
-        );
+    cbReg.add("resetUI", async (e) => {
+        const { refreshBookshelf, hardRefresh, sortBookshelf, inFileProcessingCallback } = e;
+        await resetUI(refreshBookshelf, hardRefresh, sortBookshelf, inFileProcessingCallback);
     });
 
     // Handle toggle help button event
-    document.addEventListener("toggleHelpBtn", () => {
+    cbReg.add("toggleHelpBtn", () => {
         toggleHelpButton(CONFIG.CONST_CONFIG.SHOW_HELPER_BTN);
     });
 
     // Handle toggle custom cursor event
-    document.addEventListener("toggleCustomCursor", () => {
+    cbReg.add("toggleCustomCursor", () => {
         toggleCustomCursor(CONFIG.CONST_CONFIG.ENABLE_CUSTOM_CURSOR);
     });
 }

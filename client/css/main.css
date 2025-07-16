@@ -14,6 +14,16 @@ body {
     scrollbar-color: var(--fontInfoColor) var(--bgColor) !important;
     /* transition: var(--darkMode_animation); */
 }
+::selection {
+    background-color: var(--mainColor_active) !important;
+    background: var(--mainColor_active) !important;
+    color: var(--bgColor) !important;
+}
+::-moz-selection {
+    background-color: var(--mainColor_active) !important;
+    background: var(--mainColor_active) !important;
+    color: var(--bgColor) !important;
+}
 *:focus {
     outline: none;
     box-shadow: none;
@@ -47,7 +57,7 @@ div::-webkit-scrollbar {
     -ms-user-select: none; /* Internet Explorer/Edge */
     user-select: none; /* Standard syntax */
 }
-/* 
+/*
 Credit: https://stackoverflow.com/questions/64997928/how-to-offset-a-anchor-link-to-clear-fixed-header
 To Offset the anchor link to clear fixed header
  */
@@ -570,7 +580,7 @@ To Offset the anchor link to clear fixed header
     width: 100%;
     text-align: left;
 }
-/* Version block styles */
+/* Help block styles */
 .help-block {
     margin-bottom: 2em;
     /* border-bottom: 1px solid var(--borderColor); */

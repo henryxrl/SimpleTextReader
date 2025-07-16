@@ -281,7 +281,7 @@
     transform: translateY(0);
 }
 .settingItem-divider {
-    width: 90%;
+    width: var(--ui_settingMenuSeparatorWidth);
     border: none;
     border-top: 1px dashed var(--borderColor);
     margin: 20px 0;
@@ -315,6 +315,26 @@
 }
 .settingItem-separator::after {
     margin-left: 10px;
+}
+.settingItem-span[id^="settingLabel-"] {
+    display: grid;
+    grid-template-columns: auto max-content;
+    align-items: center;
+    column-gap: 0;
+}
+.settingItem-span[id^="settingLabel-"]::before {
+    grid-column: 1;
+    text-align: left;
+}
+.settingItem-span[id^="settingLabel-"]::after {
+    grid-column: 2;
+    color: var(--fontInfoColor);
+    text-align: left;
+    min-width: 3em;
+    margin-left: 1em;
+}
+.settingItem-span[id^="settingLabel-"]::after:empty {
+    display: none;
 }
 .color-picker {
     background-color: var(--bgColor) !important;
@@ -450,14 +470,14 @@ input[type="color"]:not(:hover) {
     border-radius: 5px;
     -webkit-box-shadow: var(--shadowColor) 0 0 5px;
     -moz-box-shadow: 0 0 5px var(--shadowColor);
-    max-height: 170px; /* REQUIRED: maximum height of the dropdown menu */
+    max-height: 175px; /* REQUIRED: maximum height of the dropdown menu */
     min-height: 36px; /* REQUIRED: minimum height of the dropdown menu */
     overflow-y: auto;
     pointer-events: auto !important;
     /* top: 120%; */
     /* right: 0; */
     /* left: 0; */
-    width: calc(var(--ui_settingContentWidth) * 0.95);
+    width: calc(var(--ui_settingContentWidth) * 0.98);
 }
 .select-options.dropup {
     /* top: auto; */
@@ -722,6 +742,10 @@ li:hover:not(.optgroup-label) .option-action.delete-button:hover,
     font-size: 0.85rem;
     text-align: right;
     color: var(--fontInfoColor);
+    cursor: pointer;
+}
+#settings-version-display:hover {
+    color: var(--mainColor_inactive);
 }
 
 /* Reset button */

@@ -7,6 +7,7 @@
  *
  * @module client/app/modules/features/fontpool
  * @requires client/app/config/index
+ * @requires shared/core/callback/callback-registry
  * @requires client/app/modules/database/db-manager
  * @requires client/app/modules/components/popup-manager
  * @requires client/app/utils/base
@@ -15,10 +16,11 @@
  */
 
 import * as CONFIG from "../../config/index.js";
+import { cbReg } from "../../../../shared/core/callback/callback-registry.js";
 import { DBManager } from "../database/db-manager.js";
 import { PopupManager } from "../components/popup-manager.js";
-import { triggerCustomEvent, removeFileExtension, constructNotificationMessageFromArray } from "../../utils/base.js";
-import { resetUI } from "../../utils/helpers-ui.js";
+import { removeFileExtension, constructNotificationMessageFromArray } from "../../utils/base.js";
+import { resetUI, getCurrentDisplayLanguage } from "../../utils/helpers-ui.js";
 import { extractFontName } from "../../utils/helpers-fonts.js";
 
 /**
@@ -441,7 +443,7 @@ const fontpool = {
                 await new Promise((resolve) => requestAnimationFrame(resolve));
 
                 // Send custom event to notify font loading is complete
-                triggerCustomEvent("customFontsLoaded", {
+                cbReg.go("customFontsLoaded", {
                     fontsCount: loadedFonts.length,
                     fonts: { ...CONFIG.VARS.CUSTOM_FONTS },
                 });
@@ -449,7 +451,7 @@ const fontpool = {
                 console.log(
                     `Custom fonts loaded. Current custom font pool size: ${
                         Object.keys(CONFIG.VARS.CUSTOM_FONTS).length
-                    }.`
+                    }: ${Object.keys(CONFIG.VARS.CUSTOM_FONTS).join(", ")}.`
                 );
             } else if (fonts.length > 0) {
                 // If we had fonts to load but all failed
@@ -477,7 +479,7 @@ const fontpool = {
             return null;
         }
 
-        if (!CONFIG.VARS.CUSTOM_FONTS[family]) {
+        if (!CONFIG.VARS.CUSTOM_FONTS[family] || !CONFIG.VARS.CUSTOM_FONTS_LOADED) {
             const fontFace = new FontFace(family, `url(${fontURL})`);
 
             fontFace
@@ -492,11 +494,14 @@ const fontpool = {
                         label_zh: fontData.label_zh,
                         label_en: fontData.label_en,
                     };
+                    localStorage.setItem("custom_fonts", JSON.stringify(CONFIG.VARS.CUSTOM_FONTS));
 
                     // console.log(`Font "${family}" added with metadata:`, fontData);
                 })
                 .catch((err) => {
                     console.error(`Failed to load font "${family}":`, err);
+                    console.log("Custom fonts:", CONFIG.VARS.CUSTOM_FONTS);
+                    console.log("Font availability:", CONFIG.VARS.FONT_AVAILABILITY);
                     return null;
                 });
             return fontFace;
@@ -543,19 +548,28 @@ const fontpool = {
             // Remove from custom fonts config and other global font configs
             if (CONFIG.VARS.CUSTOM_FONTS[fontFamily]) {
                 delete CONFIG.VARS.CUSTOM_FONTS[fontFamily];
+                localStorage.setItem("custom_fonts", JSON.stringify(CONFIG.VARS.CUSTOM_FONTS));
             }
-            const index = CONFIG.VARS.FILTERED_FONT_NAMES[1].indexOf(fontFamily);
-            if (index !== -1) {
-                CONFIG.VARS.FILTERED_FONT_NAMES[1].splice(index, 1);
-                CONFIG.VARS.FILTERED_FONT_LABELS[1].splice(index, 1);
-                CONFIG.VARS.FILTERED_FONT_LABELS_ZH[1].splice(index, 1);
+
+            // Remove from filtered font names
+            const groupIndex = CONFIG.VARS.FONT_GROUP_ORDER.indexOf("custom");
+            const fontIndex = CONFIG.VARS.FILTERED_FONT_NAMES[groupIndex].indexOf(fontFamily);
+            if (fontIndex !== -1) {
+                CONFIG.VARS.FILTERED_FONT_NAMES[groupIndex].splice(fontIndex, 1);
+                CONFIG.VARS.FILTERED_FONT_LABELS[groupIndex].splice(fontIndex, 1);
+                CONFIG.VARS.FILTERED_FONT_LABELS_ZH[groupIndex].splice(fontIndex, 1);
+                if (Array.isArray(CONFIG.VARS.FONT_AVAILABILITY[groupIndex])) {
+                    CONFIG.VARS.FONT_AVAILABILITY[groupIndex].splice(fontIndex, 1);
+                }
             }
-            if (CONFIG.VARS.FILTERED_FONT_NAMES[1].length === 0) {
-                CONFIG.VARS.FILTERED_FONT_NAMES.splice(1, 1);
-                CONFIG.VARS.FILTERED_FONT_LABELS.splice(1, 1);
-                CONFIG.VARS.FILTERED_FONT_LABELS_ZH.splice(1, 1);
-                CONFIG.VARS.FONT_GROUPS.splice(1, 1);
-                CONFIG.VARS.FONT_GROUPS_ZH.splice(1, 1);
+            if (CONFIG.VARS.FILTERED_FONT_NAMES[groupIndex].length === 0) {
+                CONFIG.VARS.FILTERED_FONT_NAMES.splice(groupIndex, 1);
+                CONFIG.VARS.FILTERED_FONT_LABELS.splice(groupIndex, 1);
+                CONFIG.VARS.FILTERED_FONT_LABELS_ZH.splice(groupIndex, 1);
+                CONFIG.VARS.FONT_GROUPS.splice(groupIndex, 1);
+                CONFIG.VARS.FONT_GROUPS_ZH.splice(groupIndex, 1);
+                CONFIG.VARS.FONT_AVAILABILITY.splice(groupIndex, 1);
+                CONFIG.VARS.FONT_GROUP_TYPES.splice(groupIndex, 1);
             }
 
             // Remove from database
@@ -607,8 +621,8 @@ const fontpool = {
                 await this.db.printAllDatabases();
             }
 
-            document.addEventListener("handleMultipleFonts", async (e) => {
-                const { files } = e.detail;
+            cbReg.add("handleMultipleFonts", async (e) => {
+                const { files } = e;
 
                 if (this.enabled) {
                     const successFonts = [];
@@ -635,7 +649,7 @@ const fontpool = {
                                 CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_addFontSuccess,
                                 successFonts,
                                 {
-                                    language: CONFIG.RUNTIME_VARS.WEB_LANG,
+                                    language: getCurrentDisplayLanguage(),
                                     maxItems: 3,
                                     messageSuffix: CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_andMore,
                                 }
@@ -651,7 +665,7 @@ const fontpool = {
                                 CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_fontExists,
                                 existingFonts,
                                 {
-                                    language: CONFIG.RUNTIME_VARS.WEB_LANG,
+                                    language: getCurrentDisplayLanguage(),
                                     maxItems: 3,
                                     messageSuffix: CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_andMore,
                                 }
@@ -672,8 +686,8 @@ const fontpool = {
                 }
             });
 
-            document.addEventListener("deleteCustomFont", async (e) => {
-                const { fontFamily } = e.detail;
+            cbReg.add("deleteCustomFont", async (e) => {
+                const { fontFamily } = e;
                 await this.removeFont(fontFamily, () => {
                     console.log(`Font "${fontFamily}" removed.`);
                 });
@@ -706,5 +720,6 @@ export async function initFontpool() {
     // Enable fontpool functionality
     if (CONFIG.RUNTIME_CONFIG.ENABLE_FONTPOOL) {
         await fontpool.enable();
+        CONFIG.VARS.CUSTOM_FONTS_LOADED = true;
     }
 }

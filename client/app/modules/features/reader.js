@@ -7,6 +7,7 @@
  * @module client/app/modules/features/reader
  * @requires client/app/config/index
  * @requires client/app/config/icons
+ * @requires shared/core/callback/callback-registry
  * @requires client/app/modules/text/text-processor
  * @requires client/app/modules/features/footnotes
  * @requires client/app/modules/components/message-indicator
@@ -16,6 +17,7 @@
 
 import * as CONFIG from "../../config/index.js";
 import { ICONS } from "../../config/icons.js";
+import { cbReg } from "../../../../shared/core/callback/callback-registry.js";
 import { TextProcessor } from "../text/text-processor.js";
 import { getFootnotes } from "./footnotes.js";
 import { MessageIndicator } from "../components/message-indicator.js";
@@ -23,7 +25,6 @@ import {
     isVariableDefined,
     getSizePrecise,
     outerHeight,
-    triggerCustomEvent,
     enableScroll,
     disableScroll,
     isElementInContainer,
@@ -82,7 +83,10 @@ export const reader = {
      */
     async _handleTOCClick(e) {
         const target = e.target;
-        if (target.tagName === "A" && target.id.startsWith("a")) {
+        if (
+            (target.tagName === "A" && target.id.startsWith("a")) ||
+            (target.tagName === "SPAN" && target.id.startsWith("span"))
+        ) {
             e.preventDefault();
             const lineNum = parseInt(target.id.replace(/[^\d]/g, ""), 10);
             // console.log("Clicked TOC line number:", lineNum);
@@ -136,8 +140,8 @@ export const reader = {
                     titleContainer.dataset.lineNum = lineNum;
                     titleContainer.innerHTML = `
                         <a id="a${lineNum}_bull" href="#line${lineNum}" class="prevent-select toc-bullet${activeTitleToken}" style="cursor: pointer;"></a>
-                        <a id="a${lineNum}" href="#line${lineNum}" class="prevent-select toc-text title-original${activeTitleToken}" style="cursor: pointer;">${title}</a>
-                        <a id="a${lineNum}_alt" href="#line${lineNum}" class="prevent-select toc-text title-shortened hidden${activeTitleToken}" style="cursor: pointer;">${shortTitle}</a>
+                        <a id="a${lineNum}" href="#line${lineNum}" class="prevent-select toc-text title-original${activeTitleToken}" style="cursor: pointer;"><span id="span${lineNum}" class="toc-text-span">${title}</span></a>
+                        <a id="a${lineNum}_alt" href="#line${lineNum}" class="prevent-select toc-text title-shortened hidden${activeTitleToken}" style="cursor: pointer;"><span id="span${lineNum}_alt" class="toc-text-span">${shortTitle}</span></a>
                     `;
                 }
 
@@ -160,7 +164,7 @@ export const reader = {
                             obs.disconnect(); // Stop observing
 
                             // Trigger tocRendered event
-                            triggerCustomEvent("tocRendered", {
+                            cbReg.go("tocRendered", {
                                 percentage,
                                 index: this.latestTitleIndex,
                                 lineNum: this.latestLineNum,
@@ -182,7 +186,7 @@ export const reader = {
                             observer.disconnect();
 
                             // Trigger tocRendered event
-                            triggerCustomEvent("tocRendered", {
+                            cbReg.go("tocRendered", {
                                 percentage,
                                 index: this.latestTitleIndex,
                                 lineNum: this.latestLineNum,
@@ -203,6 +207,10 @@ export const reader = {
         // window.onresize = (e) => {
         //     tocList.refresh(tocContainer, tocConfig);
         // };
+
+        tocContainer.addEventListener("mouseleave", () => {
+            GetScrollPositions();
+        });
 
         const tocList = HyperList.create(tocContainer, tocConfig);
         // console.log(tocList);
@@ -240,6 +248,10 @@ export const reader = {
                     if (typeof currentLine === "object") {
                         // v1.6.4 and above
                         const [processedContent, lineType] = TextProcessor.createDOM(currentLine);
+
+                        if (lineType === "e" && processedContent.innerHTML.trim() === "") {
+                            continue;
+                        }
                         CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.appendChild(processedContent);
                     } else {
                         // v1.6.3 and below
@@ -249,13 +261,16 @@ export const reader = {
                                 j,
                                 j < CONFIG.VARS.TITLE_PAGE_LINE_NUMBER_OFFSET || j === maxLines - 1
                             );
+                            if (lineType === "e" && processedContent.innerHTML.trim() === "") {
+                                continue;
+                            }
                             CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.appendChild(processedContent);
                         }
                     }
                 }
             }
 
-            // set up footnote
+            // Set up footnote
             getFootnotes();
         } catch (error) {
             console.error("Error showing page content:", error);
@@ -1007,7 +1022,7 @@ export function initReader() {
      * Handle wheel events for page scrolling
      */
     window.isKeyboardNavigation = false;
-    document.addEventListener("toggleInfiniteScroll", () => {
+    cbReg.add("toggleInfiniteScroll", () => {
         reader.toggleInfiniteScroll();
     });
 
@@ -1043,18 +1058,24 @@ export function initReader() {
         };
 
         const navigationMap = {
-            ArrowLeft: (e) => handleNavigation(e, () => reader.gotoPrevPage(true)),
-            ArrowRight: (e) => handleNavigation(e, () => reader.gotoNextPage()),
-            PageUp: (e) => handleNavigation(e, () => reader.gotoPrevChapter()),
-            PageDown: (e) => handleNavigation(e, () => reader.gotoNextChapter()),
+            ArrowLeft: (e) =>
+                CONFIG.CONST_CONFIG.SHORTCUTS.arrow_left ? handleNavigation(e, () => reader.gotoPrevPage(true)) : null,
+            ArrowRight: (e) =>
+                CONFIG.CONST_CONFIG.SHORTCUTS.arrow_right ? handleNavigation(e, () => reader.gotoNextPage()) : null,
+            PageUp: (e) =>
+                CONFIG.CONST_CONFIG.SHORTCUTS.page_up ? handleNavigation(e, () => reader.gotoPrevChapter()) : null,
+            PageDown: (e) =>
+                CONFIG.CONST_CONFIG.SHORTCUTS.page_down ? handleNavigation(e, () => reader.gotoNextChapter()) : null,
             Escape: (e) => {
-                e.preventDefault();
-                triggerCustomEvent("resetUI", {
-                    refreshBookshelf: true,
-                    hardRefresh: true,
-                    sortBookshelf: true,
-                    inFileLoadCallback: false,
-                });
+                if (CONFIG.CONST_CONFIG.SHORTCUTS.esc) {
+                    e.preventDefault();
+                    cbReg.go("resetUI", {
+                        refreshBookshelf: true,
+                        hardRefresh: true,
+                        sortBookshelf: true,
+                        inFileProcessingCallback: false,
+                    });
+                }
             },
         };
 
@@ -1085,4 +1106,13 @@ export function initReader() {
     const tocContent = CONFIG.DOM_ELEMENT.TOC_CONTAINER;
     tocContent.addEventListener("mouseenter", () => handleActiveTitles(true));
     tocContent.addEventListener("mouseleave", () => handleActiveTitles(false));
+
+    /**
+     * Update the font baseline offsets
+     */
+    if (window.fetchFontBaselineOffsetsPromise) {
+        window.fetchFontBaselineOffsetsPromise.then(() => {
+            cbReg.go("updateFontBaselineOffsets");
+        });
+    }
 }

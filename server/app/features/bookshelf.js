@@ -2,7 +2,7 @@
  * @fileoverview Manages book processing and storage operations, including file compression
  * and database interactions. Handles both raw book files and processed content.
  *
- * @module bookshelf
+ * @module server/app/features/bookshelf
  * @requires fs/promises
  * @requires path
  * @requires os
@@ -12,6 +12,7 @@
  * @requires server/app/database/db-manager.js
  * @requires server/app/middleware/error.js
  * @requires server/app/file/file-processor.js
+ * @requires server/app/websocket/websocket-server.js
  */
 
 import fs from "fs/promises";

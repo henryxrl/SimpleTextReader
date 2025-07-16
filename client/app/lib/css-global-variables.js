@@ -7,7 +7,7 @@
  * @Email: colxi.kl@gmail.com
  * @Date: 2018-03-18
  * @License: MIT
- * @Modified: Converted to ES Module by Henry Xu
+ * @Modified: Converted to ES Module and optimized by Henry Xu
  *
  * @module client/app/lib/css-global-variables
  */

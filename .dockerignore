@@ -7,6 +7,9 @@
 # vscode
 .vscode/
 
+# kiro
+.kiro/
+
 # assets
 **/assets/
 **/dist/
@@ -29,6 +32,8 @@
 **/README_EN.md
 **/uploads/
 **/processed_books/
+**/LXGWWenKaiScreen.woff2
+**/dev/
 
 # Prisma
 **/prisma/*.db

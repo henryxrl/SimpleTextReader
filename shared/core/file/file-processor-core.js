@@ -1,6 +1,13 @@
 /**
  * @fileoverview FileProcessorCore module for processing files
  * Core logic that can be used in both browser and Node.js environments
+ *
+ * @module shared/core/file/file-processor-core
+ * @requires shared/adapters/text-decoder
+ * @requires shared/core/text/text-processor-core
+ * @requires shared/core/text/pagination-calculator
+ * @requires shared/core/text/title-pattern-detector
+ * @requires client/app/utils/base
  */
 
 import { getTextDecoderClass } from "../../adapters/text-decoder.js";
@@ -136,10 +143,17 @@ export class FileProcessorCore {
             progressCallback = null,
         } = {}
     ) {
+        /**
+         * Decode the chunk and get lines
+         */
         const buffer = await chunk.arrayBuffer();
         const decoder = await FileProcessorCore.#getDecoder(encoding);
         const content = decoder.decode(new Uint8Array(buffer), { fatal: true });
         let lines = content
+            .replace(/[\u200B-\u200F\u202A-\u202E\u2060\uFEFF\u00AD]/g, "")
+            .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "")
+            .replace(/\r\n/g, "\n")
+            .replace(/\r/g, "\n")
             .split("\n")
             .filter(Boolean)
             .filter((n) => n.trim() !== "");
@@ -154,7 +168,9 @@ export class FileProcessorCore {
             });
         }
 
-        // Dynamically detect title patterns from the first chunk
+        /**
+         * Dynamically detect title patterns from the first chunk
+         */
         if (isInitialChunk || forcePatternDetection) {
             let linesForPatternDetection = lines;
             if (forcePatternDetection && patternDetectionOptions.fileSize > patternDetectionOptions.initialChunkSize) {
@@ -176,11 +192,13 @@ export class FileProcessorCore {
             titles: [], // Title information
             currentLineNumber: 0, // Current line number being processed
             footnoteCounter: 0,
-            footnotes: [],
+            footnotes: [], // [ { type, lineNumber, ... } ]
             pageBreaks: [],
         };
 
-        // Prepend titlePageLines and titlePageTitles if they are defined
+        /**
+         * Prepend titlePageLines and titlePageTitles if they are defined
+         */
         if (extraContent.titlePageLines && extraContent.titlePageTitles) {
             result.titles.push(...extraContent.titlePageTitles); // Prepend titles
 
@@ -205,10 +223,17 @@ export class FileProcessorCore {
             });
         }
 
-        // Process each line, ignoring the last line if we're processing the initial chunk and file.size <= chunk size.
-        // This is to avoid cutting a paragraph in half.
+        /**
+         * Process each line, ignoring the last line if we're processing the initial chunk and file.size <= chunk size.
+         * This is to avoid cutting a paragraph in half.
+         */
+        const footnoteAnchorCounters = {}; // { [markerCode]: number }
         for (let i = 0; i < lines.length - sliceLineOffset; i++) {
-            const tempLine = lines[i];
+            const tempLine = lines[i].trim();
+
+            /**
+             * Process title
+             */
             const [tempTitle, tempTitleGroup, tempNamedGroups, tempIsCustomOnly] = TextProcessorCore.getTitle(tempLine);
             if (tempTitle !== "") {
                 // Get the shortest title
@@ -221,16 +246,23 @@ export class FileProcessorCore {
                 ]);
             }
 
-            let { line, footnote } = TextProcessorCore.makeFootNote(tempLine, result.footnoteCounter === 0);
+            /**
+             * Process footnote
+             */
+            let { line, marker, footnote } = TextProcessorCore.makeFootNote(
+                tempLine,
+                result.footnotes,
+                result.currentLineNumber,
+                footnoteAnchorCounters
+            );
             if (line === "") {
-                // This is the actual footnote itself
-                footnote = FileProcessorCore.#processFootnote(footnote, result.footnoteCounter);
-                result.footnotes.push(footnote);
                 result.footnoteCounter++;
             }
-            result.currentLineNumber++;
 
-            // Process the final HTML line for rendering
+            /**
+             * Process the final HTML line for rendering
+             */
+            result.currentLineNumber++;
             result.htmlLines.push(
                 TextProcessorCore.process(
                     line,
@@ -241,7 +273,9 @@ export class FileProcessorCore {
                 )
             );
 
-            // Report progress every 100 lines or when the last line is processed
+            /**
+             * Report progress every 100 lines or when the last line is processed
+             */
             if (i % 100 === 0 || i === totalLines - 1) {
                 progressCallback?.({
                     stage: "processing",
@@ -252,7 +286,9 @@ export class FileProcessorCore {
             }
         }
 
-        // Append endPageLines and endPageTitles if they are defined
+        /**
+         * Append endPageLines and endPageTitles if they are defined
+         */
         if (extraContent.endPageLines && extraContent.endPageTitles) {
             const totalLineNumber = result.htmlLines.length;
             extraContent.endPageLines = [FileProcessorCore.generateEndPage(totalLineNumber)];
@@ -273,7 +309,9 @@ export class FileProcessorCore {
             }
         }
 
-        // Calculate page breaks
+        /**
+         * Calculate page breaks
+         */
         // progressCallback?.({
         //     stage: "pagination",
         //     status: "start",
@@ -295,6 +333,9 @@ export class FileProcessorCore {
             percentage: 100,
         });
 
+        /**
+         * Return the result
+         */
         return {
             ...result,
             titles_ind: FileProcessorCore.#generateTitlesIndices(result.titles),
@@ -473,28 +514,6 @@ export class FileProcessorCore {
             }
         }
         return null; // No valid substrings found
-    }
-
-    /**
-     * Create footnote element
-     * @param {string} footnote - Footnote
-     * @param {number} footnoteCounter - Footnote counter
-     * @returns {string} Footnote HTML string
-     */
-    static #createFootnoteElement(footnote, footnoteCounter) {
-        return `<li id="fn${footnoteCounter}">${footnote}</li>`;
-    }
-
-    /**
-     * Process footnote
-     * @param {string} footnote - Footnote
-     * @param {number} counter - Counter
-     * @returns {string} Footnote HTML string
-     */
-    static #processFootnote(footnote, counter) {
-        const footnoteHTML = FileProcessorCore.#createFootnoteElement(footnote, counter);
-        counter++;
-        return footnoteHTML;
     }
 
     /**

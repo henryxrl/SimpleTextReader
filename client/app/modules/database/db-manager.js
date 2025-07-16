@@ -15,12 +15,12 @@
  * @requires IndexedDB
  * @requires shared/utils/logger
  * @requires client/app/utils/helpers-worker
- * @requires shared/core/file/fileload-callback
+ * @requires shared/core/callback/callback-registry
  */
 
 import { Logger } from "../../../../shared/utils/logger.js";
 import { createWorker } from "../../utils/helpers-worker.js";
-import { FileLoadCallback } from "../../../../shared/core/file/fileload-callback.js";
+import { cbReg } from "../../../../shared/core/callback/callback-registry.js";
 
 /**
  * @class DBManager
@@ -503,7 +503,7 @@ export class DBManager {
 
             // Trigger the callback after database save
             if (data.file_content_chunks) {
-                await FileLoadCallback.afterDBSave();
+                await cbReg.go("afterDBSave");
             }
 
             return options.allowPartialSuccess

@@ -11,11 +11,12 @@
  * @module client/app/modules/features/bookshelf
  * @requires client/app/config/index
  * @requires client/app/config/icons
+ * @requires shared/core/callback/callback-registry
  * @requires shared/utils/logger
  * @requires client/app/modules/database/db-manager
  * @requires client/app/modules/text/text-processor
  * @requires client/app/modules/file/file-handler
- * @requires shared/core/file/fileload-callback
+ * @requires shared/core/callback/callback-registry
  * @requires client/app/modules/components/cover-generator
  * @requires client/app/modules/components/popup-manager
  * @requires client/app/utils/base
@@ -28,12 +29,11 @@
 
 import * as CONFIG from "../../config/index.js";
 import { ICONS } from "../../config/icons.js";
+import { cbReg } from "../../../../shared/core/callback/callback-registry.js";
 import { Logger } from "../../../../shared/utils/logger.js";
 import { DBManager } from "../database/db-manager.js";
 import { TextProcessor } from "../text/text-processor.js";
 import { FileHandler } from "../file/file-handler.js";
-import { FileLoadCallback } from "../../../../shared/core/file/fileload-callback.js";
-import { getCoverGenerator } from "../components/cover-generator.js";
 import { PopupManager } from "../components/popup-manager.js";
 import {
     isVariableDefined,
@@ -41,7 +41,7 @@ import {
     removeFileExtension,
     convertUTCTimestampToLocalString,
     formatBytes,
-    triggerCustomEvent,
+    truncateText,
 } from "../../utils/base.js";
 import {
     showLoadingScreen,
@@ -49,6 +49,7 @@ import {
     resetUI,
     resetVars,
     resetDropZoneState,
+    delegateScroll,
 } from "../../utils/helpers-ui.js";
 import {
     setBookLastReadTimestamp,
@@ -608,8 +609,13 @@ const bookshelf = {
     _FILENAME_: "STR-Filename",
     _CACHE_FLAG_: "STR-Cache-File",
 
-    _CALLBACK_FUNC_BEFORE_FILE_LOAD_: null,
-    _CALLBACK_FUNC_AFTER_DB_SAVE_: null,
+    _tokenBeforeFileLoad: null,
+    _tokenAfterDBSave: null,
+    _tokenAfterBookOpen: null,
+
+    _loopInterval: 2000,
+    _loopCount: 0,
+    _loopCountMax: 30,
 
     /**
      * Reopens the last read book on startup
@@ -709,7 +715,9 @@ const bookshelf = {
                             hideLoadingScreen(false);
                             PopupManager.showNotification({
                                 iconName: "ERROR",
-                                text: `${CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_failedToOpen} "${fname}"`,
+                                text: `${CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_failedToOpen} "${truncateText(
+                                    fname
+                                )}"`,
                                 iconColor: "error",
                             });
                             throw new Error(`openBook error: "${fname}"`);
@@ -718,7 +726,9 @@ const bookshelf = {
                         hideLoadingScreen(false);
                         PopupManager.showNotification({
                             iconName: "ERROR",
-                            text: `${CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_failedToOpen} "${fname}"`,
+                            text: `${CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_failedToOpen} "${truncateText(
+                                fname
+                            )}"`,
                             iconColor: "error",
                         });
                         throw new Error(`openBook error: "${fname}"`);
@@ -764,7 +774,7 @@ const bookshelf = {
                     hideLoadingScreen(false);
                     PopupManager.showNotification({
                         iconName: "ERROR",
-                        text: `${CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_failedToOpen} "${fname}"`,
+                        text: `${CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_failedToOpen} "${truncateText(fname)}"`,
                         iconColor: "error",
                     });
                     throw new Error(`openBook error: "${fname}"`);
@@ -822,7 +832,7 @@ const bookshelf = {
      * @param {boolean} [refreshBookshelf=true] - Whether to refresh bookshelf display
      * @param {boolean} [hardRefresh=true] - Whether to perform hard refresh
      * @param {boolean} [sortBookshelf=true] - Whether to sort bookshelf
-     * @param {boolean} [inFileLoadCallback=false] - Whether to call file load callback
+     * @param {boolean} [inFileProcessingCallback=false] - Whether to call file load callback
      * @returns {Promise<File>} The saved file
      */
     async saveBook(
@@ -832,7 +842,7 @@ const bookshelf = {
         refreshBookshelf = true,
         hardRefresh = true,
         sortBookshelf = true,
-        inFileLoadCallback = false
+        inFileProcessingCallback = false
     ) {
         if (this.enabled) {
             // console.log("saveBook: ", file);
@@ -864,7 +874,7 @@ const bookshelf = {
                         // await this.refreshBookList();
                         // console.log(`refreshBookshelf: ${refreshBookshelf}, HardRefresh: ${hardRefresh}`);
                         if (refreshBookshelf)
-                            await resetUI(refreshBookshelf, hardRefresh, sortBookshelf, inFileLoadCallback);
+                            await resetUI(refreshBookshelf, hardRefresh, sortBookshelf, inFileProcessingCallback);
                     } catch (e) {
                         console.log(e);
                     }
@@ -881,7 +891,7 @@ const bookshelf = {
      * @param {boolean} [refreshBookshelf=true] - Whether to refresh bookshelf display
      * @param {boolean} [hardRefresh=true] - Whether to perform hard refresh
      * @param {boolean} [sortBookshelf=true] - Whether to sort bookshelf
-     * @param {boolean} [inFileLoadCallback=false] - Whether to call file load callback
+     * @param {boolean} [inFileProcessingCallback=false] - Whether to call file load callback
      * @returns {Promise<Object>} The saved processed book
      */
     async saveProcessedBookFromServer(
@@ -889,7 +899,7 @@ const bookshelf = {
         refreshBookshelf = true,
         hardRefresh = true,
         sortBookshelf = true,
-        inFileLoadCallback = false
+        inFileProcessingCallback = false
     ) {
         if (!this.enabled) {
             return null;
@@ -969,12 +979,12 @@ const bookshelf = {
             }
 
             // Refresh Bookshelf in DropZone
-            if (refreshBookshelf) await resetUI(refreshBookshelf, hardRefresh, sortBookshelf, inFileLoadCallback);
+            if (refreshBookshelf) await resetUI(refreshBookshelf, hardRefresh, sortBookshelf, inFileProcessingCallback);
 
             this.logger.log("saveProcessedBookFromServer complete");
 
             // Trigger saveProcessedBookComplete event
-            triggerCustomEvent("saveProcessedBookComplete");
+            cbReg.go("saveProcessedBookComplete");
         } catch (e) {
             console.error("Error in saveProcessedBookFromServer:", e);
             console.error("Error stack:", e.stack);
@@ -1030,11 +1040,10 @@ const bookshelf = {
             bookElm.addClass("read").css("--read-progress", progress);
             if (getIsBookFinished(fname)) {
                 bookElm.data("isFinished", true);
-                // bookElm.find(".progress").html(CONFIG.RUNTIME_VARS.STYLE.ui_bookFinished).attr("data-title", progress);
                 // add styling to the text of read
                 const read_text = `<span class="read_text">
                 ${ICONS.FINISHED}
-                ${CONFIG.RUNTIME_VARS.STYLE.ui_bookFinished}</span>`;
+                <span class="read_text_text"></span></span>`;
                 bookElm.find(".progress").html(read_text);
 
                 // add a badge to the book cover
@@ -1044,7 +1053,7 @@ const bookshelf = {
             } else {
                 if (parseInt(progress) >= 99) {
                     bookElm.data("almostDone", true);
-                    const almostDone_text = `<span class="almostDone_text">${CONFIG.RUNTIME_VARS.STYLE.ui_bookAlmostDone}</span>`;
+                    const almostDone_text = `<span class="almostDone_text"></span>`;
                     bookElm.find(".progress").html(progress + almostDone_text);
                     // .attr("data-title", progress);
                 } else {
@@ -1056,10 +1065,9 @@ const bookshelf = {
         } else {
             bookElm.data("unRead", true);
             bookElm.removeClass("read").css("--read-progress", "");
-            // bookElm.find(".progress").html(CONFIG.RUNTIME_VARS.STYLE.ui_bookNotRead);
 
             // add styling to the text of not read
-            const notRead_text = `<span class="notRead_text">${CONFIG.RUNTIME_VARS.STYLE.ui_bookNotRead}</span>`;
+            const notRead_text = `<span class="notRead_text"></span>`;
             bookElm.find(".progress").html(notRead_text);
 
             // add a badge to the book cover
@@ -1075,14 +1083,25 @@ const bookshelf = {
      * @returns {jQuery} Generated book element
      */
     genBookItem(bookInfo, idx) {
-        // generate book cover art
+        // Generate book cover art
         const canvasWidth = getSizePrecise(CONFIG.RUNTIME_VARS.STYLE.ui_bookCoverWidth);
         const canvasHeight = getSizePrecise(CONFIG.RUNTIME_VARS.STYLE.ui_bookCoverHeight);
+        const currentBookNameAndAuthor = TextProcessor.getBookNameAndAuthor(removeFileExtension(bookInfo.name));
+        let htmlTag = "";
+        if (CONFIG.CONST_UI.COVER_GENERATOR_CONFIG.USE_CANVAS) {
+            htmlTag = "canvas";
+        } else {
+            htmlTag = "div";
+        }
         const book = $(
             `<div class="book" data-filename="${bookInfo.name}">
                 <div class="cover-container">
-                    <span class="cover-text">${bookInfo.name}</span>
-                    <canvas class="cover-canvas" width="${canvasWidth}" height="${canvasHeight}"></canvas>
+                    <div class="cover-hidden-text-container">
+                        <span class="cover-hidden-text">${bookInfo.name}</span>
+                        <span class="cover-hidden-text bookName">${currentBookNameAndAuthor.bookName}</span>
+                        <span class="cover-hidden-text author">${currentBookNameAndAuthor.author}</span>
+                    </div>
+                    <${htmlTag} class="cover-canvas" width="${canvasWidth}" height="${canvasHeight}"></${htmlTag}>
                 </div>
                 <div class="info-container">
                     <div class="progress"></div>
@@ -1105,15 +1124,17 @@ const bookshelf = {
                 </div>
             </div>`
         );
-        const currentBookNameAndAuthor = TextProcessor.getBookNameAndAuthor(removeFileExtension(bookInfo.name));
-        const canvas = book.find(".cover-canvas");
-        const ctx = canvas[0].getContext("2d");
         const coverSettings = this._getCoverSettings({
             width: canvasWidth,
             height: canvasHeight,
             bookNameAndAuthor: currentBookNameAndAuthor,
         });
-        this._getCoverGenerator().generate(coverSettings, ctx);
+        const container = book.find(".cover-canvas")[0];
+        if (CONFIG.CONST_UI.COVER_GENERATOR_CONFIG.USE_CANVAS) {
+            this._coverGenerator.generate(coverSettings, container.getContext("2d"));
+        } else {
+            this._coverGenerator.generate(coverSettings, container);
+        }
         if (currentBookNameAndAuthor.author === "") {
             book.find(".cover-container").css("box-shadow", "var(--ui_bookshadow_noAuthor)");
         } else {
@@ -1122,7 +1143,7 @@ const bookshelf = {
         book.data("isEastern", bookInfo.isEastern);
         book.data("bookNameAndAuthor", currentBookNameAndAuthor);
 
-        // add mouseover effect
+        // Add mouseover effect
         book.find(".cover-container")
             .on("mouseenter", function () {
                 book.find(".delete-btn-wrapper").css("opacity", "1");
@@ -1156,7 +1177,7 @@ const bookshelf = {
                 book.find(".delete-btn-wrapper").css("opacity", "0");
             });
 
-        // add click event
+        // Add click event
         book.find(".cover-container").on("click", (e) => {
             e.originalEvent.stopPropagation();
             if (e.altKey) {
@@ -1168,7 +1189,7 @@ const bookshelf = {
             }
         });
 
-        // add delete event
+        // Add delete event
         book.find(".delete-btn").on("click", (e) => {
             e.originalEvent.stopPropagation();
 
@@ -1183,16 +1204,16 @@ const bookshelf = {
 
                     $(".booklist").trigger("contentchange"); // recalculate booklist height
 
-                    // change isFromLocal to false
+                    // Change isFromLocal to false
                     // setIsFromLocal(bookInfo.name, false);
                     // bookInfo.isFromLocal = false;
 
-                    // if the book is neither from local nor on server, remove it from history
+                    // If the book is neither from local nor on server, remove it from history
                     // if (!bookInfo.isFromLocal && !bookInfo.isOnServer) {
                     //     removeHistory(bookInfo.name);
                     // }
 
-                    // remove the book from history
+                    // Remove the book from history
                     removeHistory(bookInfo.name);
                 });
                 // b.animate({width: 0, opacity: 0}, 500, () => b.remove());
@@ -1201,35 +1222,35 @@ const bookshelf = {
                     iconName: "DELETE_BOOK",
                     text: CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_deleteBook.replace(
                         "xxx",
-                        `"${bookInfo.name}"`
+                        `"${truncateText(bookInfo.name)}"`
                     ),
                 });
             });
         });
 
-        // update book progress info
+        // Update book progress info
         this.updateBookProgressInfo(bookInfo.name, book);
 
-        // add a bookinfo-menu-btn
+        // Add a bookinfo-menu-btn
         book.find(`#bookinfo-menu-btn-${idx}`).on("click", (e) => {
             _handleBookInfoMenu(e, e.currentTarget);
         });
 
-        // add right click event
+        // Add right click event
         book.find(".cover-container").on("contextmenu", (e) => {
             // e.originalEvent.preventDefault();
             // const targetElement = book.find(`#bookinfo-menu-btn-${idx}`).get(0);
             // _handleBookInfoMenu(e, targetElement);
         });
 
-        // handle book info menu
+        // Handle book info menu
         function _handleBookInfoMenu(e, targetElement) {
             e.originalEvent.stopPropagation();
 
-            // remove all bookinfo-menu
+            // Remove all bookinfo-menu
             $(".bookinfo-menu").remove();
 
-            // add bookinfo-menu
+            // Add bookinfo-menu
             if (book.find(".dot-menu__checkbox").is(":checked") || e.originalEvent.button === 2) {
                 const tempBookAuthor =
                     book.data("bookNameAndAuthor") ??
@@ -1237,74 +1258,70 @@ const bookshelf = {
                 const tempBookTitle = tempBookAuthor.bookName;
                 const tempBookAuthorName =
                     tempBookAuthor.author === ""
-                        ? `<span class="bookinfo-menu-item-text">${CONFIG.RUNTIME_VARS.STYLE.ui_bookInfo_Unknown}<span>`
-                        : `<span class="bookinfo-menu-item-info">${tempBookAuthor.author}<span>`;
+                        ? `<span class="bookinfo-menu-item-text bookinfo-menu-item-text_unknown"><span>`
+                        : tempBookAuthor.author;
                 const tempBookLastOpenedTimestamp =
                     isVariableDefined(bookInfo.lastOpenedTimestamp) && bookInfo.lastOpenedTimestamp !== ""
-                        ? `<span class="bookinfo-menu-item-info">${convertUTCTimestampToLocalString(
-                              bookInfo.lastOpenedTimestamp
-                          )}<span>`
-                        : `<span class="bookinfo-menu-item-text">${CONFIG.RUNTIME_VARS.STYLE.ui_bookInfo_Unknown}<span>`;
+                        ? convertUTCTimestampToLocalString(bookInfo.lastOpenedTimestamp)
+                        : `<span class="bookinfo-menu-item-text bookinfo-menu-item-text_unknown"></span>`;
 
-                // show popup menu
+                // Create popup menu
                 const bookInfoMenu = `
                 <div class="bookinfo-menu" id="bookinfo-menu-${idx}">
                     <div class="bookinfo-menu-clip"></div>
                     <div class="bookinfo-menu_item">
-                        <span class="bookinfo-menu-item-text">${CONFIG.RUNTIME_VARS.STYLE.ui_bookInfo_bookname}</span>
-                        <span class="bookinfo-menu-item-info bookinfo-menu-item-info_title">${tempBookTitle}</span>
+                        <span class="bookinfo-menu-item-text bookinfo-menu-item-text_bookname"></span>
+                        <div class="bookinfo-menu-item-info bookinfo-menu-item-info_title">${tempBookTitle}</div>
                     </div>
                     <div class="bookinfo-menu_item">
-                        <span class="bookinfo-menu-item-text">${CONFIG.RUNTIME_VARS.STYLE.ui_bookInfo_author}</span>
-                        <span class="bookinfo-menu-item-info bookinfo-menu-item-info_author">${tempBookAuthorName}</span>
+                        <span class="bookinfo-menu-item-text bookinfo-menu-item-text_author"></span>
+                        <div class="bookinfo-menu-item-info bookinfo-menu-item-info_author">${tempBookAuthorName}</div>
                     </div>
                     <div class="bookinfo-menu_item">
-                        <span class="bookinfo-menu-item-text">${CONFIG.RUNTIME_VARS.STYLE.ui_bookInfo_filename}</span>
-                        <span class="bookinfo-menu-item-info bookinfo-menu-item-info_filename">${bookInfo.name}</span>
+                        <span class="bookinfo-menu-item-text bookinfo-menu-item-text_filename"></span>
+                        <div class="bookinfo-menu-item-info bookinfo-menu-item-info_filename">${bookInfo.name}</div>
                     </div>
                     <div class="bookinfo-menu_item">
-                        <span class="bookinfo-menu-item-text">${CONFIG.RUNTIME_VARS.STYLE.ui_bookInfo_filesize}</span>
-                        <span class="bookinfo-menu-item-info bookinfo-menu-item-info_filesize">${formatBytes(
+                        <span class="bookinfo-menu-item-text bookinfo-menu-item-text_filesize"></span>
+                        <div class="bookinfo-menu-item-info bookinfo-menu-item-info_filesize">${formatBytes(
                             bookInfo.size
-                        )}</span>
+                        )}</div>
                     </div>
                     <div class="bookinfo-menu_item">
-                        <span class="bookinfo-menu-item-text bookinfo-menu-item-info_timestamp">${
-                            CONFIG.RUNTIME_VARS.STYLE.ui_bookInfo_lastopened
-                        }</span>
-                        ${tempBookLastOpenedTimestamp}
+                        <span class="bookinfo-menu-item-text bookinfo-menu-item-text_lastopened"></span>
+                        <div class="bookinfo-menu-item-info bookinfo-menu-item-info_timestamp">${tempBookLastOpenedTimestamp}</div>
                     </div>
                 </div>`;
 
+                // Add popup menu to the book
                 book.find(".info-container").append(bookInfoMenu);
+                book.find(`#bookinfo-menu-${idx} .bookinfo-menu-item-info`).each(function () {
+                    this.scrollTop = 0;
+                });
 
-                // set bookinfo-menu's position to be right above current element
-                const bookInfoMenuWidth = book.find(`#bookinfo-menu-${idx}`).outerWidth();
-                const bookInfoMenuHeight = book.find(`#bookinfo-menu-${idx}`).outerHeight();
-                book.find(`#bookinfo-menu-${idx}`).css(
-                    "top",
-                    `${
-                        targetElement.getBoundingClientRect().bottom -
-                        targetElement.getBoundingClientRect().height -
-                        bookInfoMenuHeight -
-                        15
-                    }px`
+                // Proxy scroll events to the bookinfo-menu-item-info elements
+                const menu = book.find(`#bookinfo-menu-${idx}`);
+                const menuElement = menu[0];
+                const scrollTargets = Array.from(menuElement.querySelectorAll(".bookinfo-menu-item-info")).filter(
+                    (el) => el.scrollHeight > el.clientHeight
                 );
-                book.find(`#bookinfo-menu-${idx}`).css(
+                delegateScroll(menuElement, scrollTargets);
+
+                // Set bookinfo-menu's position to be right above current element
+                const bookInfoMenuWidth = menu.outerWidth();
+                const bookInfoMenuHeight = menu.outerHeight();
+                const targetElementRect = targetElement.getBoundingClientRect();
+                menu.css("top", `${targetElementRect.bottom - targetElementRect.height - bookInfoMenuHeight - 15}px`);
+                menu.css(
                     "left",
-                    `${
-                        targetElement.getBoundingClientRect().left +
-                        targetElement.getBoundingClientRect().width / 2 -
-                        bookInfoMenuWidth / 2 +
-                        3
-                    }px`
+                    `${targetElementRect.left + targetElementRect.width / 2 - bookInfoMenuWidth / 2 + 3}px`
                 );
             } else {
-                // hide popup menu
+                // Hide popup menu
                 book.find(".bookinfo-menu").remove();
             }
 
-            // hide popup menu when clicked outside
+            // Hide popup menu when clicked outside
             document.addEventListener("click", function (e) {
                 const settingsMenu = book.find(`#bookinfo-menu-${idx}`);
                 // if (!settingsMenu) return;
@@ -1316,7 +1333,7 @@ const bookshelf = {
                 }
             });
 
-            // reset all book cover art when mouseover the bookinfo-menu
+            // Reset all book cover art when mouseover the bookinfo-menu
             book.find(".bookinfo-menu").on("mouseenter", function () {
                 // $(".delete-btn-wrapper").css("visibility", "hidden");
                 $(".cover-container").css("box-shadow", "var(--ui_bookshadow)");
@@ -1329,24 +1346,111 @@ const bookshelf = {
     /**
      * Updates all book covers with current theme colors and fonts
      * @async
+     * @param {boolean} colorOnly - Whether to only update the book covers' colors
+     * @param {string} message - Message to log
      */
-    async updateAllBookCovers() {
-        const generator = this._getCoverGenerator();
+    async updateAllBookCovers(colorOnly = false, message = "") {
+        if (!CONFIG.CONST_UI.COVER_GENERATOR_CONFIG.USE_CANVAS && colorOnly) {
+            return;
+        }
 
         Array.prototype.slice.call(document.getElementsByClassName("book")).forEach((book) => {
             const book_filename = book.getAttribute("data-filename");
-            const book_cover = book.getElementsByTagName("canvas")[0];
-            const ctx = book_cover.getContext("2d");
             const bookNameAndAuthor =
                 $(book).data("bookNameAndAuthor") ??
                 TextProcessor.getBookNameAndAuthor(removeFileExtension(book_filename));
             const coverSettings = this._getCoverSettings({
-                width: book_cover.width,
-                height: book_cover.height,
+                width: getSizePrecise(CONFIG.RUNTIME_VARS.STYLE.ui_bookCoverWidth),
+                height: getSizePrecise(CONFIG.RUNTIME_VARS.STYLE.ui_bookCoverHeight),
                 bookNameAndAuthor: bookNameAndAuthor,
             });
-            generator.generate(coverSettings, ctx);
+            let book_cover;
+            if (CONFIG.CONST_UI.COVER_GENERATOR_CONFIG.USE_CANVAS) {
+                book_cover = book.getElementsByTagName("canvas")[0].getContext("2d");
+            } else {
+                book_cover = book.getElementsByClassName("cover-canvas")[0];
+            }
+            this._coverGenerator.generate(coverSettings, book_cover);
         });
+    },
+
+    /**
+     * Gets all book names and authors
+     * @returns {Array} Array of book names and authors
+     */
+    getAllBookNamesAndAuthors() {
+        const allBookNamesAndAuthors = { booknames: [], authors: [] };
+        Array.prototype.slice.call(document.getElementsByClassName("book")).forEach((book) => {
+            const book_filename = removeFileExtension(book.getAttribute("data-filename"));
+            const bookNameAndAuthor =
+                $(book).data("bookNameAndAuthor") ??
+                TextProcessor.getBookNameAndAuthor(removeFileExtension(book_filename));
+            allBookNamesAndAuthors.booknames.push(bookNameAndAuthor.bookName);
+            allBookNamesAndAuthors.authors.push(bookNameAndAuthor.author);
+        });
+        return allBookNamesAndAuthors;
+    },
+
+    /**
+     * Gets all unique characters from book names, authors, or both.
+     * @returns {Object} Object with bookNameChars and bookAuthorChars
+     * @returns {Object} bookNameChars - Set of unique characters from book names
+     * @returns {Object} bookAuthorChars - Set of unique characters from book authors
+     */
+    getAllBookNamesAndAuthorsCharacters() {
+        const bookNameChars = new Set();
+        const bookAuthorChars = new Set();
+        Array.from(document.getElementsByClassName("book")).forEach((book) => {
+            const book_filename = removeFileExtension(book.getAttribute("data-filename"));
+            const bookNameAndAuthor =
+                $(book).data("bookNameAndAuthor") ??
+                TextProcessor.getBookNameAndAuthor(removeFileExtension(book_filename));
+
+            for (const char of bookNameAndAuthor.bookName) bookNameChars.add(char);
+            for (const char of bookNameAndAuthor.author) bookAuthorChars.add(char);
+        });
+        return { bookNameChars, bookAuthorChars };
+    },
+
+    /**
+     * Loads book covers after all fonts are loaded
+     * @param {string} message - Message to log
+     */
+    loadBookCoversAfterFontsLoaded(message = "") {
+        const fontFamilyTitle = CONFIG.RUNTIME_VARS.STYLE.fontFamily_title.split(",")[0];
+        const fontFamilyBody = CONFIG.RUNTIME_VARS.STYLE.fontFamily_body.split(",")[0];
+        const { bookNameChars, bookAuthorChars } = this.getAllBookNamesAndAuthorsCharacters();
+        if (message !== "") {
+            console.log("[loadBookCoversAfterFontsLoaded]", {
+                message,
+                bookNameChars: Array.from(bookNameChars).join(""),
+                bookAuthorChars: Array.from(bookAuthorChars).join(""),
+                fontFamilyTitle: fontFamilyTitle + " " + this.isFontfaceDefined(fontFamilyTitle),
+                fontFamilyBody: fontFamilyBody + " " + this.isFontfaceDefined(fontFamilyBody),
+            });
+        }
+        Promise.all([
+            ...Array.from(bookNameChars).map((char) => document.fonts.load(`12px "${fontFamilyTitle}"`, char)),
+            ...Array.from(bookAuthorChars).map((char) => document.fonts.load(`12px "${fontFamilyBody}"`, char)),
+        ])
+            .then(() => document.fonts.ready)
+            .then(() => {
+                console.log("All book cover fonts loaded, updating book covers");
+                cbReg.go("updateAllBookCovers");
+            })
+            .catch((e) => {
+                // console.warn("Failed to load all cover fonts:", e);
+                cbReg.go("updateAllBookCovers");
+            });
+    },
+
+    /**
+     * Checks if a font face is defined
+     * @param {string} fontFace - The font face to check
+     * @returns {boolean} True if the font face is defined, false otherwise
+     */
+    isFontfaceDefined(fontFace) {
+        return document.fonts.check(`12px "${fontFace}"`);
     },
 
     /**
@@ -1428,6 +1532,8 @@ const bookshelf = {
                 // console.log(CONFIG.VARS.ALL_BOOKS_INFO.length);
 
                 const container = $(".bookshelf .booklist");
+                let prevScrollTop = container.scrollTop();
+
                 if (hardRefresh) container.html("");
                 for (const [idx, bookname] of allBooksInfo_names.entries()) {
                     const bookInfo = CONFIG.VARS.ALL_BOOKS_INFO[bookname];
@@ -1446,6 +1552,14 @@ const bookshelf = {
                     container.append(this.genBookItem(bookInfo, idx));
                     // this.genBookItem(bookInfo, idx).hide().appendTo(container).fadeIn(300);
                 }
+
+                // Restore scroll: if hardRefresh, scroll to top. Otherwise, restore.
+                if (hardRefresh) {
+                    container.scrollTop(0);
+                } else {
+                    container.scrollTop(prevScrollTop);
+                }
+
                 await container.trigger("contentchange");
             } catch (e) {
                 console.log(e);
@@ -1515,12 +1629,19 @@ const bookshelf = {
     /**
      * Gets or creates the CoverGenerator instance
      * @private
-     * @returns {CoverGenerator} The cover generator instance
+     * @returns {getCoverGenerator} The cover generator instance
      */
-    _getCoverGenerator() {
+    async _getCoverGenerator(baselineOffsets = {}) {
         if (!this._coverGenerator) {
-            this._coverGenerator = getCoverGenerator();
+            let getCoverGenerator;
+            if (CONFIG.CONST_UI.COVER_GENERATOR_CONFIG.USE_CANVAS) {
+                ({ getCoverGenerator } = await import("../components/cover-generator-canvas.js"));
+            } else {
+                ({ getCoverGenerator } = await import("../components/cover-generator-dom.js"));
+            }
+            this._coverGenerator = getCoverGenerator(baselineOffsets);
         }
+        this._coverGenerator.updateFontBaselineOffsets(baselineOffsets);
         return this._coverGenerator;
     },
 
@@ -1991,12 +2112,23 @@ const bookshelf = {
 
     /**
      * Periodic loop to update book progress and save current filename
+     * @note Replaced by: 1) triggering the `_tokenAfterBookOpen` callback after the book is opened (set _FILENAME_ in localStorage)
+     * 2) triggering the `refreshBookList` -> `getBookItem` -> `updateBookProgressInfo` after the book is closed (update book progress info)
+     * 3) triggering the `closeBook` event after the book is closed (clear `_FILENAME_` in localStorage)
+     * No need to loop for every second anymore.
      */
     loop() {
-        if (this.enabled) {
-            localStorage.setItem(this._FILENAME_, CONFIG.VARS.FILENAME);
-            if (CONFIG.VARS.FILENAME) this.updateBookProgressInfo(CONFIG.VARS.FILENAME, null, true);
-            setTimeout(() => this.loop(), 1000);
+        if (this.enabled && CONFIG.CONST_UI.COVER_GENERATOR_CONFIG.USE_CANVAS && this._loopCount < this._loopCountMax) {
+            // localStorage.setItem(this._FILENAME_, CONFIG.VARS.FILENAME);
+            // if (CONFIG.VARS.FILENAME) this.updateBookProgressInfo(CONFIG.VARS.FILENAME, null, true);
+
+            if (!CONFIG.VARS.IS_BOOK_OPENED) {
+                // console.log("looping...");
+                cbReg.go("updateAllBookCovers");
+            }
+
+            this._loopCount++;
+            setTimeout(() => this.loop(), this._loopInterval);
         }
     },
 
@@ -2011,21 +2143,37 @@ const bookshelf = {
             this.enabled = true;
 
             // Register the callback after database save
-            this._CALLBACK_FUNC_AFTER_DB_SAVE_ = () => FileHandler.markDBSaveComplete();
-            FileLoadCallback.regAfterDBSave(this._CALLBACK_FUNC_AFTER_DB_SAVE_);
+            this._tokenAfterDBSave = cbReg.add("afterDBSave", () => FileHandler.markDBSaveComplete());
 
             // Register the callback before file load
-            this._CALLBACK_FUNC_BEFORE_FILE_LOAD_ = async (file) =>
+            this._tokenBeforeFileLoad = cbReg.add("fileBefore", async (file) => {
+                // console.log("fileBefore", file);
                 await this.saveBook(
                     file,
                     true, // isFromLocal
                     false, // isOnServer
-                    true, // refreshBookshelf
-                    true, // hardRefresh
+                    false, // refreshBookshelf
+                    false, // hardRefresh
                     true, // sortBookshelf
-                    true // inFileLoadCallback
+                    true // inFileProcessingCallback
                 );
-            FileLoadCallback.regBefore(this._CALLBACK_FUNC_BEFORE_FILE_LOAD_);
+            });
+
+            // Initialize the cover generator
+            this._coverGenerator = await this._getCoverGenerator(CONFIG.RUNTIME_VARS.FONT_BASELINE_OFFSETS);
+            if (window.fetchFontBaselineOffsetsPromise) {
+                window.fetchFontBaselineOffsetsPromise.then((fontBaselineOffsets) => {
+                    // console.log("update baseline offsets", fontBaselineOffsets);
+                    this._coverGenerator.updateFontBaselineOffsets(fontBaselineOffsets);
+                    cbReg.go("truncateBookCoverText");
+                });
+            }
+
+            // Register the callback after book opened
+            this._tokenAfterBookOpen = cbReg.add("fileAfter", () => {
+                CONFIG.VARS.IS_BOOK_OPENED = true;
+                localStorage.setItem(this._FILENAME_, CONFIG.VARS.FILENAME);
+            });
 
             // Upgrade the bookshelf database
             if (CONFIG.RUNTIME_CONFIG.UPGRADE_DB) {
@@ -2037,40 +2185,59 @@ const bookshelf = {
                 await this.db.printAllDatabases();
             }
 
+            // Listen for startLoop event
+            cbReg.add("startBookshelfLoop", () => {
+                this._loopCount = 0;
+                setTimeout(() => this.loop(), this._loopInterval);
+            });
+
             // Listen for refreshBookList event
-            document.addEventListener("refreshBookList", async (e) => {
-                const { hardRefresh, sortBookshelf } = e.detail;
+            cbReg.add("refreshBookList", async (e) => {
+                const { hardRefresh, sortBookshelf } = e;
                 await this.refreshBookList(hardRefresh, sortBookshelf);
             });
 
             // Listen for settings change events
-            document.addEventListener("updateAllBookCovers", async () => {
-                await this.updateAllBookCovers();
+            cbReg.add("updateAllBookCovers", async (e = {}) => {
+                const { colorOnly = false, message = "" } = e;
+                await this.updateAllBookCovers(colorOnly, message);
+                cbReg.go("truncateBookCoverText");
+            });
+
+            // Listen for updateAllBookCoversAfterFontsLoaded event
+            cbReg.add("updateAllBookCoversAfterFontsLoaded", (e = {}) => {
+                const { message = "" } = e;
+                this.loadBookCoversAfterFontsLoaded(message);
+            });
+
+            // Listen for updateFilterBar event
+            cbReg.add("updateFilterBar", () => {
+                this._updateFilterBar();
             });
 
             // Listen for showBookshelfTriggerBtn event
-            document.addEventListener("showBookshelfTriggerBtn", () => {
+            cbReg.add("showBookshelfTriggerBtn", () => {
                 this.showTriggerBtn();
             });
 
             // Listen for hideBookshelfTriggerBtn event
-            document.addEventListener("hideBookshelfTriggerBtn", () => {
+            cbReg.add("hideBookshelfTriggerBtn", () => {
                 this.hideTriggerBtn();
             });
 
             // Listen for showBookshelf event
-            document.addEventListener("showBookshelf", async () => {
+            cbReg.add("showBookshelf", async () => {
                 await this.show();
             });
 
             // Listen for hideBookshelf event
-            document.addEventListener("hideBookshelf", () => {
+            cbReg.add("hideBookshelf", () => {
                 this.hide();
             });
 
             // Listen for handleMultipleBooks event
-            document.addEventListener("handleMultipleBooks", async (e) => {
-                const { files, isFromLocal, isOnServer } = e.detail;
+            cbReg.add("handleMultipleBooks", async (e) => {
+                const { files, isFromLocal, isOnServer } = e;
 
                 if (this.enabled) {
                     showLoadingScreen();
@@ -2107,8 +2274,8 @@ const bookshelf = {
             });
 
             // Listen for handleMultipleBooksWithoutLoading event
-            document.addEventListener("handleMultipleBooksWithoutLoading", async (e) => {
-                const { files, isFromLocal, isOnServer } = e.detail;
+            cbReg.add("handleMultipleBooksWithoutLoading", async (e) => {
+                const { files, isFromLocal, isOnServer } = e;
 
                 if (this.enabled) {
                     showLoadingScreen();
@@ -2201,35 +2368,43 @@ const bookshelf = {
             });
 
             // Listen for printAllBooks event
-            document.addEventListener("printAllBooks", async () => {
+            cbReg.add("printAllBooks", async () => {
                 await this.db.printAllDatabases();
             });
 
             // Listen for openBook event
-            document.addEventListener("openBook", async (e) => {
-                const { name, forceRefresh } = e.detail;
+            cbReg.add("openBook", async (e) => {
+                const { name, forceRefresh } = e;
                 await this.openBook(name, forceRefresh);
             });
 
             // Listen for reopenBook event
-            document.addEventListener("reopenBook", async () => {
+            cbReg.add("reopenBook", async () => {
                 await this.reopenBook();
             });
 
+            // Listen for closeBook event
+            cbReg.add("closeBook", () => {
+                CONFIG.VARS.IS_BOOK_OPENED = false;
+                // Clear the filename from localStorage for reopening the same book
+                localStorage.setItem(this._FILENAME_, "");
+            });
+
             // Listen for saveProcessedBook event
-            document.addEventListener("saveProcessedBook", async (e) => {
-                await this.db.updateProcessedBook(e.detail.name, e.detail);
+            cbReg.add("saveProcessedBook", async (e) => {
+                await this.db.updateProcessedBook(e.name, e);
             });
 
             // Listen for saveProcessedBookFromServer event
-            document.addEventListener("saveProcessedBookFromServer", async (e) => {
+            cbReg.add("saveProcessedBookFromServer", async (e) => {
+                const { processedBook, refreshBookshelf, hardRefresh, sortBookshelf, inFileProcessingCallback } = e;
                 try {
                     await this.saveProcessedBookFromServer(
-                        e.detail.processedBook,
-                        e.detail.refreshBookshelf,
-                        e.detail.hardRefresh,
-                        e.detail.sortBookshelf,
-                        e.detail.inFileLoadCallback
+                        processedBook,
+                        refreshBookshelf,
+                        hardRefresh,
+                        sortBookshelf,
+                        inFileProcessingCallback
                     );
                 } catch (error) {
                     console.error("Error saving processed book:", error);
@@ -2237,15 +2412,19 @@ const bookshelf = {
             });
 
             // Listen for toggleFilterBar event
-            document.addEventListener("toggleFilterBar", () => {
+            cbReg.add("toggleFilterBar", () => {
                 this._setFilterBarVisibility(CONFIG.CONST_CONFIG.SHOW_FILTER_BAR);
             });
 
             // Create the bookshelf element
             $(`<div id="bookshelf" class="bookshelf">
-            <div class="title">${CONFIG.RUNTIME_VARS.STYLE.ui_bookshelfCachedStorage}
-            <div class="sub-title">${CONFIG.RUNTIME_VARS.STYLE.ui_bookshelfCachedStorage_subTitle}<br/>
-                <span id="bookshelfUsageText">${CONFIG.RUNTIME_VARS.STYLE.ui_bookshelfCachedStorage_usage}&nbsp;<span id="bookshelfUsagePct"></span>% (<span id="bookshelfUsage"></span> / <span id="bookshelfQuota"></span>)</span></div></div>
+            <div class="cached-storage-title">
+                <span class="cached-storage-title-text"></span>
+                <div class="cached-storage-sub-title"><br/>
+                    <span id="bookshelfUsageText"></span>&nbsp;
+                    <span id="bookshelfUsagePct"></span>% (<span id="bookshelfUsage"></span> / <span id="bookshelfQuota"></span>)
+                </div>
+            </div>
             <nav class="booklist-filter-bar"></nav>
             <div class="booklist"></div>
             <div class="bookshelf-btn-group">
@@ -2404,17 +2583,21 @@ const bookshelf = {
             });
 
             // capable of scrolling booklist within the entire bookshelf
-            document.getElementsByClassName("bookshelf")[0].addEventListener("wheel", (e) => {
-                // prevent scrolling booklist when mouse is hovering on bookinfo-menu
-                if ($(".bookinfo-menu").length > 0) {
-                    if ($(".bookinfo-menu").is(":hover")) {
-                        return;
+            document.getElementsByClassName("bookshelf")[0].addEventListener(
+                "wheel",
+                (e) => {
+                    // prevent scrolling booklist when mouse is hovering on bookinfo-menu
+                    if ($(".bookinfo-menu").length > 0) {
+                        if ($(".bookinfo-menu").is(":hover")) {
+                            return;
+                        }
                     }
-                }
 
-                // scroll booklist accordingly
-                document.getElementsByClassName("booklist")[0].scrollTop += e.deltaY;
-            });
+                    // scroll booklist accordingly
+                    document.getElementsByClassName("booklist")[0].scrollTop += e.deltaY;
+                },
+                { passive: true }
+            );
 
             // // Set tooltip for Dropzone
             // document.getElementsByClassName("bookshelf")[0].addEventListener("mouseenter", () => {
@@ -2429,8 +2612,9 @@ const bookshelf = {
             // Create worker
             this.worker = createWorker("client/app/modules/database/bookshelf-db-worker.js", import.meta.url);
 
+            cbReg.go("startBookshelfLoop");
+
             // console.log("Module <Bookshelf> enabled.");
-            setTimeout(() => this.loop(), 1000);
         }
         return this;
     },
@@ -2441,8 +2625,10 @@ const bookshelf = {
      */
     disable() {
         if (this.enabled) {
-            FileLoadCallback.unregBefore(this._CALLBACK_FUNC_BEFORE_FILE_LOAD_);
-            FileLoadCallback.unregAfterDBSave(this._CALLBACK_FUNC_AFTER_DB_SAVE_);
+            cbReg.rm("fileBefore", this._tokenBeforeFileLoad);
+            cbReg.rm("fileAfter", this._tokenAfterBookOpen);
+            cbReg.rm("afterDBSave", this._tokenAfterDBSave);
+
             this.hide(false);
             this.hideTriggerBtn(false);
             this.db = null;
@@ -2508,24 +2694,18 @@ export async function initBookshelf(displayBooks = true) {
 
         if (displayBooks) {
             // Now whether or not to show bookshelf depends on whether there is a book in bookshelf
-            await bookshelf.refreshBookList();
+            await bookshelf.refreshBookList(true, true);
 
-            // Open the last read book on startup
-            if (CONFIG.CONST_CONFIG.AUTO_OPEN_LAST_BOOK) {
+            // Open the last read book on startup, after settings are initialized
+            if (CONFIG.VARS.SETTINGS_INITIALIZED && CONFIG.CONST_CONFIG.AUTO_OPEN_LAST_BOOK) {
                 await bookshelf.reopenBook();
             }
-        }
-    }
-}
 
-/**
- * Forces the filter bar to recalculate its width
- * @public
- */
-export function forceRecalculateFilterBar() {
-    if (CONFIG.RUNTIME_CONFIG.ENABLE_BOOKSHELF) {
-        if (bookshelf.enabled) {
-            bookshelf._updateFilterBar();
+            // Load book covers after all fonts are loaded
+            cbReg.go(
+                "updateAllBookCoversAfterFontsLoaded"
+                //  { message: "initBookshelf" }
+            );
         }
     }
 }

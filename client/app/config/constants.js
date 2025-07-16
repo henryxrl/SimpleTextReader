@@ -41,6 +41,12 @@ const SUPPORTED_FONT_EXT = [".ttf", ".otf"];
  * @property {boolean} SHOW_TOC_AREA_DEFAULT - Whether to show the TOC area (default value)
  * @property {boolean} ENABLE_CUSTOM_CURSOR - Whether to enable custom cursor
  * @property {boolean} ENABLE_CUSTOM_CURSOR_DEFAULT - Whether to enable custom cursor (default value)
+ * @property {Object} SHORTCUTS - Object containing shortcut settings
+ * @property {boolean} SHORTCUTS.arrow_left - Whether to enable left arrow shortcut
+ * @property {boolean} SHORTCUTS.arrow_right - Whether to enable right arrow shortcut
+ * @property {boolean} SHORTCUTS.page_up - Whether to enable page up shortcut
+ * @property {boolean} SHORTCUTS.page_down - Whether to enable page down shortcut
+ * @property {boolean} SHORTCUTS.esc - Whether to enable escape shortcut
  */
 export const CONST_CONFIG = {
     CHANGELOG_SHOW_PREVIOUS_VERSIONS: 2,
@@ -58,6 +64,18 @@ export const CONST_CONFIG = {
     SHOW_TOC_AREA_DEFAULT: true,
     ENABLE_CUSTOM_CURSOR: false,
     ENABLE_CUSTOM_CURSOR_DEFAULT: false,
+    SHORTCUTS: {
+        arrow_left: true,
+        arrow_left_default: true,
+        arrow_right: true,
+        arrow_right_default: true,
+        page_up: true,
+        page_up_default: true,
+        page_down: true,
+        page_down_default: true,
+        esc: true,
+        esc_default: true,
+    },
 };
 
 /**
@@ -111,11 +129,29 @@ export const CONST_PAGINATION = Object.freeze({
 });
 
 /**
+ * Footnote-related constants
+ * @type {Object}
+ * @property {Object} TYPES - Footnote types
+ * @property {string} TYPES.ANCHOR - Anchor type
+ * @property {string} TYPES.FOOTNOTE - Footnote type
+ * @property {string} NOTFOUND - Not found footnote
+ * @readonly
+ */
+export const CONST_FOOTNOTE = Object.freeze({
+    TYPES: {
+        ANCHOR: "anchor",
+        FOOTNOTE: "footnote",
+    },
+    NOTFOUND: '<span class="footnote-notfound"></span>',
+});
+
+/**
  * UI-related constants
  * @type {Object}
  * @property {Object} LANGUAGE_MAPPING - Mapping of language codes to display names
  * @property {Object} CUSTOM_TOOLTIP_CONFIG - Configuration for the custom tooltip
  * @property {Object} SIDEBAR_SPLITVIEW_CONFIG - Configuration for the sidebar splitview
+ * @property {Object} COVER_GENERATOR_CONFIG - Configuration for the cover generator
  * @readonly
  */
 export const CONST_UI = Object.freeze({
@@ -153,6 +189,9 @@ export const CONST_UI = Object.freeze({
             patchWindowScroll: true,
         },
     },
+    COVER_GENERATOR_CONFIG: {
+        USE_CANVAS: false,
+    },
 });
 
 /**
@@ -163,25 +202,14 @@ export const CONST_UI = Object.freeze({
  * @property {string[]} SUPPORTED_FONT_TYPES - Supported font types
  * @property {Array} SYSTEM_FONTS - System fonts
  * @property {Array} APP_FONTS - Custom fonts
- * @property {Array} FALLBACK_FONTS - Fallback fonts
- * @property {Object} FONT_MAPPING - Mapping of font names to CSS font family names
  * @readonly
  */
 export const CONST_FONT = Object.freeze({
     MAX_CUSTOM_FONTS: 3,
     SUPPORTED_FONT_EXT,
     SUPPORTED_FONT_TYPES: ["font/ttf", "font/otf"],
+    FONT_BASELINE_OFFSET_JSON: "./client/fonts/font_baseline_offsets.json",
     SYSTEM_FONTS: [
-        { en: "Helvetica", zh: "Helvetica" },
-        {
-            en: "Noto Sans",
-            zh: "Noto Sans",
-            linuxVariant: "Noto Sans CJK",
-            label_en: "Noto Sans",
-        },
-        { en: "Roboto", zh: "Roboto" },
-        { en: "Times New Roman", zh: "Times New Roman" },
-        { en: "Consolas", zh: "Consolas" },
         {
             en: "Microsoft YaHei",
             zh: "微软雅黑",
@@ -190,24 +218,10 @@ export const CONST_FONT = Object.freeze({
             label_zh: "微软雅黑",
         },
         {
-            en: "SimSun",
-            zh: "宋体",
-            macVariant: "SongTi SC",
-            linuxVariant: "AR PL UMing CN",
-            label_zh: "宋体",
-        },
-        {
             en: "Source Han Sans",
             zh: "思源黑体",
             linuxVariant: "Source Han Sans CN",
             label_zh: "思源黑体",
-        },
-        {
-            en: "KaiTi",
-            zh: "楷体",
-            macVariant: "KaiTi SC",
-            linuxVariant: "WenQuanYi Zen Hei Sharp",
-            label_zh: "楷体",
         },
         {
             en: "HeiTi",
@@ -217,46 +231,153 @@ export const CONST_FONT = Object.freeze({
             label_zh: "黑体",
         },
         {
+            en: "KaiTi",
+            zh: "楷体",
+            macVariant: "KaiTi SC",
+            linuxVariant: "WenQuanYi Zen Hei Sharp",
+            label_zh: "楷体",
+        },
+        {
+            en: "SimSun",
+            zh: "宋体",
+            macVariant: "SongTi SC",
+            linuxVariant: "AR PL UMing CN",
+            label_zh: "宋体",
+        },
+        {
             en: "FangSong",
             zh: "仿宋",
             macVariant: "FangSong SC",
             linuxVariant: "AR PL UKai CN",
             label_zh: "仿宋",
         },
+        { en: "Roboto", zh: "Roboto" },
+        { en: "Helvetica", zh: "Helvetica" },
+        { en: "Times New Roman", zh: "Times New Roman" },
+        {
+            en: "Noto Sans",
+            zh: "Noto Sans",
+            linuxVariant: "Noto Sans CJK",
+            label_en: "Noto Sans",
+        },
+        { en: "Consolas", zh: "Consolas" },
     ],
     APP_FONTS: [
         {
             en: "kinghwa",
             zh: "kinghwa",
-            label_zh: "京華老宋体",
+            label_zh: "京華老宋體",
             label_en: "KingHwa OldSong",
+            isSplitFont: true,
         },
         {
-            en: "qiji",
-            zh: "qiji",
-            label_zh: "黄令东齐伋复刻体",
-            label_en: "QIJIC",
+            en: "wenkai",
+            zh: "wenkai",
+            label_zh: "霞鹜文楷",
+            label_en: "LXGW WenKai",
+            isSplitFont: true,
+        },
+        {
+            en: "zhuque",
+            zh: "zhuque",
+            label_zh: "朱雀仿宋",
+            label_en: "ZhuQue FangSong",
+            isSplitFont: true,
         },
         {
             en: "fzskbxk",
             zh: "fzskbxk",
             label_zh: "方正宋刻本秀楷",
             label_en: "FZ SongKeBen XiuKai",
-        },
-        { en: "fzkai", zh: "fzkai", label_zh: "方正楷体", label_en: "FZKaiTi" },
-        {
-            en: "wenkai",
-            zh: "wenkai",
-            label_zh: "霞鹜文楷",
-            label_en: "LXGW WenKai",
+            isSplitFont: false,
         },
     ],
-    FALLBACK_FONTS: ["ui", "sans-serif", "serif", "monospace"],
-    FONT_MAPPING: {
-        ui: "wenkai",
-        title: "kinghwa",
-        body: "kinghwa",
-    },
+    REMOTE_FONTS: [
+        {
+            en: "QIJIC",
+            zh: "QIJIC",
+            label_zh: "黄令东齐伋复刻体",
+            label_en: "QIJIC",
+            isSplitFont: true,
+        },
+        {
+            en: "dongguan",
+            zh: "dongguan",
+            label_zh: "上图东观体",
+            label_en: "ST DongGuanTi",
+            isSplitFont: true,
+        },
+        {
+            en: "quanlai",
+            zh: "quanlai",
+            label_zh: "全瀨體",
+            label_en: "Allseto",
+            isSplitFont: true,
+        },
+        {
+            en: "hwmc",
+            zh: "hwmc",
+            label_zh: "匯文明朝體",
+            label_en: "Huiwen Mincho",
+            isSplitFont: true,
+        },
+        {
+            en: "hwfs",
+            zh: "hwfs",
+            label_zh: "匯文仿宋",
+            label_en: "Huiwen Fangsong",
+            isSplitFont: true,
+        },
+        {
+            en: "hwzk",
+            zh: "hwzk",
+            label_zh: "匯文正楷",
+            label_en: "Huiwen ZhengKai",
+            isSplitFont: true,
+        },
+        {
+            en: "tsangeryumo",
+            zh: "tsangeryumo",
+            label_zh: "仓耳与墨",
+            label_en: "Tsanger YuMo",
+            isSplitFont: true,
+        },
+        {
+            en: "tsangeryuyang",
+            zh: "tsangeryuyang",
+            label_zh: "仓耳渔阳体",
+            label_en: "Tsanger YuYangT",
+            isSplitFont: true,
+        },
+        {
+            en: "clearhan",
+            zh: "clearhan",
+            label_zh: "屏显臻宋",
+            label_en: "ClearHan Serif",
+            isSplitFont: true,
+        },
+        {
+            en: "neoxihei",
+            zh: "neoxihei",
+            label_zh: "霞鹜新晰黑",
+            label_en: "LXGW Neo XiHei",
+            isSplitFont: true,
+        },
+        {
+            en: "chillroundm",
+            zh: "chillroundm",
+            label_zh: "寒蝉半圆体",
+            label_en: "Chill RoundM",
+            isSplitFont: true,
+        },
+        {
+            en: "chillkai",
+            zh: "chillkai",
+            label_zh: "寒蝉正楷体",
+            label_en: "Chill Kai",
+            isSplitFont: true,
+        },
+    ],
 });
 
 /**

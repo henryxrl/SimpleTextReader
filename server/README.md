@@ -24,19 +24,24 @@ The top-level directory serves as the root of the backend portion of the project
 
 ---
 
-### 2. `books/`
+### 2. `dev/`
 
-**Purpose**: Houses the text files (cloud library) that the application processes.
+**Purpose:**: Contains development and build-time utility scripts that assist with maintaining, testing, or generating assets for the project.
 
-**Responsibilities**:
+**Responsibilities:**
 
-- Serves as a storage location for raw `.txt` files to be analyzed or manipulated by the application.
+- Provides tools for development automation and project maintenance.
 
-**Notes**:
+- Houses scripts not required in production runtime, but essential for setup, building, or debugging.
 
-- Ensure that all `.txt` files intended for processing are placed in this directory.
+**Notes:**
 
-- Avoid modifying files in this directory manually if they are being actively processed.
+- Each script targets a specific build, testing, or diagnostic task.
+
+- Notable example:
+  - measure_font_baselines.js: Launches a local static server and headless browser to measure the vertical baseline offset for all supported fonts, generating a JSON mapping for precise text rendering adjustments.
+
+- Refer to each script's file-level comments or docstrings for details on usage and configuration.
 
 ---
 
@@ -68,7 +73,7 @@ The top-level directory serves as the root of the backend portion of the project
 
 **Responsibilities**:
 
-- Specifies the project’s dependencies, scripts, and metadata.
+- Specifies the project's dependencies, scripts, and metadata.
 
 - Defines key scripts to run or develop the application:
   - `npm install`: Installs all dependencies.

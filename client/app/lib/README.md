@@ -6,17 +6,27 @@ This folder contains third-party libraries and external utilities used in the pr
 
 ## Contents
 
-### 1. `css-global-variables.js`
+### 1. `clamps.js`
 
-**Description**: A utility for sharing CSS variables between CSS and JavaScript.
+**Description**: A utility that truncates multi-line text with ellipsis based on line count.
 
-**Original Source**: [css-global-variables by colxi](https://github.com/colxi/css-global-variables/)
+**Original Source**: [Clamps GitHub](https://github.com/laurenashpole/clamps)
 
 **Notes**: This library has been rewritten to better integrate with the project's architecture.
 
 ---
 
-### 2. `css-filter-gen.js`
+### 2. `css-global-variables.js`
+
+**Description**: A utility for sharing CSS variables between CSS and JavaScript.
+
+**Original Source**: [css-global-variables by colxi GitHub](https://github.com/colxi/css-global-variables)
+
+**Notes**: This library has been rewritten to better integrate with the project's architecture.
+
+---
+
+### 3. `css-filter-gen.js`
 
 **Description**: A utility class for programmatically generating CSS filter effects.
 
@@ -26,7 +36,7 @@ This folder contains third-party libraries and external utilities used in the pr
 
 ---
 
-### 3. `hyperlist.js`
+### 4. `hyperlist.js`
 
 **Description**: A virtual scrolling library for efficiently rendering large lists.
 
@@ -34,17 +44,17 @@ This folder contains third-party libraries and external utilities used in the pr
 
 ---
 
-### 4. `ipad-cursor.js`
+### 5. `ipad-cursor.js`
 
 **Description**: A customizable cursor replacement component inspired by the iPad Pro’s adaptive cursor.
 
-**Original Source**: [IMouse](https://github.com/rikumi/imouse)
+**Original Source**: [IMouse GitHub](https://github.com/rikumi/imouse)
 
 **Notes**: This component is a modified and extended version of the sources above, redesigned to support more advanced interactions, smoother animations, and greater customization.
 
 ---
 
-### 5. `jquery.min.js`
+### 6. `jquery.min.js`
 
 **Description**: A popular JavaScript library for DOM manipulation and AJAX calls.
 
@@ -52,7 +62,7 @@ This folder contains third-party libraries and external utilities used in the pr
 
 ---
 
-### 6. `jschardet.min.js`
+### 7. `jschardet.min.js`
 
 **Description**: A JavaScript library for character set detection.
 
@@ -60,7 +70,7 @@ This folder contains third-party libraries and external utilities used in the pr
 
 ---
 
-### 7. `sweetalert2.js`
+### 8. `sweetalert2.js`
 
 **Description**: A beautiful, responsive, customizable, accessible (WAI-ARIA) replacement for JavaScript's popup boxes.
 
@@ -68,7 +78,17 @@ This folder contains third-party libraries and external utilities used in the pr
 
 ---
 
-### 8. `yaireo/`
+### 9. `tippy/`
+
+**popper.min.js** and **tippy-bundle-umd.min.js**
+
+**Description**: A lightweight tooltip and popover library powered by Popper.
+
+**Original Source**: [Tippy.js GitHub](https://github.com/atomiks/tippyjs)
+
+---
+
+### 10. `yaireo/`
 
 **color-picker.js** and **position.js**
 

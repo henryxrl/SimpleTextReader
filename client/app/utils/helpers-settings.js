@@ -99,13 +99,14 @@ export function createSelectorItem(id, values, texts) {
  * @param {string} id - Element ID
  * @param {Array<Array<string>>} values - Array of option value groups
  * @param {Array<Array<string>>} texts - Array of option text groups
- * @param {Array<string>} groups - Array of group labels
+ * @param {Array<string>} groupTypes - Array of group types (app, remote, custom, system)
+ * @param {Array<string>} groupLabels - Array of group labels
  * @param {Array<string>} statuses - Array of font statuses
  * @param {boolean} isFont - Whether this is a font selector
  * @returns {HTMLElement} Created grouped selector element
  * @private
  */
-function createSelectorWithGroupItem(id, values, texts, groups, statuses, isFont = false) {
+function createSelectorWithGroupItem(id, groupTypes, groupLabels, values, texts, statuses, isFont = false) {
     const settingItem = document.createElement("div");
     settingItem.setAttribute("class", "settingItem-wrapper");
 
@@ -119,9 +120,10 @@ function createSelectorWithGroupItem(id, values, texts, groups, statuses, isFont
     settingItemInput.setAttribute("id", id);
     settingItemInput.setAttribute("aria-label", id);
 
-    groups.forEach((group, i) => {
+    groupLabels.forEach((groupLabel, i) => {
         const optgroup = document.createElement("optgroup");
-        optgroup.setAttribute("label", group);
+        optgroup.setAttribute("label", groupLabel);
+        optgroup.setAttribute("data-group", groupTypes[i]);
 
         values[i].forEach((value, j) => {
             const option = document.createElement("option");
@@ -132,7 +134,7 @@ function createSelectorWithGroupItem(id, values, texts, groups, statuses, isFont
             option.innerText = texts[i][j];
 
             if (isFont) {
-                option.style.fontFamily = `${value}, ${CONFIG.CONST_FONT.FALLBACK_FONTS.join(",")}`;
+                option.style.fontFamily = `${value}, ${CONFIG.RUNTIME_VARS.STYLE.fontFamily_ui}`;
             }
 
             optgroup.appendChild(option);
@@ -165,6 +167,8 @@ export function changeLanguageSelectorItemLanguage($selector, lang) {
             currentText === CONFIG.RUNTIME_VARS.STYLE.ui_language_text_zh ||
             currentText === CONFIG.RUNTIME_VARS.STYLE.ui_language_text_en
         ) {
+            // console.log("current element: ", $selectedOption.find("span"));
+            // console.log("set to: ", CONFIG.RUNTIME_VARS.STYLE.ui_language_text);
             $selectedOption.find("span").text(CONFIG.RUNTIME_VARS.STYLE.ui_language_text);
         }
 
@@ -229,8 +233,8 @@ function isFontAvailable(font) {
         // console.log(`${font}: ${document.fonts.check(`12px "${font}"`)}`);
         if (document.fonts.check(`12px "${font}"`) && !isFontFaceDefined) {
             // Additional check to confirm no fallback
-            const fallbackWidth = measureText(CONFIG.CONST_FONT.FALLBACK_FONTS.join(",")); // Known fallback font
-            const testWidth = measureText(`${font}, ${CONFIG.CONST_FONT.FALLBACK_FONTS.join(",")}`);
+            const fallbackWidth = measureText(CONFIG.RUNTIME_VARS.STYLE.fontFamily_ui); // Known fallback font
+            const testWidth = measureText(`${font}, ${CONFIG.RUNTIME_VARS.STYLE.fontFamily_ui}`);
 
             if (testWidth === fallbackWidth) {
                 // Font is falling back to default, not actually available
@@ -280,14 +284,14 @@ function isFontAvailable(font) {
         // Step 4: Fallback to measureText if Font Loading API is not available
         // console.warn("Font Loading API not available, falling back to measureText");
 
-        const fallbackWidth = measureText(CONFIG.CONST_FONT.FALLBACK_FONTS.join(","));
-        const testFontWidth = measureText(`${font}, ${CONFIG.CONST_FONT.FALLBACK_FONTS.join(",")}`);
+        const fallbackWidth = measureText(CONFIG.RUNTIME_VARS.STYLE.fontFamily_ui);
+        const testFontWidth = measureText(`${font}, ${CONFIG.RUNTIME_VARS.STYLE.fontFamily_ui}`);
         // console.log(`${font} defined in @font-face: ${isFontFaceDefined}`);
-        // console.log(`${font}, ${CONFIG.CONST_FONT.FALLBACK_FONTS.join(",")}: ${testFontWidth}`);
-        // console.log(`${CONFIG.CONST_FONT.FALLBACK_FONTS.join(",")}: ${fallbackWidth}`);
+        // console.log(`${font}, ${CONFIG.RUNTIME_VARS.STYLE.fontFamily_ui}: ${testFontWidth}`);
+        // console.log(`${CONFIG.RUNTIME_VARS.STYLE.fontFamily_ui}: ${fallbackWidth}`);
         // if (isFontFaceDefined) {
-        //     console.log(`${font}, ${CONFIG.CONST_FONT.FALLBACK_FONTS.join(",")}: ${testFontWidth}`);
-        //     console.log(`${CONFIG.CONST_FONT.FALLBACK_FONTS.join(",")}: ${fallbackWidth}`);
+        //     console.log(`${font}, ${CONFIG.RUNTIME_VARS.STYLE.fontFamily_ui}: ${testFontWidth}`);
+        //     console.log(`${CONFIG.RUNTIME_VARS.STYLE.fontFamily_ui}: ${fallbackWidth}`);
         // }
 
         // Return true if either:
@@ -491,59 +495,138 @@ export function changeFontSelectorItemLanguage($selector, lang) {
  * @public
  */
 export function createFontSelectorItem(id) {
-    // Get valid font info
-    const system_fonts_info = getValidFontInfo(CONFIG.CONST_FONT.SYSTEM_FONTS, true);
-    const app_fonts_info = getValidFontInfo(CONFIG.CONST_FONT.APP_FONTS, true);
-    const custom_fonts_info = getValidCustomFontInfo(CONFIG.VARS.CUSTOM_FONTS);
-
-    // Create the font values array
-    const hasCustomFonts = custom_fonts_info.every((arr) => arr.length > 0);
-
-    // Base font arrays that are always included
-    const fontArrays = {
-        names: [app_fonts_info[0], system_fonts_info[0]],
-        labels: [app_fonts_info[1], system_fonts_info[1]],
-        labels_zh: [app_fonts_info[2], system_fonts_info[2]],
-        statuses: [app_fonts_info[3], system_fonts_info[3]],
-        groups_en: [CONFIG.RUNTIME_VARS.STYLE.ui_font_group_app_en, CONFIG.RUNTIME_VARS.STYLE.ui_font_group_system_en],
-        groups_zh: [CONFIG.RUNTIME_VARS.STYLE.ui_font_group_app_zh, CONFIG.RUNTIME_VARS.STYLE.ui_font_group_system_zh],
-    };
-
-    // Insert custom fonts if available
-    if (hasCustomFonts) {
-        fontArrays.names.splice(1, 0, custom_fonts_info[0]);
-        fontArrays.labels.splice(1, 0, custom_fonts_info[1]);
-        fontArrays.labels_zh.splice(1, 0, custom_fonts_info[2]);
-        fontArrays.statuses.splice(1, 0, custom_fonts_info[3]);
-        fontArrays.groups_en.splice(1, 0, CONFIG.RUNTIME_VARS.STYLE.ui_font_group_custom_en);
-        fontArrays.groups_zh.splice(1, 0, CONFIG.RUNTIME_VARS.STYLE.ui_font_group_custom_zh);
+    /**
+     * Filters a font array by their loading status. This is used to avoid checking invalid fonts again.
+     * @param {Array<Object>} fonts - Array of font objects (must have .en property)
+     * @param {string|Array<string>} status - Status or array of statuses to match ("loaded", "loading", "failed", etc)
+     * @returns {Array<Object>} Filtered fonts array
+     */
+    function filterFontsByStatus(fonts, status) {
+        try {
+            const statusArray = Array.isArray(status) ? status : [status];
+            return fonts.filter((font) => statusArray.includes(window.FONT_STATUS[font.en]));
+        } catch (e) {
+            console.error("Error filtering fonts by status:", e);
+            return [];
+        }
     }
 
-    // Update CONFIG.VARS with the prepared arrays
+    // Get valid font info for all groups
+    const app_fonts_info = getValidFontInfo(filterFontsByStatus(CONFIG.CONST_FONT.APP_FONTS, "loaded"), true);
+    const system_fonts_info = getValidFontInfo(CONFIG.CONST_FONT.SYSTEM_FONTS, true);
+    const remote_fonts_info = getValidFontInfo(filterFontsByStatus(CONFIG.CONST_FONT.REMOTE_FONTS, "loaded"), true);
+    const custom_fonts_info = getValidCustomFontInfo(CONFIG.VARS.CUSTOM_FONTS);
+
+    // Generate font group order
+    CONFIG.VARS.FONT_GROUP_ORDER = ["app", "custom", "remote", "system"];
+
+    // Check if each group has fonts
+    const hasAppFonts = app_fonts_info.every((arr) => arr.length > 0);
+    if (!hasAppFonts) {
+        throw new Error("No app fonts found");
+    }
+    const hasSystemFonts = system_fonts_info.every((arr) => arr.length > 0);
+    const hasRemoteFonts = remote_fonts_info.every((arr) => arr.length > 0);
+    const hasCustomFonts = custom_fonts_info.every((arr) => arr.length > 0);
+    CONFIG.VARS.FONT_GROUP_ORDER = CONFIG.VARS.FONT_GROUP_ORDER.filter((group) => {
+        if (group === "app" && hasAppFonts) return true;
+        if (group === "remote" && hasRemoteFonts) return true;
+        if (group === "custom" && hasCustomFonts) return true;
+        if (group === "system" && hasSystemFonts) return true;
+        return false;
+    });
+
+    // Initialize the font arrays
+    const fontArrays = {
+        names: [],
+        labels: [],
+        labels_zh: [],
+        statuses: [],
+        groupTypes: [],
+        groups_en: [],
+        groups_zh: [],
+    };
+
+    /**
+     * Appends font group information to the font arrays
+     * @param {Array<string>} info - Font information array
+     * @param {string} group_en - English group label
+     * @param {string} group_zh - Chinese group label
+     */
+    function appendFontGroup(info, groupType, group_en, group_zh) {
+        fontArrays.names.push(info[0]);
+        fontArrays.labels.push(info[1]);
+        fontArrays.labels_zh.push(info[2]);
+        fontArrays.statuses.push(info[3]);
+        fontArrays.groupTypes.push(groupType);
+        fontArrays.groups_en.push(group_en);
+        fontArrays.groups_zh.push(group_zh);
+    }
+
+    // Insert font groups into the font arrays in order of priority
+    CONFIG.VARS.FONT_GROUP_ORDER.forEach((group) => {
+        if (group === "app") {
+            appendFontGroup(
+                app_fonts_info,
+                group,
+                CONFIG.RUNTIME_VARS.STYLE.ui_font_group_app_en,
+                CONFIG.RUNTIME_VARS.STYLE.ui_font_group_app_zh
+            );
+        }
+        if (group === "remote") {
+            appendFontGroup(
+                remote_fonts_info,
+                group,
+                CONFIG.RUNTIME_VARS.STYLE.ui_font_group_remote_en,
+                CONFIG.RUNTIME_VARS.STYLE.ui_font_group_remote_zh
+            );
+        }
+        if (group === "custom") {
+            appendFontGroup(
+                custom_fonts_info,
+                group,
+                CONFIG.RUNTIME_VARS.STYLE.ui_font_group_custom_en,
+                CONFIG.RUNTIME_VARS.STYLE.ui_font_group_custom_zh
+            );
+        }
+        if (group === "system") {
+            appendFontGroup(
+                system_fonts_info,
+                group,
+                CONFIG.RUNTIME_VARS.STYLE.ui_font_group_system_en,
+                CONFIG.RUNTIME_VARS.STYLE.ui_font_group_system_zh
+            );
+        }
+    });
+
+    // Update CONFIG.VARS with the flattened arrays
     Object.assign(CONFIG.VARS, {
         FILTERED_FONT_NAMES: fontArrays.names,
         FILTERED_FONT_LABELS: fontArrays.labels,
         FILTERED_FONT_LABELS_ZH: fontArrays.labels_zh,
+        FONT_AVAILABILITY: fontArrays.statuses,
+        FONT_GROUP_TYPES: fontArrays.groupTypes,
         FONT_GROUPS: fontArrays.groups_en,
         FONT_GROUPS_ZH: fontArrays.groups_zh,
-        FONT_STATUS: fontArrays.statuses,
     });
 
     // Create the font selector element
     const fontSelector = createSelectorWithGroupItem(
         id,
+        CONFIG.VARS.FONT_GROUP_TYPES,
+        CONFIG.VARS.FONT_GROUPS,
         CONFIG.VARS.FILTERED_FONT_NAMES,
         CONFIG.VARS.FILTERED_FONT_LABELS,
-        CONFIG.VARS.FONT_GROUPS,
-        CONFIG.VARS.FONT_STATUS,
+        CONFIG.VARS.FONT_AVAILABILITY,
         true
     );
     const fontSelector_zh = createSelectorWithGroupItem(
         id,
+        CONFIG.VARS.FONT_GROUP_TYPES,
+        CONFIG.VARS.FONT_GROUPS_ZH,
         CONFIG.VARS.FILTERED_FONT_NAMES,
         CONFIG.VARS.FILTERED_FONT_LABELS_ZH,
-        CONFIG.VARS.FONT_GROUPS_ZH,
-        CONFIG.VARS.FONT_STATUS,
+        CONFIG.VARS.FONT_AVAILABILITY,
         true
     );
 
@@ -560,8 +643,6 @@ export function findFontIndex(fontName) {
     let fontName_single = fontName.split(",")[0].trim();
     // console.log("fontName_single:", fontName_single);
 
-    // First try to find the index in the custom_fonts array
-    fontName_single = CONFIG.CONST_FONT.FONT_MAPPING[fontName_single] || fontName_single;
     const idx1 = findStringIndex(CONFIG.VARS.FILTERED_FONT_NAMES, fontName_single);
 
     // If the font is found in the custom_fonts array, return the index
@@ -631,12 +712,13 @@ export function createRangeItem(id, value, rangeConfig, func, note = false) {
 
     const settingItemInput = document.createElement("div");
     settingItemInput.setAttribute("class", "range-slider");
-    settingItemInput.setAttribute(
-        "style",
-        `--min:${min}; --max:${max}; --step:${step};` +
-            `--value:${value}; --text-value:${JSON.stringify(getTextValue(value))}; --suffix:"${getUnitValue()}";` +
-            `--ticks-color:${CONFIG.RUNTIME_VARS.STYLE.bgColor};`
-    );
+    settingItemInput.style.setProperty("--min", min);
+    settingItemInput.style.setProperty("--max", max);
+    settingItemInput.style.setProperty("--step", step);
+    settingItemInput.style.setProperty("--value", value);
+    settingItemInput.style.setProperty("--text-value", JSON.stringify(getTextValue(value)));
+    settingItemInput.style.setProperty("--suffix", `"${getUnitValue()}"`);
+    settingItemInput.style.setProperty("--ticks-color", CONFIG.RUNTIME_VARS.STYLE.bgColor);
     const settingItemInputRange = document.createElement("input");
     settingItemInputRange.setAttribute("class", "range-slider-input");
     settingItemInputRange.setAttribute("type", "range");
@@ -653,7 +735,7 @@ export function createRangeItem(id, value, rangeConfig, func, note = false) {
     });
     const settingItemInputOutput = document.createElement("output");
     settingItemInputOutput.setAttribute("class", "range-slider-output");
-    settingItemInputOutput.setAttribute("style", `--thumb-text-color:${CONFIG.RUNTIME_VARS.STYLE.bgColor};`);
+    settingItemInputOutput.style.setProperty("--thumb-text-color", CONFIG.RUNTIME_VARS.STYLE.bgColor);
     const settingItemInputProgress = document.createElement("div");
     settingItemInputProgress.setAttribute("class", "range-slider__progress");
     settingItemInput.appendChild(settingItemInputRange);
@@ -710,10 +792,8 @@ export function createColorItem(id, value, savedValues, func, note = false) {
     settingItemInput.setAttribute("data-swatches", JSON.stringify(savedValues));
     settingItemInput.setAttribute("data-placement", "center below");
     // settingItemInput.setAttribute("style", `--color:${value}; --colorInverted:${invertColor(CONFIG.RUNTIME_VARS.STYLE.bgColor, false, 0.5)};`);
-    settingItemInput.setAttribute(
-        "style",
-        `--color:${value}; --colorInverted:${CONFIG.RUNTIME_VARS.STYLE.borderColor};`
-    );
+    settingItemInput.style.setProperty("--color", value);
+    settingItemInput.style.setProperty("--colorInverted", CONFIG.RUNTIME_VARS.STYLE.borderColor);
     settingItemInput.addEventListener("input", (e) => {
         func();
     });
@@ -775,7 +855,6 @@ export function createCheckboxItem(id, value, func, note = false) {
 
 /**
  * Creates a separator item element
- * @param {string} id - Element ID
  * @returns {HTMLElement} Created separator item element
  */
 export function createSeparatorItem() {

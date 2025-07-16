@@ -101,18 +101,22 @@ export class TextProcessor {
 
     /**
      * Handle footnotes
-     * @param {string} str - The text containing footnotes.
+     * @param {string} str - The input line of text (main content or footnote definition).
+     * @param {Array} markerTimeline - Tracks chronological appearance of anchors/footnotes.
+     * @param {number} lineNumber - The line number in the text.
+     * @param {Object} anchorCounters - Object tracking anchor counters for this marker in the file.
      * @returns {string} Processed text.
      * @public
      */
-    static makeFootNote(str) {
-        const { line, footnote } = TextProcessorCore.makeFootNote(str);
+    static makeFootNote(str, markerTimeline, lineNumber, anchorCounters) {
+        const { line, marker, footnote } = TextProcessorCore.makeFootNote(
+            str,
+            markerTimeline,
+            lineNumber,
+            anchorCounters
+        );
         if (line === "") {
             // This is the actual footnote itself
-            const tempLi = document.createElement("li");
-            tempLi.id = `fn${CONFIG_VAR.VARS.FOOTNOTE_PROCESSED_COUNTER}`;
-            tempLi.innerText = footnote;
-            CONFIG_DOM.DOM_ELEMENT.FOOTNOTE_CONTAINER.appendChild(tempLi);
             CONFIG_VAR.VARS.FOOTNOTE_PROCESSED_COUNTER++;
         }
         return line;

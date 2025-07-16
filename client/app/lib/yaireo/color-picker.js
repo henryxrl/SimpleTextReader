@@ -166,7 +166,7 @@
                 ["scope", "click", O],
                 ["scope", "wheel", w],
                 ["value", "change", y],
-            ].forEach(([t, e, s]) => this.DOM[t].addEventListener(e, s.bind(this), { pasive: !1 })),
+            ].forEach(([t, e, s]) => this.DOM[t].addEventListener(e, s.bind(this), { passive: !1 })),
                 window.addEventListener("storage", v.bind(this)),
                 this.settings.onClickOutside &&
                     (document.body.addEventListener("click", b.bind(this)),

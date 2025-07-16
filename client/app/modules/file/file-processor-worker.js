@@ -11,12 +11,11 @@
  * @requires shared/utils/logger
  */
 
-import { importDependencies } from "../../utils/helpers-worker.js";
-
 /**
  * Worker message handler
  */
 self.onmessage = async function (e) {
+    const { importDependencies } = await import("../../utils/helpers-worker.js");
     const {
         operation = null,
         file = null,

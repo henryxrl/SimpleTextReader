@@ -1,54 +1,14 @@
 @charset "UTF-8";
 @font-face {
-    font-family: "wenkai";
-    src: local("霞鹜文楷 屏幕阅读版"), local("霞鹜文楷 GB 屏幕阅读版"), local("LXGW WenKai Screen"),
-        local("LXGW WenKai GB Screen"), url(../fonts/LXGWWenKaiScreen.woff2) format("woff2");
-    font-display: swap;
-}
-@font-face {
-    font-family: "qiji";
-    src: local("黄令东齐伋复刻体"), local("QIJIC"), url(../fonts/qiji-combo.woff) format("woff");
-    font-display: swap;
-    size-adjust: 125%;
-}
-@font-face {
-    font-family: "fzkai";
-    src: local("方正楷体"), local("FZKai"), local("FZKaiTi"), local("FZKai-Z03S");
-    font-display: swap;
-}
-@font-face {
-    font-family: "fzskbxk";
-    src: local("方正宋刻本秀楷简体"), local("方正宋刻本秀楷简繁"), local("方正宋刻本秀楷_GBK"),
-        local("FZSongKeBenXiuKai-R-GBK"), local("FZSongKeBenXiuKaiJF"), local("FZSongKeBenXiuKaiS-R-JF"),
-        local("FZSongKeBenXiuKaiS-R-GB"), local("FZSongKeBenXiuKaiF");
-    font-display: swap;
-}
-@font-face {
-    font-family: "kinghwa";
-    src: local("京華老宋体"), local("京华老宋体"), local("KingHwa"), local("KingHwa_OldSong"),
-        url(../fonts/KingHwa_OldSong.woff) format("woff");
-    font-display: swap;
-    size-adjust: 95%;
-}
-@font-face {
     font-family: "ui";
     src: local("霞鹜文楷 屏幕阅读版"), local("霞鹜文楷 GB 屏幕阅读版"), local("LXGW WenKai Screen"),
         local("LXGW WenKai GB Screen"), url(../fonts/LXGWWenKaiScreen_sub.woff2) format("woff2");
     font-display: swap;
 }
 @font-face {
-    font-family: "title";
-    src: local("京華老宋体"), local("京华老宋体"), local("KingHwa"), local("KingHwa_OldSong"),
-        url(../fonts/KingHwa_OldSong.woff) format("woff");
+    font-family: "fzskbxk";
+    src: local("方正宋刻本秀楷简体"), local("方正宋刻本秀楷简繁"), local("方正宋刻本秀楷_GBK"), local("FZSongKeBenXiuKai-R-GBK"), local("FZSongKeBenXiuKaiJF"), local("FZSongKeBenXiuKaiS-R-JF"), local("FZSongKeBenXiuKaiS-R-GB"), local("FZSongKeBenXiuKaiF"), local("FZSongKeBenXiuKaiS-R-GBK"), local("FZSongKeBenXiuKaiS"), local("FZSongKeBenXiuKai");
     font-display: swap;
-    size-adjust: 95%;
-}
-@font-face {
-    font-family: "body";
-    src: local("京華老宋体"), local("京华老宋体"), local("KingHwa"), local("KingHwa_OldSong"),
-        url(../fonts/KingHwa_OldSong.woff) format("woff");
-    font-display: swap;
-    size-adjust: 95%;
 }
 
 :root {
@@ -85,7 +45,8 @@
     --ui_dropZoneImgText_scaleFactor: 1;
     --ui_dropZoneImgText_lineNumber: 1;
     --ui_loadingImgSize: 380px;
-    --ui_footnoteImgSize: 12px;
+    --ui_footnoteImgSize: max(min(calc(var(--p_fontSize) * 0.35), 0.75em), 0.5em);
+    --ui_footnoteMargin: calc(var(--ui_footnoteImgSize) * 0.2);
     --ui_paginationBottom: 30px;
     --ui_paginationBottom_default: 30px;
     --ui_paginationOpacity: 1;
@@ -116,8 +77,8 @@
     --ui_dropZoneText_loading_3: "◕";
     --ui_dropZoneText_loading_4: "●";
     --ui_dropZoneText: "";
-    --ui_dropZoneText_zh: "拖拽或双击此处";
-    --ui_dropZoneText_en: "Drag & drop or double click";
+    --ui_dropZoneText_zh: "拖拽文件到此处或双击选择";
+    --ui_dropZoneText_en: "Drag & drop files or double click to select";
     --ui_readingProgress: "";
     --ui_readingProgress_zh: "阅读进度：";
     --ui_readingProgress_en: "Progress: "; /* Have to use chinese colon and replace it later */
@@ -140,14 +101,17 @@
     --ui_tooltip_help_zh: 帮助中心;
     --ui_tooltip_help_en: Help Center;
     --ui_pagination_processing: "";
-    --ui_pagination_processing_zh: 正在分页...;
-    --ui_pagination_processing_en: Paginating...;
+    --ui_pagination_processing_zh: "正在分页...";
+    --ui_pagination_processing_en: "Paginating...";
     --ui_tooltip_divider: "";
     --ui_tooltip_divider_zh: 拖动调整，双击重置;
     --ui_tooltip_divider_en: Drag to resize, double-click to reset;
     --ui_tooltip_toggleButton: "";
     --ui_tooltip_toggleButton_zh: 显示/隐藏目录区域;
     --ui_tooltip_toggleButton_en: Toggle TOC Area;
+    --ui_footnote_notfound: "";
+    --ui_footnote_notfound_zh: "ⓘ 脚注未找到！引用的脚注可能缺失或有误。";
+    --ui_footnote_notfound_en: "ⓘ Footnote not found. The referenced footnote may be missing or mistyped.";
 
     /* UI settings variables */
     --ui_settingMenuFontSize_zh: 1.1rem;
@@ -161,14 +125,16 @@
 
     /* UI settings strings */
     --ui_setting_note_indicator: ⓘ;
-    --ui_setting_tab_general_zh: "更多设置";
-    --ui_setting_tab_general_en: "More Settings";
+    --ui_setting_tab_general_zh: "综合设置";
+    --ui_setting_tab_general_en: "General";
     --ui_setting_tab_theme_zh: "主题颜色";
     --ui_setting_tab_theme_en: "Color Theme";
     --ui_setting_tab_content_style_zh: "文字样式";
-    --ui_setting_tab_content_style_en: "Content Style";
+    --ui_setting_tab_content_style_en: "Typography";
     --ui_setting_tab_reader_zh: "阅读界面";
     --ui_setting_tab_reader_en: "Reader UI";
+    --ui_setting_tab_shortcuts_zh: "快捷按键";
+    --ui_setting_tab_shortcuts_en: "Shortcuts";
     --ui_setting_tab_about_zh: "关于易笺";
     --ui_setting_tab_about_en: "About";
     --ui_setting_tab_about_title_zh: "易笺";
@@ -195,7 +161,7 @@
     --ui_language_text_zh: 自动检测;
     --ui_language_text_en: Auto Detect;
     --ui_lightHeight_zh: "行间距";
-    --ui_lightHeight_en: "Line Spacing";
+    --ui_lightHeight_en: "Line Height";
     --ui_fontSize_zh: "字体大小";
     --ui_fontSize_en: "Font Size";
     --ui_paragraphSpacing_zh: "段落间距";
@@ -203,35 +169,35 @@
     --ui_paragraphIndent_zh: "段落首行缩进";
     --ui_paragraphIndent_en: "First-Line Indent";
     --ui_textAlign_zh: "文字两端对齐";
-    --ui_textAlign_en: "Justified Text";
-    --ui_lightMode_mainColor_zh: "日间主题颜色";
-    --ui_lightMode_mainColor_en: "Light Mode Theme Color";
-    --ui_lightMode_fontColor_zh: "日间字体颜色";
-    --ui_lightMode_fontColor_en: "Light Mode Font Color";
-    --ui_lightMode_bgColor_zh: "日间背景颜色";
-    --ui_lightMode_bgColor_en: "Light Mode BG Color";
-    --ui_darkMode_mainColor_zh: "夜间主题颜色";
-    --ui_darkMode_mainColor_en: "Dark Mode Theme Color";
-    --ui_darkMode_fontColor_zh: "夜间字体颜色";
-    --ui_darkMode_fontColor_en: "Dark Mode Font Color";
-    --ui_darkMode_bgColor_zh: "夜间背景颜色";
-    --ui_darkMode_bgColor_en: "Dark Mode BG Color";
+    --ui_textAlign_en: "Text Justification";
+    --ui_lightMode_mainColor_zh: "主题颜色";
+    --ui_lightMode_mainColor_en: "Theme Color";
+    --ui_lightMode_fontColor_zh: "字体颜色";
+    --ui_lightMode_fontColor_en: "Font Color";
+    --ui_lightMode_bgColor_zh: "背景颜色";
+    --ui_lightMode_bgColor_en: "Background Color";
+    --ui_darkMode_mainColor_zh: "主题颜色";
+    --ui_darkMode_mainColor_en: "Theme Color";
+    --ui_darkMode_fontColor_zh: "字体颜色";
+    --ui_darkMode_fontColor_en: "Font Color";
+    --ui_darkMode_bgColor_zh: "背景颜色";
+    --ui_darkMode_bgColor_en: "Background Color";
     --ui_title_font_zh: "标题字体";
     --ui_title_font_en: "Title Font";
     --ui_body_font_zh: "正文字体";
     --ui_body_font_en: "Body Font";
-    --ui_pagination2pageBottom_dist_zh: "分页条与底部的距离";
-    --ui_pagination2pageBottom_dist_en: "Pagination-Bottom Distance";
+    --ui_pagination2pageBottom_dist_zh: "分页条底部边距";
+    --ui_pagination2pageBottom_dist_en: "Pagination Bottom Margin";
     --ui_pagination_opacity_zh: "分页条透明度";
     --ui_pagination_opacity_en: "Pagination Opacity";
     --ui_show_filter_bar_zh: "显示书架筛选栏";
     --ui_show_filter_bar_en: "Show Bookshelf Filter Bar";
     --ui_show_helper_btn_zh: "显示帮助按钮";
     --ui_show_helper_btn_en: "Show Help Button";
-    --ui_auto_open_last_book_zh: "自动打开上次阅读的书籍";
-    --ui_auto_open_last_book_en: "Auto-open Last Read Book";
-    --ui_infinite_scroll_mode_zh: "无限滚动模式";
-    --ui_infinite_scroll_mode_en: "Infinite Scroll Mode";
+    --ui_auto_open_last_book_zh: "自动打开最近阅读书籍";
+    --ui_auto_open_last_book_en: "Auto-open Last Book";
+    --ui_infinite_scroll_mode_zh: "无限滚动";
+    --ui_infinite_scroll_mode_en: "Infinite Scrolling";
     --ui_infinite_scroll_mode_note_zh: "在页面顶部或底部继续滚动即可翻页";
     --ui_infinite_scroll_mode_note_en: "Scroll further at the top or bottom to turn the page.";
     --ui_show_toc_zh: "显示目录区域";
@@ -246,8 +212,18 @@
     --ui_show_content_boundary_lines_en: "Show Content Boundary Lines";
     --ui_show_content_boundary_lines_note_zh: "仅当正文区域宽度小于 100% 时显示";
     --ui_show_content_boundary_lines_note_en: "Only shown when the width of the main content area is less than 100%.";
-    --ui_enable_custom_cursor_zh: "启用自定义光标";
-    --ui_enable_custom_cursor_en: "Enable Custom Cursor";
+    --ui_enable_custom_cursor_zh: "自定义光标";
+    --ui_enable_custom_cursor_en: "Custom Cursor";
+    --ui_arrow_left_zh: "向前翻页";
+    --ui_arrow_left_en: "Previous Page";
+    --ui_arrow_right_zh: "向后翻页";
+    --ui_arrow_right_en: "Next Page";
+    --ui_page_up_zh: "上一章节";
+    --ui_page_up_en: "Previous Chapter";
+    --ui_page_down_zh: "下一章节";
+    --ui_page_down_en: "Next Chapter";
+    --ui_esc_zh: "退出阅读";
+    --ui_esc_en: "Exit Reading";
 
     /* UI settings separator strings */
     --ui_separator_font_zh: "字体";
@@ -265,20 +241,25 @@
     --ui_separator_dark_zh: "夜间主题";
     --ui_separator_dark_en: "Dark Mode";
     --ui_separator_ui_zh: "界面";
-    --ui_separator_ui_en: "UI";
+    --ui_separator_ui_en: "Interface";
     --ui_separator_behavior_zh: "行为";
     --ui_separator_behavior_en: "Behavior";
+    --ui_separator_shortcuts_zh: "键盘快捷键";
+    --ui_separator_shortcuts_en: "Keyboard Shortcuts";
 
     /* UI font settings strings */
     --ui_font_group_system: "";
-    --ui_font_group_system_zh: 系统字体;
-    --ui_font_group_system_en: OS Font;
+    --ui_font_group_system_zh: ※ 本地字体;
+    --ui_font_group_system_en: ※ Local Fonts;
     --ui_font_group_app: "";
-    --ui_font_group_app_zh: 易笺字体;
-    --ui_font_group_app_en: WebApp Font;
+    --ui_font_group_app_zh: ※ 易笺字体;
+    --ui_font_group_app_en: ※ App Fonts;
     --ui_font_group_custom: "";
-    --ui_font_group_custom_zh: 自定义字体;
-    --ui_font_group_custom_en: Custom Font;
+    --ui_font_group_custom_zh: ※ 自定义字体;
+    --ui_font_group_custom_en: ※ Custom Fonts;
+    --ui_font_group_remote: "";
+    --ui_font_group_remote_zh: ※ 网络字体 (需联网);
+    --ui_font_group_remote_en: ※ Web Fonts (Online);
 
     /* UI bookshelf strings */
     --ui_tooltip_removeBook: "";
@@ -288,23 +269,23 @@
     --ui_tooltip_bookInfo_zh: 书籍信息;
     --ui_tooltip_bookInfo_en: Book Info;
     --ui_bookNotRead: "";
-    --ui_bookNotRead_zh: 未读;
-    --ui_bookNotRead_en: Unread;
+    --ui_bookNotRead_zh: "未读";
+    --ui_bookNotRead_en: "Unread";
     --ui_bookAlmostDone: "";
-    --ui_bookAlmostDone_zh: 快读完;
-    --ui_bookAlmostDone_en: Finishing;
+    --ui_bookAlmostDone_zh: "快读完";
+    --ui_bookAlmostDone_en: "Finishing";
     --ui_bookFinished: "";
-    --ui_bookFinished_zh: 已读完;
-    --ui_bookFinished_en: Finished;
+    --ui_bookFinished_zh: "已读完";
+    --ui_bookFinished_en: "Finished";
     --ui_bookshelfCachedStorage: "";
-    --ui_bookshelfCachedStorage_zh: 缓存书架;
-    --ui_bookshelfCachedStorage_en: Cached Bookshelf;
+    --ui_bookshelfCachedStorage_zh: "缓存书架";
+    --ui_bookshelfCachedStorage_en: "Cached Bookshelf";
     --ui_bookshelfCachedStorage_subTitle: "";
-    --ui_bookshelfCachedStorage_subTitle_zh: 【提示】书籍保存在浏览器缓存空间内，可能会被自动清除。;
-    --ui_bookshelfCachedStorage_subTitle_en: [Note] Books are stored in browser cache and may be automatically removed.;
+    --ui_bookshelfCachedStorage_subTitle_zh: "【提示】书籍保存在浏览器缓存空间内，可能会被自动清除。";
+    --ui_bookshelfCachedStorage_subTitle_en: "[Note] Books are stored in browser cache and may be automatically removed.";
     --ui_bookshelfCachedStorage_usage: "";
-    --ui_bookshelfCachedStorage_usage_zh: 已用空间：;
-    --ui_bookshelfCachedStorage_usage_en: Used Space:;
+    --ui_bookshelfCachedStorage_usage_zh: "已用空间：";
+    --ui_bookshelfCachedStorage_usage_en: "Used Space:";
     --ui_tooltip_bookshelf_scrollTop: "";
     --ui_tooltip_bookshelf_scrollTop_zh: 书架顶部;
     --ui_tooltip_bookshelf_scrollTop_en: To Top;
@@ -389,6 +370,9 @@
     --ui_notification_text_fontFileInvalid: "";
     --ui_notification_text_fontFileInvalid_zh: 无效的字体文件;
     --ui_notification_text_fontFileInvalid_en: Invalid font file;
+    --ui_notification_text_fontNotSupportedInSafari: "";
+    --ui_notification_text_fontNotSupportedInSafari_zh: Safari 不支持自定义字体;
+    --ui_notification_text_fontNotSupportedInSafari_en: Safari does not support custom font;
     --ui_notification_text_failedToSave: "";
     --ui_notification_text_failedToSave_zh: 保存失败，可能本地存储已满！;
     --ui_notification_text_failedToSave_en: Failed to save to local bookshelf (localStorage may be full).;
@@ -447,25 +431,27 @@
 
     /* UI book information strings */
     --ui_bookInfo_Unknown: "";
-    --ui_bookInfo_Unknown_zh: 无;
-    --ui_bookInfo_Unknown_en: N/A;
+    --ui_bookInfo_Unknown_zh: "无";
+    --ui_bookInfo_Unknown_en: "N/A";
     --ui_bookInfo_bookname: "";
-    --ui_bookInfo_bookname_zh: 书名;
-    --ui_bookInfo_bookname_en: Book Title;
+    --ui_bookInfo_bookname_zh: "书名";
+    --ui_bookInfo_bookname_en: "Title";
     --ui_bookInfo_author: "";
-    --ui_bookInfo_author_zh: 作者;
-    --ui_bookInfo_author_en: Author;
+    --ui_bookInfo_author_zh: "作者";
+    --ui_bookInfo_author_en: "Author";
     --ui_bookInfo_filename: "";
-    --ui_bookInfo_filename_zh: 文件名;
-    --ui_bookInfo_filename_en: Filename;
+    --ui_bookInfo_filename_zh: "文件名";
+    --ui_bookInfo_filename_en: "File Name";
     --ui_bookInfo_filesize: "";
-    --ui_bookInfo_filesize_zh: 文件大小;
-    --ui_bookInfo_filesize_en: Filesize;
+    --ui_bookInfo_filesize_zh: "文件大小";
+    --ui_bookInfo_filesize_en: "File Size";
     --ui_bookInfo_lastopened: "";
-    --ui_bookInfo_lastopened_zh: 上次阅读;
-    --ui_bookInfo_lastopened_en: Last Read;
+    --ui_bookInfo_lastopened_zh: "上次阅读";
+    --ui_bookInfo_lastopened_en: "Last Read";
 
     /* Passage variables */
+    --toc_fontSize: 1.2em;
+    --footnote_fontSize: 1em;
     --p_lineHeight: 1.5em;
     --p_lineHeight_default: 1.5em;
     --p_fontSize: 1.5em;
@@ -516,16 +502,36 @@
     --footnote_img_url_en: url(../images/note_en.png);
 
     /* Font variables */
-    --fontFamily_fallback: Arial, Helvetica, sans-serif;
-    --fontFamily_title: "";
-    --fontFamily_title_zh: title, var(--fontFamily_fallback);
-    --fontFamily_title_en: title, var(--fontFamily_fallback);
-    --fontFamily_body: "";
-    --fontFamily_body_zh: body, var(--fontFamily_fallback);
-    --fontFamily_body_en: body, var(--fontFamily_fallback);
+    --fontFamily_fallback: Arial, Helvetica, sans-serif, serif, monospace;
     --fontFamily_ui: ui, wenkai, var(--fontFamily_fallback);
-    --title_font: title, var(--fontFamily_fallback);
-    --body_font: body, var(--fontFamily_fallback);
+    --fontFamily_title: "";
+    --fontFamily_title_zh: kinghwa, var(--fontFamily_ui);
+    --fontFamily_title_en: kinghwa, var(--fontFamily_ui);
+    --fontFamily_body: "";
+    --fontFamily_body_zh: kinghwa, var(--fontFamily_ui);
+    --fontFamily_body_en: kinghwa, var(--fontFamily_ui);
+    --title_font: kinghwa, var(--fontFamily_ui);
+    --body_font: kinghwa, var(--fontFamily_ui);
+    --toc_text_span_top: 0;
+    --toc_text_span_left: 0;
+    --h1_top: 0;
+    --h1_left: 0;
+    --h1_author_top: 0;
+    --h1_author_left: 0;
+    --h2_top: 0;
+    --h2_left: 0;
+    --h3_top: 0;
+    --h3_left: 0;
+    --h4_top: 0;
+    --h4_left: 0;
+    --h5_top: 0;
+    --h5_left: 0;
+    --h6_top: 0;
+    --h6_left: 0;
+    --p_top: 0;
+    --p_left: 0;
+    --footnote_top: 0;
+    --footnote_left: 0;
 
     /* Color variables */
     --logoColor1: #314874;
@@ -615,6 +621,7 @@
     --ui_setting_tab_theme: var(--ui_setting_tab_theme_zh);
     --ui_setting_tab_content_style: var(--ui_setting_tab_content_style_zh);
     --ui_setting_tab_reader: var(--ui_setting_tab_reader_zh);
+    --ui_setting_tab_shortcuts: var(--ui_setting_tab_shortcuts_zh);
     --ui_setting_tab_about: var(--ui_setting_tab_about_zh);
     --ui_setting_tab_about_title: var(--ui_setting_tab_about_title_zh);
     --ui_setting_tab_about_version: var(--ui_setting_tab_about_version_zh);
@@ -653,6 +660,11 @@
     --ui_show_content_boundary_lines: var(--ui_show_content_boundary_lines_zh);
     --ui_show_content_boundary_lines_note: var(--ui_show_content_boundary_lines_note_zh);
     --ui_enable_custom_cursor: var(--ui_enable_custom_cursor_zh);
+    --ui_arrow_left: var(--ui_arrow_left_zh);
+    --ui_arrow_right: var(--ui_arrow_right_zh);
+    --ui_page_up: var(--ui_page_up_zh);
+    --ui_page_down: var(--ui_page_down_zh);
+    --ui_esc: var(--ui_esc_zh);
     --ui_separator_font: var(--ui_separator_font_zh);
     --ui_separator_paragraph: var(--ui_separator_paragraph_zh);
     --ui_separator_pagination: var(--ui_separator_pagination_zh);
@@ -662,6 +674,7 @@
     --ui_separator_dark: var(--ui_separator_dark_zh);
     --ui_separator_ui: var(--ui_separator_ui_zh);
     --ui_separator_behavior: var(--ui_separator_behavior_zh);
+    --ui_separator_shortcuts: var(--ui_separator_shortcuts_zh);
     --ui_settingMenuFontSize: var(--ui_settingMenuFontSize_zh);
     --ui_settingMenuWidth: var(--ui_settingMenuWidth_zh);
     --ui_settingMenuSeparatorWidth: var(--ui_settingMenuSeparatorWidth_zh);
@@ -688,6 +701,7 @@
     --ui_pagination_processing: var(--ui_pagination_processing_zh);
     --ui_tooltip_divider: var(--ui_tooltip_divider_zh);
     --ui_tooltip_toggleButton: var(--ui_tooltip_toggleButton_zh);
+    --ui_footnote_notfound: var(--ui_footnote_notfound_zh);
     --ui_tooltip_book_altClick: var(--ui_tooltip_book_altClick_zh);
     --ui_bookshelf_filterBtn_all: var(--ui_bookshelf_filterBtn_all_zh);
     --ui_bookshelf_filterBtn_chinese: var(--ui_bookshelf_filterBtn_chinese_zh);
@@ -709,6 +723,7 @@
     --ui_notification_text_wrongFileType: var(--ui_notification_text_wrongFileType_zh);
     --ui_notification_text_fileSizeLimit: var(--ui_notification_text_fileSizeLimit_zh);
     --ui_notification_text_fontFileInvalid: var(--ui_notification_text_fontFileInvalid_zh);
+    --ui_notification_text_fontNotSupportedInSafari: var(--ui_notification_text_fontNotSupportedInSafari_zh);
     --ui_notification_text_failedToSave: var(--ui_notification_text_failedToSave_zh);
     --ui_notification_text_bookAdded: var(--ui_notification_text_bookAdded_zh);
     --ui_notification_text_failedToOpen: var(--ui_notification_text_failedToOpen_zh);
@@ -754,6 +769,7 @@
     --ui_setting_tab_theme: var(--ui_setting_tab_theme_en);
     --ui_setting_tab_content_style: var(--ui_setting_tab_content_style_en);
     --ui_setting_tab_reader: var(--ui_setting_tab_reader_en);
+    --ui_setting_tab_shortcuts: var(--ui_setting_tab_shortcuts_en);
     --ui_setting_tab_about: var(--ui_setting_tab_about_en);
     --ui_setting_tab_about_title: var(--ui_setting_tab_about_title_en);
     --ui_setting_tab_about_version: var(--ui_setting_tab_about_version_en);
@@ -792,6 +808,11 @@
     --ui_show_content_boundary_lines: var(--ui_show_content_boundary_lines_en);
     --ui_show_content_boundary_lines_note: var(--ui_show_content_boundary_lines_note_en);
     --ui_enable_custom_cursor: var(--ui_enable_custom_cursor_en);
+    --ui_arrow_left: var(--ui_arrow_left_en);
+    --ui_arrow_right: var(--ui_arrow_right_en);
+    --ui_page_up: var(--ui_page_up_en);
+    --ui_page_down: var(--ui_page_down_en);
+    --ui_esc: var(--ui_esc_en);
     --ui_separator_font: var(--ui_separator_font_en);
     --ui_separator_paragraph: var(--ui_separator_paragraph_en);
     --ui_separator_pagination: var(--ui_separator_pagination_en);
@@ -801,6 +822,7 @@
     --ui_separator_dark: var(--ui_separator_dark_en);
     --ui_separator_ui: var(--ui_separator_ui_en);
     --ui_separator_behavior: var(--ui_separator_behavior_en);
+    --ui_separator_shortcuts: var(--ui_separator_shortcuts_en);
     --ui_settingMenuFontSize: var(--ui_settingMenuFontSize_en);
     --ui_settingMenuWidth: var(--ui_settingMenuWidth_en);
     --ui_settingMenuSeparatorWidth: var(--ui_settingMenuSeparatorWidth_en);
@@ -827,6 +849,7 @@
     --ui_pagination_processing: var(--ui_pagination_processing_en);
     --ui_tooltip_divider: var(--ui_tooltip_divider_en);
     --ui_tooltip_toggleButton: var(--ui_tooltip_toggleButton_en);
+    --ui_footnote_notfound: var(--ui_footnote_notfound_en);
     --ui_tooltip_book_altClick: var(--ui_tooltip_book_altClick_en);
     --ui_bookshelf_filterBtn_all: var(--ui_bookshelf_filterBtn_all_en);
     --ui_bookshelf_filterBtn_chinese: var(--ui_bookshelf_filterBtn_chinese_en);
@@ -848,6 +871,7 @@
     --ui_notification_text_wrongFileType: var(--ui_notification_text_wrongFileType_en);
     --ui_notification_text_fileSizeLimit: var(--ui_notification_text_fileSizeLimit_en);
     --ui_notification_text_fontFileInvalid: var(--ui_notification_text_fontFileInvalid_en);
+    --ui_notification_text_fontNotSupportedInSafari: var(--ui_notification_text_fontNotSupportedInSafari_en);
     --ui_notification_text_failedToSave: var(--ui_notification_text_failedToSave_en);
     --ui_notification_text_bookAdded: var(--ui_notification_text_bookAdded_en);
     --ui_notification_text_failedToOpen: var(--ui_notification_text_failedToOpen_en);
@@ -887,6 +911,15 @@
 .dropzone-text-loading-text-4::before {
     content: var(--ui_dropZoneText_loading_4);
 }
+.cached-storage-title-text::before {
+    content: var(--ui_bookshelfCachedStorage);
+}
+.cached-storage-sub-title::before {
+    content: var(--ui_bookshelfCachedStorage_subTitle);
+}
+#bookshelfUsageText::before {
+    content: var(--ui_bookshelfCachedStorage_usage);
+}
 #progress-content::before {
     content: var(--ui_readingProgress);
 }
@@ -902,13 +935,16 @@
 #setting-tab-reader::before {
     content: var(--ui_setting_tab_reader);
 }
+#setting-tab-shortcuts::before {
+    content: var(--ui_setting_tab_shortcuts);
+}
 #setting-tab-about::before {
     content: var(--ui_setting_tab_about);
 }
 #settings-reset-btn::before {
     content: var(--ui_reset);
 }
-#settingLabel-setting_uilanguage::before {
+#settingLabel-setting_ui_language::before {
     content: var(--ui_language);
 }
 #settingLabel-setting_p_lineHeight::before {
@@ -1001,6 +1037,36 @@
 #settingLabel-setting_enable_custom_cursor::before {
     content: var(--ui_enable_custom_cursor);
 }
+#settingLabel-setting_arrow_left::before {
+    content: var(--ui_arrow_left);
+}
+#settingLabel-setting_arrow_left::after {
+    content: "←";
+}
+#settingLabel-setting_arrow_right::before {
+    content: var(--ui_arrow_right);
+}
+#settingLabel-setting_arrow_right::after {
+    content: "→";
+}
+#settingLabel-setting_page_up::before {
+    content: var(--ui_page_up);
+}
+#settingLabel-setting_page_up::after {
+    content: "PgUp";
+}
+#settingLabel-setting_page_down::before {
+    content: var(--ui_page_down);
+}
+#settingLabel-setting_page_down::after {
+    content: "PgDn";
+}
+#settingLabel-setting_esc::before {
+    content: var(--ui_esc);
+}
+#settingLabel-setting_esc::after {
+    content: "Esc";
+}
 #settingLabel-setting_separator_font::before {
     content: var(--ui_separator_font);
 }
@@ -1027,6 +1093,9 @@
 }
 #settingLabel-setting_separator_behavior::before {
     content: var(--ui_separator_behavior);
+}
+#settingLabel-setting_separator_shortcuts::before {
+    content: var(--ui_separator_shortcuts);
 }
 #settingLabel-about_title::before {
     content: var(--ui_setting_tab_about_title);
@@ -1072,4 +1141,37 @@
 }
 #messageIndicator-cancel::before {
     content: var(--ui_messageIndicator_cancel);
+}
+.bookinfo-menu-item-text_bookname::before {
+    content: var(--ui_bookInfo_bookname);
+}
+.bookinfo-menu-item-text_author::before {
+    content: var(--ui_bookInfo_author);
+}
+.bookinfo-menu-item-text_filename::before {
+    content: var(--ui_bookInfo_filename);
+}
+.bookinfo-menu-item-text_filesize::before {
+    content: var(--ui_bookInfo_filesize);
+}
+.bookinfo-menu-item-text_lastopened::before {
+    content: var(--ui_bookInfo_lastopened);
+}
+.almostDone_text::before {
+    content: var(--ui_bookAlmostDone);
+}
+.read_text_text::before {
+    content: var(--ui_bookFinished);
+}
+.notRead_text::before {
+    content: var(--ui_bookNotRead);
+}
+.bookinfo-menu-item-text_unknown::before {
+    content: var(--ui_bookInfo_Unknown);
+}
+.pagination-processing::before {
+    content: var(--ui_pagination_processing);
+}
+#footnotediv .footnote-notfound::before {
+    content: var(--ui_footnote_notfound);
 }

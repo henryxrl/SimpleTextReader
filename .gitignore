@@ -1,8 +1,10 @@
 # Current project
-# **/FZSKBXKK.woff2
+**/FZSKBXKK.woff2
 **/KX_47043_14.woff
+**/LXGWWenKaiScreen.woff2
 **/dist/
 .vscode/
+.kiro/
 **/books/*
 !**/books/
 !**/books/README.md

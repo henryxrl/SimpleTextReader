@@ -15,19 +15,21 @@
  * - Language settings
  *
  * @module client/app/modules/features/settings
- * @requires client/app/config
+ * @requires client/app/config/index
  * @requires client/app/config/icons
- * @requires client/app/lib/css-global-variables
+ * @requires shared/core/callback/callback-registry
  * @requires client/app/modules/components/dropdown-selector
  * @requires client/app/modules/components/custom-custom-color-picker
  * @requires client/app/modules/components/popup-manager
  * @requires client/app/utils/base
  * @requires client/app/utils/helpers-settings
  * @requires client/app/utils/helpers-reader
+ * @requires client/app/utils/helpers-ui
  */
 
 import * as CONFIG from "../../config/index.js";
 import { ICONS } from "../../config/icons.js";
+import { cbReg } from "../../../../shared/core/callback/callback-registry.js";
 import { getDropdownSelector } from "../components/dropdown-selector.js";
 import { getColorPicker } from "../components/custom-color-picker.js";
 import { PopupManager } from "../components/popup-manager.js";
@@ -36,9 +38,13 @@ import {
     HSLToHex,
     hexToHSL,
     pSBC,
-    triggerCustomEvent,
     toBool,
     handleGlobalWheel,
+    snakeToCamel,
+    fetchVersionData,
+    fetchVersion,
+    setDeep,
+    getFontOffsets,
 } from "../../utils/base.js";
 import {
     setRangeValue,
@@ -58,6 +64,539 @@ import {
     handleSettingsClose,
 } from "../../utils/helpers-settings.js";
 import { setTitle } from "../../utils/helpers-reader.js";
+import { updateVersionData, getCurrentDisplayLanguage } from "../../utils/helpers-ui.js";
+
+/**
+ * Array of setting definitions used to configure the application's settings UI and logic.
+ *
+ * Each object in the array represents a single setting, and defines how it appears and behaves in the settings menu.
+ * Common fields for each setting include:
+ *   - key:         {string}    Unique identifier for the setting (used in storage and code)
+ *   - type:        {string}    Type of setting input ('checkbox', 'range', 'color', 'select', 'font', etc.)
+ *   - tab:         {string}    Name of the settings tab where the setting is grouped ('general', 'theme', etc.)
+ *   - label:       {string}    Localization key or label to display in the UI
+ *   - default:     {any}       Default value for this setting
+ *   - options:     {Array}     (Optional) Array of option values for 'select' inputs
+ *   - optionLabels:{Array}     (Optional) Array of display labels for select options
+ *   - min:         {number}    (Optional) Minimum value (for range settings)
+ *   - max:         {number}    (Optional) Maximum value (for range settings)
+ *   - step:        {number}    (Optional) Step size (for range settings)
+ *   - unit:        {string}    (Optional) Unit for range input (e.g., 'em', 'px', '%')
+ *   - palette:     {Array}     (Optional) Array of color swatch values for color pickers
+ *   - persist:     {boolean}   Whether to persist this setting in localStorage
+ *   - hidden:      {boolean}   Whether to hide this setting in the UI (e.g., computed or system value)
+ *   - bind:        {string|Array<string>}  Path(s) to runtime variable(s) this setting should update
+ *   - inputRef:    {string}    (Optional) Label of another setting item whose input element should be used
+ *                              for computing this setting’s value (useful for derived/computed values)
+ *   - getValue:    {Function}  (Optional) Custom function to compute the value from the input (for derived settings)
+ *   - onApply:     {Function}  (Optional) Custom function to run after this value is set (side effects, etc.)
+ *
+ * @constant
+ * @type {Array<Object>}
+ * @memberof module:client/app/modules/features/settings
+ */
+const SETTINGS_SCHEMA = [
+    // ==== General Tab ====
+    {
+        key: "ui_language",
+        type: "select",
+        tab: "general",
+        label: "setting_ui_language",
+        bind: "CONFIG.RUNTIME_VARS.STYLE.ui_LANG",
+        default: CONFIG.RUNTIME_VARS.STYLE.ui_LANG_default,
+        options: ["auto", ...Object.keys(CONFIG.CONST_UI.LANGUAGE_MAPPING)],
+        optionLabels: [CONFIG.RUNTIME_VARS.STYLE.ui_language_text, ...Object.values(CONFIG.CONST_UI.LANGUAGE_MAPPING)],
+        persist: true,
+    },
+    {
+        key: "show_filter_bar",
+        type: "checkbox",
+        tab: "general",
+        label: "setting_show_filter_bar",
+        bind: "CONFIG.CONST_CONFIG.SHOW_FILTER_BAR",
+        default: CONFIG.CONST_CONFIG.SHOW_FILTER_BAR_DEFAULT,
+        persist: true,
+    },
+    {
+        key: "show_helper_btn",
+        type: "checkbox",
+        tab: "general",
+        label: "setting_show_helper_btn",
+        bind: "CONFIG.CONST_CONFIG.SHOW_HELPER_BTN",
+        default: CONFIG.CONST_CONFIG.SHOW_HELPER_BTN_DEFAULT,
+        persist: true,
+    },
+    {
+        key: "enable_custom_cursor",
+        type: "checkbox",
+        tab: "general",
+        label: "setting_enable_custom_cursor",
+        bind: "CONFIG.CONST_CONFIG.ENABLE_CUSTOM_CURSOR",
+        default: CONFIG.CONST_CONFIG.ENABLE_CUSTOM_CURSOR_DEFAULT,
+        persist: true,
+    },
+    {
+        key: "auto_open_last_book",
+        type: "checkbox",
+        tab: "general",
+        label: "setting_auto_open_last_book",
+        bind: "CONFIG.CONST_CONFIG.AUTO_OPEN_LAST_BOOK",
+        default: CONFIG.CONST_CONFIG.AUTO_OPEN_LAST_BOOK_DEFAULT,
+        persist: true,
+    },
+    {
+        key: "infinite_scroll_mode",
+        type: "checkbox",
+        tab: "general",
+        label: "setting_infinite_scroll_mode",
+        bind: "CONFIG.CONST_CONFIG.INFINITE_SCROLL_MODE",
+        default: CONFIG.CONST_CONFIG.INFINITE_SCROLL_MODE_DEFAULT,
+        persist: true,
+    },
+
+    // ==== Theme Tab (Light) ====
+    {
+        key: "light_mainColor_active",
+        type: "color",
+        tab: "theme",
+        label: "setting_light_mainColor_active",
+        bind: "CONFIG.RUNTIME_VARS.STYLE.mainColor_active",
+        default: CONFIG.RUNTIME_VARS.STYLE.mainColor_active_default,
+        palette: ["#2F5086"],
+        persist: true,
+    },
+    {
+        key: "light_mainColor_inactive",
+        type: "color",
+        tab: "theme",
+        label: "setting_light_mainColor_inactive",
+        bind: "CONFIG.RUNTIME_VARS.STYLE.mainColor_inactive",
+        default: CONFIG.RUNTIME_VARS.STYLE.mainColor_inactive_default,
+        hidden: true, // auto-calculated via getValue, not shown in UI
+        persist: true,
+        inputRef: "setting_light_mainColor_active",
+        getValue: function ($input) {
+            // Always derive from the "active" color input
+            const mainColorActive = $input.val() || this.defaults.light_mainColor_active;
+            const mainColorInactive = HSLToHex(...hexToHSL(mainColorActive, 1.5));
+            // const mainColorInactive = pSBC(0.25, mainColorActive, false, true); // 25% lighter (linear)
+            return mainColorInactive;
+        },
+    },
+    {
+        key: "light_fontColor",
+        type: "color",
+        tab: "theme",
+        label: "setting_light_fontColor",
+        bind: "CONFIG.RUNTIME_VARS.STYLE.fontColor",
+        default: CONFIG.RUNTIME_VARS.STYLE.fontColor_default,
+        palette: ["black"],
+        persist: true,
+    },
+    {
+        key: "light_bgColor",
+        type: "color",
+        tab: "theme",
+        label: "setting_light_bgColor",
+        bind: "CONFIG.RUNTIME_VARS.STYLE.bgColor",
+        default: CONFIG.RUNTIME_VARS.STYLE.bgColor_default,
+        palette: ["#FDF3DF"],
+        persist: true,
+    },
+
+    // ==== Theme Tab (Dark) ====
+    {
+        key: "dark_mainColor_active",
+        type: "color",
+        tab: "theme",
+        label: "setting_dark_mainColor_active",
+        bind: "CONFIG.RUNTIME_VARS.STYLE.darkMode_mainColor_active",
+        default: CONFIG.RUNTIME_VARS.STYLE.darkMode_mainColor_active_default,
+        palette: ["#6096BB"],
+        persist: true,
+    },
+    {
+        key: "dark_mainColor_inactive",
+        type: "color",
+        tab: "theme",
+        label: "setting_dark_mainColor_inactive",
+        bind: "CONFIG.RUNTIME_VARS.STYLE.darkMode_mainColor_inactive",
+        default: CONFIG.RUNTIME_VARS.STYLE.darkMode_mainColor_inactive_default,
+        hidden: true, // auto-calculated via getValue, not shown in UI
+        persist: true,
+        inputRef: "setting_dark_mainColor_active",
+        getValue: function ($input) {
+            // Always derive from the "active" color input
+            const mainColorActive = $input.val() || this.defaults.dark_mainColor_active;
+            const mainColorInactive = HSLToHex(...hexToHSL(mainColorActive, 0.5));
+            // const mainColorInactive = pSBC(-0.25, mainColorActive, false, true);   // 25% darker (linear)
+            return mainColorInactive;
+        },
+    },
+    {
+        key: "dark_fontColor",
+        type: "color",
+        tab: "theme",
+        label: "setting_dark_fontColor",
+        bind: "CONFIG.RUNTIME_VARS.STYLE.darkMode_fontColor",
+        default: CONFIG.RUNTIME_VARS.STYLE.darkMode_fontColor_default,
+        palette: ["#F2E6CE"],
+        persist: true,
+    },
+    {
+        key: "dark_bgColor",
+        type: "color",
+        tab: "theme",
+        label: "setting_dark_bgColor",
+        bind: "CONFIG.RUNTIME_VARS.STYLE.darkMode_bgColor",
+        default: CONFIG.RUNTIME_VARS.STYLE.darkMode_bgColor_default,
+        palette: ["#0D1018"],
+        persist: true,
+    },
+
+    // ==== Content-Style Tab ====
+    {
+        key: "title_font",
+        type: "select-font",
+        tab: "content-style",
+        label: "setting_title_font",
+        bind: [
+            "CONFIG.RUNTIME_VARS.STYLE.title_font",
+            "CONFIG.RUNTIME_VARS.STYLE.fontFamily_title",
+            "CONFIG.RUNTIME_VARS.STYLE.fontFamily_title_zh",
+            "CONFIG.RUNTIME_VARS.STYLE.fontFamily_title_en",
+        ],
+        default: `${CONFIG.RUNTIME_VARS.STYLE.fontFamily_title}, ${CONFIG.RUNTIME_VARS.STYLE.fontFamily_ui}`,
+        persist: true,
+        getValue: function ($input) {
+            const selected = $input.closest(".select").children(".select-options").children(".is-selected").attr("rel");
+            return `${selected}, ${CONFIG.RUNTIME_VARS.STYLE.fontFamily_ui}` || this.defaults.title_font;
+        },
+    },
+    {
+        key: "body_font",
+        type: "select-font",
+        tab: "content-style",
+        label: "setting_body_font",
+        bind: [
+            "CONFIG.RUNTIME_VARS.STYLE.body_font",
+            "CONFIG.RUNTIME_VARS.STYLE.fontFamily_body",
+            "CONFIG.RUNTIME_VARS.STYLE.fontFamily_body_zh",
+            "CONFIG.RUNTIME_VARS.STYLE.fontFamily_body_en",
+        ],
+        default: `${CONFIG.RUNTIME_VARS.STYLE.fontFamily_body}, ${CONFIG.RUNTIME_VARS.STYLE.fontFamily_ui}`,
+        persist: true,
+        getValue: function ($input) {
+            const selected = $input.closest(".select").children(".select-options").children(".is-selected").attr("rel");
+            return `${selected}, ${CONFIG.RUNTIME_VARS.STYLE.fontFamily_ui}` || this.defaults.body_font;
+        },
+    },
+    {
+        key: "p_fontSize",
+        type: "range",
+        tab: "content-style",
+        label: "setting_p_fontSize",
+        bind: "CONFIG.RUNTIME_VARS.STYLE.p_fontSize",
+        default: CONFIG.RUNTIME_VARS.STYLE.p_fontSize_default,
+        min: 1,
+        max: 3,
+        step: 0.5,
+        unit: "em",
+        persist: true,
+        onApply: function (value) {
+            const match = value.match(/^([\d.]+)([a-z%]+)?$/i);
+            const num = match ? parseFloat(match[1]) : 1;
+            const unit = match && match[2] ? match[2] : "em";
+
+            CONFIG.RUNTIME_VARS.STYLE.footnote_fontSize = `${(num * 2) / 3}${unit}`;
+        },
+    },
+    {
+        key: "p_lineHeight",
+        type: "range",
+        tab: "content-style",
+        label: "setting_p_lineHeight",
+        bind: "CONFIG.RUNTIME_VARS.STYLE.p_lineHeight",
+        default: CONFIG.RUNTIME_VARS.STYLE.p_lineHeight_default,
+        min: 1,
+        max: 3,
+        step: 0.5,
+        unit: "em",
+        persist: true,
+    },
+    {
+        key: "p_paragraphSpacing",
+        type: "range",
+        tab: "content-style",
+        label: "setting_p_paragraphSpacing",
+        bind: "CONFIG.RUNTIME_VARS.STYLE.p_paragraphSpacing",
+        default: CONFIG.RUNTIME_VARS.STYLE.p_paragraphSpacing_default,
+        min: 1,
+        max: 3,
+        step: 0.5,
+        unit: "em",
+        persist: true,
+    },
+    {
+        key: "p_paragraphIndent",
+        type: "checkbox",
+        tab: "content-style",
+        label: "setting_p_paragraphIndent",
+        bind: "CONFIG.RUNTIME_VARS.STYLE.p_paragraphIndent",
+        default: toBool(CONFIG.RUNTIME_VARS.STYLE.p_paragraphIndent_default, false),
+        persist: true,
+        onApply: function (value) {
+            CONFIG.RUNTIME_VARS.STYLE.p_paragraphIndent_value = value
+                ? CONFIG.RUNTIME_VARS.STYLE.p_paragraphIndent_value_true
+                : CONFIG.RUNTIME_VARS.STYLE.p_paragraphIndent_value_false;
+        },
+    },
+    {
+        key: "p_textAlign",
+        type: "checkbox",
+        tab: "content-style",
+        label: "setting_p_textAlign",
+        bind: "CONFIG.RUNTIME_VARS.STYLE.p_textAlign",
+        default: toBool(CONFIG.RUNTIME_VARS.STYLE.p_textAlign_default, false),
+        persist: true,
+        onApply: function (value) {
+            CONFIG.RUNTIME_VARS.STYLE.p_textAlign_value = value
+                ? CONFIG.RUNTIME_VARS.STYLE.p_textAlign_value_true
+                : CONFIG.RUNTIME_VARS.STYLE.p_textAlign_value_false;
+        },
+    },
+
+    // ==== Reader Tab ====
+    {
+        key: "show_toc",
+        type: "checkbox",
+        tab: "reader",
+        label: "setting_show_toc",
+        bind: "CONFIG.CONST_CONFIG.SHOW_TOC_AREA",
+        default: CONFIG.CONST_CONFIG.SHOW_TOC_AREA_DEFAULT,
+        persist: true,
+    },
+    {
+        key: "toc_width",
+        type: "range",
+        tab: "reader",
+        label: "setting_toc_width",
+        bind: "CONFIG.RUNTIME_VARS.STYLE.sidebar__splitview__sidebar__inner__width",
+        default: CONFIG.RUNTIME_VARS.STYLE.sidebar__splitview__sidebar__inner__width__default,
+        min: 50,
+        max: 100,
+        step: 10,
+        unit: "%",
+        persist: true,
+    },
+    {
+        key: "main_content_width",
+        type: "range",
+        tab: "reader",
+        label: "setting_main_content_width",
+        bind: "CONFIG.RUNTIME_VARS.STYLE.sidebar__splitview__content__inner__width",
+        default: CONFIG.RUNTIME_VARS.STYLE.sidebar__splitview__content__inner__width__default,
+        min: 50,
+        max: 100,
+        step: 10,
+        unit: "%",
+        persist: true,
+    },
+    {
+        key: "show_content_boundary_lines",
+        type: "checkbox",
+        tab: "reader",
+        label: "setting_show_content_boundary_lines",
+        bind: "CONFIG.RUNTIME_VARS.STYLE.sidebar__splitview__show__content__boundary__lines",
+        default: toBool(CONFIG.RUNTIME_VARS.STYLE.sidebar__splitview__show__content__boundary__lines, false),
+        persist: true,
+    },
+    {
+        key: "pagination_bottom",
+        type: "range",
+        tab: "reader",
+        label: "setting_pagination_bottom",
+        bind: "CONFIG.RUNTIME_VARS.STYLE.ui_paginationBottom",
+        default: CONFIG.RUNTIME_VARS.STYLE.ui_paginationBottom_default,
+        min: 1,
+        max: 30,
+        step: 1,
+        unit: "px",
+        persist: true,
+    },
+    {
+        key: "pagination_opacity",
+        type: "range",
+        tab: "reader",
+        label: "setting_pagination_opacity",
+        bind: "CONFIG.RUNTIME_VARS.STYLE.ui_paginationOpacity",
+        default: CONFIG.RUNTIME_VARS.STYLE.ui_paginationOpacity_default,
+        min: 0,
+        max: 1,
+        step: 0.1,
+        unit: "",
+        persist: true,
+    },
+
+    // ==== Shortcuts Tab ====
+    {
+        key: "arrow_left",
+        type: "checkbox",
+        tab: "shortcuts",
+        label: "setting_arrow_left",
+        bind: "CONFIG.CONST_CONFIG.SHORTCUTS.arrow_left",
+        default: CONFIG.CONST_CONFIG.SHORTCUTS.arrow_left_default,
+        persist: true,
+    },
+    {
+        key: "arrow_right",
+        type: "checkbox",
+        tab: "shortcuts",
+        label: "setting_arrow_right",
+        bind: "CONFIG.CONST_CONFIG.SHORTCUTS.arrow_right",
+        default: CONFIG.CONST_CONFIG.SHORTCUTS.arrow_right_default,
+        persist: true,
+    },
+    {
+        key: "page_up",
+        type: "checkbox",
+        tab: "shortcuts",
+        label: "setting_page_up",
+        bind: "CONFIG.CONST_CONFIG.SHORTCUTS.page_up",
+        default: CONFIG.CONST_CONFIG.SHORTCUTS.page_up_default,
+        persist: true,
+    },
+    {
+        key: "page_down",
+        type: "checkbox",
+        tab: "shortcuts",
+        label: "setting_page_down",
+        bind: "CONFIG.CONST_CONFIG.SHORTCUTS.page_down",
+        default: CONFIG.CONST_CONFIG.SHORTCUTS.page_down_default,
+        persist: true,
+    },
+    {
+        key: "esc",
+        type: "checkbox",
+        tab: "shortcuts",
+        label: "setting_esc",
+        bind: "CONFIG.CONST_CONFIG.SHORTCUTS.esc",
+        default: CONFIG.CONST_CONFIG.SHORTCUTS.esc_default,
+        persist: true,
+    },
+];
+
+/**
+ * Array of menu schema definitions describing the UI layout of the settings menu.
+ *
+ * Each object in the array represents a single tab in the settings menu, and
+ * defines its display order, label, and the sections/items to render.
+ * Common fields for each tab include:
+ *   - id:        {string}    Unique identifier for the tab (used as DOM id and reference)
+ *   - order:     {number}    Display order of this tab (lower = earlier)
+ *   - label:     {string}    (Optional) Localization key or label for the tab (for display)
+ *   - active:    {boolean}   (Optional) If true, this tab is shown as active on menu open
+ *   - hidden:    {boolean}   (Optional) If true, this tab is not shown in the menu
+ *   - custom:    {boolean}   (Optional) If true, tab is rendered with custom logic (not generic)
+ *   - content:   {Array<Object>} Array of section definitions within the tab
+ *
+ * Each section object in `content` defines a group separator and its items:
+ *   - section:   {string}    Localization key or label for the section separator
+ *   - order:     {number}    Display order of this section within the tab
+ *   - items:     {Array<string>} Ordered list of setting keys (referencing SETTINGS_SCHEMA) to show in this section
+ *
+ * @constant
+ * @type {Array<Object>}
+ * @memberof module:client/app/modules/features/settings
+ */
+const MENU_SCHEMA = [
+    {
+        id: "content-style",
+        order: 1,
+        active: true, // Default active tab
+        content: [
+            {
+                section: "setting_separator_font",
+                order: 1,
+                items: ["title_font", "body_font", "p_fontSize"],
+            },
+            {
+                section: "setting_separator_paragraph",
+                order: 2,
+                items: ["p_lineHeight", "p_paragraphSpacing", "p_paragraphIndent", "p_textAlign"],
+            },
+        ],
+    },
+    {
+        id: "theme",
+        order: 2,
+        content: [
+            {
+                section: "setting_separator_light",
+                order: 1,
+                items: ["light_mainColor_active", "light_fontColor", "light_bgColor"],
+            },
+            {
+                section: "setting_separator_dark",
+                order: 2,
+                items: ["dark_mainColor_active", "dark_fontColor", "dark_bgColor"],
+            },
+        ],
+    },
+    {
+        id: "reader",
+        order: 3,
+        content: [
+            {
+                section: "setting_separator_toc",
+                order: 1,
+                items: ["show_toc", "toc_width"],
+            },
+            {
+                section: "setting_separator_main_content",
+                order: 2,
+                items: ["main_content_width", "show_content_boundary_lines"],
+            },
+            {
+                section: "setting_separator_pagination",
+                order: 3,
+                items: ["pagination_bottom", "pagination_opacity"],
+            },
+        ],
+    },
+    {
+        id: "general",
+        order: 5,
+        content: [
+            {
+                section: "setting_separator_ui",
+                order: 1,
+                items: ["ui_language", "show_filter_bar", "show_helper_btn", "enable_custom_cursor"],
+            },
+            {
+                section: "setting_separator_behavior",
+                order: 2,
+                items: ["auto_open_last_book", "infinite_scroll_mode"],
+            },
+        ],
+    },
+    {
+        id: "shortcuts",
+        order: 4,
+        content: [
+            {
+                section: "setting_separator_shortcuts",
+                order: 1,
+                items: ["arrow_left", "arrow_right", "page_up", "page_down", "esc"],
+            },
+        ],
+    },
+    {
+        id: "about",
+        order: 100,
+        custom: true, // Custom/manual tab, not from SETTINGS_SCHEMA
+    },
+];
 
 /**
  * Class representing the settings menu interface.
@@ -65,8 +604,7 @@ import { setTitle } from "../../utils/helpers-reader.js";
  * Handles tabs for general settings, theme customization, reader preferences, and about information.
  *
  * @class
- * @property {Object} #TAB_IDS - Private constant containing tab definitions and their display order
- * @property {Object} #TAB_ORDER - Private constant containing sorted tab order
+ * @property {Object} #SETTINGS_MAP - Private constant containing a map of settings keys to their definitions
  * @property {Object} settingsObj - Reference to the main settings object containing actual settings values
  * @property {HTMLElement} settingsMenu - The main settings menu container element
  * @property {HTMLElement} overlay - The overlay element that dims the background
@@ -74,22 +612,10 @@ import { setTitle } from "../../utils/helpers-reader.js";
  */
 class SettingsMenu {
     /**
-     * Private constant containing tab definitions and their display order
+     * Private constant containing a map of settings keys to their definitions
      * @type {Object}
      */
-    #TAB_IDS = {
-        GENERAL: { id: "general", order: 4 },
-        THEME: { id: "theme", order: 2 },
-        CONTENT_STYLE: { id: "content-style", order: 1 },
-        READER: { id: "reader", order: 3 },
-        ABOUT: { id: "about", order: 5 },
-    };
-
-    /**
-     * Private constant containing sorted tab order
-     * @type {Object}
-     */
-    #TAB_ORDER = Object.values(this.#TAB_IDS).sort((a, b) => a.order - b.order);
+    #SETTINGS_MAP = Object.fromEntries(SETTINGS_SCHEMA.map((def) => [def.key, def]));
 
     /**
      * Creates an instance of SettingsMenu.
@@ -102,8 +628,19 @@ class SettingsMenu {
         this.settingsObj = settingsObj;
         this.settingsMenu = null;
         this.overlay = null;
-        this.defaultTab = this.#TAB_ORDER[0].id;
         this.isShowing = false;
+
+        // Ensure one tab is marked active in MENU_SCHEMA
+        if (!MENU_SCHEMA.some((tab) => tab.active)) {
+            MENU_SCHEMA.sort((a, b) => a.order - b.order)[0].active = true;
+        }
+
+        // Find the default tab (first active, otherwise first by order)
+        const defaultTabObj =
+            MENU_SCHEMA.find((tab) => tab.active) || MENU_SCHEMA.slice().sort((a, b) => a.order - b.order)[0];
+
+        this.defaultTab = defaultTabObj.id;
+
         this.#init();
     }
 
@@ -186,6 +723,7 @@ class SettingsMenu {
         this.overlay.classList.add("show");
 
         // Add ESC key listener
+        document.addEventListener("click", this.#handleClose);
         document.addEventListener("keydown", this.#handleClose, true);
 
         // Add global wheel event handler
@@ -219,10 +757,13 @@ class SettingsMenu {
             // this.settingsMenu.style.zIndex = "-1";
             // this.settingsMenu.style.visibility = "hidden";
 
+            const tempMenu = this.settingsMenu;
             setTimeout(() => {
-                this.settingsMenu.style.display = "none";
-                this.settingsMenu.style.zIndex = "-1";
-                // this.settingsMenu.style.visibility = "hidden";
+                if (tempMenu) {
+                    tempMenu.style.display = "none";
+                    tempMenu.style.zIndex = "-1";
+                    // tempMenu.style.visibility = "hidden";
+                }
             }, 150);
         }
         CONFIG.VARS.IS_SETTINGS_MENU_SHOWN = false;
@@ -241,10 +782,13 @@ class SettingsMenu {
             // this.overlay.style.zIndex = "-1";
             // this.overlay.style.visibility = "hidden";
 
+            const tempOverlay = this.overlay;
             setTimeout(() => {
-                this.overlay.style.display = "none";
-                this.overlay.style.zIndex = "-1";
-                // this.overlay.style.visibility = "hidden";
+                if (tempOverlay) {
+                    tempOverlay.style.display = "none";
+                    tempOverlay.style.zIndex = "-1";
+                    // tempOverlay.style.visibility = "hidden";
+                }
             }, 150);
         }
 
@@ -258,6 +802,10 @@ class SettingsMenu {
         // Enable page scrolling when settings menu is closed
         document.body.style.overflow = "";
         document.removeEventListener("wheel", this.#handleGlobalWheel, { passive: false });
+
+        // Remove handleClose event listeners
+        document.removeEventListener("click", this.#handleClose);
+        document.removeEventListener("keydown", this.#handleClose, true);
     }
 
     /**
@@ -375,10 +923,14 @@ class SettingsMenu {
         // overlay.style.visibility = "hidden";
         overlay.style.zIndex = "-1";
 
-        overlay.addEventListener("wheel", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-        });
+        overlay.addEventListener(
+            "wheel",
+            (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            },
+            { passive: false }
+        );
 
         return overlay;
     }
@@ -401,16 +953,19 @@ class SettingsMenu {
         const tabContainer = document.createElement("div");
         tabContainer.className = "settings-tabs";
 
-        this.#TAB_ORDER.forEach((tab) => {
-            const tabButton = document.createElement("button");
-            tabButton.className = "tab-button";
-            tabButton.setAttribute("data-tab", tab.id);
-            tabButton.setAttribute("id", `setting-tab-${tab.id}`);
-            tabButton.setAttribute("type", "button");
-            tabButton.setAttribute("aria-label", tab.id);
-            tabButton.addEventListener("click", () => this.switchTab(tab.id));
-            tabContainer.appendChild(tabButton);
-        });
+        [...MENU_SCHEMA]
+            .sort((a, b) => (a.order || 0) - (b.order || 0))
+            .forEach((tabDef) => {
+                if (tabDef.hidden) return; // skip hidden tabs
+                const tabButton = document.createElement("button");
+                tabButton.className = "tab-button";
+                tabButton.setAttribute("data-tab", tabDef.id);
+                tabButton.setAttribute("id", `setting-tab-${tabDef.id}`);
+                tabButton.setAttribute("type", "button");
+                tabButton.setAttribute("aria-label", tabDef.id);
+                tabButton.addEventListener("click", () => this.switchTab(tabDef.id));
+                tabContainer.appendChild(tabButton);
+            });
 
         return tabContainer;
     }
@@ -423,359 +978,108 @@ class SettingsMenu {
         const content = document.createElement("div");
         content.className = "settings-content";
 
-        content.appendChild(this.#createGeneralTab());
-        content.appendChild(this.#createThemeTab());
-        content.appendChild(this.#createContentTab());
-        content.appendChild(this.#createReaderTab());
-        content.appendChild(this.#createAboutTab());
+        [...MENU_SCHEMA]
+            .sort((a, b) => (a.order || 0) - (b.order || 0))
+            .forEach((tabDef) => {
+                if (tabDef.hidden) return; // skip hidden tabs
+                // Handle custom tabs (like "about") here if needed, e.g.:
+                if (tabDef.custom) {
+                    content.appendChild(this.#createAboutTab());
+                } else {
+                    content.appendChild(this.#createTabFromSchema(tabDef));
+                }
+            });
 
         return content;
     }
 
     /**
-     * Creates the general tab for the settings menu.
-     * @returns {HTMLElement} The created general tab element
+     * Generates a tab element and its settings items from MENU_SCHEMA and SETTINGS_SCHEMA.
+     * @param {Object} tabDef - Tab definition from MENU_SCHEMA.
+     * @returns {HTMLElement} The generated tab content element.
      */
-    #createGeneralTab() {
+    #createTabFromSchema(tabDef) {
         const tab = document.createElement("div");
-        tab.id = "general";
-        tab.className = "tab-content active"; // Show this by default
+        tab.id = tabDef.id;
+        tab.className = "tab-content" + (tabDef.active ? " active" : "");
 
-        /**
-         * Language
-         */
-        tab.appendChild(createSeparatorItemWithText("setting_separator_ui"));
+        if (!tabDef.content) return tab;
 
-        tab.appendChild(
-            createSelectorItem(
-                "setting_uilanguage",
-                ["auto", ...Object.keys(CONFIG.CONST_UI.LANGUAGE_MAPPING)],
-                [CONFIG.RUNTIME_VARS.STYLE.ui_language_text, ...Object.values(CONFIG.CONST_UI.LANGUAGE_MAPPING)]
-            )
-        );
+        // Sort sections by order
+        const sections = [...tabDef.content].sort((a, b) => (a.order || 0) - (b.order || 0));
 
-        tab.appendChild(
-            createCheckboxItem(
-                "setting_show_filter_bar",
-                this.settingsObj.show_filter_bar,
-                this.settingsObj.saveSettings.bind(this.settingsObj)
-            )
-        );
+        for (const section of sections) {
+            // Add section separator
+            if (section.section !== undefined && section.section !== null) {
+                if (section.section === "") {
+                    tab.appendChild(createSeparatorItem());
+                } else {
+                    tab.appendChild(createSeparatorItemWithText(section.section));
+                }
+            }
+            if (!section.items) continue;
 
-        tab.appendChild(
-            createCheckboxItem(
-                "setting_show_helper_btn",
-                this.settingsObj.show_helper_btn,
-                this.settingsObj.saveSettings.bind(this.settingsObj)
-            )
-        );
+            // Sort items by order
+            const items = [...section.items].sort((a, b) => (a.order || 0) - (b.order || 0));
 
-        tab.appendChild(
-            createCheckboxItem(
-                "setting_enable_custom_cursor",
-                this.settingsObj.enable_custom_cursor,
-                this.settingsObj.saveSettings.bind(this.settingsObj)
-            )
-        );
+            for (const itemId of items) {
+                const def = this.#SETTINGS_MAP[itemId];
+                if (!def || def.hidden) continue; // skip undefined or hidden items
 
-        /**
-         * Behavior
-         */
-        tab.appendChild(createSeparatorItemWithText("setting_separator_behavior"));
-        // tab.appendChild(createSeparatorItem());
-
-        tab.appendChild(
-            createCheckboxItem(
-                "setting_auto_open_last_book",
-                this.settingsObj.auto_open_last_book,
-                this.settingsObj.saveSettings.bind(this.settingsObj)
-            )
-        );
-
-        tab.appendChild(
-            createCheckboxItem(
-                "setting_infinite_scroll_mode",
-                this.settingsObj.infinite_scroll_mode,
-                this.settingsObj.saveSettings.bind(this.settingsObj),
-                true
-            )
-        );
-
-        return tab;
-    }
-
-    /**
-     * Creates the theme tab for the settings menu.
-     * @returns {HTMLElement} The created theme tab element
-     */
-    #createThemeTab() {
-        const tab = document.createElement("div");
-        tab.id = "theme";
-        tab.className = "tab-content";
-
-        /**
-         * Light theme
-         */
-        tab.appendChild(createSeparatorItemWithText("setting_separator_light"));
-
-        tab.appendChild(
-            createColorItem(
-                "setting_light_mainColor_active",
-                this.settingsObj.light_mainColor_active,
-                ["#2F5086"],
-                this.settingsObj.saveSettings.bind(this.settingsObj)
-            )
-        );
-
-        tab.appendChild(
-            createColorItem(
-                "setting_light_fontColor",
-                this.settingsObj.light_fontColor,
-                ["black"],
-                this.settingsObj.saveSettings.bind(this.settingsObj)
-            )
-        );
-
-        tab.appendChild(
-            createColorItem(
-                "setting_light_bgColor",
-                this.settingsObj.light_bgColor,
-                ["#FDF3DF"],
-                this.settingsObj.saveSettings.bind(this.settingsObj)
-            )
-        );
-
-        /**
-         * Dark theme
-         */
-        tab.appendChild(createSeparatorItemWithText("setting_separator_dark"));
-        // tab.appendChild(createSeparatorItem());
-
-        tab.appendChild(
-            createColorItem(
-                "setting_dark_mainColor_active",
-                this.settingsObj.dark_mainColor_active,
-                ["#6096BB"],
-                this.settingsObj.saveSettings.bind(this.settingsObj)
-            )
-        );
-
-        tab.appendChild(
-            createColorItem(
-                "setting_dark_fontColor",
-                this.settingsObj.dark_fontColor,
-                ["#F2E6CE"],
-                this.settingsObj.saveSettings.bind(this.settingsObj)
-            )
-        );
-
-        tab.appendChild(
-            createColorItem(
-                "setting_dark_bgColor",
-                this.settingsObj.dark_bgColor,
-                ["#0D1018"],
-                this.settingsObj.saveSettings.bind(this.settingsObj)
-            )
-        );
-
-        return tab;
-    }
-
-    /**
-     * Creates the content style tab for the settings menu.
-     * @returns {HTMLElement} The created content style tab element
-     */
-    #createContentTab() {
-        const tab = document.createElement("div");
-        tab.id = "content-style";
-        tab.className = "tab-content";
-
-        /**
-         * Fonts
-         */
-        tab.appendChild(createSeparatorItemWithText("setting_separator_font"));
-
-        const settingTitleFont_ = createFontSelectorItem("setting_title_font");
-        const settingBodyFont_ = createFontSelectorItem("setting_body_font");
-        const language = !CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING
-            ? CONFIG.RUNTIME_VARS.STYLE.ui_LANG
-            : this.settingsObj.ui_language;
-        if (language === "zh") {
-            tab.appendChild(settingTitleFont_[1]);
-            tab.appendChild(settingBodyFont_[1]);
-        } else {
-            tab.appendChild(settingTitleFont_[0]);
-            tab.appendChild(settingBodyFont_[0]);
+                // Choose the right UI helper
+                let el = null;
+                switch (def.type) {
+                    case "checkbox":
+                        el = createCheckboxItem(
+                            def.label,
+                            this.settingsObj.values[def.key],
+                            this.settingsObj.saveSettings.bind(this.settingsObj)
+                        );
+                        break;
+                    case "select":
+                        el = createSelectorItem(def.label, def.options, def.optionLabels);
+                        break;
+                    case "select-font":
+                        const fontSelectorArray = createFontSelectorItem(def.label);
+                        const language = !CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING
+                            ? CONFIG.RUNTIME_VARS.STYLE.ui_LANG
+                            : this.settingsObj.values.ui_language;
+                        // Use index 1 for zh, else 0
+                        const langIdx = language === "zh" ? 1 : 0;
+                        el = fontSelectorArray[langIdx] || fontSelectorArray[0];
+                        break;
+                    case "color":
+                        el = createColorItem(
+                            def.label,
+                            this.settingsObj.values[def.key],
+                            def.palette || [],
+                            this.settingsObj.saveSettings.bind(this.settingsObj)
+                        );
+                        break;
+                    case "range":
+                        let parsed = parseFloat(this.settingsObj.values[def.key]);
+                        if (Number.isInteger(def.step) || String(def.step) === "1") {
+                            parsed = Math.round(parsed);
+                        }
+                        el = createRangeItem(
+                            def.label,
+                            parsed,
+                            {
+                                min: def.min,
+                                max: def.max,
+                                step: def.step,
+                                unit: def.unit,
+                            },
+                            this.settingsObj.saveSettings.bind(this.settingsObj)
+                        );
+                        break;
+                    default:
+                        // fallback
+                        continue;
+                }
+                if (el) tab.appendChild(el);
+            }
         }
-
-        tab.appendChild(
-            createRangeItem(
-                "setting_p_fontSize",
-                parseFloat(this.settingsObj.p_fontSize),
-                {
-                    min: 1,
-                    max: 3,
-                    step: 0.5,
-                    unit: "em",
-                },
-                this.settingsObj.saveSettings.bind(this.settingsObj)
-            )
-        );
-
-        /**
-         * Paragraph
-         */
-        tab.appendChild(createSeparatorItemWithText("setting_separator_paragraph"));
-        // tab.appendChild(createSeparatorItem());
-
-        tab.appendChild(
-            createRangeItem(
-                "setting_p_lineHeight",
-                parseFloat(this.settingsObj.p_lineHeight),
-                {
-                    min: 1,
-                    max: 3,
-                    step: 0.5,
-                    unit: "em",
-                },
-                this.settingsObj.saveSettings.bind(this.settingsObj)
-            )
-        );
-
-        tab.appendChild(
-            createRangeItem(
-                "setting_p_paragraphSpacing",
-                parseFloat(this.settingsObj.p_paragraphSpacing),
-                {
-                    min: 1,
-                    max: 3,
-                    step: 0.5,
-                    unit: "em",
-                },
-                this.settingsObj.saveSettings.bind(this.settingsObj)
-            )
-        );
-
-        tab.appendChild(
-            createCheckboxItem(
-                "setting_p_paragraphIndent",
-                this.settingsObj.p_paragraphIndent,
-                this.settingsObj.saveSettings.bind(this.settingsObj)
-            )
-        );
-
-        tab.appendChild(
-            createCheckboxItem(
-                "setting_p_textAlign",
-                this.settingsObj.p_textAlign,
-                this.settingsObj.saveSettings.bind(this.settingsObj)
-            )
-        );
-
-        return tab;
-    }
-
-    /**
-     * Creates the reader tab for the settings menu.
-     * @returns {HTMLElement} The created reader tab element
-     */
-    #createReaderTab() {
-        const tab = document.createElement("div");
-        tab.id = "reader";
-        tab.className = "tab-content";
-
-        /**
-         * TOC
-         */
-        tab.appendChild(createSeparatorItemWithText("setting_separator_toc"));
-        // tab.appendChild(createSeparatorItem());
-
-        tab.appendChild(
-            createCheckboxItem(
-                "setting_show_toc",
-                this.settingsObj.show_toc,
-                this.settingsObj.saveSettings.bind(this.settingsObj),
-                true
-            )
-        );
-
-        tab.appendChild(
-            createRangeItem(
-                "setting_toc_width",
-                parseInt(this.settingsObj.toc_width),
-                {
-                    min: 50,
-                    max: 100,
-                    step: 10,
-                    unit: "%",
-                },
-                this.settingsObj.saveSettings.bind(this.settingsObj)
-            )
-        );
-
-        /**
-         * Main content
-         */
-        tab.appendChild(createSeparatorItemWithText("setting_separator_main_content"));
-        // tab.appendChild(createSeparatorItem());
-
-        tab.appendChild(
-            createRangeItem(
-                "setting_main_content_width",
-                parseInt(this.settingsObj.main_content_width),
-                {
-                    min: 50,
-                    max: 100,
-                    step: 10,
-                    unit: "%",
-                },
-                this.settingsObj.saveSettings.bind(this.settingsObj)
-            )
-        );
-
-        tab.appendChild(
-            createCheckboxItem(
-                "setting_show_content_boundary_lines",
-                this.settingsObj.show_content_boundary_lines,
-                this.settingsObj.saveSettings.bind(this.settingsObj),
-                true
-            )
-        );
-
-        /**
-         * Pagination
-         */
-        tab.appendChild(createSeparatorItemWithText("setting_separator_pagination"));
-        // tab.appendChild(createSeparatorItem());
-
-        tab.appendChild(
-            createRangeItem(
-                "setting_pagination_bottom",
-                parseFloat(this.settingsObj.pagination_bottom),
-                {
-                    min: 1,
-                    max: 30,
-                    step: 1,
-                    unit: "px",
-                },
-                this.settingsObj.saveSettings.bind(this.settingsObj)
-            )
-        );
-
-        tab.appendChild(
-            createRangeItem(
-                "setting_pagination_opacity",
-                parseFloat(this.settingsObj.pagination_opacity),
-                {
-                    min: 0,
-                    max: 1,
-                    step: 0.1,
-                    unit: "",
-                },
-                this.settingsObj.saveSettings.bind(this.settingsObj)
-            )
-        );
-
         return tab;
     }
 
@@ -795,7 +1099,7 @@ class SettingsMenu {
                 <button id="settingLabel-about_version_date" class="about-version noIndent about-btn">v${CONFIG.RUNTIME_VARS.APP_VERSION} (${CONFIG.RUNTIME_VARS.APP_VERSION_DATE})</button>
 
                 <hr class="about-divider">
-                
+
                 <p class="about-text noIndent">
                     <span id="settingLabel-about_github"></span>
                     <span class="about-btns">
@@ -879,10 +1183,13 @@ class SettingsMenu {
         resetButton.addEventListener("click", (e) => {
             this.settingsObj.loadDefaultSettings();
             this.settingsObj.saveSettings(true, true);
-            triggerCustomEvent("refreshBookList", {
-                hardRefresh: false,
-                sortBookshelf: true,
-            });
+            cbReg.go("updateFontBaselineOffsets");
+            // cbReg.go("refreshBookList", {
+            //     hardRefresh: false,
+            //     sortBookshelf: true,
+            // });
+            cbReg.go("updateFilterBar");
+            cbReg.go("startBookshelfLoop");
 
             PopupManager.showNotification({
                 iconName: "SETTINGS",
@@ -898,9 +1205,9 @@ class SettingsMenu {
      * @returns {HTMLElement} The created version display element
      */
     #createVersionDisplay() {
-        const versionDisplay = document.createElement("div");
+        const versionDisplay = document.createElement("button");
         versionDisplay.id = "settings-version-display";
-        versionDisplay.className = "prevent-select";
+        versionDisplay.className = "about-btn";
         versionDisplay.textContent = `v${CONFIG.RUNTIME_VARS.APP_VERSION}`;
         return versionDisplay;
     }
@@ -909,9 +1216,14 @@ class SettingsMenu {
      * Initializes event listeners for the settings menu.
      */
     #initializeEventListeners() {
-        document.addEventListener("click", this.#handleClose);
+        document.getElementById("settings-version-display").addEventListener("click", () => {
+            this.switchTab("about");
+            this.fetchAndUpdateVersionData();
+        });
+
         document.getElementById("settingLabel-about_version_date").addEventListener("click", () => {
             this.hide(false);
+            this.fetchAndUpdateVersionData();
             PopupManager.showChangelogPopup({
                 version: CONFIG.RUNTIME_VARS.APP_VERSION,
                 changelog: CONFIG.RUNTIME_VARS.APP_CHANGELOG,
@@ -929,7 +1241,15 @@ class SettingsMenu {
      */
     #initializeComponents() {
         setTimeout(() => {
-            getColorPicker(this.settingsObj.saveSettings.bind(this.settingsObj));
+            getColorPicker({
+                callbackOnInput: () => {
+                    // cbReg.go("updateAllBookCovers");
+                    this.settingsObj.saveSettings(false, false, true);
+                },
+                callbackOnChange: () => {
+                    this.settingsObj.saveSettings(false, false, true);
+                },
+            });
         }, 200);
 
         this.#initializeInputValues();
@@ -940,13 +1260,21 @@ class SettingsMenu {
      * Initializes input values for the settings menu (needed for range items).
      */
     #initializeInputValues() {
-        document.getElementById("setting_p_lineHeight").value = parseFloat(this.settingsObj.p_lineHeight);
-        document.getElementById("setting_p_paragraphSpacing").value = parseFloat(this.settingsObj.p_paragraphSpacing);
-        document.getElementById("setting_p_fontSize").value = parseFloat(this.settingsObj.p_fontSize);
-        document.getElementById("setting_toc_width").value = parseInt(this.settingsObj.toc_width);
-        document.getElementById("setting_main_content_width").value = parseInt(this.settingsObj.main_content_width);
-        document.getElementById("setting_pagination_bottom").value = parseFloat(this.settingsObj.pagination_bottom);
-        document.getElementById("setting_pagination_opacity").value = parseFloat(this.settingsObj.pagination_opacity);
+        document.getElementById("setting_p_lineHeight").value = parseFloat(this.settingsObj.values.p_lineHeight);
+        document.getElementById("setting_p_paragraphSpacing").value = parseFloat(
+            this.settingsObj.values.p_paragraphSpacing
+        );
+        document.getElementById("setting_p_fontSize").value = parseFloat(this.settingsObj.values.p_fontSize);
+        document.getElementById("setting_toc_width").value = parseInt(this.settingsObj.values.toc_width);
+        document.getElementById("setting_main_content_width").value = parseInt(
+            this.settingsObj.values.main_content_width
+        );
+        document.getElementById("setting_pagination_bottom").value = parseFloat(
+            this.settingsObj.values.pagination_bottom
+        );
+        document.getElementById("setting_pagination_opacity").value = parseFloat(
+            this.settingsObj.values.pagination_opacity
+        );
     }
 
     /**
@@ -954,26 +1282,31 @@ class SettingsMenu {
      */
     #initializeSelectors() {
         // Language selector
-        const languageIndex = this.settingsObj.ui_language
-            ? Object.keys(CONFIG.CONST_UI.LANGUAGE_MAPPING).indexOf(this.settingsObj.ui_language) + 1
-            : 0;
+        const languageIndex =
+            this.settingsObj.values.ui_language === "auto" || !this.settingsObj.respectUserLangSetting
+                ? 0
+                : Object.keys(CONFIG.CONST_UI.LANGUAGE_MAPPING).indexOf(this.settingsObj.values.ui_language) + 1;
         getDropdownSelector(
-            $("#setting_uilanguage"),
+            $("#setting_ui_language"),
             languageIndex,
             [
                 {
                     func: this.settingsObj.saveSettings.bind(this.settingsObj),
                     params: [true, true],
                 },
+                // {
+                //     func: cbReg.go.bind(cbReg),
+                //     params: [
+                //         "refreshBookList",
+                //         {
+                //             hardRefresh: false,
+                //             sortBookshelf: true,
+                //         },
+                //     ],
+                // },
                 {
-                    func: triggerCustomEvent,
-                    params: [
-                        "refreshBookList",
-                        {
-                            hardRefresh: false,
-                            sortBookshelf: true,
-                        },
-                    ],
+                    func: cbReg.go.bind(cbReg),
+                    params: ["updateFilterBar"],
                 },
             ],
             {
@@ -982,8 +1315,11 @@ class SettingsMenu {
         );
 
         // Title font and body font selectors
-        const titleFontConfig = this.#createFontSelectorConfig("#setting_title_font", this.settingsObj.title_font);
-        const bodyFontConfig = this.#createFontSelectorConfig("#setting_body_font", this.settingsObj.body_font);
+        const titleFontConfig = this.#createFontSelectorConfig(
+            "#setting_title_font",
+            this.settingsObj.values.title_font
+        );
+        const bodyFontConfig = this.#createFontSelectorConfig("#setting_body_font", this.settingsObj.values.body_font);
         getDropdownSelector(
             titleFontConfig.element,
             titleFontConfig.index,
@@ -1013,6 +1349,17 @@ class SettingsMenu {
                     func: this.settingsObj.saveSettings.bind(this.settingsObj),
                     params: [false, false],
                 },
+                {
+                    func: cbReg.go.bind(cbReg),
+                    params: [
+                        "updateAllBookCoversAfterFontsLoaded",
+                        // { message: `${element} => ${fontValue}` }
+                    ],
+                },
+                {
+                    func: cbReg.go.bind(cbReg),
+                    params: ["startBookshelfLoop"],
+                },
             ],
             options: {
                 groupClassResolver: (label) => {
@@ -1026,6 +1373,7 @@ class SettingsMenu {
                         className: "delete-button",
                         html: ICONS.DELETE_BOOK,
                         onClick: (value, text, e, $element, currentDropdownSelector) => {
+                            if ($element.data("group") !== "custom") return;
                             // Find and save the other dropdown selectors
                             const $currentSelect = currentDropdownSelector.$selectElement;
                             const $allSelects = $(".select-hidden"); // All hidden select elements
@@ -1045,13 +1393,13 @@ class SettingsMenu {
                                 });
 
                                 // Trigger the delete font event
-                                triggerCustomEvent("deleteCustomFont", {
+                                cbReg.go("deleteCustomFont", {
                                     fontFamily: value,
                                 });
                             }
                         },
                         shouldShow: (value, text, $element) => {
-                            return $element.hasClass("optgroup-option") && $element.hasClass("custom-font");
+                            return $element.hasClass("optgroup-option") && $element.attr("data-group") === "custom";
                         },
                     },
                     {
@@ -1068,13 +1416,23 @@ class SettingsMenu {
     }
 
     /**
-     * Updates the version data for the settings menu.
+     * Updates the version UI for the settings menu.
      * @param {string} version - The version number
      * @param {string} date - The date of the version
      */
-    updateVersionData(version, date) {
+    updateVersionUI(version, date) {
         document.getElementById("settingLabel-about_version_date").textContent = `v${version} (${date})`;
         document.getElementById("settings-version-display").textContent = `v${version}`;
+    }
+
+    /**
+     * Fetches the version data and updates the version UI for the settings menu.
+     */
+    fetchAndUpdateVersionData() {
+        fetchVersionData().then((versionData) => {
+            updateVersionData(versionData);
+            this.updateVersionUI(CONFIG.RUNTIME_VARS.APP_VERSION, CONFIG.RUNTIME_VARS.APP_VERSION_DATE);
+        });
     }
 
     /**
@@ -1160,76 +1518,105 @@ class SettingsMenu {
  * @namespace
  */
 const settings = {
+    /*
+     * Module state
+     */
     enabled: false,
     settingsMenu: null,
 
     /*
-     * Default settings
+     * Language settings
      */
     browser_LANG: localStorage.getItem("browser_LANG") ?? "zh",
-    respectUserLangSetting_default: CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING_DEFAULT,
-    ui_language_default: CONFIG.RUNTIME_VARS.STYLE.ui_LANG_default,
-    p_lineHeight_default: CONFIG.RUNTIME_VARS.STYLE.p_lineHeight_default,
-    p_paragraphSpacing_default: CONFIG.RUNTIME_VARS.STYLE.p_paragraphSpacing_default,
-    p_paragraphIndent_default: toBool(CONFIG.RUNTIME_VARS.STYLE.p_paragraphIndent_default, false),
-    p_textAlign_default: toBool(CONFIG.RUNTIME_VARS.STYLE.p_textAlign_default, false),
-    p_fontSize_default: CONFIG.RUNTIME_VARS.STYLE.p_fontSize_default,
-    light_mainColor_active_default: CONFIG.RUNTIME_VARS.STYLE.mainColor_active_default,
-    light_mainColor_inactive_default: CONFIG.RUNTIME_VARS.STYLE.mainColor_inactive_default,
-    light_fontColor_default: CONFIG.RUNTIME_VARS.STYLE.fontColor_default,
-    light_bgColor_default: CONFIG.RUNTIME_VARS.STYLE.bgColor_default,
-    dark_mainColor_active_default: CONFIG.RUNTIME_VARS.STYLE.darkMode_mainColor_active_default,
-    dark_mainColor_inactive_default: CONFIG.RUNTIME_VARS.STYLE.darkMode_mainColor_inactive_default,
-    dark_fontColor_default: CONFIG.RUNTIME_VARS.STYLE.darkMode_fontColor_default,
-    dark_bgColor_default: CONFIG.RUNTIME_VARS.STYLE.darkMode_bgColor_default,
-    title_font_default: `${CONFIG.RUNTIME_VARS.STYLE.fontFamily_title}, ${CONFIG.RUNTIME_VARS.STYLE.fontFamily_fallback}`,
-    body_font_default: `${CONFIG.RUNTIME_VARS.STYLE.fontFamily_body}, ${CONFIG.RUNTIME_VARS.STYLE.fontFamily_fallback}`,
-    show_toc_default: CONFIG.CONST_CONFIG.SHOW_TOC_AREA_DEFAULT,
-    toc_width_default: CONFIG.RUNTIME_VARS.STYLE.sidebar__splitview__sidebar__inner__width__default,
-    main_content_width_default: CONFIG.RUNTIME_VARS.STYLE.sidebar__splitview__content__inner__width__default,
-    show_content_boundary_lines_default: toBool(
-        CONFIG.RUNTIME_VARS.STYLE.sidebar__splitview__show__content__boundary__lines,
-        false
-    ),
-    pagination_bottom_default: CONFIG.RUNTIME_VARS.STYLE.ui_paginationBottom_default,
-    pagination_opacity_default: CONFIG.RUNTIME_VARS.STYLE.ui_paginationOpacity_default,
-    show_filter_bar_default: CONFIG.CONST_CONFIG.SHOW_FILTER_BAR_DEFAULT,
-    show_helper_btn_default: CONFIG.CONST_CONFIG.SHOW_HELPER_BTN_DEFAULT,
-    auto_open_last_book_default: CONFIG.CONST_CONFIG.AUTO_OPEN_LAST_BOOK_DEFAULT,
-    infinite_scroll_mode_default: CONFIG.CONST_CONFIG.INFINITE_SCROLL_MODE_DEFAULT,
-    enable_custom_cursor_default: CONFIG.CONST_CONFIG.ENABLE_CUSTOM_CURSOR_DEFAULT,
+    respectUserLangSetting: null,
 
     /*
-     * Current settings
+     * Settings from schema
      */
-    respectUserLangSetting: null,
-    ui_language: null,
-    p_lineHeight: null,
-    p_paragraphSpacing: null,
-    p_paragraphIndent: null,
-    p_textAlign: null,
-    p_fontSize: null,
-    light_mainColor_active: null,
-    light_mainColor_inactive: null,
-    light_fontColor: null,
-    light_bgColor: null,
-    dark_mainColor_active: null,
-    dark_mainColor_inactive: null,
-    dark_fontColor: null,
-    dark_bgColor: null,
-    title_font: null,
-    body_font: null,
-    show_toc: null,
-    toc_width: null,
-    main_content_width: null,
-    show_content_boundary_lines: null,
-    pagination_bottom: null,
-    pagination_opacity: null,
-    show_filter_bar: null,
-    show_helper_btn: null,
-    auto_open_last_book: null,
-    infinite_scroll_mode: null,
-    enable_custom_cursor: null,
+    defaults: Object.fromEntries(SETTINGS_SCHEMA.map((item) => [item.key, item.default])),
+    values: Object.fromEntries(SETTINGS_SCHEMA.map((item) => [item.key, item.default])),
+    types: Object.fromEntries(SETTINGS_SCHEMA.map((item) => [item.key, item.type])),
+
+    /**
+     * Loads a user setting from localStorage, falling back to an alternate key or the default value.
+     * Handles checkbox types by converting stored values to boolean.
+     *
+     * @public
+     * @method loadSettingWithFallback
+     * @memberof settings
+     * @instance
+     * @param {string} key - The primary localStorage key to retrieve.
+     * @param {string|null} [key_alt=null] - An optional alternate key to use if the primary key is not found.
+     * @returns {*} The resolved setting value, using the following priority:
+     *  1. Value from localStorage under `key`
+     *  2. Value from localStorage under `key_alt` (if provided)
+     *  3. Default value from the settings schema
+     *  Checkbox types are automatically converted to boolean.
+     */
+    loadSettingWithFallback(key, key_alt = null) {
+        let val = null;
+        if (key_alt !== null && key_alt !== undefined) {
+            val = localStorage.getItem(key_alt);
+        }
+        if (val === null || val === undefined) {
+            val = localStorage.getItem(key);
+        }
+        if (val === null || val === undefined) {
+            val = this.defaults[key];
+        }
+        if (this.types[key] === "checkbox") val = toBool(val, false);
+        return val;
+    },
+
+    /**
+     * Saves a user setting based on the value of an input element, with optional unit and per-setting value computation.
+     * Supports checkboxes, range sliders, color pickers, selects, and custom logic via the schema's `getValue` function.
+     * Falls back to the default value if the input is empty or invalid.
+     *
+     * @public
+     * @method saveSettingFromInput
+     * @memberof settings
+     * @instance
+     * @param {string} key - The setting key to save.
+     * @param {jQuery} $input - The jQuery input element from which to read the value.
+     * @param {string} [unit=""] - An optional unit string to append to the value (e.g., "em", "%").
+     * @returns {*} The final saved value (after applying unit, computation, or default fallback).
+     */
+    saveSettingFromInput(key, $input, unit = "") {
+        const sanitizedUnit = unit ?? "";
+        const def = SETTINGS_SCHEMA.find((item) => item.key === key);
+        let value;
+
+        // 1. Prefer per-schema getValue function if defined
+        if (def && typeof def.getValue === "function") {
+            value = def.getValue.call(this, $input);
+        } else {
+            // 2. Fallback to built-in logic by type
+            switch (this.types[key]) {
+                case "checkbox":
+                    value = $input.is(":checked");
+                    break;
+                case "range":
+                    value = $input.val() + sanitizedUnit;
+                    break;
+                case "color":
+                case "select":
+                case "select-font":
+                    value = $input.val();
+                    break;
+                default:
+                    value = $input.val() + sanitizedUnit;
+                    break;
+            }
+        }
+        if (value === undefined || value === null || value === sanitizedUnit) {
+            value = this.defaults[key];
+        }
+        if (def.persist) {
+            localStorage.setItem(key, value);
+        }
+        return value;
+    },
 
     /**
      * Loads user settings from local storage or falls back to default values.
@@ -1248,106 +1635,24 @@ const settings = {
      * @instance
      */
     loadSettings() {
+        // Special case: respectUserLangSetting (not in manifest)
         this.respectUserLangSetting =
             toBool(localStorage.getItem("respectUserLangSetting"), false) ??
             toBool(document.documentElement.getAttribute("respectUserLangSetting"));
-        if (this.respectUserLangSetting) {
-            this.ui_language = localStorage.getItem("UILang") || this.ui_language_default;
-        }
-        this.p_lineHeight = localStorage.getItem("p_lineHeight") || this.p_lineHeight_default;
-        this.p_paragraphSpacing = localStorage.getItem("p_paragraphSpacing") || this.p_paragraphSpacing_default;
-        this.p_paragraphIndent =
-            toBool(localStorage.getItem("p_paragraphIndent"), false) ?? this.p_paragraphIndent_default;
-        this.p_textAlign = toBool(localStorage.getItem("p_textAlign"), false) ?? this.p_textAlign_default;
-        this.p_fontSize = localStorage.getItem("p_fontSize") || this.p_fontSize_default;
-        this.light_mainColor_active =
-            localStorage.getItem("light_mainColor_active") || this.light_mainColor_active_default;
-        this.light_mainColor_inactive =
-            localStorage.getItem("light_mainColor_inactive") || this.light_mainColor_inactive_default;
-        this.light_fontColor = localStorage.getItem("light_fontColor") || this.light_fontColor_default;
-        this.light_bgColor = localStorage.getItem("light_bgColor") || this.light_bgColor_default;
-        this.dark_mainColor_active =
-            localStorage.getItem("dark_mainColor_active") || this.dark_mainColor_active_default;
-        this.dark_mainColor_inactive =
-            localStorage.getItem("dark_mainColor_inactive") || this.dark_mainColor_inactive_default;
-        this.dark_fontColor = localStorage.getItem("dark_fontColor") || this.dark_fontColor_default;
-        this.dark_bgColor = localStorage.getItem("dark_bgColor") || this.dark_bgColor_default;
-        this.title_font = localStorage.getItem("title_font") || this.title_font_default;
-        this.body_font = localStorage.getItem("body_font") || this.body_font_default;
-        this.show_toc = toBool(localStorage.getItem("show_toc"), false) ?? this.show_toc_default;
-        this.toc_width = localStorage.getItem("toc_width") || this.toc_width_default;
-        this.main_content_width = localStorage.getItem("main_content_width") || this.main_content_width_default;
-        this.show_content_boundary_lines =
-            toBool(localStorage.getItem("show_content_boundary_lines"), false) ??
-            this.show_content_boundary_lines_default;
-        this.pagination_bottom = localStorage.getItem("pagination_bottom") || this.pagination_bottom_default;
-        this.pagination_opacity = localStorage.getItem("pagination_opacity") || this.pagination_opacity_default;
-        this.show_filter_bar = toBool(localStorage.getItem("show_filter_bar"), false) ?? this.show_filter_bar_default;
-        this.show_helper_btn = toBool(localStorage.getItem("show_helper_btn"), false) ?? this.show_helper_btn_default;
-        this.auto_open_last_book =
-            toBool(localStorage.getItem("auto_open_last_book"), false) ?? this.auto_open_last_book_default;
-        this.infinite_scroll_mode =
-            toBool(localStorage.getItem("infinite_scroll_mode"), false) ?? this.infinite_scroll_mode_default;
-        this.enable_custom_cursor =
-            toBool(localStorage.getItem("enable_custom_cursor"), false) ?? this.enable_custom_cursor_default;
 
-        // console.log(CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING);
-        // console.log(localStorage.getItem("respectUserLangSetting"));
-        // console.log(this.respectUserLangSetting);
-        // console.log(localStorage.getItem("UILang"));
-        // console.log(this.ui_language_default);
-        // console.log(localStorage.getItem("p_lineHeight"));
-        // console.log(this.p_lineHeight_default);
-        // console.log(localStorage.getItem("p_paragraphSpacing"));
-        // console.log(this.p_paragraphSpacing_default);
-        // console.log(localStorage.getItem("p_paragraphIndent"));
-        // console.log(this.p_paragraphIndent_default);
-        // console.log(localStorage.getItem("p_textAlign"));
-        // console.log(this.p_textAlign_default);
-        // console.log(localStorage.getItem("p_fontSize"));
-        // console.log(this.p_fontSize_default);
-        // console.log(localStorage.getItem("light_mainColor_active"));
-        // console.log(this.light_mainColor_active_default);
-        // console.log(localStorage.getItem("light_mainColor_inactive"));
-        // console.log(this.light_mainColor_inactive_default);
-        // console.log(localStorage.getItem("light_fontColor"));
-        // console.log(this.light_fontColor_default);
-        // console.log(localStorage.getItem("light_bgColor"));
-        // console.log(this.light_bgColor_default);
-        // console.log(localStorage.getItem("dark_mainColor_active"));
-        // console.log(this.dark_mainColor_active_default);
-        // console.log(localStorage.getItem("dark_mainColor_inactive"));
-        // console.log(this.dark_mainColor_inactive_default);
-        // console.log(localStorage.getItem("dark_fontColor"));
-        // console.log(this.dark_fontColor_default);
-        // console.log(localStorage.getItem("dark_bgColor"));
-        // console.log(this.dark_bgColor_default);
-        // console.log(localStorage.getItem("title_font"));
-        // console.log(this.title_font_default);
-        // console.log(localStorage.getItem("body_font"));
-        // console.log(this.body_font_default);
-        // console.log(localStorage.getItem("show_toc"));
-        // console.log(this.show_toc_default);
-        // console.log(localStorage.getItem("toc_width"));
-        // console.log(this.toc_width_default);
-        // console.log(localStorage.getItem("main_content_width"));
-        // console.log(this.main_content_width_default);
-        // console.log(localStorage.getItem("show_content_boundary_lines"));
-        // console.log(this.show_content_boundary_lines_default);
-        // console.log(localStorage.getItem("pagination_bottom"));
-        // console.log(this.pagination_bottom_default);
-        // console.log(localStorage.getItem("pagination_opacity"));
-        // console.log(this.pagination_opacity_default);
-        // console.log(localStorage.getItem("show_filter_bar"));
-        // console.log(this.show_filter_bar_default);
-        // console.log(localStorage.getItem("show_helper_btn"));
-        // console.log(this.show_helper_btn_default);
-        // console.log(localStorage.getItem("auto_open_last_book"));
-        // console.log(this.auto_open_last_book_default);
-        // console.log(localStorage.getItem("infinite_scroll_mode"));
-        // console.log(this.infinite_scroll_mode_default);
-        // console.log(localStorage.getItem("enable_custom_cursor"));
-        // console.log(this.enable_custom_cursor_default);
+        // Loop through all settings from schema
+        for (const def of SETTINGS_SCHEMA) {
+            // Special case: language selection (ui_language) depends on respectUserLangSetting
+            if (def.key === "ui_language") {
+                if (this.respectUserLangSetting) {
+                    this.values[def.key] = this.loadSettingWithFallback(def.key, "UILang");
+                }
+                continue;
+            }
+
+            // All other settings from schema
+            this.values[def.key] = this.loadSettingWithFallback(def.key);
+        }
     },
 
     /**
@@ -1372,70 +1677,53 @@ const settings = {
      */
     loadDefaultSettings() {
         // console.log("loadDefaultSettings");
-        this.respectUserLangSetting = this.respectUserLangSetting_default;
-        if (this.respectUserLangSetting) {
-            // console.log("loadDefaultSettings: RESPECT_USER_LANG_SETTING");
-            this.ui_language = this.ui_language_default;
-        }
-        this.p_lineHeight = this.p_lineHeight_default;
-        this.p_paragraphSpacing = this.p_paragraphSpacing_default;
-        this.p_paragraphIndent = this.p_paragraphIndent_default;
-        this.p_textAlign = this.p_textAlign_default;
-        this.p_fontSize = this.p_fontSize_default;
-        this.light_mainColor_active = this.light_mainColor_active_default;
-        this.light_mainColor_inactive = this.light_mainColor_inactive_default;
-        this.light_fontColor = this.light_fontColor_default;
-        this.light_bgColor = this.light_bgColor_default;
-        this.dark_mainColor_active = this.dark_mainColor_active_default;
-        this.dark_mainColor_inactive = this.dark_mainColor_inactive_default;
-        this.dark_fontColor = this.dark_fontColor_default;
-        this.dark_bgColor = this.dark_bgColor_default;
-        this.title_font = this.title_font_default;
-        this.body_font = this.body_font_default;
-        this.show_toc = this.show_toc_default;
-        this.toc_width = this.toc_width_default;
-        this.main_content_width = this.main_content_width_default;
-        this.show_content_boundary_lines = this.show_content_boundary_lines_default;
-        this.pagination_bottom = this.pagination_bottom_default;
-        this.pagination_opacity = this.pagination_opacity_default;
-        this.show_filter_bar = this.show_filter_bar_default;
-        this.show_helper_btn = this.show_helper_btn_default;
-        this.auto_open_last_book = this.auto_open_last_book_default;
-        this.infinite_scroll_mode = this.infinite_scroll_mode_default;
-        this.enable_custom_cursor = this.enable_custom_cursor_default;
 
+        // Special case: respectUserLangSetting (not in manifest)
+        this.respectUserLangSetting = CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING_DEFAULT;
+
+        // Loop through all settings from schema
+        for (const def of SETTINGS_SCHEMA) {
+            // Special case: language selection (ui_language) depends on respectUserLangSetting
+            if (def.key === "ui_language") {
+                if (this.respectUserLangSetting) {
+                    this.values.ui_language = this.defaults.ui_language;
+                }
+                continue;
+            }
+
+            // All other settings from schema
+            this.values[def.key] = this.defaults[def.key];
+        }
+
+        // Sync settings to UI
         if (this.respectUserLangSetting) {
             setSelectorValue(
-                "setting_uilanguage",
-                Object.keys(CONFIG.CONST_UI.LANGUAGE_MAPPING).indexOf(this.ui_language) + 1
+                "setting_ui_language",
+                Object.keys(CONFIG.CONST_UI.LANGUAGE_MAPPING).indexOf(this.values.ui_language) + 1
             );
         } else {
-            setSelectorValue("setting_uilanguage", 0);
+            setSelectorValue("setting_ui_language", 0);
         }
-        setRangeValue("setting_p_lineHeight", this.p_lineHeight);
-        setRangeValue("setting_p_paragraphSpacing", this.p_paragraphSpacing);
-        setCheckboxValue("setting_p_paragraphIndent", this.p_paragraphIndent);
-        setCheckboxValue("setting_p_textAlign", this.p_textAlign);
-        setRangeValue("setting_p_fontSize", this.p_fontSize);
-        setColorValue("setting_light_mainColor_active", this.light_mainColor_active);
-        setColorValue("setting_light_fontColor", this.light_fontColor);
-        setColorValue("setting_light_bgColor", this.light_bgColor);
-        setColorValue("setting_dark_mainColor_active", this.dark_mainColor_active);
-        setColorValue("setting_dark_fontColor", this.dark_fontColor);
-        setColorValue("setting_dark_bgColor", this.dark_bgColor);
-        setSelectorValue("setting_title_font", findFontIndex(this.title_font));
-        setSelectorValue("setting_body_font", findFontIndex(this.body_font));
-        setCheckboxValue("setting_show_toc", this.show_toc);
-        setRangeValue("setting_toc_width", this.toc_width);
-        setRangeValue("setting_main_content_width", this.main_content_width);
-        setCheckboxValue("setting_show_content_boundary_lines", this.show_content_boundary_lines);
-        setRangeValue("setting_pagination_bottom", this.pagination_bottom);
-        setRangeValue("setting_pagination_opacity", this.pagination_opacity);
-        setCheckboxValue("setting_show_filter_bar", this.show_filter_bar);
-        setCheckboxValue("setting_show_helper_btn", this.show_helper_btn);
-        setCheckboxValue("setting_auto_open_last_book", this.auto_open_last_book);
-        setCheckboxValue("setting_infinite_scroll_mode", this.infinite_scroll_mode);
-        setCheckboxValue("setting_enable_custom_cursor", this.enable_custom_cursor);
+
+        for (const def of SETTINGS_SCHEMA) {
+            if (def.hidden) continue;
+            if (def.key === "ui_language") continue;
+            if (def.type === "range") {
+                setRangeValue(def.label, this.values[def.key]);
+            }
+            if (def.type === "checkbox") {
+                setCheckboxValue(def.label, this.values[def.key]);
+            }
+            if (def.type === "color") {
+                setColorValue(def.label, this.values[def.key]);
+            }
+            if (def.type === "select-font") {
+                setSelectorValue(def.label, findFontIndex(this.values[def.key]));
+            }
+            // if (def.type === "select") {
+            //     setSelectorValue(def.label, findFontIndex(this.values[def.key]));
+            // }
+        }
     },
 
     /**
@@ -1456,56 +1744,70 @@ const settings = {
      * @method applySettings
      * @memberof settings
      * @instance
+     * @param {boolean} [colorOnly=false] - Whether to only apply color settings
      */
-    applySettings() {
-        CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING = this.respectUserLangSetting;
-        if (this.respectUserLangSetting) {
-            CONFIG.RUNTIME_VARS.STYLE.ui_LANG = this.ui_language;
-        }
-        CONFIG.RUNTIME_VARS.STYLE.p_lineHeight = this.p_lineHeight;
-        CONFIG.RUNTIME_VARS.STYLE.p_paragraphSpacing = this.p_paragraphSpacing;
-        CONFIG.RUNTIME_VARS.STYLE.p_paragraphIndent = this.p_paragraphIndent;
-        CONFIG.RUNTIME_VARS.STYLE.p_paragraphIndent_value = this.p_paragraphIndent
-            ? CONFIG.RUNTIME_VARS.STYLE.p_paragraphIndent_value_true
-            : CONFIG.RUNTIME_VARS.STYLE.p_paragraphIndent_value_false;
-        CONFIG.RUNTIME_VARS.STYLE.p_textAlign = this.p_textAlign;
-        CONFIG.RUNTIME_VARS.STYLE.p_textAlign_value = this.p_textAlign
-            ? CONFIG.RUNTIME_VARS.STYLE.p_textAlign_value_true
-            : CONFIG.RUNTIME_VARS.STYLE.p_textAlign_value_false;
-        CONFIG.RUNTIME_VARS.STYLE.p_fontSize = this.p_fontSize;
-        CONFIG.RUNTIME_VARS.STYLE.mainColor_active = this.light_mainColor_active;
-        CONFIG.RUNTIME_VARS.STYLE.mainColor_inactive = this.light_mainColor_inactive;
-        CONFIG.RUNTIME_VARS.STYLE.fontColor = this.light_fontColor;
-        CONFIG.RUNTIME_VARS.STYLE.bgColor = this.light_bgColor;
-        CONFIG.RUNTIME_VARS.STYLE.darkMode_mainColor_active = this.dark_mainColor_active;
-        CONFIG.RUNTIME_VARS.STYLE.darkMode_mainColor_inactive = this.dark_mainColor_inactive;
-        CONFIG.RUNTIME_VARS.STYLE.darkMode_fontColor = this.dark_fontColor;
-        CONFIG.RUNTIME_VARS.STYLE.darkMode_bgColor = this.dark_bgColor;
-        CONFIG.RUNTIME_VARS.STYLE.title_font = this.title_font;
-        CONFIG.RUNTIME_VARS.STYLE.body_font = this.body_font;
-        CONFIG.RUNTIME_VARS.STYLE.fontFamily_title = this.title_font;
-        CONFIG.RUNTIME_VARS.STYLE.fontFamily_body = this.body_font;
-        CONFIG.RUNTIME_VARS.STYLE.fontFamily_title_zh = this.title_font;
-        CONFIG.RUNTIME_VARS.STYLE.fontFamily_body_zh = this.body_font;
-        CONFIG.RUNTIME_VARS.STYLE.fontFamily_title_en = this.title_font;
-        CONFIG.RUNTIME_VARS.STYLE.fontFamily_body_en = this.body_font;
-        CONFIG.CONST_CONFIG.SHOW_TOC_AREA = this.show_toc;
-        CONFIG.RUNTIME_VARS.STYLE.sidebar__splitview__sidebar__inner__width = this.toc_width;
-        CONFIG.RUNTIME_VARS.STYLE.sidebar__splitview__content__inner__width = this.main_content_width;
-        CONFIG.RUNTIME_VARS.STYLE.sidebar__splitview__show__content__boundary__lines = this.show_content_boundary_lines;
-        CONFIG.RUNTIME_VARS.STYLE.ui_paginationBottom = this.pagination_bottom;
-        CONFIG.RUNTIME_VARS.STYLE.ui_paginationOpacity = this.pagination_opacity;
-        CONFIG.CONST_CONFIG.SHOW_FILTER_BAR = this.show_filter_bar;
-        CONFIG.CONST_CONFIG.SHOW_HELPER_BTN = this.show_helper_btn;
-        CONFIG.CONST_CONFIG.AUTO_OPEN_LAST_BOOK = this.auto_open_last_book;
-        CONFIG.CONST_CONFIG.INFINITE_SCROLL_MODE = this.infinite_scroll_mode;
-        CONFIG.CONST_CONFIG.ENABLE_CUSTOM_CURSOR = this.enable_custom_cursor;
+    applySettings(colorOnly = false) {
+        // Hide footnotes
+        cbReg.go("footnotes:hide");
 
-        if (CONFIG.RUNTIME_VARS.STYLE.ui_Mode === "dark") {
+        // Helper: applies schema-based settings, can be filtered by type or key
+        const applySchema = (filter) => {
+            for (const def of SETTINGS_SCHEMA) {
+                if (filter && !filter(def)) continue;
+
+                // 1. Handle variable binding
+                if (def.bind) {
+                    const binds = Array.isArray(def.bind) ? def.bind : [def.bind];
+                    for (const bindPath of binds) {
+                        // Example: "CONFIG.RUNTIME_VARS.STYLE.p_fontSize"
+                        // We'll use a simple `eval` here for direct path (or use a utility function for deep object set in prod)
+                        try {
+                            // eval(`${bindPath} = this.values[def.key]`);
+                            setDeep(CONFIG, bindPath.replace(/^CONFIG\./, ""), this.values[def.key]);
+                        } catch (e) {
+                            console.warn(`Failed to bind setting '${def.key}' to '${bindPath}':`, e);
+                        }
+                    }
+                }
+                // 2. Handle onApply (side-effects/derived vars)
+                if (typeof def.onApply === "function") {
+                    try {
+                        def.onApply.call(this, this.values[def.key]);
+                    } catch (e) {
+                        console.warn(`Failed to call onApply for setting '${def.key}':`, e);
+                    }
+                }
+            }
+        };
+
+        // Helper: applies dark mode styles
+        const applyDarkModeStyles = () => {
             CONFIG.RUNTIME_VARS.STYLE.mainColor_active = CONFIG.RUNTIME_VARS.STYLE.darkMode_mainColor_active;
             CONFIG.RUNTIME_VARS.STYLE.mainColor_inactive = CONFIG.RUNTIME_VARS.STYLE.darkMode_mainColor_inactive;
             CONFIG.RUNTIME_VARS.STYLE.fontColor = CONFIG.RUNTIME_VARS.STYLE.darkMode_fontColor;
             CONFIG.RUNTIME_VARS.STYLE.bgColor = CONFIG.RUNTIME_VARS.STYLE.darkMode_bgColor;
+        };
+
+        if (colorOnly) {
+            applySchema((def) => def.type === "color");
+            if (CONFIG.RUNTIME_VARS.STYLE.ui_Mode === "dark") {
+                applyDarkModeStyles();
+            }
+            return;
+        }
+
+        // Special case: respectUserLangSetting (not in manifest)
+        CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING = this.respectUserLangSetting;
+        if (this.respectUserLangSetting) {
+            CONFIG.RUNTIME_VARS.STYLE.ui_LANG = this.values.ui_language;
+        }
+
+        // Apply all settings except ui_language
+        applySchema((def) => def.key !== "ui_language");
+
+        // Theme adjustments (mode-specific), and other non-schema code
+        if (CONFIG.RUNTIME_VARS.STYLE.ui_Mode === "dark") {
+            applyDarkModeStyles();
         }
 
         if (
@@ -1517,20 +1819,23 @@ const settings = {
             CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.classList.remove("has-custom-width");
         }
 
+        // Update font baseline offsets
+        cbReg.go("updateFontBaselineOffsets");
+
         // Apply filter bar visibility
-        triggerCustomEvent("toggleFilterBar");
+        cbReg.go("toggleFilterBar");
 
         // Apply infinite scroll mode
-        triggerCustomEvent("toggleInfiniteScroll");
+        cbReg.go("toggleInfiniteScroll");
 
         // Apply TOC area visibility
-        triggerCustomEvent("toggleTOCArea");
+        cbReg.go("toggleTOCArea");
 
         // Apply help button visibility
-        triggerCustomEvent("toggleHelpBtn");
+        cbReg.go("toggleHelpBtn");
 
         // Apply custom cursor visibility
-        triggerCustomEvent("toggleCustomCursor");
+        cbReg.go("toggleCustomCursor");
     },
 
     /**
@@ -1552,82 +1857,66 @@ const settings = {
      * @instance
      * @param {boolean} [toSetLanguage=false] - Whether to set the language based on the current settings
      * @param {boolean} [forceSetLanguage=false] - Whether to forcefully set the language regardless of user settings
+     * @param {boolean} [colorOnly=false] - Whether to only save color settings
      */
-    saveSettings(toSetLanguage = false, forceSetLanguage = false) {
+    saveSettings(toSetLanguage = false, forceSetLanguage = false, colorOnly = false) {
         // console.log("saveSettings", { toSetLanguage, forceSetLanguage });
 
-        // Save settings to variables
-        this.respectUserLangSetting = !(
-            $("#setting_uilanguage")
+        // Helper: update values from schema
+        const updateValuesFromInputs = (filterType = null) => {
+            // Loop through all settings from schema
+            for (const def of SETTINGS_SCHEMA) {
+                if (filterType && def.type !== filterType) continue;
+                if (!filterType && def.key === "ui_language") continue;
+                const inputLabel = def.inputRef || def.label; // Prefer inputRef if present
+                this.values[def.key] = this.saveSettingFromInput(def.key, $(`#${inputLabel}`), def.unit);
+            }
+        };
+
+        if (colorOnly) {
+            updateValuesFromInputs("color");
+            this.applySettings(true);
+            cbReg.go("updateAllBookCovers", { colorOnly: colorOnly });
+            return;
+        }
+
+        // Special case: respectUserLangSetting (not in manifest)
+        const selectedLang =
+            $("#setting_ui_language")
                 .closest(".select")
                 .children(".select-options")
                 .children(".is-selected")
-                .attr("rel") === "auto" ?? this.respectUserLangSetting_default
-        );
+                .attr("rel") || this.defaults.ui_language;
+        if (selectedLang === "auto") {
+            this.respectUserLangSetting = false;
+            this.values.ui_language = "auto";
+        } else {
+            this.respectUserLangSetting = true;
+            this.values.ui_language = selectedLang;
+        }
         if (this.respectUserLangSetting) {
-            this.ui_language =
-                $("#setting_uilanguage")
+            this.values.ui_language =
+                $("#setting_ui_language")
                     .closest(".select")
                     .children(".select-options")
                     .children(".is-selected")
-                    .attr("rel") || this.ui_language_default;
+                    .attr("rel") || this.defaults.ui_language;
         }
-        this.p_lineHeight = $("#setting_p_lineHeight").val() + "em" || this.p_lineHeight_default;
-        this.p_paragraphSpacing = $("#setting_p_paragraphSpacing").val() + "em" || this.p_paragraphSpacing_default;
-        this.p_paragraphIndent = $("#setting_p_paragraphIndent").is(":checked") ?? this.p_paragraphIndent_default;
-        this.p_textAlign = $("#setting_p_textAlign").is(":checked") ?? this.p_textAlign_default;
-        this.p_fontSize = $("#setting_p_fontSize").val() + "em" || this.p_fontSize_default;
-        this.light_mainColor_active = $("#setting_light_mainColor_active").val() || this.light_mainColor_active_default;
-        this.light_mainColor_inactive = HSLToHex(
-            ...hexToHSL($("#setting_light_mainColor_active").val() || this.light_mainColor_active_default, 1.5)
-        );
-        // this.light_mainColor_inactive = pSBC(0.25, ($("#setting_light_mainColor_active").val() || this.light_mainColor_active_default), false, true);   // 25% lighter (linear)
-        this.light_fontColor = $("#setting_light_fontColor").val() || this.light_fontColor_default;
-        this.light_bgColor = $("#setting_light_bgColor").val() || this.light_bgColor_default;
-        this.dark_mainColor_active = $("#setting_dark_mainColor_active").val() || this.dark_mainColor_active_default;
-        this.dark_mainColor_inactive = HSLToHex(
-            ...hexToHSL($("#setting_dark_mainColor_active").val() || this.dark_mainColor_active_default, 0.5)
-        );
-        // this.dark_mainColor_inactive = pSBC(-0.25, ($("#setting_dark_mainColor_active").val() || this.dark_mainColor_active_default), false, true);   // 25% darker (linear)
-        this.dark_fontColor = $("#setting_dark_fontColor").val() || this.dark_fontColor_default;
-        this.dark_bgColor = $("#setting_dark_bgColor").val() || this.dark_bgColor_default;
-        this.title_font =
-            `${$("#setting_title_font")
-                .closest(".select")
-                .children(".select-options")
-                .children(".is-selected")
-                .attr("rel")}, ${CONFIG.RUNTIME_VARS.STYLE.fontFamily_fallback}` || this.title_font_default;
-        this.body_font =
-            `${$("#setting_body_font")
-                .closest(".select")
-                .children(".select-options")
-                .children(".is-selected")
-                .attr("rel")}, ${CONFIG.RUNTIME_VARS.STYLE.fontFamily_fallback}` || this.body_font_default;
-        this.show_toc = $("#setting_show_toc").is(":checked") ?? this.show_toc_default;
-        this.toc_width = $("#setting_toc_width").val() + "%" || this.toc_width_default;
-        this.main_content_width = $("#setting_main_content_width").val() + "%" || this.main_content_width_default;
-        this.show_content_boundary_lines =
-            $("#setting_show_content_boundary_lines").is(":checked") ?? this.show_content_boundary_lines_default;
-        this.pagination_bottom = $("#setting_pagination_bottom").val() + "px" || this.pagination_bottom_default;
-        this.pagination_opacity = $("#setting_pagination_opacity").val() || this.pagination_opacity_default;
-        this.show_filter_bar = $("#setting_show_filter_bar").is(":checked") ?? this.show_filter_bar_default;
-        this.show_helper_btn = $("#setting_show_helper_btn").is(":checked") ?? this.show_helper_btn_default;
-        this.auto_open_last_book = $("#setting_auto_open_last_book").is(":checked") ?? this.auto_open_last_book_default;
-        this.infinite_scroll_mode =
-            $("#setting_infinite_scroll_mode").is(":checked") ?? this.infinite_scroll_mode_default;
-        this.enable_custom_cursor =
-            $("#setting_enable_custom_cursor").is(":checked") ?? this.enable_custom_cursor_default;
 
-        // Save settings to local storage
+        // Update all other values
+        updateValuesFromInputs();
+
+        // Save language settings to local storage
         if (forceSetLanguage || (this.respectUserLangSetting && toSetLanguage)) {
-            const lang = this.respectUserLangSetting
-                ? this.ui_language || CONFIG.RUNTIME_VARS.STYLE.ui_LANG
+            let lang = this.respectUserLangSetting
+                ? this.values.ui_language || CONFIG.RUNTIME_VARS.STYLE.ui_LANG
                 : this.browser_LANG;
             this.setLanguage(lang, true);
             if (!this.respectUserLangSetting && !CONFIG.VARS.INIT) {
-                this.setLanguage(CONFIG.VARS.IS_EASTERN_LAN ? "zh" : "en", false);
+                lang = CONFIG.VARS.IS_EASTERN_LAN ? "zh" : "en";
+                this.setLanguage(lang, false);
             }
-            changeLanguageSelectorItemLanguage($("#setting_uilanguage"), lang);
+            changeLanguageSelectorItemLanguage($("#setting_ui_language"), lang);
             changeFontSelectorItemLanguage($("#setting_title_font"), lang);
             changeFontSelectorItemLanguage($("#setting_body_font"), lang);
         }
@@ -1635,39 +1924,13 @@ const settings = {
         localStorage.setItem("respectUserLangSetting", this.respectUserLangSetting);
         document.documentElement.setAttribute("respectUserLangSetting", this.respectUserLangSetting);
         if (this.respectUserLangSetting) {
-            localStorage.setItem("UILang", this.ui_language);
+            localStorage.setItem("UILang", this.values.ui_language);
         }
-        localStorage.setItem("p_lineHeight", this.p_lineHeight);
-        localStorage.setItem("p_paragraphSpacing", this.p_paragraphSpacing);
-        localStorage.setItem("p_paragraphIndent", this.p_paragraphIndent);
-        localStorage.setItem("p_textAlign", this.p_textAlign);
-        localStorage.setItem("p_fontSize", this.p_fontSize);
-        localStorage.setItem("light_mainColor_active", this.light_mainColor_active);
-        localStorage.setItem("light_mainColor_inactive", this.light_mainColor_inactive);
-        localStorage.setItem("light_fontColor", this.light_fontColor);
-        localStorage.setItem("light_bgColor", this.light_bgColor);
-        localStorage.setItem("dark_mainColor_active", this.dark_mainColor_active);
-        localStorage.setItem("dark_mainColor_inactive", this.dark_mainColor_inactive);
-        localStorage.setItem("dark_fontColor", this.dark_fontColor);
-        localStorage.setItem("dark_bgColor", this.dark_bgColor);
-        localStorage.setItem("title_font", this.title_font);
-        localStorage.setItem("body_font", this.body_font);
-        localStorage.setItem("show_toc", this.show_toc);
-        localStorage.setItem("toc_width", this.toc_width);
-        localStorage.setItem("main_content_width", this.main_content_width);
-        localStorage.setItem("show_content_boundary_lines", this.show_content_boundary_lines);
-        localStorage.setItem("pagination_bottom", this.pagination_bottom);
-        localStorage.setItem("pagination_opacity", this.pagination_opacity);
-        localStorage.setItem("show_filter_bar", this.show_filter_bar);
-        localStorage.setItem("show_helper_btn", this.show_helper_btn);
-        localStorage.setItem("auto_open_last_book", this.auto_open_last_book);
-        localStorage.setItem("infinite_scroll_mode", this.infinite_scroll_mode);
-        localStorage.setItem("enable_custom_cursor", this.enable_custom_cursor);
 
         this.applySettings();
 
         // Trigger updateAllBookCovers event
-        triggerCustomEvent("updateAllBookCovers");
+        cbReg.go("updateAllBookCovers", { colorOnly: colorOnly });
     },
 
     /**
@@ -1699,13 +1962,8 @@ const settings = {
             setTitle();
         }
 
-        // Reset tooltips for specific elements
-        // Reset all tooltips
-        // document.querySelectorAll(".hasTitle").forEach((el) => {
-        // console.log(el);
-        // });
-        // Optimization: Only reset visible tooltips
-        const tooltips = {
+        // Reset all hardcoded elements' language
+        const elements = {
             darkModeButton: CONFIG.DOM_ELEMENT.DARK_MODE_ACTUAL_BUTTON,
             bookshelfButton: CONFIG.DOM_ELEMENT.BOOKSHELF_BUTTON,
             settingsButton: CONFIG.DOM_ELEMENT.SETTINGS_BUTTON,
@@ -1713,32 +1971,61 @@ const settings = {
             dropZone: CONFIG.DOM_ELEMENT.DROPZONE,
             tocSplitviewDivider: CONFIG.DOM_ELEMENT.TOC_SPLITVIEW_DIVIDER,
             tocSplitviewToggle: CONFIG.DOM_ELEMENT.TOC_SPLITVIEW_TOGGLE,
+            scrollTopButton: CONFIG.DOM_ELEMENT.SCROLL_TOP_BUTTON,
+            scrollBottomButton: CONFIG.DOM_ELEMENT.SCROLL_BOTTOM_BUTTON,
+            removeBookButtons: CONFIG.DOM_ELEMENT.REMOVE_BOOK_BUTTONS,
+            bookInfoButtons: CONFIG.DOM_ELEMENT.BOOK_INFO_BUTTONS,
+            bookCoverContainers: CONFIG.DOM_ELEMENT.BOOK_COVER_CONTAINERS,
         };
 
-        if (isVariableDefined(tooltips.darkModeButton)) {
-            tooltips.darkModeButton.dataset.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_modeToggle;
+        if (isVariableDefined(elements.darkModeButton)) {
+            elements.darkModeButton.dataset.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_modeToggle;
         }
-        if (isVariableDefined(tooltips.bookshelfButton)) {
-            tooltips.bookshelfButton.dataset.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_goToBookshelf;
+        if (isVariableDefined(elements.bookshelfButton)) {
+            elements.bookshelfButton.dataset.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_goToBookshelf;
         }
-        if (isVariableDefined(tooltips.settingsButton)) {
-            tooltips.settingsButton.dataset.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_settings;
+        if (isVariableDefined(elements.settingsButton)) {
+            elements.settingsButton.dataset.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_settings;
         }
-        if (isVariableDefined(tooltips.helpButton)) {
-            tooltips.helpButton.dataset.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_help;
+        if (isVariableDefined(elements.helpButton)) {
+            elements.helpButton.dataset.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_help;
         }
-        // if (isVariableDefined(tooltips.dropZone)) {
-        //     tooltips.dropZone.dataset.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_dropZone;
+        // if (isVariableDefined(elements.dropZone)) {
+        //     elements.dropZone.dataset.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_dropZone;
         // }
-        if (isVariableDefined(tooltips.tocSplitviewDivider)) {
-            tooltips.tocSplitviewDivider.dataset.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_divider;
+        if (isVariableDefined(elements.tocSplitviewDivider)) {
+            elements.tocSplitviewDivider.dataset.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_divider;
         }
-        if (isVariableDefined(tooltips.tocSplitviewToggle)) {
-            tooltips.tocSplitviewToggle.dataset.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_toggleButton;
+        if (isVariableDefined(elements.tocSplitviewToggle)) {
+            elements.tocSplitviewToggle.dataset.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_toggleButton;
+        }
+        // console.log("CONFIG.VARS.IS_BOOK_OPENED", CONFIG.VARS.IS_BOOK_OPENED);
+        if (!CONFIG.VARS.IS_BOOK_OPENED) {
+            if (isVariableDefined(elements.scrollTopButton)) {
+                elements.scrollTopButton.dataset.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_bookshelf_scrollTop;
+            }
+            if (isVariableDefined(elements.scrollBottomButton)) {
+                elements.scrollBottomButton.dataset.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_bookshelf_scrollBottom;
+            }
+            if (isVariableDefined(elements.removeBookButtons)) {
+                elements.removeBookButtons.forEach((el) => {
+                    el.dataset.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_removeBook;
+                });
+            }
+            if (isVariableDefined(elements.bookInfoButtons)) {
+                elements.bookInfoButtons.forEach((el) => {
+                    el.dataset.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_bookInfo;
+                });
+            }
+            if (isVariableDefined(elements.bookCoverContainers)) {
+                elements.bookCoverContainers.forEach((el) => {
+                    el.dataset.title = CONFIG.RUNTIME_VARS.STYLE.ui_tooltip_book_altClick;
+                });
+            }
         }
 
         // Update tooltips content
-        triggerCustomEvent("updateCustomTooltip");
+        cbReg.go("updateCustomTooltip");
 
         if (consoleLog) {
             console.log(`Language set to "${lang}".`);
@@ -1763,47 +2050,45 @@ const settings = {
     enable() {
         if (!this.enabled) {
             this.enabled = true;
+            if (!CONFIG.VARS.CUSTOM_FONTS_LOADED) {
+                CONFIG.VARS.CUSTOM_FONTS = JSON.parse(localStorage.getItem("custom_fonts")) || {};
+            }
             this.loadSettings();
             this.applySettings();
             if (!this.settingsMenu) {
                 this.settingsMenu = new SettingsMenu(this);
             }
+            CONFIG.VARS.SETTINGS_INITIALIZED = true;
             // console.log("Module <Settings> enabled.");
 
-            // Listen to the updateVersionData event
-            document.addEventListener("updateVersionData", (e) => {
-                const { version, date } = e.detail;
-                this.settingsMenu.updateVersionData(version, date);
-            });
-
             // Listen to the updateUILanguage event
-            document.addEventListener("updateUILanguage", (e) => {
-                const { lang, saveToLocalStorage } = e.detail;
+            cbReg.add("updateUILanguage", (e) => {
+                const { lang, saveToLocalStorage } = e;
                 this.setLanguage(lang, saveToLocalStorage);
-                changeLanguageSelectorItemLanguage($("#setting_uilanguage"), lang);
+                changeLanguageSelectorItemLanguage($("#setting_ui_language"), lang);
                 changeFontSelectorItemLanguage($("#setting_title_font"), lang);
                 changeFontSelectorItemLanguage($("#setting_body_font"), lang);
             });
 
             // Listen to the loadSettings event
-            document.addEventListener("loadSettings", (e) => {
+            cbReg.add("loadSettings", () => {
                 this.loadSettings();
             });
 
             // Listen to the applySettings event
-            document.addEventListener("applySettings", (e) => {
+            cbReg.add("applySettings", () => {
                 this.applySettings();
             });
 
             // Listen to the hideSettingsMenu event
-            document.addEventListener("hideSettingsMenu", (e) => {
+            cbReg.add("hideSettingsMenu", () => {
                 if (this.settingsMenu) {
                     this.settingsMenu.hide();
                 }
             });
 
             // Listen to the customFontsLoaded event
-            document.addEventListener("customFontsLoaded", (e) => {
+            cbReg.add("customFontsLoaded", () => {
                 if (this.settingsMenu) {
                     this.settingsMenu.remove();
                     this.settingsMenu = null;
@@ -1811,11 +2096,141 @@ const settings = {
                 }
             });
 
+            cbReg.add("updateFontBaselineOffsets", () => {
+                const elements_title = Object.fromEntries(
+                    Object.entries({
+                        toc: CONFIG.RUNTIME_VARS.STYLE.toc_fontSize,
+                        h1: CONFIG.RUNTIME_VARS.STYLE.h1_fontSize,
+                        h1Author: CONFIG.RUNTIME_VARS.STYLE.h1_fontSize_author,
+                        h2: CONFIG.RUNTIME_VARS.STYLE.h2_fontSize,
+                        h3: CONFIG.RUNTIME_VARS.STYLE.h3_fontSize,
+                        h4: CONFIG.RUNTIME_VARS.STYLE.h4_fontSize,
+                        h5: CONFIG.RUNTIME_VARS.STYLE.h5_fontSize,
+                        h6: CONFIG.RUNTIME_VARS.STYLE.h6_fontSize,
+                    }).filter(([key, el]) => {
+                        if (!el) return false;
+                        if (el instanceof HTMLElement) {
+                            return el.id.includes("line") || el.id.includes("toc");
+                        }
+                        return true;
+                    })
+                );
+                const elements_body = Object.fromEntries(
+                    Object.entries({
+                        p: CONFIG.RUNTIME_VARS.STYLE.p_fontSize,
+                        footnote: CONFIG.RUNTIME_VARS.STYLE.footnote_fontSize,
+                    }).filter(([key, el]) => {
+                        if (!el) return false;
+                        if (el instanceof HTMLElement) {
+                            return el.id.includes("line");
+                        }
+                        return true;
+                    })
+                );
+
+                const titleFontOffset = getFontOffsets(
+                    CONFIG.RUNTIME_VARS.STYLE.fontFamily_title.split(",")[0].trim(),
+                    elements_title,
+                    CONFIG.RUNTIME_VARS.FONT_BASELINE_OFFSETS
+                );
+                const bodyFontOffset = getFontOffsets(
+                    CONFIG.RUNTIME_VARS.STYLE.fontFamily_body.split(",")[0].trim(),
+                    elements_body,
+                    CONFIG.RUNTIME_VARS.FONT_BASELINE_OFFSETS
+                );
+                // console.log("titleFontOffset", titleFontOffset);
+                // console.log("bodyFontOffset", bodyFontOffset);
+
+                CONFIG.RUNTIME_VARS.STYLE.toc_text_span_top = `${titleFontOffset.toc.verticalOffset * -1}${
+                    titleFontOffset.toc.fontSizeUnit
+                }`;
+                CONFIG.RUNTIME_VARS.STYLE.toc_text_span_left = `${titleFontOffset.toc.horizontalOffset * -1}${
+                    titleFontOffset.toc.fontSizeUnit
+                }`;
+                CONFIG.RUNTIME_VARS.STYLE.h1_top = `${titleFontOffset.h1.verticalOffset * -1}${
+                    titleFontOffset.h1.fontSizeUnit
+                }`;
+                CONFIG.RUNTIME_VARS.STYLE.h1_left = `${titleFontOffset.h1.horizontalOffset * -1}${
+                    titleFontOffset.h1.fontSizeUnit
+                }`;
+                CONFIG.RUNTIME_VARS.STYLE.h1_author_top = `${titleFontOffset.h1Author.verticalOffset * -1}${
+                    titleFontOffset.h1Author.fontSizeUnit
+                }`;
+                CONFIG.RUNTIME_VARS.STYLE.h1_author_left = `${titleFontOffset.h1Author.horizontalOffset * -1}${
+                    titleFontOffset.h1Author.fontSizeUnit
+                }`;
+                CONFIG.RUNTIME_VARS.STYLE.h2_top = `${titleFontOffset.h2.verticalOffset * -1}${
+                    titleFontOffset.h2.fontSizeUnit
+                }`;
+                CONFIG.RUNTIME_VARS.STYLE.h2_left = `${titleFontOffset.h2.horizontalOffset * -1}${
+                    titleFontOffset.h2.fontSizeUnit
+                }`;
+                CONFIG.RUNTIME_VARS.STYLE.h3_top = `${titleFontOffset.h3.verticalOffset * -1}${
+                    titleFontOffset.h3.fontSizeUnit
+                }`;
+                CONFIG.RUNTIME_VARS.STYLE.h3_left = `${titleFontOffset.h3.horizontalOffset * -1}${
+                    titleFontOffset.h3.fontSizeUnit
+                }`;
+                CONFIG.RUNTIME_VARS.STYLE.h4_top = `${titleFontOffset.h4.verticalOffset * -1}${
+                    titleFontOffset.h4.fontSizeUnit
+                }`;
+                CONFIG.RUNTIME_VARS.STYLE.h4_left = `${titleFontOffset.h4.horizontalOffset * -1}${
+                    titleFontOffset.h4.fontSizeUnit
+                }`;
+                CONFIG.RUNTIME_VARS.STYLE.h5_top = `${titleFontOffset.h5.verticalOffset * -1}${
+                    titleFontOffset.h5.fontSizeUnit
+                }`;
+                CONFIG.RUNTIME_VARS.STYLE.h5_left = `${titleFontOffset.h5.horizontalOffset * -1}${
+                    titleFontOffset.h5.fontSizeUnit
+                }`;
+                CONFIG.RUNTIME_VARS.STYLE.h6_top = `${titleFontOffset.h6.verticalOffset * -1}${
+                    titleFontOffset.h6.fontSizeUnit
+                }`;
+                CONFIG.RUNTIME_VARS.STYLE.h6_left = `${titleFontOffset.h6.horizontalOffset * -1}${
+                    titleFontOffset.h6.fontSizeUnit
+                }`;
+                CONFIG.RUNTIME_VARS.STYLE.p_top = `${bodyFontOffset.p.verticalOffset * -1}${
+                    bodyFontOffset.p.fontSizeUnit
+                }`;
+                CONFIG.RUNTIME_VARS.STYLE.p_left = `${bodyFontOffset.p.horizontalOffset * -1}${
+                    bodyFontOffset.p.fontSizeUnit
+                }`;
+                CONFIG.RUNTIME_VARS.STYLE.footnote_top = `${bodyFontOffset.footnote.verticalOffset * -1}${
+                    bodyFontOffset.footnote.fontSizeUnit
+                }`;
+                CONFIG.RUNTIME_VARS.STYLE.footnote_left = `${bodyFontOffset.footnote.horizontalOffset * -1}${
+                    bodyFontOffset.footnote.fontSizeUnit
+                }`;
+            });
+
             // Trigger updateUILanguage event
-            triggerCustomEvent("updateUILanguage", {
+            cbReg.go("updateUILanguage", {
                 lang: CONFIG.RUNTIME_VARS.WEB_LANG,
                 saveToLocalStorage: true,
             });
+            // Use the language of the book if a book is already opened
+            cbReg.go("updateUILanguage", {
+                lang: getCurrentDisplayLanguage(),
+                saveToLocalStorage: false,
+            });
+
+            if (window.fetchVersionDataPromise) {
+                window.fetchVersionDataPromise.then(() => {
+                    // Update the version UI for the settings menu
+                    this.settingsMenu.updateVersionUI(
+                        CONFIG.RUNTIME_VARS.APP_VERSION,
+                        CONFIG.RUNTIME_VARS.APP_VERSION_DATE
+                    );
+
+                    // Show the changelog popup
+                    PopupManager.showChangelogPopup({
+                        version: CONFIG.RUNTIME_VARS.APP_VERSION,
+                        changelog: CONFIG.RUNTIME_VARS.APP_CHANGELOG,
+                        previousVersions: CONFIG.CONST_CONFIG.CHANGELOG_SHOW_PREVIOUS_VERSIONS,
+                        forceShow: CONFIG.CONST_CONFIG.CHANGELOG_FORCE_SHOW,
+                    });
+                });
+            }
         }
         return this;
     },

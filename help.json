@@ -38,6 +38,14 @@
                 "##手动标记标题##：在 **源 TXT 文本** 中任意行的行首添加 **[::]** 标记，以手动指定该行为标题行",
                 "##使用脚注##：在 **源文本** 中插入 **① 到 ㊿** 以 **引用脚注**。脚注是以**对应的数字符号**开头的内容行，每条脚注占一行。每个段落都可以从 **①** 开始重新编号"
             ]
+        },
+        {
+            "title": "常见问题",
+            "folded": true,
+            "content": [
+                "##设置异常##：如果界面或功能设置出现异常，请前往设置界面点击左下角的 **重置** 按钮，恢复默认配置。",
+                "##书籍内容或脚注显示不正常##：请按住 **Alt / Option 键** 并单击书籍封面，强制重新处理该书籍内容。"
+            ]
         }
     ],
     "en": [
@@ -78,6 +86,14 @@
             "content": [
                 "##Manually Marking Titles##: Add **[::]** marker at the beginning of a line in the **source TXT file** to manually designate it as a **title line**.",
                 "##Using Footnotes##: Insert **① to ㊿** into the **source text** to **reference footnotes**. Footnotes are lines that begin with the **corresponding numbered symbol**, with each footnote on a separate line. Each paragraph can restart numbering from **①**."
+            ]
+        },
+        {
+            "title": "Troubleshooting",
+            "folded": true,
+            "content": [
+                "##Settings not working properly##: If the app behaves unexpectedly, use the **Reset** button at the bottom left of the Settings popup to **restore default settings**.",
+                "##Book content or footnotes display incorrectly##: Hold **Alt / Option** and click the book cover to **force reprocess** the book."
             ]
         }
     ]

@@ -10,17 +10,28 @@
  *
  * @module client/app/utils/helpers-ui
  * @requires client/app/config/index
- * @requires client/app/utils/base
+ * @requires client/app/config/icons
+ * @requires shared/core/callback/callback-registry
  * @requires client/app/modules/features/reader
+ * @requires client/app/modules/components/popup-manager
+ * @requires client/app/utils/base
  * @requires client/app/utils/helpers-reader
  */
 
 import * as CONFIG from "../config/index.js";
 import { ICONS } from "../config/icons.js";
+import { cbReg } from "../../../shared/core/callback/callback-registry.js";
 import { reader } from "../modules/features/reader.js";
 import { PopupManager } from "../modules/components/popup-manager.js";
-import { isVariableDefined, triggerCustomEvent, toBool } from "./base.js";
+import { isVariableDefined, toBool } from "./base.js";
 import { setTitle } from "./helpers-reader.js";
+
+// ===============================
+// Loading Screen Related Variables
+// ===============================
+let loadingScreenVisible = false;
+let loadingScreenShownAt = 0;
+const MIN_LOADING_TIME = 400; // ms
 
 // ===============================
 // UI Mode Related Functions
@@ -40,12 +51,12 @@ export function setUIMode(mode, silence = false) {
     localStorage.setItem("UIMode", mode);
     CONFIG.RUNTIME_VARS.STYLE.ui_Mode = theme;
 
-    triggerCustomEvent("loadSettings");
-    triggerCustomEvent("applySettings");
+    cbReg.go("loadSettings");
+    cbReg.go("applySettings");
     document.documentElement.setAttribute("data-theme", theme);
 
     // Trigger updateAllBookCovers event
-    triggerCustomEvent("updateAllBookCovers");
+    cbReg.go("updateAllBookCovers");
 }
 
 /**
@@ -127,7 +138,7 @@ export function sw(percent) {
  */
 export function showDropZone(focused = false, hideBookshelf = false) {
     // Hide setting menu
-    triggerCustomEvent("hideSettingsMenu");
+    cbReg.go("hideSettingsMenu");
     if (isVariableDefined($(".dot-menu__checkbox"))) {
         $(".dot-menu__checkbox").prop("checked", false);
     }
@@ -171,12 +182,12 @@ export function showDropZone(focused = false, hideBookshelf = false) {
         CONFIG.RUNTIME_VARS.STYLE.ui_btnOffset = "0px";
 
         // Hide bookshelf trigger button if bookshelf is opened
-        triggerCustomEvent("hideBookshelfTriggerBtn");
+        cbReg.go("hideBookshelfTriggerBtn");
 
         if (hideBookshelf) {
-            triggerCustomEvent("hideBookshelf");
+            cbReg.go("hideBookshelf");
         } else {
-            triggerCustomEvent("showBookshelf");
+            cbReg.go("showBookshelf");
         }
     }
 }
@@ -209,7 +220,7 @@ export function hideDropZone(showBookshelfTriggerBtn = true) {
 
         // Show bookshelf trigger button if a book is opened
         if (showBookshelfTriggerBtn) {
-            triggerCustomEvent("showBookshelfTriggerBtn");
+            cbReg.go("showBookshelfTriggerBtn");
         }
     }
 }
@@ -241,7 +252,7 @@ export function showLoadingScreen() {
     CONFIG.RUNTIME_VARS.STYLE.ui_btnOffset = "0px";
 
     // Hide bookshelf trigger button if bookshelf is opened
-    triggerCustomEvent("hideBookshelfTriggerBtn");
+    cbReg.go("hideBookshelfTriggerBtn");
 }
 
 /**
@@ -257,8 +268,34 @@ export function hideLoadingScreen(showBookshelfTriggerBtn = true) {
 
     // Show bookshelf trigger button if bookshelf is closed
     if (showBookshelfTriggerBtn) {
-        triggerCustomEvent("showBookshelfTriggerBtn");
+        cbReg.go("showBookshelfTriggerBtn");
     }
+}
+
+/**
+ * Shows the loading screen and tracks the time it was shown.
+ * @public
+ */
+export function showLoadingScreenWithTracking() {
+    loadingScreenVisible = true;
+    loadingScreenShownAt = performance.now();
+    showLoadingScreen();
+}
+
+/**
+ * Hides the loading screen, ensuring it's visible for at least MIN_LOADING_TIME ms.
+ * @public
+ * @param {boolean} [showBookshelfTriggerBtn=true]
+ * @param {number} [minTime=MIN_LOADING_TIME] - Minimum ms to show the loading screen
+ */
+export async function hideLoadingScreenWithMinimum(showBookshelfTriggerBtn = true, minTime = MIN_LOADING_TIME) {
+    if (!loadingScreenVisible) return hideLoadingScreen(showBookshelfTriggerBtn);
+    const elapsed = performance.now() - loadingScreenShownAt;
+    if (elapsed < minTime) {
+        await new Promise((r) => setTimeout(r, minTime - elapsed));
+    }
+    loadingScreenVisible = false;
+    hideLoadingScreen(showBookshelfTriggerBtn);
 }
 
 /**
@@ -277,6 +314,10 @@ export function showContent(force = false) {
     CONFIG.DOM_ELEMENT.TOC_CONTAINER.style.visibility = "visible";
     CONFIG.DOM_ELEMENT.PAGINATION_CONTAINER.style.visibility = "visible";
     CONFIG.DOM_ELEMENT.PROGRESS_CONTAINER.style.visibility = "visible";
+    CONFIG.DOM_ELEMENT.PROGRESS_TITLE.style.visibility = "visible";
+    CONFIG.DOM_ELEMENT.PROGRESS_CONTENT.style.visibility = "visible";
+    CONFIG.DOM_ELEMENT.TOC_SPLITVIEW_DIVIDER.style.visibility = "visible";
+    CONFIG.DOM_ELEMENT.TOC_SPLITVIEW_TOGGLE.style.visibility = "visible";
 }
 
 /**
@@ -289,11 +330,19 @@ export function hideContent(force = false) {
     CONFIG.DOM_ELEMENT.TOC_CONTAINER.style.visibility = "hidden";
     CONFIG.DOM_ELEMENT.PAGINATION_CONTAINER.style.visibility = "hidden";
     CONFIG.DOM_ELEMENT.PROGRESS_CONTAINER.style.visibility = "hidden";
+    CONFIG.DOM_ELEMENT.PROGRESS_TITLE.style.visibility = "hidden";
+    CONFIG.DOM_ELEMENT.PROGRESS_CONTENT.style.visibility = "hidden";
+    CONFIG.DOM_ELEMENT.TOC_SPLITVIEW_DIVIDER.style.visibility = "hidden";
+    CONFIG.DOM_ELEMENT.TOC_SPLITVIEW_TOGGLE.style.visibility = "hidden";
     if (force) {
         CONFIG.DOM_ELEMENT.CONTENT_CONTAINER.style.display = "none";
         CONFIG.DOM_ELEMENT.TOC_CONTAINER.style.display = "none";
         CONFIG.DOM_ELEMENT.PAGINATION_CONTAINER.style.display = "none";
         CONFIG.DOM_ELEMENT.PROGRESS_CONTAINER.style.display = "none";
+        CONFIG.DOM_ELEMENT.PROGRESS_TITLE.style.display = "none";
+        CONFIG.DOM_ELEMENT.PROGRESS_CONTENT.style.display = "none";
+        CONFIG.DOM_ELEMENT.TOC_SPLITVIEW_DIVIDER.style.display = "none";
+        CONFIG.DOM_ELEMENT.TOC_SPLITVIEW_TOGGLE.style.display = "none";
     }
 }
 
@@ -315,24 +364,43 @@ export async function resetUI(
     refreshBookshelf = true,
     hardRefresh = true,
     sortBookshelf = true,
-    inFileLoadCallback = false
+    inFileProcessingCallback = false
 ) {
+    let refreshPromise = Promise.resolve();
+    let loadingTimeout;
+
     if (refreshBookshelf) {
-        // Trigger bookshelf refresh event with parameters
-        triggerCustomEvent("refreshBookList", {
+        refreshPromise = cbReg.go("refreshBookList", {
             hardRefresh,
             sortBookshelf,
         });
+
+        // Only show loading if it's taking a while (e.g., 150-200ms)
+        loadingTimeout = setTimeout(() => {
+            showLoadingScreenWithTracking();
+        }, 150);
     }
-    triggerCustomEvent("updateUILanguage", {
+
+    resetVars();
+    cbReg.go("closeBook");
+    cbReg.go("updateUILanguage", {
         lang: CONFIG.RUNTIME_VARS.WEB_LANG,
         saveToLocalStorage: true,
     });
-    resetVars();
-    if (!inFileLoadCallback) {
+
+    if (!inFileProcessingCallback) {
+        await refreshPromise;
+        clearTimeout(loadingTimeout);
+
+        if (loadingScreenVisible) {
+            await hideLoadingScreenWithMinimum();
+        }
         hideContent();
-        hideLoadingScreen();
         showDropZone();
+        cbReg.go("truncateBookCoverText");
+
+        // Simulate a scroll event to hide the tooltips
+        handleGlobalScrolling({ isScrolling: true, delay: 150, destroy: true });
     }
 }
 
@@ -837,23 +905,156 @@ export function setCustomTooltip() {
      * @public
      */
     const attribute = CONFIG.CONST_UI.CUSTOM_TOOLTIP_CONFIG.attribute ?? "data-title";
-    tippy.delegate(document.body, {
+    if (CONFIG.VARS.TIPPY_INSTANCE) {
+        CONFIG.VARS.TIPPY_INSTANCE.destroy();
+        CONFIG.VARS.TIPPY_INSTANCE = null;
+    }
+    CONFIG.VARS.TIPPY_INSTANCE = tippy.delegate(document.body, {
         ...CONFIG.CONST_UI.CUSTOM_TOOLTIP_CONFIG,
         content(reference) {
-            return reference.getAttribute(attribute);
+            // console.log("tippy content", reference.getAttribute(attribute));
+            const val = reference.getAttribute(attribute);
+            return val || null;
         },
         target: `[${attribute}]`,
+        onShow(instance) {
+            // console.log("tippy onShow - ", "current: ", instance.id, instance.props.offset, instance);
+            return !CONFIG.VARS.IS_TOC_SCROLLING;
+        },
     });
 
     /**
      * Updates the custom tooltip content
      * @public
      */
-    document.addEventListener("updateCustomTooltip", () => {
+    cbReg.add("updateCustomTooltip", () => {
         document.querySelectorAll(`[${attribute}]`).forEach((el) => {
             if (el._tippy) {
                 el._tippy.setContent(el.getAttribute(attribute));
             }
         });
     });
+}
+
+/**
+ * Updates the version data in the CONFIG object
+ * @public
+ * @param {Object} versionData - The version data object
+ */
+export function updateVersionData(versionData) {
+    CONFIG.RUNTIME_VARS.APP_VERSION = versionData?.version ?? CONFIG.RUNTIME_VARS.APP_VERSION;
+    CONFIG.RUNTIME_VARS.APP_VERSION_DATE =
+        (versionData?.version && versionData?.changelog?.[versionData.version]?.date) ||
+        CONFIG.RUNTIME_VARS.APP_VERSION_DATE;
+    CONFIG.RUNTIME_VARS.APP_CHANGELOG = versionData?.changelog ?? CONFIG.RUNTIME_VARS.APP_CHANGELOG;
+}
+
+/**
+ * Updates the font baseline offsets in the CONFIG object
+ * @public
+ * @param {Object} fontBaselineOffsets - The font baseline offsets object
+ */
+export function updateGlobalFontBaselineOffsets(fontBaselineOffsets) {
+    CONFIG.RUNTIME_VARS.FONT_BASELINE_OFFSETS = fontBaselineOffsets ?? CONFIG.RUNTIME_VARS.FONT_BASELINE_OFFSETS;
+}
+
+/**
+ * Gets the current display language
+ * @public
+ * @returns {string} The current display language
+ */
+export function getCurrentDisplayLanguage() {
+    if (CONFIG.VARS.IS_BOOK_OPENED && !CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING) {
+        return CONFIG.VARS.IS_EASTERN_LAN ? "zh" : "en";
+    } else {
+        return CONFIG.RUNTIME_VARS.WEB_LANG;
+    }
+}
+
+// ===============================
+// UI Behaviors
+// ===============================
+/**
+ * Handles global scrolling
+ * @param {boolean} isScrolling - Whether the user is scrolling
+ * @param {number|null} delay - If number, auto-enable after that ms. If null, must manually re-enable.
+ * @param {boolean} destroy - Whether to destroy the tippy instance.
+ * @public
+ *
+ * @note
+ * Globally disables tooltips while scrolling, and re-enables after a delay.
+ * If `destroy` is true, tooltips are fully destroyed and recreated upon re-enable.
+ * When re-enabling, a synthetic mousemove is dispatched to flush any hover state and prevent accidental immediate tooltip shows.
+ *
+ * @example
+ * // Disable tooltips while scrolling
+ * handleGlobalScrolling({ isScrolling: true, delay: null, destroy: true });
+ * // ...later, to re-enable
+ * handleGlobalScrolling({ isScrolling: false });
+ */
+let globalScrollTimeout;
+export function handleGlobalScrolling({ isScrolling = true, delay = 150, destroy = false } = {}) {
+    // console.log("tippy handleGlobalScrolling", isScrolling, delay, destroy);
+    clearTimeout(globalScrollTimeout);
+
+    if (isScrolling) {
+        CONFIG.VARS.IS_TOC_SCROLLING = true;
+        tippy.hideAll({ duration: 0 });
+        if (CONFIG.VARS.TIPPY_INSTANCE) {
+            CONFIG.VARS.TIPPY_INSTANCE.disable();
+            if (destroy) {
+                CONFIG.VARS.TIPPY_INSTANCE.destroy();
+                CONFIG.VARS.TIPPY_INSTANCE = null;
+            }
+        }
+        // Blur focused element
+        if (document.activeElement && typeof document.activeElement.blur === "function") {
+            document.activeElement.blur();
+        }
+        if (typeof delay === "number" && delay > 0) {
+            globalScrollTimeout = setTimeout(() => {
+                handleGlobalScrolling({ isScrolling: false, delay });
+            }, delay);
+        }
+        // Also hide footnotes
+        cbReg.go("footnotes:hide");
+    } else {
+        CONFIG.VARS.IS_TOC_SCROLLING = false;
+        if (CONFIG.VARS.TIPPY_INSTANCE) {
+            // console.log("tippy enable");
+            CONFIG.VARS.TIPPY_INSTANCE.enable();
+        } else {
+            setCustomTooltip();
+            // console.log("tippy enable - no instance");
+            // console.log("tippy instance: ", CONFIG.VARS.TIPPY_INSTANCE);
+        }
+        // Flush any hover/focus state to prevent instant tooltip show
+        document.body.dispatchEvent(new MouseEvent("mousemove", { bubbles: true }));
+        if (document.activeElement && typeof document.activeElement.blur === "function") {
+            document.activeElement.blur();
+        }
+    }
+}
+
+/**
+ * Delegates scroll events from one element to another
+ * @param {Element} menu - The element to delegate from
+ * @param {Element[]} scrollTargets - The elements to delegate to
+ * @public
+ */
+export function delegateScroll(menu, scrollTargets) {
+    if (!menu || !scrollTargets || scrollTargets.length === 0) return;
+
+    menu.addEventListener(
+        "wheel",
+        (e) => {
+            const target = scrollTargets.find((el) => el.contains(e.target) || el === e.target);
+            if (!target) return;
+
+            if (target.scrollHeight > target.clientHeight) {
+                target.scrollTop += e.deltaY;
+            }
+        },
+        { passive: true }
+    );
 }

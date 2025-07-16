@@ -1,26 +1,64 @@
 @charset "UTF-8";
 #footnotediv {
     position: absolute;
-    width: 400px;
-    overflow: visible;
-}
+    /* width: 400px; */
+    overflow: auto;
+    scroll-behavior: smooth;
 
-#footnotediv {
     background-color: var(--bgColor);
-    font-size: 1em;
+    font-size: var(--footnote_fontSize);
     color: var(--mainColor_active);
-    padding: 5px 12px;
     border: 1px solid var(--borderColor);
     border-radius: 8px;
-    box-shadow: 0 0 5px var(--mainColor_inactive);
+    /* box-shadow: 0 0 5px var(--mainColor_inactive);
     -webkit-box-shadow: var(--mainColor_inactive) 0 0 5px;
-    -moz-box-shadow: 0 0 5px var(--mainColor_inactive);
-    font-family: var(--fontFamily_ui) !important;
+    -moz-box-shadow: 0 0 5px var(--mainColor_inactive); */
+    filter: drop-shadow(0 0 var(--footnote-shadow-size) var(--mainColor_inactive));
+    font-family: var(--fontFamily_body) !important;
+    white-space: normal !important;
+    overflow-wrap: break-word !important;
+    word-break: break-all !important;
 }
 
-#footnotediv p {
+#footnotediv span {
     margin: 0;
-    padding: 5px 0;
+    padding: calc(var(--footnote_fontSize) * 0.1) 0;
+    position: relative;
+    top: var(--footnote_top, 0);
+    left: var(--footnote_left, 0);
+    white-space: normal !important;
+    overflow-wrap: break-word !important;
+    word-break: break-all !important;
+    display: block;
+}
+
+#footnotediv::selection {
+    background-color: var(--mainColor_active) !important;
+    background: var(--mainColor_active) !important;
+    color: var(--bgColor) !important;
+}
+
+#footnotediv .footnote-notfound {
+    color: var(--fontInfoColor) !important;
+}
+
+#footnotediv::before {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-left: var(--footnote-arrow-width, 8px) solid transparent;
+    border-right: var(--footnote-arrow-width, 8px) solid transparent;
+    border-bottom: var(--footnote-arrow-height, 10px) solid var(--bgColor);
+    left: var(--footnote-arrow-left, 50%);
+}
+#footnotediv.arrow-up::before {
+    top: calc(var(--footnote-arrow-top, 10px) * -1 + 1px);
+    transform: translateX(-50%);
+}
+#footnotediv.arrow-down::before {
+    top: calc(var(--footnote-arrow-top, 100%) - 1px);
+    transform: translateX(-50%) rotate(180deg);
 }
 
 a.footnotebacklink {

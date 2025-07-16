@@ -75,6 +75,8 @@ export const RUNTIME_CONFIG = {
  * @property {string} APP_VERSION - Application version
  * @property {string} APP_VERSION_DATE - Application version date
  * @property {Object} APP_CHANGELOG - Application changelog
+ * @property {Object} FONT_BASELINE_OFFSETS - Font baseline offsets
+ * @property {Map} ELEMENTS_TO_TRUNCATE - DOM elements that need to be truncated
  */
 export const RUNTIME_VARS = {
     // UI-related variables
@@ -90,6 +92,8 @@ export const RUNTIME_VARS = {
     APP_VERSION: "1.0.0",
     APP_VERSION_DATE: "2023-07-09",
     APP_CHANGELOG: {},
+    FONT_BASELINE_OFFSETS: {},
+    ELEMENTS_TO_TRUNCATE: new Map(),
 };
 
 /**
@@ -120,6 +124,11 @@ export const RUNTIME_VARS = {
  * @property {HTMLElement} SETTINGS_MENU - Settings menu (getter)
  * @property {HTMLElement} BOOKSHELF_BUTTON - Bookshelf button (getter)
  * @property {HTMLElement} HELP_BUTTON - Help button (getter)
+ * @property {HTMLElement} SCROLL_TOP_BUTTON - Scroll to top button (getter)
+ * @property {HTMLElement} SCROLL_BOTTOM_BUTTON - Scroll to bottom button (getter)
+ * @property {HTMLElement} REMOVE_BOOK_BUTTONS - Remove book buttons (getter)
+ * @property {HTMLElement} BOOK_INFO_BUTTONS - Book info buttons (getter)
+ * @property {HTMLElement} BOOK_COVER_CONTAINERS - Book cover containers (getter)
  * @property {function} GET_TITLE - Getter for a title element by its ID
  * @property {function} GET_LINE - Getter for a line element by its ID
  * @property {HTMLElement} NOTIFICATION_CONTAINER - Getter for the notification container (getter)
@@ -203,6 +212,21 @@ export const DOM_ELEMENT = Object.freeze({
     },
     get HELP_BUTTON() {
         return document.getElementById("help-btn");
+    },
+    get SCROLL_TOP_BUTTON() {
+        return document.getElementById("scroll-top-btn");
+    },
+    get SCROLL_BOTTOM_BUTTON() {
+        return document.getElementById("scroll-bottom-btn");
+    },
+    get REMOVE_BOOK_BUTTONS() {
+        return document.querySelectorAll(".bookshelf .book .delete-btn");
+    },
+    get BOOK_INFO_BUTTONS() {
+        return document.querySelectorAll(".bookshelf .book .bookinfo-menu-btn");
+    },
+    get BOOK_COVER_CONTAINERS() {
+        return document.querySelectorAll(".bookshelf .book .cover-container");
     },
     GET_TITLE(titleID) {
         return document.getElementById(`title_${titleID}`);

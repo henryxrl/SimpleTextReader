@@ -6,15 +6,7 @@ The `manifests/` directory contains the configuration files required for various
 
 ## Structure Overview
 
-### 1. `manifests/`
-
-**Purpose**: Acts as the root directory containing platform-specific subdirectories and manifest files.
-
----
-
-### 2. Subdirectories and Files
-
-#### `Chrome/`
+### 1. `Chrome/`
 
 **Purpose**: Contains manifest files for Chrome-specific extensions.
 
@@ -24,7 +16,7 @@ The `manifests/` directory contains the configuration files required for various
 
 ---
 
-#### `Firefox/`
+### 2. `Firefox/`
 
 **Purpose**: Contains manifest files for Firefox-specific extensions.
 
@@ -34,7 +26,7 @@ The `manifests/` directory contains the configuration files required for various
 
 ---
 
-#### `PWA/`
+### 3. `PWA/`
 
 **Purpose**: Contains the manifest file for the Progressive Web App (PWA) version of the application.
 

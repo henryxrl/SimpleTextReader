@@ -27,7 +27,11 @@
         "ws": "^8.18.0"
     },
     "devDependencies": {
+        "canvas": "^3.1.0",
+        "finalhandler": "^2.1.0",
         "nodemon": "^3.1.7",
-        "prisma": "5.10.2"
+        "prisma": "5.10.2",
+        "puppeteer": "^24.10.1",
+        "serve-static": "^2.2.0"
     }
 }

@@ -278,7 +278,7 @@ export class TextProcessorCore {
      * @public
      */
     static getTitle(str) {
-        const current = str.trim();
+        const current = str.replace(REGEX_RULES.FOOTNOTE, "").trim();
         const isMatch = this.#REGEX_IS_TITLE.test(current);
         if (isMatch) {
             const { titleGroups, namedGroups, isCustomOnly } = this.#getTitleGroups(current);
@@ -467,42 +467,69 @@ export class TextProcessorCore {
     }
 
     /**
-     * Handle footnotes
-     * @param {string} str - The text containing footnotes.
-     * @returns {string} Processed text.
-     * @public
+     * Processes a line for footnotes: replaces all circled number markers in main text with anchor elements,
+     * and detects footnote definition lines. Tracks every event (anchor or footnote) into markerTimeline (global).
+     *
+     * @param {string} str - The input line of text (main content or footnote definition).
+     * @param {Array} markerTimeline - Tracks chronological appearance of anchors/footnotes.
+     * @param {number} lineNumber - The line number in the text.
+     * @param {Object} anchorCounters - Object tracking anchor counters for this marker in the file.
+     * @returns {Object} Returns:
+     *   - {string} line: The processed line with footnote anchors inserted, or "" if this is a footnote definition line.
+     *   - {string} marker: The marker character if this is a footnote definition line, otherwise "".
+     *   - {string} footnote: The footnote content if this is a footnote definition line, otherwise "".
      */
-    static makeFootNote(str, resetIndex = false) {
+    static makeFootNote(str, markerTimeline, lineNumber, anchorCounters) {
         let current = str.trim();
 
         // Find if footnote characters exist
         if (this.#REGEX_IS_FOOTNOTE.test(current)) {
             const allMatches = current.match(this.#REGEX_IS_FOOTNOTE);
 
-            if (allMatches.length == 1 && current.indexOf(allMatches[0]) == 0) {
-                // This is the actual footnote itself
-                return { line: "", footnote: current.slice(1) };
-            } else {
-                // main text
-                for (let i in allMatches) {
-                    // If resetIndex is true, reset the footnote index
-                    if (resetIndex) {
-                        this.#footnoteIndex = 0;
-                    } else {
-                        this.#footnoteIndex++;
-                    }
-                    // this.#logger.log("footnote.length", { CONFIG_VAR.VARS.FOOTNOTES.length });
-                    // this.#logger.log("Found footnote", { allMatches[i] });
-                    const curIndex = current.indexOf(allMatches[i]);
-                    current = `${current.slice(0, curIndex)}<a rel="footnote" href="#fn${
-                        this.#footnoteIndex
-                    }"><img class="footnote_img"/></a>${current.slice(curIndex + 1)}`;
-                    CONFIG_VAR.VARS.FOOTNOTES.push(allMatches[i]);
-                }
+            // Case 1: Footnote definition line (starts with marker)
+            if (current.indexOf(allMatches[0]) == 0) {
+                const marker = allMatches[0];
+                const markerCode = marker.codePointAt(0).toString(10);
+
+                markerTimeline.push({
+                    type: CONFIG_CONST.CONST_FOOTNOTE.TYPES.FOOTNOTE,
+                    marker,
+                    markerCode,
+                    lineNumber,
+                    content: current.slice(1).trim(),
+                    original: current,
+                });
+
+                return { line: "", marker, footnote: current.slice(1).trim() };
             }
+
+            // Case 2: Main text line, replace each circled marker with anchor
+            current = current.replace(this.#REGEX_IS_FOOTNOTE, (marker) => {
+                const markerCode = marker.codePointAt(0).toString(10);
+                const index = (anchorCounters[markerCode] = anchorCounters[markerCode] || 0);
+
+                // Add anchor event to markerTimeline
+                markerTimeline.push({
+                    type: CONFIG_CONST.CONST_FOOTNOTE.TYPES.ANCHOR,
+                    marker,
+                    markerCode,
+                    lineNumber,
+                    index,
+                });
+
+                anchorCounters[markerCode]++;
+                return (
+                    `<a rel="footnote" ` +
+                    `href="#fn-${markerCode}-${index}" ` +
+                    `data-linenumber="${lineNumber}" ` +
+                    `data-marker-code="${markerCode}" ` +
+                    `data-index="${index}" ` +
+                    `><img class="footnote_img" alt="${marker}"/></a>`
+                );
+            });
         }
 
-        return { line: current, footnote: "" };
+        return { line: current, marker: "", footnote: "" };
     }
 
     /**

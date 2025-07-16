@@ -1,5 +1,7 @@
 /**
  * @fileoverview TextDecoder adapter for different environments
+ *
+ * @module shared/adapters/text-decoder
  */
 
 /**

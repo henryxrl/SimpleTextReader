@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "易笺",
     "description": "txt（小说）阅读器：支持秒开本地的所有txt文件，自动排版，自动分页，自动生成目录，记录阅读进度。",
-    "version": "1.6.9.3",
+    "version": "1.6.9.4",
     "background": {
         "scripts": [
             "client/app/extension/activate.js"
@@ -24,7 +24,7 @@
             "run_at": "document_start"
         }
     ],
-    "content_security_policy": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'",
+    "content_security_policy": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; font-src 'self' https://fontsapi.zeoseven.com blob:",
     "icons": {
         "24": "client/images/icon24.png",
         "64": "client/images/icon64.png",

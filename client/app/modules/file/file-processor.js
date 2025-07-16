@@ -2,21 +2,24 @@
  * @fileoverview FileProcessor module for processing files
  *
  * @module client/app/modules/file/file-processor
+ * @requires client/app/config/index
+ * @requires shared/core/callback/callback-registry
  * @requires shared/core/file/file-processor-core
  * @requires client/app/modules/components/cover-animation
- * @requires client/app/config/index
  * @requires client/app/utils/base
  * @requires client/app/utils/helpers-worker
  */
 
+import * as CONFIG from "../../config/index.js";
+import { cbReg } from "../../../../shared/core/callback/callback-registry.js";
 import { FileProcessorCore } from "../../../../shared/core/file/file-processor-core.js";
 import { CoverAnimation } from "../components/cover-animation.js";
-import * as CONFIG from "../../config/index.js";
+import { getFootnotes } from "../features/footnotes.js";
 import {
     randomFloatFromInterval,
     addFootnotesToDOM,
-    triggerCustomEvent,
     getBookCoverCanvas,
+    pairAnchorsAndFootnotes,
 } from "../../utils/base.js";
 import { createWorker } from "../../utils/helpers-worker.js";
 
@@ -53,7 +56,7 @@ export class FileProcessor extends FileProcessorCore {
         // CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING = (document.documentElement.getAttribute("respectUserLangSetting") === "true");
         // console.log("this.isEasternLan: ", this.isEasternLan);
         if (!CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING) {
-            triggerCustomEvent("updateUILanguage", {
+            cbReg.go("updateUILanguage", {
                 lang: this.isEasternLan ? "zh" : "en",
                 saveToLocalStorage: false,
             });
@@ -176,8 +179,16 @@ export class FileProcessor extends FileProcessorCore {
         this.footnoteCounter = result.footnoteCounter;
         this.pageBreaks = result.pageBreaks;
 
-        // Add footnotes to DOM
-        addFootnotesToDOM(this.footnotes, CONFIG.DOM_ELEMENT.FOOTNOTE_CONTAINER);
+        // [Deprecated] Add footnotes to DOM
+        // addFootnotesToDOM(this.footnotes, CONFIG.DOM_ELEMENT.FOOTNOTE_CONTAINER);
+        // [New] Set the lookup function for the current chunk/footnotes
+        const pairedFootnotes = pairAnchorsAndFootnotes(this.footnotes);
+        getFootnotes().setFootnoteLookup((markerCode, index) => {
+            // console.log("LOOKUP:", markerCode, index, pairedFootnotes[markerCode][index], pairedFootnotes[markerCode]);
+            // console.log("footnotes: ", this.footnotes);
+            index = Number(index);
+            return pairedFootnotes[markerCode]?.[index] || CONFIG.CONST_FOOTNOTE.NOTFOUND;
+        });
 
         if (operation === "processRemainingContent") {
             this.isProcessingComplete = true;

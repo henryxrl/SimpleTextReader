@@ -2,7 +2,7 @@
  * @fileoverview Database management module that provides core database operations
  * using Prisma client. Handles database connections, transactions, and CRUD operations.
  *
- * @module database
+ * @module server/app/database/db-manager
  * @requires @prisma/client
  * @requires server/app/middleware/error
  */

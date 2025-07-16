@@ -6,7 +6,7 @@ WORKDIR /app
 COPY server/package*.json ./server/
 
 # Install server dependencies
-RUN cd server && npm install && cd ..
+RUN cd server && npm install --production && cd ..
 
 # Create client/app directory and its package.json
 RUN mkdir -p ./client/app && \

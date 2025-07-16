@@ -6,13 +6,12 @@
  * @requires shared/utils/logger.js
  */
 
-import { importDependencies } from "../../utils/helpers-worker.js";
-
 /**
  * Handles authenticated file fetching
  * @param {Object} e - Message event
  */
 self.onmessage = async (e) => {
+    const { importDependencies } = await import("../../utils/helpers-worker.js");
     const { filename, loadContent } = e.data;
     let logger = null;
 

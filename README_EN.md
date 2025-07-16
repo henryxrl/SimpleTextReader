@@ -82,7 +82,9 @@ Big thanks to [CataeroGong](https://github.com/cataerogong) for his amazing help
 
 10. Support for up to 3 custom fonts (TTF or OTF formats)
 
-11. Sleek, modern UI design
+11. Support for twelve web fonts (requires internet connection): QIJIC, ST DongGuanTi, Allseto, Huiwen Mincho, Huiwen Fangsong, Huiwen ZhengKai, Tsanger YuMo, Tsanger YuYangT, ClearHan Serif, LXGW Neo XiHei, Chill RoundM, and Chill Kai
+
+12. Sleek, modern UI design
 
 ## Usage
 
@@ -159,15 +161,15 @@ Big thanks to [CataeroGong](https://github.com/cataerogong) for his amazing help
 
 ### Chrome
 
-- [SimpleTextReader (v1.6.9.3)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
+- [SimpleTextReader (v1.6.9.4)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
 
 ### Firefox
 
-- [SimpleTextReader (v1.6.9.3)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
+- [SimpleTextReader (v1.6.9.4)](https://addons.mozilla.org/en-US/firefox/addon/yijian/)
 
 ### Edge
 
-- [SimpleTextReader (v1.6.9.3)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
+- [SimpleTextReader (v1.6.9.4)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
 
 ### Docker
 
@@ -257,19 +259,33 @@ To use URL parameters, append `?param` to the end of the URL. To use multiple pa
         <img src="assets/6_custom_fonts_en.png" width="49%" alt="Bookshelf2" />
     </div>
 
-9. Added a notification system.
+9. Support for web fonts (requires internet connection, v1.6.9.4). The following fonts are currently supported:
 
-10. "Finishing up" reading progress indicator.
+    - QIJIC
 
-11. Optimized book cover generation.
+    - Allseto
 
-12. Smoother UI language switching.
+    - ST DongGuanTi
 
-13. Updated default font to "Kinghwa Old Song" to avoid potential copyright issues.
+    - Clear Han Serif
 
-14. Support for browser history navigation.
+    - LXGW Neo XiHei
 
-15. Resolved various minor bugs, enhancing stability and user experience.
+    - Chill Kai
+
+10. Added a notification system.
+
+11. "Finishing up" reading progress indicator.
+
+12. Optimized book cover generation.
+
+13. Smoother UI language switching.
+
+14. Updated default font to "Kinghwa Old Song" to avoid potential copyright issues.
+
+15. Support for browser history navigation.
+
+16. Resolved various minor bugs, enhancing stability and user experience.
 
 **NOTE: Starting from v1.6, the No-UI version has been discontinued. All features previously available in the No-UI version, including support for opening local `.txt` files via `file://*.txt` URLs, are now fully integrated into the Regular version.**
 

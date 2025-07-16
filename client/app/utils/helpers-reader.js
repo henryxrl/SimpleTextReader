@@ -11,10 +11,12 @@
  *
  * @module client/app/utils/helpers-reader
  * @requires client/app/config/index
+ * @requires shared/core/callback/callback-registry
  * @requires client/app/utils/base
  */
 
 import * as CONFIG from "../config/index.js";
+import { cbReg } from "../../../shared/core/callback/callback-registry.js";
 import { isInViewport, isInContainerViewport, getScrollY } from "./base.js";
 
 /**
@@ -314,8 +316,9 @@ export async function setChapterTitleActive(titleID) {
         { behavior: "instant" }
     );
 
+    // Wait for the ToC to be rendered
     const e = await waitForTocRendered();
-    // console.log("ToC Rendered Event Triggered:", e.detail);
+    // console.log("ToC Rendered Event Triggered:", e);
 
     // Check again for the title after rendering
     const renderedTitle = CONFIG.DOM_ELEMENT.GET_TITLE(titleID);
@@ -444,14 +447,7 @@ function getPercentageOfTitleInAllTitles(target) {
  */
 async function waitForTocRendered() {
     return new Promise((resolve) => {
-        // Use once:true to ensure the listener is triggered only once
-        document.addEventListener(
-            "tocRendered",
-            (e) => {
-                resolve(e); // Resolve the promise when the event is dispatched
-            },
-            { once: true } // Automatically removes the listener after execution
-        );
+        cbReg.once("tocRendered", resolve);
     });
 }
 

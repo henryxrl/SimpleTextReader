@@ -33,8 +33,9 @@ class CustomColorPicker {
      * @param {Function} func - Callback function to be called when color picker input changes
      * @public
      */
-    constructor(func) {
-        this.func = func;
+    constructor(callbackOnInput, callbackOnChange) {
+        this.callbackOnInput = callbackOnInput;
+        this.callbackOnChange = callbackOnChange;
         this.#init();
     }
 
@@ -101,12 +102,18 @@ class CustomColorPicker {
 
                 // Called when color input changes
                 onInput: (c) => {
+                    // console.log("onInput", c);
                     colorInput.value = c;
                     colorInput.style.setProperty("--color", c);
-                    this.func();
+                    requestAnimationFrame(() => {
+                        this.callbackOnInput();
+                    });
                 },
 
-                // onChange: console.log
+                onChange: (c) => {
+                    // console.log("onChange", c);
+                    this.callbackOnChange();
+                },
             });
 
             // Set initial position for color picker
@@ -152,10 +159,12 @@ class CustomColorPicker {
 
 /**
  * Creates and initializes a new CustomColorPicker instance
- * @param {Function} func - Callback function to be called when color picker input changes
+ * @param {Object} options - Callback functions to be called when color picker input changes
+ * @param {Function} options.callbackOnInput - Callback function to be called when color picker input changes
+ * @param {Function} options.callbackOnChange - Callback function to be called when color picker input changes
  * @returns {CustomColorPicker} New CustomColorPicker instance
  * @public
  */
-export function getColorPicker(func) {
-    return new CustomColorPicker(func);
+export function getColorPicker({ callbackOnInput = () => {}, callbackOnChange = () => {} } = {}) {
+    return new CustomColorPicker(callbackOnInput, callbackOnChange);
 }

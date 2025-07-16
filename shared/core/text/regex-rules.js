@@ -145,6 +145,8 @@ export const REGEX_RULES = {
  * Ads rules generator
  * Generates regex rules used to clean ad text based on book information.
  * @param {Object} bookAndAuthor - Book and author information object.
+ * @param {string} bookAndAuthor.bookName - Book name.
+ * @param {string} bookAndAuthor.author - Author name.
  * @param {string} bookAndAuthor.bookNameRE - Regex pattern for book name.
  * @param {string} bookAndAuthor.authorRE - Regex pattern for author name.
  * @returns {Object} Object containing regex rules for various sources.
@@ -189,7 +191,7 @@ export const generateAdsRules = (bookAndAuthor) => ({
         `^(\\s*(${REGEX_RULES.HTTP}bbs.dospy.com${REGEX_RULES.HTTP_END})\\s*)$`,
         `^(\\s*(\\[)?${bookAndAuthor.bookNameRE}\\s*(\\/)?\\s*${bookAndAuthor.authorRE}\\s*(著)?\\s*(\\])?\\s*$)`,
         `^(\\s*(\\[)?${bookAndAuthor.bookName}\\s*(\\/)?\\s*${bookAndAuthor.author}\\s*(著)?\\s*(\\])?\\s*$)`,
-        "^(\\s*[-※★☆◎…━┏┓┗┛]+\\s*$)",
+        `^(\\s*${REGEX_RULES.SYMBOLS}\\s*$)`,
         `^(\\s*(本电子书由)${REGEX_RULES.SOMESTRINGS}(整理制作)${REGEX_RULES.PUNC}$)`,
         `^(\\s*(本书由)${REGEX_RULES.SOMESTRINGS}(整理制作)${REGEX_RULES.PUNC}$)`,
         `^(\\s*(文本由)${REGEX_RULES.SOMESTRINGS}(整理制作)${REGEX_RULES.PUNC}$)`,

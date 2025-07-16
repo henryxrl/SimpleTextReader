@@ -82,7 +82,9 @@
 
 10. 可添加最多 3 种自定义字体（支持 TTF 或 OTF 格式）
 
-11. 颜值高，颜值高，颜值高
+11. 支持十二款网络字体（需联网使用）：黄令东齐伋复刻体、上图东观体、全瀨體、匯文明朝體、匯文仿宋、匯文正楷、仓耳与墨、仓耳渔阳体、屏显臻宋、霞鹜新晰黑、寒蝉半圆体、寒蝉正楷体
+
+12. 颜值高，颜值高，颜值高
 
 ## 使用
 
@@ -159,15 +161,15 @@
 
 ### Chrome 插件
 
-- [易笺 (v1.6.9.3)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
+- [易笺 (v1.6.9.4)](https://chrome.google.com/webstore/detail/%E6%98%93%E7%AC%BA/dbanahlbopbjpgdkecmclbbonhpohcaf)
 
 ### 火狐插件
 
-- [易笺 (v1.6.9.3)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
+- [易笺 (v1.6.9.4)](https://addons.mozilla.org/zh-CN/firefox/addon/yijian/)
 
 ### Edge 插件
 
-- [易笺 (v1.6.9.3)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
+- [易笺 (v1.6.9.4)](https://microsoftedge.microsoft.com/addons/detail/pabihehbdhldbdliffaddllmjlknmpak)
 
 ### Docker
 
@@ -257,19 +259,33 @@ henryxrl/simpletextreader:latest
         <img src="assets/6_custom_fonts_zh.png" width="49%" alt="Bookshelf2" />
     </div>
 
-9. 新增消息通知系统
+9. 支持网络字体（需联网使用，v1.6.9.4）。目前支持以下字体：
 
-10. 新增“快读完”的阅读进度提示
+    - 黄令东齐伋复刻体
 
-11. 优化书籍封面生成逻辑
+    - 全瀨體
 
-12. 更流畅的界面语言切换
+    - 上图东观体
 
-13. 改用京华老宋体作为默认字体，以规避可能的版权问题
+    - 屏显臻宋
 
-14. 支持浏览器历史导航
+    - 霞鹜新晰黑
 
-15. 修复若干 Bug，提升了稳定性和用户体验
+    - 寒蝉正楷体
+
+10. 新增消息通知系统
+
+11. 新增“快读完”的阅读进度提示
+
+12. 优化书籍封面生成逻辑
+
+13. 更流畅的界面语言切换
+
+14. 改用京华老宋体作为默认字体，以规避可能的版权问题
+
+15. 支持浏览器历史导航
+
+16. 修复若干 Bug，提升了稳定性和用户体验
 
 **注：从 v1.6 开始，不再支持无界面（No-UI）版本。无界面版本中的所有功能（包括通过 `file://*.txt` URL 打开本地 `.txt` 文件）现已完全集成到正常版本中。**
 

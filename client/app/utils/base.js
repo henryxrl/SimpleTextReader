@@ -568,6 +568,20 @@ export function isEllipsisActive(element) {
         return false;
     }
 
+    // Check if element has footnote indicator
+    function getFootnoteIndicator(el) {
+        const footnote = el.querySelector('a[rel="footnote"]');
+        return {
+            has: !!footnote,
+            node: footnote,
+        };
+    }
+    let footnoteWidth = 0;
+    const hasFootnote = getFootnoteIndicator(element);
+    if (hasFootnote.has) {
+        footnoteWidth = hasFootnote.node.getBoundingClientRect().width;
+    }
+
     // Get the computed styles
     const computedStyle = window.getComputedStyle(element);
     const font = computedStyle.font || `${computedStyle.fontSize} ${computedStyle.fontFamily}`;
@@ -579,10 +593,11 @@ export function isEllipsisActive(element) {
 
     // Measure the actual width of the text in pixels
     const text = element.textContent.trim();
-    const textWidth = context.measureText(text).width;
+    const textWidth = context.measureText(text).width + footnoteWidth;
 
     // Compare the text width with the element's visible width
-    return textWidth > element.clientWidth;
+    // return textWidth > element.clientWidth;
+    return textWidth > element.getBoundingClientRect().width;
 }
 
 /**
@@ -640,21 +655,96 @@ export function outerHeight(element) {
 }
 
 /**
- * Adds footnotes to the DOM
+ * Adds footnotes to the DOM (for { [markerCode]: { [order]: {content, ...} } } structure).
  * @public
- * @param {Array<string>} footnotes - Array of footnote strings
+ * @param {Object} footnotesObj - The nested footnotes object.
  * @param {HTMLElement} footnoteContainer - Footnote container element
+ * @note Calling this function will create a visible list of all footnotes in the DOM.
+ *       While this approach works, it is not optimal for documents with many footnotes,
+ *       as it can add a large number of DOM elements and impact performance.
+ *       For better scalability and performance, use the Footnotes popup system with
+ *       setFootnoteLookup() to display footnotes dynamically as needed.
  */
-export function addFootnotesToDOM(footnotes, footnoteContainer) {
-    // clear footnote container
+export function addFootnotesToDOM(footnotesObj, footnoteContainer) {
     footnoteContainer.innerHTML = "";
 
-    // add footnotes to footnote container
-    footnotes.forEach((footnote) => {
+    // Gather entries in markerCode, then order order.
+    const entries = [];
+    for (const markerCode of Object.keys(footnotesObj).sort((a, b) => Number(a) - Number(b))) {
+        const ordersObj = footnotesObj[markerCode];
+        for (const order of Object.keys(ordersObj).sort((a, b) => Number(a) - Number(b))) {
+            const footnote = ordersObj[order];
+            // Compose footnote HTML string with correct id (same as anchor href)
+            entries.push({
+                html: `<li id="fn-${markerCode}-${order}">${footnote.content}</li>`,
+                markerCode,
+                order,
+            });
+        }
+    }
+
+    // Create an ordered list for display (optional; or use a custom wrapper)
+    const ol = document.createElement("ol");
+    entries.forEach(({ html }) => {
         const tempElement = document.createElement("div");
-        tempElement.innerHTML = footnote;
-        footnoteContainer.appendChild(tempElement.firstChild);
+        tempElement.innerHTML = html;
+        ol.appendChild(tempElement.firstChild);
     });
+
+    footnoteContainer.appendChild(ol);
+}
+
+/**
+ * Pairs anchors and footnotes from a unified timeline.
+ * @param {Array} timeline - Array of events (anchors and footnotes) in chronological order.
+ * @returns {Object} pairedFootnotes: { [markerCode]: [footnote or notfound HTML] }
+ */
+export function pairAnchorsAndFootnotes(timeline) {
+    const pairedFootnotes = {};
+    const anchorQueue = [];
+    let lastType = null;
+
+    // Check timeline
+    if (!Array.isArray(timeline)) {
+        // console.warn("Invalid timeline provided to pairAnchorsAndFootnotes");
+        return pairedFootnotes;
+    }
+
+    // Pair anchors and footnotes
+    timeline.forEach((item) => {
+        if (item.type === CONFIG_CONST.CONST_FOOTNOTE.TYPES.ANCHOR) {
+            if (lastType === CONFIG_CONST.CONST_FOOTNOTE.TYPES.FOOTNOTE) {
+                // Flush excessive anchors from previous group
+                anchorQueue.forEach((a) => {
+                    if (!pairedFootnotes[a.markerCode]) pairedFootnotes[a.markerCode] = [];
+                    pairedFootnotes[a.markerCode][a.index] = CONFIG_CONST.CONST_FOOTNOTE.NOTFOUND;
+                });
+                anchorQueue.length = 0;
+            }
+            anchorQueue.push(item);
+            lastType = CONFIG_CONST.CONST_FOOTNOTE.TYPES.ANCHOR;
+        } else if (item.type === CONFIG_CONST.CONST_FOOTNOTE.TYPES.FOOTNOTE) {
+            const idx = anchorQueue.findIndex((a) => a.markerCode === item.markerCode);
+            if (idx !== -1) {
+                const anchor = anchorQueue.splice(idx, 1)[0];
+                if (!pairedFootnotes[item.markerCode]) pairedFootnotes[item.markerCode] = [];
+                pairedFootnotes[item.markerCode][anchor.index] = item.content;
+            } else {
+                // Unpaired footnote, handle if needed
+            }
+            lastType = CONFIG_CONST.CONST_FOOTNOTE.TYPES.FOOTNOTE;
+        }
+    });
+
+    // Final flush: leftover anchors after all events
+    if (anchorQueue.length > 0) {
+        anchorQueue.forEach((a) => {
+            if (!pairedFootnotes[a.markerCode]) pairedFootnotes[a.markerCode] = [];
+            pairedFootnotes[a.markerCode][a.index] = CONFIG_CONST.CONST_FOOTNOTE.NOTFOUND;
+        });
+    }
+
+    return pairedFootnotes;
 }
 
 /**
@@ -671,7 +761,6 @@ export function triggerCustomEvent(eventName, detail = {}, bubbles = true, cance
         bubbles,
         cancelable,
     });
-
     document.dispatchEvent(e);
 }
 
@@ -716,11 +805,11 @@ export function constructNotificationMessageFromArray(baseText, itemList, option
             : "";
     const itemNames = itemList
         .slice(0, maxItems)
-        .map((item) => (isEnglish ? `"${item}"` : `“${item}”`))
+        .map((item) => (isEnglish ? `"${truncateText(item)}"` : `“${truncateText(item)}”`))
         .join(",\n");
     const moreItems = itemList.length > maxItems ? `,\n...${suffixMore}` : "";
 
-    return `${baseText}${baseTextSuffix}${itemNames}${moreItems}`;
+    return `${baseText}${baseTextSuffix}\n${itemNames}${moreItems}`;
 }
 
 /**
@@ -793,6 +882,21 @@ export async function fetchHelpText(url = "help.json") {
         transform: (data) => data ?? null,
         defaultValue: null,
         errorPrefix: "Error fetching help text",
+    });
+}
+
+/**
+ * Fetches the font baseline offsets from a JSON file.
+ * @public
+ * @async
+ * @param {string} url - The URL of the JSON file containing the font baseline offsets.
+ * @returns {Promise<Object>} A promise that resolves to the font baseline offsets object, or null if not found.
+ */
+export async function fetchFontBaselineOffsets(url = "font_baseline_offsets.json") {
+    return fetchJSON(url, {
+        transform: (data) => data ?? null,
+        defaultValue: null,
+        errorPrefix: "Error fetching font baseline offsets",
     });
 }
 
@@ -970,6 +1074,29 @@ export function debounce(func, wait) {
 }
 
 /**
+ * Creates a stylesheet element
+ * @public
+ * @param {string} href - The href of the stylesheet
+ * @returns {HTMLLinkElement} The created stylesheet element, or the existing stylesheet element if it already exists
+ */
+export function createStylesheet(href) {
+    // Check if the stylesheet already exists, if so, return it
+    const fileName = href.split("/").pop();
+    const existingStylesheet = getStylesheet(fileName);
+    if (existingStylesheet) {
+        return existingStylesheet;
+    }
+
+    // Create the stylesheet element
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href;
+    link.crossOrigin = "anonymous";
+    document.head.appendChild(link);
+    return link;
+}
+
+/**
  * Retrieves the stylesheet object for a given name
  * @param {string} name - The name of the stylesheet to retrieve
  * @returns {CSSStyleSheet | null} The stylesheet object, or null if not found.
@@ -1035,4 +1162,222 @@ export function getScrollY() {
     } else {
         return document.documentElement.scrollTop || 0;
     }
+}
+
+/**
+ * Converts a snake_case string to camelCase.
+ *
+ * @param {string} str - The snake_case input string.
+ * @returns {string} The converted camelCase string.
+ *
+ * @example
+ *   snakeToCamel("pagination_bottom"); // returns "paginationBottom"
+ *   snakeToCamel("some_long_snake_case"); // returns "someLongSnakeCase"
+ */
+export function snakeToCamel(str) {
+    return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+}
+
+/**
+ * Sets a deeply nested property on an object, given a dot/bracket notation path.
+ *
+ * @param {Object} obj - The object to set the property on.
+ * @param {string|string[]} path - The path to the property (dot/bracket notation or array of keys).
+ * @param {*} value - The value to set.
+ * @returns {boolean} True if set successfully, false if failed.
+ *
+ * @example
+ * setDeep(CONFIG, 'CONST_CONFIG.SHOW_FILTER_BAR', true);
+ * setDeep(CONFIG, ['CONST_CONFIG', 'SHOW_FILTER_BAR'], true);
+ * setDeep(window, 'foo.bar[2].baz', 123);
+ */
+export function setDeep(obj, path, value) {
+    if (typeof path === "string") {
+        // Split dot/bracket notation into keys, e.g. a.b[1].c => ['a','b','1','c']
+        path = path
+            .replace(/\[(\w+)\]/g, ".$1") // convert [key] to .key
+            .replace(/^\./, "") // remove leading dot
+            .split(".");
+    }
+    if (!Array.isArray(path)) return false;
+    let cur = obj;
+    for (let i = 0; i < path.length - 1; i++) {
+        const key = path[i];
+        // If prop doesn't exist or isn't an object, create plain object
+        if (!(key in cur) || (typeof cur[key] !== "object" && typeof cur[key] !== "function")) {
+            cur[key] = {};
+        }
+        cur = cur[key];
+    }
+    cur[path[path.length - 1]] = value;
+    return true;
+}
+
+/**
+ * Checks if the browser is Safari
+ * @public
+ * @returns {boolean} True if the browser is Safari, false otherwise
+ */
+export function isSafari() {
+    const ua = navigator.userAgent;
+    const isSafari = /^((?!chrome|chromium|android).)*safari/i.test(ua);
+    return isSafari;
+}
+
+/**
+ * Checks if the browser is Firefox-based
+ * @public
+ * @returns {boolean} True if the browser is Firefox-based, false otherwise
+ */
+export function isFirefoxBased() {
+    const ua = navigator.userAgent.toLowerCase();
+    return ua.includes("firefox") && !ua.includes("seamonkey");
+}
+
+/**
+ * Detects if the current environment is Windows.
+ * Supports both Node.js and browser environments.
+ * @returns {boolean} True if running on Windows, false otherwise.
+ */
+export function isWindows() {
+    // Node.js
+    if (typeof process !== "undefined" && process.platform) {
+        return process.platform === "win32";
+    }
+    // Browser
+    if (typeof navigator !== "undefined") {
+        return /Win/.test(navigator.platform) || /Windows/.test(navigator.userAgent);
+    }
+    // Fallback (unknown environment)
+    return false;
+}
+
+/**
+ * Detects if the current environment is macOS.
+ * Supports both Node.js and browser environments.
+ * @returns {boolean} True if running on macOS, false otherwise.
+ */
+export function isMac() {
+    // Node.js
+    if (typeof process !== "undefined" && process.platform) {
+        return process.platform === "darwin";
+    }
+    // Browser
+    if (typeof navigator !== "undefined") {
+        return /Mac/.test(navigator.platform) || /Mac OS X/.test(navigator.userAgent);
+    }
+    // Fallback (unknown environment)
+    return false;
+}
+
+/**
+ * Computes the vertical and horizontal offsets for font alignment based on baseline offsets.
+ * @param {string} fontName - The CSS font-family name (should match the key in baselineOffsets).
+ * @param {number|string|HTMLElement|Array<number|string|HTMLElement>} fontSizeOrElement - Font size as a number, CSS string (e.g., "18px"), or HTMLElement to extract from, or an array of these.
+ * @param {Object} baselineOffsets - Mapping: { fontFamily: normalizedOffset }.
+ * @returns {Object|Array<Object>} Object with { fontSizeValue, fontSizeUnit, baselineOffset, verticalOffset, horizontalOffset } or an array of these.
+ *    - fontSizeValue: Numeric font size.
+ *    - fontSizeUnit: Unit (e.g., "px").
+ *    - baselineVerticalOffset: Normalized vertical baseline offset (usually per 1 fontSize).
+ *    - baselineHorizontalOffset: Normalized horizontal baseline offset (usually per 1 fontSize).
+ *    - verticalOffset: The actual pixel vertical offset to apply (baselineVerticalOffset * fontSizeValue), or 0 if not found.
+ *    - horizontalOffset: The actual pixel horizontal offset to apply (baselineHorizontalOffset * fontSizeValue), or 0 if not found.
+ */
+export function getFontOffsets(fontName, fontSizeOrElement, baselineOffsets) {
+    // Helper for one item
+    function calcOne(fsOrEl) {
+        let fontSizeValue = 0;
+        let fontSizeUnit = "px";
+        // Clean font name: trim and remove quotes if present
+        const key = (fontName || "").trim().replace(/^['"]|['"]$/g, "");
+
+        // 1. Parse font size from number, string, or HTMLElement
+        if (typeof fsOrEl === "number") {
+            fontSizeValue = fsOrEl;
+        } else if (typeof fsOrEl === "string") {
+            const match = fsOrEl.match(/^([\d.]+)([a-z%]+)$/i);
+            if (match) {
+                fontSizeValue = parseFloat(match[1]);
+                fontSizeUnit = match[2];
+            }
+        } else if (fsOrEl instanceof HTMLElement) {
+            const fontSize = getComputedStyle(fsOrEl).getPropertyValue("font-size");
+            const match = fontSize.match(/^([\d.]+)([a-z%]+)$/i);
+            if (match) {
+                fontSizeValue = parseFloat(match[1]);
+                fontSizeUnit = match[2];
+            }
+        }
+
+        // 1.5. Convert em to px
+        if (fontSizeUnit === "em") {
+            fontSizeValue = getSizePrecise(`${fontSizeValue}${fontSizeUnit}`);
+            fontSizeUnit = "px";
+        }
+
+        // 2. Find offset
+        const baselineOffset = baselineOffsets?.[key] ?? { vertical: 0, horizontal: 0 };
+        const baselineVerticalOffset = baselineOffset.vertical;
+        const baselineHorizontalOffset = baselineOffset.horizontal;
+
+        // 3. Compute actual pixel offset
+        let verticalOffset =
+            isFinite(baselineVerticalOffset) && isFinite(fontSizeValue) ? baselineVerticalOffset * fontSizeValue : 0;
+        let horizontalOffset =
+            isFinite(baselineHorizontalOffset) && isFinite(fontSizeValue)
+                ? baselineHorizontalOffset * fontSizeValue
+                : 0;
+
+        // console.log(fontSizeValue, fontSizeUnit, baselineOffset, verticalOffset);
+        let result = {
+            fontSizeValue,
+            fontSizeUnit,
+            baselineVerticalOffset,
+            baselineHorizontalOffset,
+            verticalOffset,
+            horizontalOffset,
+        };
+
+        // Only adjust horizontal offset in Firefox or not on Mac
+        if (!isMac() || isFirefoxBased()) {
+            result.verticalOffset = 0;
+        }
+
+        return result;
+    }
+
+    // If input is an array, map over it
+    if (Array.isArray(fontSizeOrElement)) {
+        return fontSizeOrElement.map(calcOne);
+    }
+    // If input is an object, map over it
+    if (typeof fontSizeOrElement === "object") {
+        return Object.fromEntries(Object.entries(fontSizeOrElement).map(([key, value]) => [key, calcOne(value)]));
+    }
+    // Otherwise, single value
+    return calcOne(fontSizeOrElement);
+}
+
+/**
+ * Truncates a text to a maximum length
+ * @param {string} text - The text to truncate
+ * @param {number} maxLength - The maximum length of the text
+ * @returns {string} The truncated text
+ */
+export function truncateText(text, maxLength = 50) {
+    // Check if maxLength is a positive integer
+    if (typeof maxLength !== "number" || maxLength <= 0) {
+        maxLength = 100;
+    }
+    // Check if text is a string
+    if (typeof text !== "string") {
+        return "";
+    }
+    // Check if text is empty
+    if (!text) return "";
+    // Check if text is longer than maxLength
+    if (text.length > maxLength) {
+        return text.slice(0, maxLength) + "...";
+    }
+    return text;
 }

@@ -12,7 +12,7 @@
  * @requires client/app/config/index
  * @requires shared/utils/logger
  * @requires client/app/modules/features/reader
- * @requires shared/core/file/fileload-callback
+ * @requires shared/core/callback/callback-registry
  * @requires client/app/modules/text/text-processor
  * @requires client/app/modules/file/file-processor
  * @requires client/app/modules/components/popup-manager
@@ -26,17 +26,19 @@
 import * as CONFIG from "../../config/index.js";
 import { Logger } from "../../../../shared/utils/logger.js";
 import { reader } from "../features/reader.js";
-import { FileLoadCallback } from "../../../../shared/core/file/fileload-callback.js";
+import { cbReg } from "../../../../shared/core/callback/callback-registry.js";
 import { TextProcessor } from "../text/text-processor.js";
 import { FileProcessor } from "./file-processor.js";
 import { PopupManager } from "../components/popup-manager.js";
+import { getFootnotes } from "../features/footnotes.js";
 import {
     removeFileExtension,
     randomFloatFromInterval,
     formatBytes,
     addFootnotesToDOM,
-    triggerCustomEvent,
+    pairAnchorsAndFootnotes,
     constructNotificationMessageFromArray,
+    isSafari,
 } from "../../utils/base.js";
 import {
     hideDropZone,
@@ -48,6 +50,7 @@ import {
     showContent,
     resetUI,
     resetVars,
+    getCurrentDisplayLanguage,
 } from "../../utils/helpers-ui.js";
 import {
     getIsFromLocal,
@@ -114,8 +117,8 @@ export class FileHandler {
     static #checkShowBookshelfBtn() {
         this.#logger.log("FileHandler #checkShowBookshelfBtn");
         if (this.#dbSaveComplete && this.#processingComplete) {
-            this.#logger.log("FileHandler #checkShowBookshelfBtn triggerCustomEvent");
-            triggerCustomEvent("showBookshelfTriggerBtn");
+            this.#logger.log("FileHandler #checkShowBookshelfBtn callbackRegistry.fire");
+            cbReg.go("showBookshelfTriggerBtn");
             this.#dbSaveComplete = false;
             this.#processingComplete = false;
         }
@@ -184,19 +187,35 @@ export class FileHandler {
 
         // Handle incorrect font files
         if (incorrectFonts.length > 0) {
-            PopupManager.showNotification({
-                iconName: "FONT_FILE_INVALID",
-                iconColor: "error",
-                text: constructNotificationMessageFromArray(
-                    CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_fontFileInvalid,
-                    incorrectFonts,
-                    {
-                        language: CONFIG.RUNTIME_VARS.WEB_LANG,
-                        maxItems: 3,
-                        messageSuffix: CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_andMore,
-                    }
-                ),
-            });
+            if (isSafari()) {
+                PopupManager.showNotification({
+                    iconName: "SAFARI",
+                    iconColor: "error",
+                    text: constructNotificationMessageFromArray(
+                        CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_fontNotSupportedInSafari,
+                        incorrectFonts,
+                        {
+                            language: getCurrentDisplayLanguage(),
+                            maxItems: 3,
+                            messageSuffix: CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_andMore,
+                        }
+                    ),
+                });
+            } else {
+                PopupManager.showNotification({
+                    iconName: "FONT_FILE_INVALID",
+                    iconColor: "error",
+                    text: constructNotificationMessageFromArray(
+                        CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_fontFileInvalid,
+                        incorrectFonts,
+                        {
+                            language: getCurrentDisplayLanguage(),
+                            maxItems: 3,
+                            messageSuffix: CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_andMore,
+                        }
+                    ),
+                });
+            }
         }
 
         // Handle invalid files
@@ -208,7 +227,7 @@ export class FileHandler {
                     CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_wrongFileType,
                     invalidFiles,
                     {
-                        language: CONFIG.RUNTIME_VARS.WEB_LANG,
+                        language: getCurrentDisplayLanguage(),
                         maxItems: 3,
                         messageSuffix: CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_andMore,
                     }
@@ -229,7 +248,7 @@ export class FileHandler {
                     CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_fileSizeLimit,
                     largeTxtFiles.map((file) => file.name),
                     {
-                        language: CONFIG.RUNTIME_VARS.WEB_LANG,
+                        language: getCurrentDisplayLanguage(),
                         maxItems: 3,
                         messageSuffix: CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_andMore,
                     }
@@ -249,7 +268,7 @@ export class FileHandler {
         // Handle font files
         if (fontFiles.length > 0) {
             // await resetUI();
-            triggerCustomEvent("handleMultipleFonts", {
+            cbReg.go("handleMultipleFonts", {
                 files: fontFiles,
             });
         }
@@ -268,7 +287,7 @@ export class FileHandler {
             resetVars();
             // Trigger different events based on whether files should be loaded
             const eventName = loadFiles ? "handleMultipleBooks" : "handleMultipleBooksWithoutLoading";
-            triggerCustomEvent(eventName, {
+            cbReg.go(eventName, {
                 files: txtFiles,
                 isFromLocal,
                 isOnServer,
@@ -281,7 +300,7 @@ export class FileHandler {
                         CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_bookAdded,
                         txtFiles.map((file) => file.name),
                         {
-                            language: CONFIG.RUNTIME_VARS.WEB_LANG,
+                            language: getCurrentDisplayLanguage(),
                             maxItems: 3,
                             messageSuffix: CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_andMore,
                         }
@@ -301,7 +320,7 @@ export class FileHandler {
             //         CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_bookAdded,
             //         [singleFile.name],
             //         {
-            //             language: CONFIG.RUNTIME_VARS.WEB_LANG,
+            //             language: getCurrentDisplayLanguage(),
             //             maxItems: 3,
             //             messageSuffix: CONFIG.RUNTIME_VARS.STYLE.ui_notification_text_andMore,
             //         }
@@ -386,14 +405,14 @@ export class FileHandler {
                 hideLoadingScreen(false);
                 showContent();
             });
-            await FileLoadCallback.after();
+            await cbReg.go("fileAfter");
 
             if (!CONFIG.VARS.FILENAME) {
                 throw new Error("Error processing file. No filename found.");
             }
 
             // Trigger saveProcessedBook event
-            triggerCustomEvent("saveProcessedBook", {
+            cbReg.go("saveProcessedBook", {
                 name: CONFIG.VARS.FILENAME,
                 is_eastern_lan: CONFIG.VARS.IS_EASTERN_LAN,
                 encoding: CONFIG.VARS.ENCODING,
@@ -445,12 +464,13 @@ export class FileHandler {
 
             resetVars();
 
-            const file = await FileLoadCallback.before(fileList[0]);
+            const file = await cbReg.go("fileBefore", fileList[0]);
             metrics.fileSize = file.size;
             metrics.fileName = file.name;
 
             // Create processor
             const processor = new FileProcessor(file, isEastern, encoding);
+            CONFIG.VARS.IS_BOOK_OPENED = true;
 
             // Only detect encoding if not provided
             // console.log("isEastern: ", isEastern);
@@ -471,12 +491,10 @@ export class FileHandler {
 
                 // Change UI language based on detected language... or not?
                 // CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING = (document.documentElement.getAttribute("respectUserLangSetting") === "true");
-                if (!CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING) {
-                    triggerCustomEvent("updateUILanguage", {
-                        lang: CONFIG.VARS.IS_EASTERN_LAN ? "zh" : "en",
-                        saveToLocalStorage: false,
-                    });
-                }
+                cbReg.go("updateUILanguage", {
+                    lang: getCurrentDisplayLanguage(),
+                    saveToLocalStorage: false,
+                });
             }
 
             // Process metadata
@@ -543,7 +561,7 @@ export class FileHandler {
             // Update pagination UI to show processing state
             if (file.size > processor.initialChunkSize) {
                 // Hide bookshelf trigger button if bookshelf is opened
-                triggerCustomEvent("hideBookshelfTriggerBtn");
+                cbReg.go("hideBookshelfTriggerBtn");
 
                 // Set processing flag
                 CONFIG.VARS.IS_PROCESSING = true;
@@ -557,7 +575,6 @@ export class FileHandler {
                         paginationIndicator.id = "pagination-indicator";
                         const paginationIndicatorSpan = document.createElement("span");
                         paginationIndicatorSpan.classList.add("pagination-processing", "prevent-select");
-                        paginationIndicatorSpan.textContent = CONFIG.RUNTIME_VARS.STYLE.ui_pagination_processing;
                         paginationIndicator.appendChild(paginationIndicatorSpan);
                         paginationElement.appendChild(paginationIndicator);
 
@@ -624,7 +641,7 @@ export class FileHandler {
 
             // Show bookshelf trigger button
             // FileHandler.#deferUIUpdate(() => {
-            //     triggerCustomEvent("showBookshelfTriggerBtn");
+            //     cbReg.go("showBookshelfTriggerBtn");
             // });
             FileHandler.markProcessingComplete();
 
@@ -640,6 +657,7 @@ export class FileHandler {
             // Complete initial processing
             await finalProcessing();
         } catch (error) {
+            CONFIG.VARS.IS_BOOK_OPENED = false;
             await resetUI();
             throw new Error("Error processing file: " + error);
         }
@@ -660,6 +678,7 @@ export class FileHandler {
 
             resetVars();
 
+            CONFIG.VARS.IS_BOOK_OPENED = true;
             CONFIG.VARS.FILENAME = book.name;
             CONFIG.VARS.IS_EASTERN_LAN = book.is_eastern_lan ?? TextProcessor.getLanguage(book.file_content_chunks[0]);
             CONFIG.VARS.ENCODING = book.encoding ?? "utf-8";
@@ -682,16 +701,19 @@ export class FileHandler {
             // console.log("isEasternLan: ", CONFIG.VARS.IS_EASTERN_LAN);
             // Change UI language based on detected language... or not?
             // CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING = (document.documentElement.getAttribute("respectUserLangSetting") === "true");
-            if (!CONFIG.RUNTIME_VARS.RESPECT_USER_LANG_SETTING) {
-                // Trigger updateUILanguage event
-                triggerCustomEvent("updateUILanguage", {
-                    lang: CONFIG.VARS.IS_EASTERN_LAN ? "zh" : "en",
-                    saveToLocalStorage: false,
-                });
-            }
+            cbReg.go("updateUILanguage", {
+                lang: getCurrentDisplayLanguage(),
+                saveToLocalStorage: false,
+            });
 
-            // Add footnotes to DOM
-            addFootnotesToDOM(CONFIG.VARS.FOOTNOTES, CONFIG.DOM_ELEMENT.FOOTNOTE_CONTAINER);
+            // [Deprecated] Add footnotes to DOM
+            // addFootnotesToDOM(CONFIG.VARS.FOOTNOTES, CONFIG.DOM_ELEMENT.FOOTNOTE_CONTAINER);
+            // [New] Set the lookup function for the current chunk/footnotes
+            const pairedFootnotes = pairAnchorsAndFootnotes(CONFIG.VARS.FOOTNOTES);
+            getFootnotes().setFootnoteLookup((markerCode, index) => {
+                index = Number(index);
+                return pairedFootnotes[markerCode]?.[index] || CONFIG.CONST_FOOTNOTE.NOTFOUND;
+            });
 
             // Process TOC
             reader.initTOC();
@@ -711,7 +733,7 @@ export class FileHandler {
             hideDropZone();
             hideLoadingScreen();
             showContent();
-            await FileLoadCallback.after();
+            await cbReg.go("fileAfter");
         } else {
             await FileHandler.handleSelectedFile([book?.data], null, null, true);
         }
@@ -757,7 +779,7 @@ export class FileHandler {
                     formattedOperation = "👁️ Visibility: " + operationName.match(/hide\w+|show\w+/g)?.join(", ");
                 } else if (operationName?.includes("paginationIndicator")) {
                     formattedOperation = "🧹 Cleanup: remove pagination indicator";
-                } else if (operationName?.includes("triggerCustomEvent")) {
+                } else if (operationName?.includes("triggerCustomEvent") || operationName?.includes("cbReg.go")) {
                     formattedOperation = "🔔 Event: " + operationName.match(/"([^"]+)"/)?.[1];
                 }
 

@@ -2,7 +2,7 @@
  * @fileoverview Token management service for file access
  * Handles tokens for different file types (books, fonts, etc.)
  *
- * @module server/app/services/tokenService
+ * @module server/app/services/token-service
  * @requires crypto
  * @requires server/app/config/config
  */

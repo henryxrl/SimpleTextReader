@@ -4,6 +4,7 @@
  *
  * @module client/app/modules/api/server-connector
  * @requires shared/utils/logger
+ * @requires shared/core/callback/callback-registry
  * @requires client/app/modules/api/websocket-client
  * @requires client/app/modules/components/cover-animation
  * @requires shared/config/shared-config
@@ -16,11 +17,12 @@
  */
 
 import { Logger } from "../../../../shared/utils/logger.js";
+import { cbReg } from "../../../../shared/core/callback/callback-registry.js";
 import { WebSocketClient } from "../api/websocket-client.js";
 import { CoverAnimation } from "../components/cover-animation.js";
 import { SHARED_CONFIG } from "../../../../shared/config/shared-config.js";
 import { FileHandler } from "../file/file-handler.js";
-import { triggerCustomEvent, getBookCoverCanvas } from "../../utils/base.js";
+import { getBookCoverCanvas } from "../../utils/base.js";
 import { fetchAuthenticatedFile } from "../../utils/helpers-server.js";
 import { CONST_PAGINATION } from "../../config/constants.js";
 import { RUNTIME_VARS, RUNTIME_CONFIG } from "../../config/variables-dom.js";
@@ -172,7 +174,7 @@ class ServerConnector {
             await FileHandler.handleMultipleFiles(books, false, true, false);
             console.log("Cloud library loaded.");
 
-            triggerCustomEvent("reopenBook");
+            cbReg.go("reopenBook");
         } catch (err) {
             console.error("Failed to load books on the server:", err);
             throw err;
@@ -183,7 +185,7 @@ class ServerConnector {
      * Activate offline mode
      */
     async activateOfflineMode() {
-        await bookshelf.refreshBookList();
+        await bookshelf.refreshBookList(true, true);
         await bookshelf.reopenBook();
     }
 
@@ -351,21 +353,19 @@ export async function initServerConnector() {
 
                         // Trigger event and wait for database operation to complete
                         const savePromise = new Promise((resolve) => {
-                            const onSaveComplete = () => {
-                                document.removeEventListener("saveProcessedBookComplete", onSaveComplete);
+                            cbReg.once("saveProcessedBookComplete", () => {
                                 logger.log(`Save complete for "${name}", setting progress to 100%`);
                                 animation.start(100);
                                 resolve();
-                            };
-                            document.addEventListener("saveProcessedBookComplete", onSaveComplete);
+                            });
 
                             // Trigger save event and wait for database operation to complete
-                            triggerCustomEvent("saveProcessedBookFromServer", {
+                            cbReg.go("saveProcessedBookFromServer", {
                                 processedBook: serverBook,
                                 refreshBookshelf: false,
                                 hardRefresh: false,
                                 sortBookshelf: false,
-                                inFileLoadCallback: false,
+                                inFileProcessingCallback: false,
                             });
                         });
 

@@ -11,11 +11,13 @@
  *
  * @module client/app/modules/features/init-webpage
  * @requires client/app/config/icons
+ * @requires shared/core/callback/callback-registry
  * @requires client/app/utils/base
  */
 
 import { createSvgSprite } from "../../config/icons.js";
-import { toBool, triggerCustomEvent, getStylesheet } from "../../utils/base.js";
+import { cbReg } from "../../../../shared/core/callback/callback-registry.js";
+import { toBool, createStylesheet } from "../../utils/base.js";
 
 /**
  * Toggle console.time
@@ -34,7 +36,7 @@ window.consoleTime = false;
     if (window.consoleTime) console.timeEnd("[time] Initialize Webpage");
 
     if (window.consoleTime) console.time("[time][background] Load Fonts and Check No-UI Mode");
-    Promise.all([loadFontsInBackground(), checkAndSetNoUIMode()])
+    checkAndSetNoUIMode()
         .then(() => {
             if (window.consoleTime) console.timeEnd("[time][background] Load Fonts and Check No-UI Mode");
         })
@@ -103,43 +105,72 @@ function setupUITheme() {
 
 /**
  * Load fonts in the background
+ * @deprecated Moved to app.js. Leave this function here for reference.
  */
 async function loadFontsInBackground() {
-    // Fonts to load
-    const fontsToLoad = ["kinghwa", "qiji", "wenkai", "fzskbxk", "fzkai"];
+    // Define fonts
+    window.localFonts = ["fzskbxk"];
+    window.localCSSFonts = ["kinghwa", "wenkai", "zhuque"];
+    window.remoteCSSFonts = ["QIJIC"];
+    const allCSSFonts = [...window.localCSSFonts, ...window.remoteCSSFonts];
+    const allFonts = [...window.localFonts, ...allCSSFonts];
 
     // Global font status tracker
     window.FONT_STATUS = {}; // Stores: { "font-name": "loading" | "loaded" | "failed" }
 
     // Initialize all fonts as "loading"
-    fontsToLoad.forEach((font) => (window.FONT_STATUS[font] = "loading"));
+    allFonts.forEach((font) => (window.FONT_STATUS[font] = "loading"));
 
-    // Load fonts
+    // Load split font CSS files
     if (window.consoleTime) console.time("[time][background] All fonts loaded");
-    await Promise.allSettled(
-        fontsToLoad.map(async (font) => {
-            if (window.consoleTime) console.time(`[time][background] Load Font "${font}"`);
+    const splitFontCSSFiles = [
+        ...window.localCSSFonts.map((font) => `./client/fonts/local-${font}.css`),
+        ...window.remoteCSSFonts.map((font) => `./client/fonts/remote-${font}.css`),
+    ];
+    Promise.allSettled([
+        Promise.allSettled(
+            splitFontCSSFiles.map(async (href, index) => {
+                const font = allCSSFonts[index];
+                try {
+                    const res = await fetch(href);
+                    if (res.ok) {
+                        createStylesheet(href);
+                        window.FONT_STATUS[font] = "loaded";
+                        _finalizeSingleFontLoading(font);
+                    } else {
+                        window.FONT_STATUS[font] = "failed";
+                        console.warn(`[FAILED] "${font}" failed to load`);
+                    }
+                } catch (e) {
+                    window.FONT_STATUS[font] = "failed";
+                    console.warn(`[FAILED] "${font}" failed to load`, e);
+                }
+            })
+        ),
 
-            try {
-                await document.fonts.load(`12px ${font}`);
-                window.FONT_STATUS[font] = "loaded";
-                _finalizeSingleFontLoading(font);
-            } catch {
-                window.FONT_STATUS[font] = "failed";
-                console.warn(`[FAILED] "${font}" failed to load`);
-            } finally {
-                if (window.consoleTime) console.timeEnd(`[time][background] Load Font "${font}"`);
-            }
-        })
-    );
+        // Load local fonts
+        Promise.allSettled(
+            window.localFonts.map(async (font) => {
+                if (window.consoleTime) console.time(`[time][background] Load Font "${font}"`);
 
-    // Now wait for full loading confirmation
-    if (window.consoleTime) console.timeEnd("[time][background] All fonts loaded");
-    console.log("Final font status:", window.FONT_STATUS);
-    requestAnimationFrame(() => {
-        triggerCustomEvent("refreshBookList", {
-            hardRefresh: false,
-            sortBookshelf: true,
+                try {
+                    await document.fonts.load(`12px ${font}`);
+                    window.FONT_STATUS[font] = "loaded";
+                    _finalizeSingleFontLoading(font);
+                } catch (e) {
+                    window.FONT_STATUS[font] = "failed";
+                    console.warn(`[FAILED] "${font}" failed to load`, e);
+                } finally {
+                    if (window.consoleTime) console.timeEnd(`[time][background] Load Font "${font}"`);
+                }
+            })
+        ),
+    ]).then(() => {
+        // Now wait for full loading confirmation
+        if (window.consoleTime) console.timeEnd("[time][background] All fonts loaded");
+        console.log("Final font status:", window.FONT_STATUS);
+        requestAnimationFrame(() => {
+            cbReg.go("updateAllBookCovers");
         });
     });
 
@@ -173,10 +204,7 @@ async function loadFontsInBackground() {
 
             // Trigger custom event
             requestAnimationFrame(() => {
-                triggerCustomEvent("refreshBookList", {
-                    hardRefresh: false,
-                    sortBookshelf: true,
-                });
+                cbReg.go("updateAllBookCovers");
             });
         }
 

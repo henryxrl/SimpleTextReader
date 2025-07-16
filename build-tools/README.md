@@ -17,6 +17,7 @@ The `build-tools/` directory contains scripts that automate key project manageme
 - Updates version numbers in `version.json` and `manifest.json`.
 - Packages extensions into `.zip` files.
 - Builds and pushes Docker containers to Docker Hub.
+- Integrates font manifest/css generation via `splitfont_css2manifest.py`.
 
 **Usage**:
 
@@ -45,7 +46,24 @@ The `build-tools/` directory contains scripts that automate key project manageme
 
 ---
 
-### 2. `font_subset.py`
+### 2. `font_names.py`
+
+**Purpose:** Prints the font family names included in a given font file.
+
+**Responsibilities:**
+
+- Parses a TTF/OTF/WOFF font file and extracts all family/style names.
+- Useful for verifying the exact name to be used in CSS or for subsetting.
+
+**Usage:**
+
+  ```bash
+  python font_names.py yourfont.ttf [anotherfont.otf ...]
+  ```
+
+---
+
+### 3. `font_subset.py`
 
 **Purpose**: Creates a subset of a font file by extracting only the necessary characters.
 
@@ -65,7 +83,7 @@ The `build-tools/` directory contains scripts that automate key project manageme
 
 ---
 
-### 3. `generate_changelog.py`
+### 4. `generate_changelog.py`
 
 **Purpose**: Generates a formatted `CHANGELOG.md` file from Git commit messages.
 
@@ -86,6 +104,31 @@ The `build-tools/` directory contains scripts that automate key project manageme
 - **Note:** Ensure your Git repository contains meaningful commit messages.
 
 ---
+
+### 5. `splitfont_css2manifest.py`
+
+**Purpose:** Converts a split-font CSS file into a JSON manifest or modified CSS, adjusting font-face properties for browser compatibility.
+
+**Responsibilities:**
+
+- Fetches the CSS file for a split-font, either from an online source or local file.
+- Uses the css2manifest method to:
+  - Convert the CSS to a JSON manifest (legacy; rarely used now).
+  - Or output a modified CSS with:
+  - Custom font-face names
+  - Added properties like size-adjust
+  - Fixed url() paths for local font splits, ensuring browser compatibility
+- Provides save_manifest and save_css methods for outputting these files as part of the build.
+- Called from build.py to integrate into the main build workflow.
+
+**Usage:**
+
+- Usually called automatically as part of build.py.
+- Can also be used independently:
+
+  ```bash
+  python build-tools/splitfont_css2manifest.py --url [css-file] --out [manifest|css] --rename [font-face-name] --size-adjust [size-adjust-percentage]
+  ```
 
 ## Best Practices
 

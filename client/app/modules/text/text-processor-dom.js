@@ -4,11 +4,9 @@
  * using data provided by TextProcessorCore.
  *
  * @module client/app/modules/text/text-processor-dom
- * @requires client/app/config/variables-dom
  * @requires client/app/modules/features/reader
  */
 
-import * as CONFIG_DOM from "../../config/variables-dom.js";
 import { reader } from "../features/reader.js";
 
 /**

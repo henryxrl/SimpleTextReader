@@ -33,10 +33,13 @@ The `shared/` directory contains reusable code that can be utilized by both the 
 
 **Examples**:
 
+- **`callback/`**:
+
+  - **`callback-registry.js`**: Provides a generic, shared callback registry for registering, managing, and invoking callback functions by topic. Enables consistent, decoupled event-style behavior for any feature across both frontend and backend environments.
+
 - **`file/`**:
 
   - **`file-processor-core.js`**: Provides the base logic for processing files, such as parsing, validation, and metadata extraction.
-  - **`fileload-callback.js`**: Defines shared callback functions for handling file-loading events, enabling consistent behavior in both frontend and backend environments.
 
 - **`text/`**:
 

@@ -1,11 +1,42 @@
 {
-    "version": "1.6.9.3",
+    "version": "1.6.9.4",
     "changelog": {
+        "1.6.9.4": {
+            "date": "2025-07-15",
+            "changes": {
+                "zh": [
+                    "新增 **快捷按键** 设置标签，用以开启或关闭键盘快捷键",
+                    "修复 **ESC 键** 在某些情况下无法退出阅读的问题",
+                    "新增内嵌字体 **朱雀仿宋**",
+                    "新增 **十二款** 网络字体 (需联网使用)：**黄令东齐伋复刻体**、**上图东观体**、**全瀨體**、**匯文明朝體**、**匯文仿宋**、**匯文正楷**、**仓耳与墨**、**仓耳渔阳体**、**屏显臻宋**、**霞鹜新晰黑**、**寒蝉半圆体**、**寒蝉正楷体**",
+                    "修复 **自定义字体** 在某些情况下没有被应用的问题",
+                    "修复目录滚动结束后可能出现 **多个提示条 (tooltip)** 的问题",
+                    "优化了书架的刷新机制，**大幅减少后台运行时的资源消耗**",
+                    "过滤 **零宽字符**，并添加对仅包含 **CR (回车符)** 换行的文本文件的支持",
+                    "优化 **脚注** 功能和样式，提高准确性和可靠性",
+                    "在 **帮助中心** 中新增 **常见问题** 板块",
+                    "其他多项 **代码优化** 和 **问题修复**"
+                ],
+                "en": [
+                    "Added the **Shortcuts** settings tab to enable or disable keyboard shortcuts",
+                    "Fixed an issue where the **ESC key** did not exit reading mode in certain situations",
+                    "Added the **ZhuQue FangSong** font",
+                    "Added **twelve** web fonts (requires internet connection): **QIJIC**, **ST DongGuanTi**, **Allseto**, **Huiwen Mincho**, **Huiwen Fangsong**, **Huiwen ZhengKai**, **Tsanger YuMo**, **Tsanger YuYangT**, **ClearHan Serif**, **LXGW Neo XiHei**, **Chill RoundM**, and **Chill Kai**",
+                    "Fixed an issue where **custom fonts** were not applied in certain situations",
+                    "Fixed an issue where **multiple tooltips** could appear after scrolling stopped in the TOC",
+                    "Optimized the bookshelf refresh mechanism, **significantly reducing background resource usage**",
+                    "Filter **zero-width characters** and add support for text files with **CR (carriage return)** line endings",
+                    "Enhanced footnote features and styling for improved accuracy, clarity, and reliability",
+                    "Added a **Troubleshooting** section to the **Help Center**",
+                    "Various other **code optimizations** and **bug fixes**"
+                ]
+            }
+        },
         "1.6.9.3": {
             "date": "2025-05-15",
             "changes": {
                 "zh": [
-                    "修复了 **颜色选择器** 在某些情况下位置不正确的问题"
+                    "修复 **颜色选择器** 在某些情况下位置不正确的问题"
                 ],
                 "en": [
                     "Fixed an issue with the **color picker** not being positioned correctly in some cases"
@@ -26,7 +57,7 @@
                     "移除主界面的 **虚线边框**",
                     "新增 **带动画效果的虚线边框** （在拖拽或选择文件时显示）",
                     "优化设置菜单的样式和布局",
-                    "修复了一些 UI 问题"
+                    "修复一些 UI 问题"
                 ],
                 "en": [
                     "Added a **draggable divider** for adjusting the width ratio between TOC and the main content",
@@ -75,9 +106,9 @@
             "date": "2025-02-06",
             "changes": {
                 "zh": [
-                    "修复了 **首字符为标点符号时首字下沉** 的问题",
+                    "修复 **首字符为标点符号时首字下沉** 的问题",
                     "限制书籍文件大小为 **128MB**",
-                    "修复了 UI 相关问题"
+                    "修复 UI 相关问题"
                 ],
                 "en": [
                     "Fixed an issue with **drop cap when the first character is a punctuation**",
@@ -92,7 +123,7 @@
                 "zh": [
                     "支持 **从用户定义的目录加载文本文件**（需要通过服务器部署，如使用 Docker）",
                     "重构代码以提高可维护性",
-                    "修复了书名中包含括号时无法正确处理的问题"
+                    "修复书名中包含括号时无法正确处理的问题"
                 ],
                 "en": [
                     "Support **loading text files from a user-defined directory** (requires deployment on a server, such as using Docker)",
